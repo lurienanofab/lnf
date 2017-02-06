@@ -1,0 +1,44 @@
+﻿using LNF.Repository.Data;
+using LNF.Repository.Scheduler;
+using System;
+
+namespace LNF.Repository.Billing
+{
+    public class ToolBillingByToolOrg : IDataItem
+    {
+        public virtual DateTime Period { get; set; }
+        public virtual Client Client { get; set; }
+        public virtual Org Org { get; set; }
+        public virtual ChargeType ChargeType { get; set; }
+        public virtual Resource Resource { get; set; }
+        public virtual BillingType BillingType { get; set; }
+        public virtual decimal UsageFeeCharged { get; set; }
+        public virtual decimal OverTimePenaltyFee { get; set; }
+        public virtual decimal UncancelledPenaltyFee { get; set; }
+        public virtual decimal ReservationFee { get; set; }
+        public virtual decimal BookingFee { get; set; }
+        public virtual decimal ForgivenFee { get; set; }
+        public virtual decimal TransferredFee { get; set; }
+        public virtual decimal SubsidyDiscount { get; set; }
+        public virtual decimal TotalCharge { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null) return false;
+
+            var item = obj as ToolBillingByToolOrg;
+
+            if (item == null) return false;
+
+            return item.Period == Period
+                && item.Client.ClientID == Client.ClientID
+                && item.Org.OrgID == Org.OrgID
+                && item.Resource.ResourceID == Resource.ResourceID;
+        }
+
+        public override int GetHashCode()
+        {
+            return string.Format("{0}|{1}|{2}|{3}", Period.GetHashCode(), Client.ClientID, Org.OrgID, Resource.ResourceID).GetHashCode();
+        }
+    }
+}

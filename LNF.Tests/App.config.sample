@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <configSections>
+    <section name="log4net" type="log4net.Config.Log4NetConfigurationSectionHandler,log4net" />
+    <sectionGroup name="lnf">
+      <section name="providers" type="LNF.ProvidersSection, LNF" />
+      <section name="redis" type="LNF.Impl.Redis.RedisConfigurationSection, LNF.Impl" />
+    </sectionGroup>
+  </configSections>
+
+  <lnf>
+    <providers production="false">
+      <context type="LNF.Impl.AppContextProvider, LNF.Impl" loginUrl="/login" />
+      <dataAccess type="LNF.Impl.NHibernateThreadStaticDataAccess, LNF.Impl" showSql="true" universalPassword="xxxxx" />
+      <serialization type="LNF.Impl.Serialization.SerializationProvider, LNF.Impl" />
+      <physicalAccess type="LNF.Impl.PhysicalAccess.ProwatchPhysicalAccess, LNF.Impl" />
+      <encryption type="LNF.Impl.EncryptionProvider, LNF.Impl" />
+      <email type="LNF.Impl.Email.EmailProvider, LNF.Impl" host="127.0.0.1" log="true" />
+      <log type="LNF.Impl.Logging.ServiceLogProvider, LNF.Impl" name="LNF.Tests" enabled="true" />
+    </providers>
+    <redis>
+      <connection host="cachesvr" databaseId="5" />
+    </redis>
+  </lnf>
+
+  <connectionStrings>
+    <add name="cnSselData" connectionString="Server=dbserver,1435;Database=sselData;User ID=xxxxx;Password=xxxxx" />
+    <add name="cnSselScheduler" connectionString="Server=dbserver,1435;Database=sselScheduler;User ID=xxxxx;Password=xxxxx" />
+    <add name="cnInventoryControl" connectionString="Server=dbserver,1435;Database=InventoryControl;User ID=xxxxx;Password=xxxxx" />
+    <add name="cnProwatch" connectionString="Server=ssel-sec.eecs.umich.edu;Database=LNF;User ID=xxxxx;Password=xxxxx" />
+  </connectionStrings>
+
+  <appSettings>
+    <add key="UseCache" value="1" />
+    <add key="LogFilePath" value="C:\log.txt" />
+    <add key="MongoConnectionString" value="mongodb://xxxxx:xxxxx@localhost" />
+  </appSettings>
+
+  <log4net debug="false">
+    <appender name="trace" type="log4net.Appender.TraceAppender, log4net">
+      <layout type="log4net.Layout.PatternLayout,log4net">
+        <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p %c{1}:%L - %m%n" />
+      </layout>
+    </appender>
+
+    <appender name="console" type="log4net.Appender.ConsoleAppender, log4net">
+      <layout type="log4net.Layout.PatternLayout,log4net">
+        <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p %c{1}:%L - %m%n" />
+      </layout>
+    </appender>
+
+    <appender name="rollingFile" type="log4net.Appender.RollingFileAppender,log4net">
+      <param name="File" value="log.txt" />
+      <param name="AppendToFile" value="true" />
+      <param name="RollingStyle" value="Date" />
+      <param name="DatePattern" value="yyyy.MM.dd" />
+      <param name="StaticLogFileName" value="true" />
+      <layout type="log4net.Layout.PatternLayout,log4net">
+        <param name="ConversionPattern" value="%d [%t] %-5p %c - %m%n" />
+      </layout>
+    </appender>
+
+    <root>
+      <priority value="DEBUG" />
+      <appender-ref ref="rollingFile" />
+    </root>
+
+    <logger name="NHibernate">
+      <level value="WARN" />
+    </logger>
+
+    <logger name="NHibernate.SQL">
+      <level value="DEBUG" />
+    </logger>
+  </log4net>
+
+  <startup>
+    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.6.1" />
+  </startup>
+</configuration>

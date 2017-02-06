@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<hibernate-mapping assembly="LNF" namespace="LNF.Repository.Control" xmlns="urn:nhibernate-mapping-2.2">
+  <sql-query name="SelectUnloadReservations">
+    <return class="UnloadReservation">
+      <return-property column="ReservationID" name="ReservationID" />
+      <return-property column="ResourceID" name="ResourceID" />
+      <return-property column="ResourceName" name="ResourceName" />
+      <return-property column="UnloadTime" name="UnloadTime" />
+      <return-property column="Index" name="Index" />
+      <return-property column="Point" name="Point" />
+      <return-property column="ClientID" name="ClientID" />
+      <return-property column="DisplayName" name="DisplayName" />
+      <return-property column="AccountID" name="AccountID" />
+      <return-property column="AccountName" name="AccountName" />
+      <return-property column="ActivityID" name="ActivityID" />
+      <return-property column="ActivityName" name="ActivityName" />
+      <return-property column="BeginDateTime" name="BeginDateTime" />
+      <return-property column="EndDateTime" name="EndDateTime" />
+      <return-property column="ActualBeginDateTime" name="ActualBeginDateTime" />
+      <return-property column="ActualEndDateTime" name="ActualEndDateTime" />
+      <return-property column="NextReservationBeginDateTime" name="NextReservationBeginDateTime" />
+    </return>
+    <![CDATA[EXEC sselControl.dbo.UnloadReservation_Select @Action='SelectSecure', @ClientID=:ClientID, @Privs=:Privs]]>
+  </sql-query>
+</hibernate-mapping>

@@ -5,3 +5,4 @@ packages/
 TestResults/
 *.suo
 *.user
+LNF.Tests/App.config

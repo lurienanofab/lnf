@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{98C7F73D-EF9D-4A87-8B79-A1208085CFBD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LNF.Models</RootNamespace>
+    <AssemblyName>LNF.Models</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MongoDB.Bson, Version=2.4.1.18, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Bson.2.4.1\lib\net45\MongoDB.Bson.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MongoDB.Driver, Version=2.4.1.18, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Driver.2.4.1\lib\net45\MongoDB.Driver.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MongoDB.Driver.Core, Version=2.4.1.18, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Driver.Core.2.4.1\lib\net45\MongoDB.Driver.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Billing\AccountSubsidyModel.cs" />
+    <Compile Include="Billing\Enums.cs" />
+    <Compile Include="Billing\Process\BillingProcessDataCommand.cs" />
+    <Compile Include="Billing\Process\BillingProcessDataFinalizeCommand.cs" />
+    <Compile Include="Billing\Process\BillingProcessDataUpdateCommand.cs" />
+    <Compile Include="Billing\Process\BillingProcessResult.cs" />
+    <Compile Include="Billing\Process\BillingProcessStep1Command.cs" />
+    <Compile Include="Billing\Process\BillingProcessStep2Command.cs" />
+    <Compile Include="Billing\Process\BillingProcessStep3Command.cs" />
+    <Compile Include="Billing\Process\BillingProcessStep4Command.cs" />
+    <Compile Include="Billing\Process\IProcessCommand.cs" />
+    <Compile Include="Billing\Process\RemoteProcessingUpdate.cs" />
+    <Compile Include="Billing\Process\UpdateClientBillingCommand.cs" />
+    <Compile Include="Billing\Reports\BillingSummaryItem.cs" />
+    <Compile Include="Billing\Reports\FinancialManagerReportOptions.cs" />
+    <Compile Include="Billing\Reports\InvoiceModel.cs" />
+    <Compile Include="Billing\Reports\RegularExceptionModel.cs" />
+    <Compile Include="Billing\Reports\ServiceUnitBilling\BillingUnit.cs" />
+    <Compile Include="Billing\Reports\ServiceUnitBilling\CreditEntry.cs" />
+    <Compile Include="Billing\Reports\ServiceUnitBilling\JournalUnitReport.cs" />
+    <Compile Include="Billing\Reports\ServiceUnitBilling\JournalUnitReportItem.cs" />
+    <Compile Include="Billing\Reports\ServiceUnitBilling\ReportBase.cs" />
+    <Compile Include="Billing\Reports\ServiceUnitBilling\RoomAggregateByOrg.cs" />
+    <Compile Include="Billing\Reports\ServiceUnitBilling\RoomJU.cs" />
+    <Compile Include="Billing\Reports\ServiceUnitBilling\RoomSUB.cs" />
+    <Compile Include="Billing\Reports\ServiceUnitBilling\ServiceUnitBillingReport.cs" />
+    <Compile Include="Billing\Reports\ServiceUnitBilling\ServiceUnitBillingReportItem.cs" />
+    <Compile Include="Billing\Reports\ServiceUnitBilling\StoreSUB.cs" />
+    <Compile Include="Billing\Reports\ServiceUnitBilling\ToolJU.cs" />
+    <Compile Include="Billing\Reports\ServiceUnitBilling\ToolSUB.cs" />
+    <Compile Include="Billing\Reports\UserApportionmentReportOptions.cs" />
+    <Compile Include="Billing\RoomBillingModel.cs" />
+    <Compile Include="Billing\ToolBillingModel.cs" />
+    <Compile Include="Control\ActionInstanceModel.cs" />
+    <Compile Include="Control\BlockStateModel.cs" />
+    <Compile Include="Control\PointStateModel.cs" />
+    <Compile Include="Data\AccountModel.cs" />
+    <Compile Include="Data\ClientAccountModel.cs" />
+    <Compile Include="Data\ClientModel.cs" />
+    <Compile Include="Data\ClientRemoteModel.cs" />
+    <Compile Include="Data\DataFeedModel.cs" />
+    <Compile Include="Data\DryBoxModel.cs" />
+    <Compile Include="Data\Enums.cs" />
+    <Compile Include="Data\GlobalCostModel.cs" />
+    <Compile Include="Data\HolidayModel.cs" />
+    <Compile Include="Data\IPrivilegedExtensions.cs" />
+    <Compile Include="Data\IPrivileged.cs" />
+    <Compile Include="Data\RoomModel.cs" />
+    <Compile Include="Data\ServiceLogModel.cs" />
+    <Compile Include="Inventory\CategoryModel.cs" />
+    <Compile Include="Inventory\InventoryTypeModel.cs" />
+    <Compile Include="Inventory\ItemModel.cs" />
+    <Compile Include="Ordering\ApproverModel.cs" />
+    <Compile Include="Ordering\PurchaseOrderSearchModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scheduler\ActivityModel.cs" />
+    <Compile Include="Scheduler\BuildingModel.cs" />
+    <Compile Include="Scheduler\Enums.cs" />
+    <Compile Include="Scheduler\LabModel.cs" />
+    <Compile Include="Scheduler\ProcessInfoLineModel.cs" />
+    <Compile Include="Scheduler\ProcessInfoModel.cs" />
+    <Compile Include="Scheduler\ProcessTechModel.cs" />
+    <Compile Include="Scheduler\ReservationHistoryUpdate.cs" />
+    <Compile Include="Scheduler\ReservationInviteeModel.cs" />
+    <Compile Include="Scheduler\ReservationModel.cs" />
+    <Compile Include="Scheduler\ReservationProcessInfoModel.cs" />
+    <Compile Include="Scheduler\ReservationRecurrenceModel.cs" />
+    <Compile Include="Scheduler\ResourceClientModel.cs" />
+    <Compile Include="Scheduler\ResourceCostModel.cs" />
+    <Compile Include="Scheduler\ResourceModel.cs" />
+    <Compile Include="Scheduler\UserAction.cs" />
+    <Compile Include="Scheduler\UserState.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

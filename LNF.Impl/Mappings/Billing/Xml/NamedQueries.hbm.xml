@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping assembly="LNF" namespace="LNF.Repository.Billing" xmlns="urn:nhibernate-mapping-2.2">
+    <!--***** Apportionment ********************************************************************************-->
+    <sql-query name="SelectApportionmentClients">
+        <return class="ApportionmentClient"/>
+        <![CDATA[EXEC sselData.dbo.Client_Select @Action='NeedApportionment', @sDate=:StartDate, @eDate=:EndDate]]>
+    </sql-query>
+    <sql-query name="PopulateRoomApportionData">
+        <![CDATA[EXEC sselData.dbo.RoomData_Select @Action='PopulateRoomApportionDataByPeriod', @Period=:Period]]>
+    </sql-query>
+    <!--***** ToolBilling **********************************************************************************-->
+    <sql-query name="UpdateBillingTypeToolBillingTemp">
+        <![CDATA[EXEC sselData.dbo.ToolBillingTemp_Update @Action='UpdateBillingType', @ClientID=:ClientID, @AccountID=:AccountID, @BillingTypeID=:BillingTypeID, @Period=:Period]]>
+    </sql-query>
+    <sql-query name="UpdateBillingTypeToolBilling">
+        <![CDATA[EXEC sselData.dbo.ToolBilling_Update @Action='UpdateBillingType', @ClientID=:ClientID, @AccountID=:AccountID, @BillingTypeID=:BillingTypeID, @Period=:Period]]>
+    </sql-query>
+    <sql-query name="UpdateAccountToolBillingTemp">
+        <![CDATA[EXEC sselData.dbo.ToolBillingTemp_Update @Action='UpdateAccountByReservationID', @ReservationID=:ReservationID, @AccountID=:AccountID]]>
+    </sql-query>
+    <sql-query name="UpdateAccountToolBilling">
+        <![CDATA[EXEC sselData.dbo.ToolBilling_Update2 @Action='UpdateAccountByReservationID', @ReservationID=:ReservationID, @AccountID=:AccountID]]>
+    </sql-query>
+    <!--***** RoomBilling **********************************************************************************-->
+    <sql-query name="UpdateBillingTypeRoomBillingTemp">
+        <![CDATA[EXEC sselData.dbo.RoomBillingTemp_Update @Action='UpdateBillingType', @ClientID=:ClientID, @AccountID=:AccountID, @BillingTypeID=:BillingTypeID, @Period=:Period]]>
+    </sql-query>
+    <sql-query name="UpdateBillingTypeRoomBilling">
+        <![CDATA[EXEC sselData.dbo.RoomApportionmentInDaysMonthly_Update @Action='UpdateBillingType', @ClientID=:ClientID, @AccountID=:AccountID, @BillingTypeID=:BillingTypeID, @Period=:Period]]>
+    </sql-query>
+    <!--***** ToolData *************************************************************************************-->
+    <sql-query name="SelectToolDataForToolBilling">
+        <return class="ToolBilling"/>
+        <![CDATA[EXEC Billing.dbo.ToolData_Select @Action='ForToolBilling', @Period=:Period]]>
+    </sql-query>
+    <sql-query name="SelectToolDataForToolBillingTemp">
+        <return class="ToolBillingTemp"/>
+        <![CDATA[EXEC Billing.dbo.ToolData_Select @Action='ForToolBilling', @Period=:Period]]>
+    </sql-query>
+    <sql-query name="UpdateChargeMultiplierToolData">
+        <![CDATA[EXEC sselData.dbo.ToolData_Update @Action='UpdateChargeMultiplierByReservationID', @ReservationID=:ReservationID, @ChargeMultiplier=:ChargeMultiplier]]>
+    </sql-query>
+    <sql-query name="UpdateAccountToolData">
+        <![CDATA[EXEC sselData.dbo.ToolData_Update @Action='UpdateAccountByReservationID', @ReservationID=:ReservationID, @AccountID=:AccountID]]>
+    </sql-query>
+    <!--***** ToolDataClean ********************************************************************************-->
+    <sql-query name="UpdateChargeMultiplierToolDataClean">
+        <![CDATA[EXEC sselData.dbo.ToolDataClean_Update @Action='UpdateChargeMultiplierByReservationID', @ReservationID=:ReservationID, @ChargeMultiplier=:ChargeMultiplier]]>
+    </sql-query>
+    <sql-query name="UpdateAccountToolDataClean">
+        <![CDATA[EXEC sselData.dbo.ToolDataClean_Update @Action='UpdateAccountByReservationID', @ReservationID=:ReservationID, @AccountID=:AccountID]]>
+    </sql-query>
+    <!--***** StoreDataClean ********************************************************************************-->
+    <sql-query name="DeleteStoreDataClean">
+        <![CDATA[DELETE dbo.StoreDataClean WHERE (StatusChangeDate >= :StartDate AND StatusChangeDate < :EndDate) AND ClientID = ISNULL(:ClientID, ClientID) AND ItemID = ISNULL(:ItemID, ItemID) AND CategoryID = ISNULL(:CategoryID, CategoryID)]]>
+    </sql-query>
+</hibernate-mapping>

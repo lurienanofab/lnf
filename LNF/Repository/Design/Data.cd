@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="LNF.Repository.Data.Account">
+    <Position X="1.5" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAQBACAgkAQCAQAABAAAAAgDAABECAAAgA=</HashCode>
+      <FileName>NHibernate\Data\Account.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Org" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="ClientAccounts" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="LNF.Repository.Data.Org">
+    <Position X="4" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAQAAAAAAAAAAAAAAAAAAACICBADgAAABQACAAAA=</HashCode>
+      <FileName>NHibernate\Data\Org.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Accounts" />
+      <Property Name="ClientOrgs" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="LNF.Repository.Data.ClientAccount">
+    <Position X="6" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQCAAAAAAAAAAAAAAAAAAAAABCAgAAABAAAAAEE=</HashCode>
+      <FileName>NHibernate\Data\ClientAccount.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Account" />
+      <Property Name="ClientOrg" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="LNF.Repository.Data.ClientOrg">
+    <Position X="9" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIAACIggAAAAAAgAAAACEAAAABkCAABIAAABAU=</HashCode>
+      <FileName>NHibernate\Data\ClientOrg.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Org" />
+      <Property Name="Client" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="ClientAccounts" />
+      <Property Name="Employees" />
+      <Property Name="Managers" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="LNF.Repository.Data.Client">
+    <Position X="14.75" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAMQAAAIMGABCCAQAAAAQEAACACAAiAQIBAAAAAAA=</HashCode>
+      <FileName>NHibernate\Data\Client.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="ClientOrgs" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="LNF.Repository.Data.ClientManager">
+    <Position X="12.75" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgAAABAQAAAAA=</HashCode>
+      <FileName>NHibernate\Data\ClientManager.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="ClientOrg" />
+      <Property Name="ManagerOrg" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="LNF.Repository.Data.OrgType">
+    <Position X="6.25" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAQAAAAAAAAAAAAEAAAAAAAAAAAAAABQACAAAA=</HashCode>
+      <FileName>NHibernate\Data\OrgType.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="ChargeType" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="Orgs" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="LNF.Repository.Data.ChargeType">
+    <Position X="9" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAAAAAAAAAgAAAAAAAAAAAAAAAAAARAAAAAEA=</HashCode>
+      <FileName>NHibernate\Data\ChargeType.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Account" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="OrgTypes" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

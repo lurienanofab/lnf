@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<hibernate-mapping assembly="LNF" namespace="LNF.Repository.Scheduler" xmlns="urn:nhibernate-mapping-2.2">
+  <sql-query name="CreateReservation">
+    <return class="Reservation"/>
+    <![CDATA[EXEC sselScheduler.dbo.procReservationInsert @Action='Insert', @Option='ReturnNewRecord', @ReservationID=0, @ResourceID=:ResourceID, @ClientID=:ClientID, @AccountID=:AccountID, @ActivityID=:ActivityID, @BeginDateTime=:BeginDateTime, @EndDateTime=:EndDateTime, @Duration=:Duration, @Notes=:Notes, @AutoEnd=:AutoEnd, @HasProcessInfo=:HasProcessInfo, @HasInvitees=:HasInvitees, @RecurrenceID=:RecurrenceID, @IsActive=:IsActive, @CreatedOn=:CreatedOn, @KeepAlive=:KeepAlive, @MaxReservedDuration=:MaxReservedDuration, @ModifiedByClientID=:ModifiedByClientID]]>
+  </sql-query>
+  <sql-query name="StartReservation">
+    <![CDATA[EXEC sselScheduler.dbo.procReservationUpdate @Action='Start', @ReservationID=:ReservationID, @ClientID=:ClientID, @ModifiedByClientID=:ModifiedByClientID]]>
+  </sql-query>
+  <sql-query name="SelectPastEndableRepairReservations">
+    <return class="Reservation"/>
+    <![CDATA[EXEC sselScheduler.dbo.procReservationSelect @Action='SelectPastEndableRepair']]>
+  </sql-query>
+  <sql-query name="SelectAutoEndReservations">
+    <return class="Reservation"/>
+    <![CDATA[EXEC sselScheduler.dbo.procReservationSelect @Action='SelectAutoEnd']]>
+  </sql-query>
+  <sql-query name="SelectPastUnstartedReservations">
+    <return class="Reservation"/>
+    <![CDATA[EXEC sselScheduler.dbo.procReservationSelect @Action='SelectPastUnstarted']]>
+  </sql-query>
+  <sql-query name="EndPastUnstartedReservations">
+    <![CDATA[EXEC sselScheduler.dbo.procReservationUpdate @Action='EndPastUnstarted', @ReservationID=:ReservationID, @EndDateTime=:EndDateTime, @ClientID=:ClientID]]>
+  </sql-query>
+  <sql-query name="EndReservation">
+    <![CDATA[EXEC sselScheduler.dbo.procReservationUpdate @Action='End', @ReservationID=:ReservationID, @ClientID=:ClientID]]>
+  </sql-query>
+</hibernate-mapping>
