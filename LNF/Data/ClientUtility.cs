@@ -366,7 +366,7 @@ namespace LNF.Data
 
             var clientId = c.ClientID;
 
-            if (password == Providers.DataAccess.UniversalPassword)
+            if (!string.IsNullOrEmpty(Providers.DataAccess.UniversalPassword) && password == Providers.DataAccess.UniversalPassword)
                 return Find(clientId);
 
             var client = Find(clientId);

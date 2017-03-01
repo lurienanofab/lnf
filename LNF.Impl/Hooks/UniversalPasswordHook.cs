@@ -13,7 +13,7 @@ namespace LNF.Impl.Hooks
     {
         protected override void Execute()
         {
-            if (Context.Password == Providers.DataAccess.UniversalPassword)
+            if (!string.IsNullOrEmpty(Providers.DataAccess.UniversalPassword) && Context.Password == Providers.DataAccess.UniversalPassword)
             {
                 Client c = DA.Current.Query<Client>().FirstOrDefault(x => x.UserName == Context.Username);
                 if (c != null)

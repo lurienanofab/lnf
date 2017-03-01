@@ -231,7 +231,7 @@ namespace LNF.Impl
 
         public virtual Client LogIn(string username, string password)
         {
-            object pwobj = (password.Equals(Providers.DataAccess.UniversalPassword)) ? null : Providers.Encryption.EncryptText(password);
+            object pwobj = (!string.IsNullOrEmpty(Providers.DataAccess.UniversalPassword) && password.Equals(Providers.DataAccess.UniversalPassword)) ? null : Providers.Encryption.EncryptText(password);
             Client client = DA.Current.QueryBuilder()
                 .AddParameter("UserName", username)
                 .AddParameter("Password", pwobj)
