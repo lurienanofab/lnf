@@ -139,7 +139,6 @@
     <Compile Include="RequestLog.cs" />
     <Compile Include="ReturnToAttribute.cs" />
     <Compile Include="Controls\BootstrapModal.cs" />
-    <Compile Include="Controls\Calendar.cs" />
     <Compile Include="Controls\ComboBox.cs" />
     <Compile Include="Controls\CustomTableCell.cs" />
     <Compile Include="Controls\MessageBox.cs" />

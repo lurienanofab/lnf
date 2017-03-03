@@ -8,8 +8,8 @@ namespace LNF.Models.Scheduler
     {
         public int ClientID { get; set; }
 
-        [BsonDateTimeOptions(DateOnly = true, Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; }
+        //[BsonDateTimeOptions(DateOnly = true, Kind = DateTimeKind.Local)]
+        //public DateTime Date { get; set; }
 
         public ViewType View { get; set; }
 
@@ -29,7 +29,7 @@ namespace LNF.Models.Scheduler
                 AccessedAt = DateTime.Now,
                 CreatedAt = DateTime.Now,
                 ModifiedAt = DateTime.Now,
-                Date = DateTime.Now.Date,
+                //Date = DateTime.Now.Date,
                 View = view,
                 Actions = new List<UserAction>()
             };
