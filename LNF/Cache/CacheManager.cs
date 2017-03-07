@@ -22,7 +22,10 @@ namespace LNF.Cache
 
         public MongoRepository Repository
         {
-            get { return MongoRepository.Default; }
+            get
+            {
+                return MongoRepository.Default;
+            }
         }
 
         internal IMongoCollection<CacheObject<T>> GetCollection<T>(string name)
