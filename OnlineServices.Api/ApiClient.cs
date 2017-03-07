@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace OnlineServices.Api
 {
@@ -33,7 +29,13 @@ namespace OnlineServices.Api
 
         public async Task<string> Post(string path, Dictionary<string, string> data)
         {
-            FormUrlEncodedContent content = new FormUrlEncodedContent(data);
+            HttpContent content;
+
+            if (data != null && data.Count > 0)
+                content = new FormUrlEncodedContent(data);
+            else
+                content = new StringContent(string.Empty);
+
             var msg = await HttpClient.PostAsync(path, content);
             var result = await msg.Content.ReadAsStringAsync();
             return result;

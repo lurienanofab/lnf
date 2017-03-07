@@ -90,6 +90,7 @@
     <Compile Include="Billing\Reports\UserApportionmentReportOptions.cs" />
     <Compile Include="Billing\RoomBillingModel.cs" />
     <Compile Include="Billing\ToolBillingModel.cs" />
+    <Compile Include="Billing\UpdateBillingArgs.cs" />
     <Compile Include="Control\ActionInstanceModel.cs" />
     <Compile Include="Control\BlockStateModel.cs" />
     <Compile Include="Control\PointStateModel.cs" />
