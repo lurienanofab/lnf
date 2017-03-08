@@ -10,5 +10,6 @@ namespace LNF.Models.Billing
         public int ItemID { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public BillingCategory BillingCategory { get; set; }
     }
 }
