@@ -454,6 +454,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Scheduler\ActivityInviteeType.cs" />
+    <Compile Include="Scheduler\AutoEndLog.cs" />
     <Compile Include="Scheduler\AvailableInviteeItem.cs" />
     <Compile Include="Scheduler\Data\AuthLevelData.cs" />
     <Compile Include="Scheduler\Data\HolidayData.cs" />
