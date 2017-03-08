@@ -7,58 +7,23 @@ namespace LNF.Scheduler
 {
     public static class AutoEndLog
     {
-        public static void AddAutoEndEntry(Reservation rsv)
+        public static void AddEntry(Reservation rsv, string action)
         {
-            Add(new
-            {
-                Id = ObjectId.GenerateNewId(),
-                ReservationID = rsv.ReservationID,
-                ResourceID = rsv.Resource.ResourceID,
-                ResourceName = rsv.Resource.ResourceName,
-                ClientID = rsv.Client.ClientID,
-                DisplayName = rsv.Client.DisplayName,
-                Timestamp = DateTime.Now,
-                Action = "autoend"
-            });
-        }
+            var document = new BsonDocument();
 
-        public static void AddRepairEntry(Reservation rsv)
-        {
-            Add(new
-            {
-                Id = ObjectId.GenerateNewId(),
-                ReservationID = rsv.ReservationID,
-                ResourceID = rsv.Resource.ResourceID,
-                ResourceName = rsv.Resource.ResourceName,
-                ClientID = rsv.Client.ClientID,
-                DisplayName = rsv.Client.DisplayName,
-                Timestamp = DateTime.Now,
-                Action = "repair"
-            });
-        }
+            document
+                .Add("ReservationID", new BsonInt32(rsv.ReservationID))
+                .Add("ResourceID", new BsonInt32(rsv.Resource.ResourceID))
+                .Add("ResourceName", new BsonString(rsv.Resource.ResourceName))
+                .Add("ClientID", new BsonInt32(rsv.Client.ClientID))
+                .Add("DisplayName", new BsonString(rsv.Client.DisplayName))
+                .Add("Timestamp", new BsonDateTime(DateTime.Now))
+                .Add("Action", new BsonString(action));
 
-        public static void AddUnstartedEntry(Reservation rsv)
-        {
-            Add(new
-            {
-                Id = ObjectId.GenerateNewId(),
-                ReservationID = rsv.ReservationID,
-                ResourceID = rsv.Resource.ResourceID,
-                ResourceName = rsv.Resource.ResourceName,
-                ClientID = rsv.Client.ClientID,
-                DisplayName = rsv.Client.DisplayName,
-                Timestamp = DateTime.Now,
-                Action = "unstarted"
-            });
-        }
-
-        private static void Add(object entry)
-        {
-            var doc = BsonDocument.Create(entry);
             var mongo = MongoRepository.Default.GetClient();
             var db = mongo.GetDatabase("logs");
             var col = db.GetCollection<BsonDocument>("autoend");
-            col.InsertOne(doc);
+            col.InsertOne(document);
         }
     }
 }

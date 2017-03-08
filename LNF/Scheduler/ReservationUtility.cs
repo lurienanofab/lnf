@@ -182,7 +182,7 @@ namespace LNF.Scheduler
                     if (endReservation)
                     {
                         EndPastUnstarted(rsv, newEndDateTime, -1);
-                        AutoEndLog.AddUnstartedEntry(rsv);
+                        AutoEndLog.AddEntry(rsv, "unstarted");
                         timer.AddData("Unstarted reservation {0} was ended, KeepAlive = {1}, Reservation.AutoEnd = {2}, Resource.AutoEnd = {3}, eDate = '{4}'", rsv.ReservationID, rsv.KeepAlive, rsv.AutoEnd, rsv.Resource.AutoEnd, ed);
 
                         DateTime? NextBeginDateTime = OpenResSlot(rsv.Resource.ResourceID, TimeSpan.FromMinutes(rsv.Resource.ReservFence), TimeSpan.FromMinutes(rsv.Resource.MinReservTime), DateTime.Now, oldEndDateTime);
@@ -220,7 +220,7 @@ namespace LNF.Scheduler
 
                     //Reset resource state
                     ResourceUtility.UpdateState(rsv.Resource.ResourceID, ResourceState.Online, string.Empty);
-                    AutoEndLog.AddRepairEntry(rsv);
+                    AutoEndLog.AddEntry(rsv, "repair");
                     timer.AddData("Set ResourceID {0} online", rsv.Resource.ResourceID);
                 }
             }
@@ -243,7 +243,7 @@ namespace LNF.Scheduler
                     {
                         rsv.End(-1, -1);
                         await WagoInterlock.ToggleInterlock(rsv.Resource.ResourceID, false, 0); //always pass 0 when ending auto-end reservations
-                        AutoEndLog.AddAutoEndEntry(rsv);
+                        AutoEndLog.AddEntry(rsv, "autoend");
                         timer.AddData("Ended auto-end reservation {0} for resource {1}", rsv.ReservationID, rsv.Resource.ResourceID);
                     }
                     catch (Exception ex)
