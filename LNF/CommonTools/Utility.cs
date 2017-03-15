@@ -480,6 +480,7 @@ namespace LNF.CommonTools
         {
             if (string.IsNullOrEmpty(s))
                 return s;
+
             if (s.Length > length)
                 return s.Substring(0, length);
             else

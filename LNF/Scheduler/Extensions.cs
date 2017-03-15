@@ -71,7 +71,7 @@ namespace LNF.Scheduler
 
             IList<ResourceTree> result = cm.GetContextItem<IList<ResourceTree>>("ResourceTree");
 
-            if(result == null)
+            if (result == null || result.Count == 0)
             {
 
                 result = DA.Current.Query<ResourceTree>().Where(x => x.ClientID == cm.ClientID).ToList();
