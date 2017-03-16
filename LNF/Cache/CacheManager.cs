@@ -213,7 +213,7 @@ namespace LNF.Cache
                 Providers.Context.Current.SetSessionValue(SessionKeys.Privs, privs);
                 Providers.Context.Current.SetSessionValue(SessionKeys.OrgID, orgId);
                 Providers.Context.Current.SetSessionValue(SessionKeys.Cache, Guid.NewGuid().ToString("n"));
-                Providers.Context.Current.SetSessionValue(SessionKeys.IsKiosk, IsKiosk());
+                Providers.Context.Current.SetSessionValue(SessionKeys.IsKiosk, KioskUtility.IsKiosk());
             }
 
             // now we either have an authenticated user with matching session variables
@@ -251,19 +251,9 @@ namespace LNF.Cache
             return Providers.Context.LoginUrl;
         }
 
-        public bool IsKiosk()
-        {
-            return KioskUtility.IsKiosk();
-        }
-
         public bool WagoEnabled
         {
             get { return RepositoryUtility.ConvertTo(Providers.Context.Current.GetAppSetting("WagoEnabled"), false); }
-        }
-
-        public bool OverrideIsOnKiosk
-        {
-            get { return RepositoryUtility.ConvertTo(Providers.Context.Current.GetAppSetting("OverrideIsOnKiosk"), false); }
         }
 
         public bool UseStartReservationPage

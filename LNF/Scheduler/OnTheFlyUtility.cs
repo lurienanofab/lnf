@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Control;
-using LNF.Repository;
+﻿using LNF.Repository;
 using LNF.Repository.Scheduler;
+using System.Linq;
 
 namespace LNF.Scheduler
 {

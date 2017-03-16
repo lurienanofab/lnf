@@ -315,7 +315,7 @@ namespace LNF.Scheduler
                 EmailUtility.EmailOnOpenSlot(rsv.Resource.ResourceID, currentEndDateTime, nextBeginDateTime.Value, EmailNotify.OnOpening, reservationId);
         }
 
-        public static ReservationState GetReservationState(int reservationId, int clientId)
+        public static ReservationState GetReservationState(int reservationId, int clientId, bool isInLab)
         {
             // Get Reservation Info
             var rsv = DA.Current.Single<Reservation>(reservationId);
@@ -435,10 +435,6 @@ namespace LNF.Scheduler
                 // Get Resource Info
                 var res = rsv.Resource;
 
-                CacheManager.Current.CheckSession();
-
-                bool isInLab = ClientInLab(reservationId);
-
                 bool beforeMinCancelTime = (DateTime.Now <= rsv.BeginDateTime.AddMinutes(-1 * res.MinCancelTime));
                 int graceSeconds = 60 * res.GracePeriod + 10;
                 bool isStartable = (DateTime.Now > rsv.BeginDateTime.AddMinutes(-1 * res.MinReservTime));
@@ -500,13 +496,6 @@ namespace LNF.Scheduler
                 return TruthTableTE[GetSubStateVal(false, false, false, false, DateTime.Now <= beginDateTime, isStartable)];
             else
                 return TruthTable[GetSubStateVal(isInLab, isReserver, isInvited, isAuthorized, beforeMinCancelTime, isStartable)];
-        }
-
-        public static bool ClientInLab(int reservationId)
-        {
-            var rsv = DA.Current.Single<Reservation>(reservationId);
-            int labId = rsv.Resource.ProcessTech.Lab.LabID;
-            return CacheManager.Current.ClientInLab(labId);
         }
 
         /// <summary>
@@ -847,7 +836,7 @@ namespace LNF.Scheduler
         /// </summary>
         /// <param name="rsv">The reservation to start</param>
         /// <param name="clientId">The ClientID of the current user starting the reservation</param>
-        public static async Task StartReservation(Reservation rsv, int clientId)
+        public static async Task StartReservation(Reservation rsv, int clientId, bool isInLab)
         {
             IRepository repo = DA.Current;
 
@@ -859,7 +848,7 @@ namespace LNF.Scheduler
 
             if (rsv.IsStarted) return;
 
-            ReservationState state = GetReservationState(rsv.ReservationID, clientId);
+            ReservationState state = GetReservationState(rsv.ReservationID, clientId, isInLab);
 
             if (state != ReservationState.StartOnly && state != ReservationState.StartOrDelete)
                 throw new Exception(string.Format("Reservation #{0} is not startable at this time. [State = {1}]", rsv.ReservationID, state));

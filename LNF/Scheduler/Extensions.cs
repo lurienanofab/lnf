@@ -382,54 +382,27 @@ namespace LNF.Scheduler
             return cm.ToolCosts(cutoff, resourceId).Where(x => x.ChargeTypeID == chargeTypeId).ToList();
         }
 
-        public static bool KioskCheck(this CacheManager cm)
-        {
-            int[] clientLabs = cm.GetClientLabs();
-            return clientLabs.Length > 0 && clientLabs[0] > 0;
-        }
-
         public static bool IsOnKiosk(this CacheManager cm)
         {
             return cm.GetSessionValue(SessionKeys.IsOnKiosk, () =>
             {
-                string userHostAddr = Providers.Context.Current.UserHostAddress;
-
-                // Specifically check for being on a kiosk - kiosks, resources, wagos are on the same subnet
-                // If the user IP is on the kiosk list OR it starts with the right prefix defined by SchedulerProperty then they are on a kiosk
-                string prefix = Properties.Current.ResourceIPPrefix;
-                return cm.KioskCheck() || userHostAddr.StartsWith(prefix) || cm.OverrideIsOnKiosk;
+                string kioskIp = Providers.Context.Current.UserHostAddress;
+                return KioskUtility.IsOnKiosk(cm.GetClientLabs(), kioskIp);
             });
+        }
+
+        public static bool ClientInLab(this CacheManager cm, int labId)
+        {
+            return KioskUtility.ClientInLab(cm.GetClientLabs(), labId);
         }
 
         public static int[] GetClientLabs(this CacheManager cm)
         {
             return cm.GetSessionValue(SessionKeys.ClientLabs, () =>
             {
-                string userHostAddr = Providers.Context.Current.UserHostAddress;
-                return KioskUtility.IpCheck(cm.ClientID, userHostAddr);
+                string kioskIp = Providers.Context.Current.UserHostAddress;
+                return KioskUtility.IpCheck(cm.ClientID, kioskIp);
             });
-        }
-
-        public static bool ClientInLab(this CacheManager cm, int labId)
-        {
-            if (cm.OverrideIsOnKiosk)
-                return true;
-
-            bool result = cm.GetClientLabs().Any(x => x == labId);
-
-            //if (HttpContext.Current.Request.IsLocal)
-            //    result = true;
-
-            // 2007-06-27 if it's SEM tool, we have to allow activation from any computer because there is no kiosk around that tool, this should be a temporary solution
-            // 2009-02-13 if this tools in DC lab, they can activate at anywhere
-
-            // [2016-06-22 jg] all of these tool are in the same lab and there are no other tools in this lab, so it would be better to just use
-            //       the LabID. However, it is still terrible to hard code this, should be in the database or web.config at least.
-
-            int[] alwaysInLabs = { 4 };
-            result = result || alwaysInLabs.Contains(labId);
-
-            return result;
         }
 
         public static bool DisplayDefaultHours(this CacheManager cm)
