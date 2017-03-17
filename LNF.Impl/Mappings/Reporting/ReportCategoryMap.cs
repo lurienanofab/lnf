@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Reporting;
 
 namespace LNF.Impl.Mappings.Reporting
 {
-    public class ReportCategoryMap : ClassMap<ReportCategory>
+    internal class ReportCategoryMap : ClassMap<ReportCategory>
     {
-        public ReportCategoryMap()
+        internal ReportCategoryMap()
         {
             Schema("Reporting.dbo");
             Table("Category");

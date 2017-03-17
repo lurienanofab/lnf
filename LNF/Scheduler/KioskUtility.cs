@@ -31,8 +31,6 @@ namespace LNF.Scheduler
         /// </summary>
         public static bool IsKiosk(string kioskIp)
         {
-            if (OverrideIsOnKiosk) return true;
-
             // Specifically check for being on a kiosk - kiosks, resources, wagos are on the same subnet
             // If the user IP is on the kiosk list OR it starts with the right prefix defined by SchedulerProperty then they are on a kiosk
             string prefix = Properties.Current.ResourceIPPrefix;
@@ -54,6 +52,7 @@ namespace LNF.Scheduler
         /// </summary>
         public static bool IsOnKiosk(int[] clientLabs, string kioskIp)
         {
+            if (OverrideIsOnKiosk) return true;
             if (IsKiosk(kioskIp)) return true;
             bool result = clientLabs.Length > 0 && clientLabs[0] > 0;
             return result;

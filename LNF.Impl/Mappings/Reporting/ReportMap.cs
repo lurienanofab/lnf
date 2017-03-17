@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Reporting;
-using FluentNHibernate.Mapping;
 
 namespace LNF.Impl.Mappings.Reporting
 {
-    public class ReportMap : ClassMap<Report>
+    internal class ReportMap : ClassMap<Report>
     {
-        public ReportMap()
+        internal ReportMap()
         {
             Schema("Reporting.dbo");
+            Table("Report");
             Id(x => x.ReportID);
             References(x => x.Category).Not.Nullable();
             Map(x => x.Slug).Not.Nullable();

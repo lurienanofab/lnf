@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Reporting;
-using FluentNHibernate.Mapping;
 
 namespace LNF.Impl.Mappings.Reporting
 {
-    public class ToolUtilizationMap : ClassMap<ToolUtilization>
+    internal class ToolUtilizationMap : ClassMap<ToolUtilization>
     {
-        public ToolUtilizationMap()
+        internal ToolUtilizationMap()
         {
             Schema("Reporting.dbo");
             Table("v_ToolUtilization");

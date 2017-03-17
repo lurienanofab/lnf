@@ -151,6 +151,7 @@
     <Compile Include="Mappings\Ordering\ApproverInfoMap.cs" />
     <Compile Include="Mappings\Ordering\PurchaserSearchMap.cs" />
     <Compile Include="Mappings\Ordering\StoreManagerReportItemMap.cs" />
+    <Compile Include="Mappings\Reporting\AfterHoursMap.cs" />
     <Compile Include="Mappings\Scheduler\ResourceTreeMap.cs" />
     <Compile Include="ModelFactory\Injections\AccountInfoInjection.cs" />
     <Compile Include="ModelFactory\Injections\AccountInjection.cs" />

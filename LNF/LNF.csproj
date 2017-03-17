@@ -408,6 +408,7 @@
     <Compile Include="Repository\QueryBuilder.cs" />
     <Compile Include="Repository\QueryParameter.cs" />
     <Compile Include="Repository\QueryParameters.cs" />
+    <Compile Include="Repository\Reporting\AfterHours.cs" />
     <Compile Include="Repository\Repository.cs" />
     <Compile Include="Repository\RepositoryUtility.cs" />
     <Compile Include="Repository\Scheduler\Activity.cs" />
