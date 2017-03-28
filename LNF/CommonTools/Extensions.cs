@@ -118,9 +118,19 @@ namespace LNF.CommonTools
         /// Returns a string with a maximum length. Any characters after length are truncated but
         /// if the string is shorter than length all characters are returned.
         ///</summary>
-        public static string Clip(this string s, int length)
+        public static string Clip(this string s, int length, string suffix = null)
         {
-            return Utility.Left(s, length);
+            var left = Utility.Left(s, length);
+
+            if (string.IsNullOrEmpty(suffix))
+                return left;
+            else
+            {
+                if (left.Length < s.Length)
+                    return left + suffix;
+                else
+                    return left;
+            }
         }
 
         public static T GetRequestValueOrDefault<T>(this IContext context, string key, T defval)

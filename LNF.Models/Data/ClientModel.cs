@@ -39,5 +39,10 @@ namespace LNF.Models.Data
         {
             return IsSafetyTest.GetValueOrDefault();
         }
+
+        public bool IsStaff()
+        {
+            return this.HasPriv(ClientPrivilege.Staff);
+        }
     }
 }

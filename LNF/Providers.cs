@@ -144,6 +144,9 @@ namespace LNF
                 {
                     result.Host = element.Host;
                     result.Port = element.Port;
+                    result.Username = element.Username;
+                    result.Password = element.Password;
+                    result.EnableSsl = element.EnableSsl;
                     result.Log = element.Log;
                 }
             }
@@ -379,7 +382,28 @@ namespace LNF
         public int Port
         {
             get { return GetProperty("port", 25); }
-            set { this["enabled"] = value; }
+            set { this["port"] = value; }
+        }
+
+        [ConfigurationProperty("username", IsRequired = false, DefaultValue = "")]
+        public string Username
+        {
+            get { return GetProperty("username", string.Empty); }
+            set { this["username"] = value; }
+        }
+
+        [ConfigurationProperty("password", IsRequired = false, DefaultValue = "")]
+        public string Password
+        {
+            get { return GetProperty("password", string.Empty); }
+            set { this["password"] = value; }
+        }
+
+        [ConfigurationProperty("enableSsl", IsRequired = false, DefaultValue = false)]
+        public bool EnableSsl
+        {
+            get { return GetProperty("enableSsl", false); }
+            set { this["enableSsl"] = value; }
         }
 
         [ConfigurationProperty("log", IsRequired = false)]

@@ -7,6 +7,9 @@ namespace LNF
     {
         string Host { get; set; }
         int Port { get; set; }
+        string Username { get; set; }
+        string Password { get; set; }
+        bool EnableSsl { get; set; }
         bool Log { get; set; }
         string CompanyName { get; }
         bool ValidateEmail(string addr);

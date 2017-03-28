@@ -5,6 +5,7 @@ using LNF.Repository.Email;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Mail;
 
 namespace LNF.Impl.Email
@@ -227,6 +228,11 @@ namespace LNF.Impl.Email
             try
             {
                 SmtpClient client = new SmtpClient(Providers.Email.Host, Providers.Email.Port);
+                if (!string.IsNullOrEmpty(Providers.Email.Username) && !string.IsNullOrEmpty(Providers.Email.Password))
+                { 
+                    client.Credentials = new NetworkCredential(Providers.Email.Username, Providers.Email.Password);
+                    client.EnableSsl = Providers.Email.EnableSsl;
+                }
                 client.Send(_mailMessage);
                 LogSend();
                 result = true;

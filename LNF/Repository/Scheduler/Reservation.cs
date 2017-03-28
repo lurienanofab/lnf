@@ -284,6 +284,8 @@ namespace LNF.Repository.Scheduler
             //  @Duration, @Notes, @AutoEnd, 1.00, @RecurrenceID, 1,
             //  @HasProcessInfo, @HasInvitees, @IsActive, 0, 0, @KeepAlive, @MaxReservedDuration, @TotalProcessRuns)
 
+            bool isInLab = CacheManager.Current.ClientInLab(Resource.ProcessTech.Lab.LabID);
+
             CanCreateCheck();
 
             DA.Current.Insert(this);
@@ -299,7 +301,11 @@ namespace LNF.Repository.Scheduler
                 // These two activites allow for creating a reservation in the past
                 if (Activity != Properties.Current.Activities.FacilityDownTime && Activity != Properties.Current.Activities.Repair)
                 {
-                    if (BeginDateTime < DateTime.Now)
+                    // Granularity			: stored in minutes and entered in minutes
+                    // Offset				: stored in hours and entered in hours 
+                    DateTime granStartTime = ResourceUtility.GetNextGranularity(TimeSpan.FromMinutes(Resource.Granularity), TimeSpan.FromHours(Resource.Offset), DateTime.Now, NextGranDir.Previous);
+
+                    if (BeginDateTime < granStartTime)
                     {
                         string body = string.Format("Unable to create a reservation. BeginDateTime is in the past.\n--------------------\nClient: {0} [{1}]\nResource: {2} [{3}]\nBeginDateTime: {4:yyyy-MM-dd HH:mm:ss}\nEndDateTime: {5:yyyy-MM-dd HH:mm:ss}", Client.DisplayName, Client.ClientID, Resource.ResourceName, Resource.ResourceID, BeginDateTime, EndDateTime);
                         Providers.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Repository.Scheduler.Reservation.CanCreateCheck()", "Create reservation failed", body, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
@@ -323,6 +329,7 @@ namespace LNF.Repository.Scheduler
             var conflict = DA.Current.Query<Reservation>().Where(x =>
                 x.Resource == Resource // same resource
                 && x.IsActive // not canceled
+                && !x.ActualEndDateTime.HasValue // not ended
                 && (x.BeginDateTime < EndDateTime && x.EndDateTime > BeginDateTime) // date ranges overlap
             ).FirstOrDefault();
 
@@ -557,6 +564,12 @@ namespace LNF.Repository.Scheduler
         public virtual bool IsInvited(Client c)
         {
             return DA.Current.Query<ReservationInvitee>().Any(x => x.Reservation.ReservationID == ReservationID && x.Invitee == c);
+        }
+
+        public virtual bool IsInLab()
+        {
+            string kioskIp = Providers.Context.Current.UserHostAddress;
+            return KioskUtility.ClientInLab(Resource.ProcessTech.Lab.LabID, Client.ClientID, kioskIp);
         }
     }
 }
