@@ -495,6 +495,11 @@ namespace LNF.Repository.Scheduler
             DA.Scheduler.ReservationHistory.Insert("UpdateFacilityDownTime", "procReservationUpdate", this, modifiedByClientId);
         }
 
+        public virtual bool IsRecurring()
+        {
+            return RecurrenceID.HasValue;
+        }
+
         public virtual IList<ClientAccount> AvailableAccounts()
         {
             IList<ClientAccount> result = null;
