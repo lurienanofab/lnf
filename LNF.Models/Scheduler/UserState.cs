@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using MongoDB.Bson.Serialization.Attributes;
 
 namespace LNF.Models.Scheduler
 {
     public class UserState
     {
         public int ClientID { get; set; }
-
-        [Obsolete("Should not be used but needed for backwards compatibility.")]
-        [BsonDateTimeOptions(DateOnly = true, Kind = DateTimeKind.Local)]
-        public DateTime Date { get; set; }
 
         public ViewType View { get; set; }
 
@@ -30,7 +25,6 @@ namespace LNF.Models.Scheduler
                 AccessedAt = DateTime.Now,
                 CreatedAt = DateTime.Now,
                 ModifiedAt = DateTime.Now,
-                Date = DateTime.Now.Date,
                 View = view,
                 Actions = new List<UserAction>()
             };
