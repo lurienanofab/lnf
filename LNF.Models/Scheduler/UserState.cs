@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace LNF.Models.Scheduler
 {
+    [BsonIgnoreExtraElements]
     public class UserState
     {
         public int ClientID { get; set; }
