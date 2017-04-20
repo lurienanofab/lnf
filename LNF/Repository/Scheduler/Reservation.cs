@@ -497,7 +497,7 @@ namespace LNF.Repository.Scheduler
 
         public virtual bool IsRecurring()
         {
-            return RecurrenceID.HasValue;
+            return RecurrenceID.HasValue && RecurrenceID.Value > 0;
         }
 
         public virtual IList<ClientAccount> AvailableAccounts()
