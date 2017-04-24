@@ -1,11 +1,13 @@
-﻿using LNF.Repository.Scheduler;
+﻿using System.Linq;
+using LNF.Repository;
+using LNF.Repository.Scheduler;
 using System;
 using System.Data;
 
 namespace LNF.Scheduler
 {
     public enum PatternType
-    { 
+    {
         Weekly = 1,
         Monthly = 2
     }
@@ -72,6 +74,65 @@ namespace LNF.Scheduler
             ndr["Notes"] = rr.Notes;
 
             dtOut.Rows.Add(ndr);
+        }
+
+        public static void CopyProcessInfo(int recurrenceId, Reservation rsv)
+        {
+            var mostRecentRecurrence = DA.Current.Query<Reservation>()
+                .Where(x => x.RecurrenceID == recurrenceId && x.ReservationID != rsv.ReservationID)
+                .OrderByDescending(x => x.BeginDateTime)
+                .FirstOrDefault();
+
+            if (mostRecentRecurrence != null)
+            {
+                var rsvProcInfos = DA.Current.Query<ReservationProcessInfo>().Where(x => x.Reservation.ReservationID == mostRecentRecurrence.ReservationID);
+                if (rsvProcInfos.Count() > 0)
+                {
+                    foreach (var item in rsvProcInfos)
+                    {
+                        ReservationProcessInfo rpi = new ReservationProcessInfo()
+                        {
+                            Active = item.Active,
+                            ChargeMultiplier = item.ChargeMultiplier,
+                            ProcessInfoLine = item.ProcessInfoLine,
+                            Reservation = rsv,
+                            RunNumber = item.RunNumber,
+                            Special = item.Special,
+                            Value = item.Value
+                        };
+
+                        DA.Current.Insert(rpi);
+                        rsv.HasProcessInfo = true;
+                    }
+                }
+            }
+        }
+
+        public static void CopyInvitees(int recurrenceId, Reservation rsv)
+        {
+            var mostRecentRecurrence = DA.Current.Query<Reservation>()
+                .Where(x => x.RecurrenceID == recurrenceId && x.ReservationID != rsv.ReservationID)
+                .OrderByDescending(x => x.BeginDateTime)
+                .FirstOrDefault();
+
+            if (mostRecentRecurrence != null)
+            {
+                var rsvInvitees = DA.Current.Query<ReservationInvitee>().Where(x => x.Reservation.ReservationID == mostRecentRecurrence.ReservationID);
+                if (rsvInvitees.Count() > 0)
+                {
+                    foreach (var item in rsvInvitees)
+                    {
+                        ReservationInvitee ri = new ReservationInvitee()
+                        {
+                            Invitee = item.Invitee,
+                            Reservation = rsv
+                        };
+
+                        DA.Current.Insert(ri);
+                        rsv.HasInvitees = true;
+                    }
+                }
+            }
         }
     }
 }

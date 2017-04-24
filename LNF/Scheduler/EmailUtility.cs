@@ -356,12 +356,13 @@ namespace LNF.Scheduler
         }
 
         //Email reservers when tool engineers have forgiven charges to their reservations
-        public static void EmailOnForgiveCharge(Reservation rsv, double forgiveAmount, bool sendToUser)
+        public static void EmailOnForgiveCharge(Reservation rsv, double forgiveAmount, bool sendToUser, int clientId)
         {
+            // clientId is for the user sending the email (i.e. staff doing the forgiving)
+
             string fromAddr, subject, body;
             List<string> toAddr = new List<string>();
             string emailForgivenCharge = ConfigurationManager.AppSettings["EmailForgivenCharge"];
-            //TimeSpan ts = ReservationUtility.GetEndDateTime(rsv) - ReservationUtility.GetBeginDateTime(rsv);
             TimeSpan ts = rsv.ChargeEndDateTime() - rsv.ChargeBeginDateTime();
             fromAddr = Properties.Current.SchedulerEmail;
 
@@ -383,7 +384,7 @@ namespace LNF.Scheduler
                 //ReservationUtility.GetEndDateTime(rsv).ToString(ReservationUtility.DateFormat),
                 ts.TotalMinutes.ToString("0.##"));
 
-            Providers.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailOnForgiveCharge(Reservation rsv, double forgiveAmount, bool sendToUser)", subject, body, fromAddr, toAddr, isHtml: true);
+            Providers.Email.SendMessage(clientId, "LNF.Scheduler.EmailUtility.EmailOnForgiveCharge(Reservation rsv, double forgiveAmount, bool sendToUser)", subject, body, fromAddr, toAddr, isHtml: true);
         }
 
         public static void EmailFromUser(string toAddr, string subject, string body, bool ccself = false, bool isHtml = false)
