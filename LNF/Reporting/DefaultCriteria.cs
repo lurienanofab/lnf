@@ -49,7 +49,7 @@ namespace LNF.Reporting
 
         public IEnumerable<Client> ActiveClients()
         {
-            return ActiveLogUtility.FindActive<Client>(x => x.ClientID, StartDate, EndDate);
+            return DA.Current.Query<Client>().FindActive(x => x.ClientID, StartDate, EndDate);
         }
 
         public CriteriaWriter CreateWriter(StringBuilder sb)

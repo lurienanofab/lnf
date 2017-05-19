@@ -3,38 +3,12 @@ using LNF.Repository.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace LNF.Data
 {
     public static class ActiveLogUtility
     {
-        public static IList<T> FindActive<T>(Func<T, int> record, DateTime sd, DateTime ed) where T : IActiveDataItem
-        {
-            T entity = Activator.CreateInstance<T>();
-            string tableName = entity.TableName();
-
-            //base query
-            var baseQuery = DA.Current.Query<ActiveLog>()
-                .Where(x => x.TableName == tableName && (x.EnableDate < ed && (x.DisableDate == null || x.DisableDate > sd)));
-
-            // step1: join to baseQuery
-            var step1 = baseQuery.Join(
-                DA.Current.Query<T>(),
-                o => o.Record,
-                record,
-                (o, i) => new { ActiveLog = o, Items = i }).ToList();
-
-            // step2: it is possible to have duplicates because of disabling and re-enabling in the same
-            //        date range, in this case get the last one by joining to self grouped by max LogID
-            var step2 = step1.Join(
-                step1.GroupBy(x => x.ActiveLog.Record).Select(g => new { Record = g.Key, LogID = g.Max(n => n.ActiveLog.LogID) }),
-                o => o.ActiveLog.LogID,
-                i => i.LogID,
-                (o, i) => o.Items);
-
-            return step2.ToList();
-        }
-
         /// <summary>
         /// Gets entities in a collection that were active at any point during the date range.
         /// </summary>

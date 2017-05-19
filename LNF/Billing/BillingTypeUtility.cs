@@ -120,9 +120,9 @@ namespace LNF.Billing
             return GetBillingType(
                 client,
                 account,
-                ActiveLogUtility.FindActive<ClientOrg>(x => x.ClientOrgID, sd, ed).Where(x => x.Client == client && x.Org == account.Org).ToArray(),
-                ActiveLogUtility.FindActive<ClientAccount>(x => x.ClientAccountID, sd, ed).Where(x => x.ClientOrg.Client == client && x.Account == account).ToArray(),
-                ActiveLogUtility.FindActive<ClientRemote>(x => x.ClientRemoteID, sd, ed).Where(x => x.Client == client && x.Account == account).ToArray(),
+                DA.Current.Query<ClientOrg>().Where(x => x.Client == client && x.Org == account.Org).FindActive(x => x.ClientOrgID, sd, ed),
+                DA.Current.Query<ClientAccount>().Where(x => x.ClientOrg.Client == client && x.Account == account).FindActive(x => x.ClientAccountID, sd, ed),
+                DA.Current.Query<ClientRemote>().Where(x => x.Client == client && x.Account == account).FindActive(x => x.ClientRemoteID, sd, ed),
                 ClientOrgBillingTypeLogUtility.GetActive(sd, ed).Where(x => x.ClientOrg.Client == client && x.ClientOrg.Org == account.Org).ToArray()
             );
         }

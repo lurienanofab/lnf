@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,7 +9,18 @@ namespace LNF.Impl
 {
     public class EncryptionProvider : IEncryptionProvider
     {
-        private readonly string SecretKey = "NiNnPaSs";
+        private static string SecretKey
+        {
+            get
+            {
+                string result = ConfigurationManager.AppSettings["SecretKey"];
+
+                if (string.IsNullOrEmpty(result))
+                    throw new InvalidOperationException("Missing appSetting: SecretKey");
+
+                return result;
+            }
+        }
 
         public string EncryptText(string text)
         {
@@ -50,13 +62,9 @@ namespace LNF.Impl
         {
             MD5 hasher = MD5.Create();
             byte[] data = hasher.ComputeHash(Encoding.UTF8.GetBytes(SecretKey + input));
-            string result = BytesToHexString(data);
-            return result;
-        }
 
-        private string BytesToHexString(byte[] data)
-        {
             string result = string.Empty;
+
             foreach (byte b in data)
             {
                 if (b < 16)
@@ -64,6 +72,7 @@ namespace LNF.Impl
                 else
                     result += b.ToString("x");
             }
+
             return result;
         }
 

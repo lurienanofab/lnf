@@ -14,7 +14,7 @@ namespace LNF.Models.Data
         public static bool HasPriv(this IPrivileged item, string[] privType)
         {
             ClientPrivilege cp = 0;
-            foreach(string p in privType)
+            foreach (string p in privType)
                 cp |= (ClientPrivilege)Enum.Parse(typeof(ClientPrivilege), p, true);
             return item.HasPriv(cp);
         }
@@ -26,6 +26,7 @@ namespace LNF.Models.Data
 
         public static bool HasPriv(this IPrivileged item, ClientPrivilege privs)
         {
+            if (item == null) return false;
             return (item.Privs & privs) > 0;
         }
 

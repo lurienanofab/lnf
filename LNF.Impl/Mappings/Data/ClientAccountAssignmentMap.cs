@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Data;
-using FluentNHibernate.Mapping;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class ClientAccountAssignmentMap : ClassMap<ClientAccountAssignment>
+    internal class ClientAccountAssignmentMap : ClassMap<ClientAccountAssignment>
     {
-        public ClientAccountAssignmentMap()
+        internal ClientAccountAssignmentMap()
         {
             Schema("sselData.dbo");
             Table("v_ClientAccountAssignment");

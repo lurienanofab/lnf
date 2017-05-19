@@ -1,24 +1,36 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Security.Cryptography;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+using System.Configuration;
 
 namespace LNF.CommonTools
 {
     public class Encryption
     {
+        private static string SecretKey
+        {
+            get
+            {
+                string result = ConfigurationManager.AppSettings["SecretKey"];
+
+                if (string.IsNullOrEmpty(result))
+                    throw new InvalidOperationException("Missing appSetting: SecretKey");
+
+                return result;
+            }
+        }
+
         // Encrypt the text
         public string EncryptText(string strText)
         {
-            return Encrypt(strText, "NiNnPaSs");
+            return Encrypt(strText, SecretKey);
         }
 
         // Decrypt the text 
         public string DecryptText(string strText)
         {
-            return Decrypt(strText, "NiNnPaSs");
+            return Decrypt(strText, SecretKey);
         }
 
         // The function used to encrypt the text
@@ -55,25 +67,36 @@ namespace LNF.CommonTools
             return Encoding.UTF8.GetString(ms.ToArray());
         }
 
-        public static string Hash(string input)
+        public static string MD5(string input)
         {
-            MD5 hasher = MD5.Create();
-            string salt = "NiNnPaSs";
-            byte[] data = hasher.ComputeHash(Encoding.UTF8.GetBytes(salt + input));
-            string result = Encryption.BytesToHexString(data);
-            return result;
-        }
+            MD5 md5 = System.Security.Cryptography.MD5.Create();
+            byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(SecretKey + input));
 
-        public static string BytesToHexString(byte[] data)
-        {
             string result = string.Empty;
-            foreach (byte b in data)
+
+            foreach (byte b in hash)
             {
                 if (b < 16)
                     result += "0" + b.ToString("x");
                 else
                     result += b.ToString("x");
             }
+
+            return result;
+        }
+
+        public static string SHA256(string input)
+        {
+            SHA256Managed sha256 = new SHA256Managed();
+            byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(SecretKey + input));
+
+            string result = string.Empty;
+
+            foreach (byte x in hash)
+            {
+                result += string.Format("{0:x2}", x);
+            }
+
             return result;
         }
     }

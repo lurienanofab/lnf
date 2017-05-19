@@ -172,7 +172,7 @@ namespace LNF.Billing
             //      3) LNF.WebApi.Billing.Models.ReportUtility.ApplyToolFormula (for SUB reports, note: this is the replacement for the Billing WCF service)
             //
             //      I think at this point all the formulas can be replaced by GetTotalCharge()
-            //      because each value used by the formula should be correctly reflect the rules
+            //      because each value used by the formula should correctly reflect the rules
             //      in place during the given period (or at least that is the goal).
 
             decimal result = 0;

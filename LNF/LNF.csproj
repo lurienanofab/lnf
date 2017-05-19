@@ -111,6 +111,7 @@
     <Compile Include="Data\AccountUtility.cs" />
     <Compile Include="Data\ClientAccountInfoUtility.cs" />
     <Compile Include="Data\ClientAccountUtility.cs" />
+    <Compile Include="Data\ClientEqualityComparer.cs" />
     <Compile Include="Data\ClientInfoUtility.cs" />
     <Compile Include="Data\ClientManagerUtility.cs" />
     <Compile Include="Data\ClientOrgInfoUtility.cs" />
@@ -180,6 +181,7 @@
     <Compile Include="Ordering\Extensions.cs" />
     <Compile Include="Ordering\PurchaseOrderSearchResult.cs" />
     <Compile Include="PhysicalAccess\EventType.cs" />
+    <Compile Include="PhysicalAccess\InLabClient.cs" />
     <Compile Include="Repository\ActiveDataItem.cs" />
     <Compile Include="Repository\Billing\AccountSubsidy.cs" />
     <Compile Include="Repository\Billing\ApportionmentClient.cs" />
@@ -409,6 +411,9 @@
     <Compile Include="Repository\QueryParameter.cs" />
     <Compile Include="Repository\QueryParameters.cs" />
     <Compile Include="Repository\Reporting\AfterHours.cs" />
+    <Compile Include="Repository\Reporting\ClientEmailPreference.cs" />
+    <Compile Include="Repository\Reporting\EmailPreference.cs" />
+    <Compile Include="Repository\Reporting\UsageCharge.cs" />
     <Compile Include="Repository\Repository.cs" />
     <Compile Include="Repository\RepositoryUtility.cs" />
     <Compile Include="Repository\Scheduler\Activity.cs" />

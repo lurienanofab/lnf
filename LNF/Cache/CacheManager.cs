@@ -87,7 +87,8 @@ namespace LNF.Cache
             {
                 var query = GetClientCollection().Query(x => x.Value.ClientID == clientId, () => CacheObjectFactory.CreateMany(DA.Current.Query<ClientInfo>().Where(x => x.ClientID == clientId).Model<ClientModel>()), false);
                 result = query.FirstOrDefault().GetValue();
-                list.Add(result);
+                if (result != null)
+                    list.Add(result);
             }
 
             return result;

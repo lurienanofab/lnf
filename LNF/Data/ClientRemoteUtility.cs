@@ -14,7 +14,7 @@ namespace LNF.Data
         {
             DateTime sd = period;
             DateTime ed = period.AddMonths(1);
-            return ActiveLogUtility.FindActive<ClientRemote>(x => x.ClientRemoteID, sd, ed).ToArray();
+            return DA.Current.Query<ClientRemote>().FindActive(x => x.ClientRemoteID, sd, ed);
         }
 
         public static ClientRemote Create(int clientId, int remoteClientId, int accountId, DateTime period, out bool success)
@@ -27,8 +27,7 @@ namespace LNF.Data
             Account acct = DA.Current.Single<Account>(accountId);
 
             //check for an existing active ClientRemote record
-            var existing = ActiveLogUtility.FindActive<ClientRemote>(x => x.ClientRemoteID, sd, ed)
-                .FirstOrDefault(x => x.Client == client && x.RemoteClient == remoteClient && x.Account == acct);
+            var existing = DA.Current.Query<ClientRemote>().Where(x => x.Client == client && x.RemoteClient == remoteClient && x.Account == acct).FindActive(x => x.ClientRemoteID, sd, ed).FirstOrDefault();
 
             if (existing != null)
             {
