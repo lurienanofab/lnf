@@ -8,6 +8,7 @@ namespace LNF.Repository.Scheduler
         public virtual int LabID { get; set; }
         public virtual Building Building { get; set; }
         public virtual string LabName { get; set; }
+        public virtual string DisplayName { get; set; }
         public virtual string Description { get; set; }
 
         /// <summary>
@@ -16,14 +17,6 @@ namespace LNF.Repository.Scheduler
         public virtual Room Room { get; set; }
 
         public virtual bool IsActive { get; set; }
-
-        public virtual string GetDisplayName()
-        {
-            if (Room != null)
-                return Room.GetDisplayNameOrDefault();
-            else
-                return LabName;
-        }
 
         public virtual IQueryable<ProcessTech> GetProcessTechs()
         {

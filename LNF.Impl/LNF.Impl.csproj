@@ -109,16 +109,16 @@
     <Reference Include="Owin">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
-    <Reference Include="SimpleInjector, Version=4.0.3.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
-      <HintPath>..\packages\SimpleInjector.4.0.3\lib\net45\SimpleInjector.dll</HintPath>
+    <Reference Include="SimpleInjector, Version=4.0.8.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.4.0.8\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="StackExchange.Redis, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\StackExchange.Redis.1.2.1\lib\net46\StackExchange.Redis.dll</HintPath>
+    <Reference Include="StackExchange.Redis, Version=1.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\StackExchange.Redis.1.2.3\lib\net46\StackExchange.Redis.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="StackExchange.Redis.Extensions.Core, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\StackExchange.Redis.Extensions.Core.2.1.0\lib\net45\StackExchange.Redis.Extensions.Core.dll</HintPath>
+    <Reference Include="StackExchange.Redis.Extensions.Core, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\StackExchange.Redis.Extensions.Core.2.2.0\lib\net45\StackExchange.Redis.Extensions.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -157,7 +157,9 @@
     <Compile Include="Mappings\Reporting\AfterHoursMap.cs" />
     <Compile Include="Mappings\Reporting\ClientEmailPreferenceMap.cs" />
     <Compile Include="Mappings\Reporting\EmailPreferenceMap.cs" />
-    <Compile Include="Mappings\Reporting\UsageChargeMap.cs" />
+    <Compile Include="Mappings\Reporting\ManagerUsageChargeMap.cs" />
+    <Compile Include="Mappings\Reporting\UserUsageChargeMap.cs" />
+    <Compile Include="Mappings\Scheduler\ReservationInfoMap.cs" />
     <Compile Include="Mappings\Scheduler\ResourceTreeMap.cs" />
     <Compile Include="ModelFactory\Injections\AccountInfoInjection.cs" />
     <Compile Include="ModelFactory\Injections\AccountInjection.cs" />
@@ -415,6 +417,7 @@
     <Compile Include="Testing\NHibernateTestBase.cs" />
     <Compile Include="Testing\TestContext.cs" />
     <Compile Include="ModelFactory\ValueInjecterModelFactory.cs" />
+    <Compile Include="Testing\TestContextProvider.cs" />
     <Compile Include="WebContext.cs" />
     <Compile Include="Email\Group.cs" />
     <Compile Include="Email\GroupMember.cs" />

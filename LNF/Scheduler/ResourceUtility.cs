@@ -81,7 +81,7 @@ namespace LNF.Scheduler
                 res.AutoEnd = Convert.ToInt32(model.AutoEnd.TotalMinutes);
                 res.OTFSchedTime = null;
                 res.IPAddress = null;
-                res.Description = model.Description;
+                res.Description = model.ResourceDescription;
                 res.IsReady = true;
                 res.UnloadTime = Utility.GetNullableMinutesFromTimeSpan(model.UnloadTime);
             }

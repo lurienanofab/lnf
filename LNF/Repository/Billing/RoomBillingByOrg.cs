@@ -1,13 +1,15 @@
-﻿using LNF.Repository.Data;
-using System;
+﻿using System;
 
 namespace LNF.Repository.Billing
 {
     public class RoomBillingByOrg : IDataItem
     {
         public virtual DateTime Period { get; set; }
-        public virtual Client Client { get; set; }
-        public virtual Org Org { get; set; }
+        public virtual int ClientID { get; set; }
+        public virtual string LName { get; set; }
+        public virtual string FName { get; set; }
+        public virtual int OrgID { get; set; }
+        public virtual string OrgName { get; set; }
         public virtual decimal RoomCharge { get; set; }
         public virtual decimal EntryCharge { get; set; }
         public virtual decimal SubsidyDiscount { get; set; }
@@ -22,13 +24,13 @@ namespace LNF.Repository.Billing
             if (item == null) return false;
 
             return item.Period == Period
-                && item.Client.ClientID == Client.ClientID
-                && item.Org.OrgID == Org.OrgID;
+                && item.ClientID == ClientID
+                && item.OrgID == OrgID;
         }
 
         public override int GetHashCode()
         {
-            return string.Format("{0}|{1}|{2}", Period.GetHashCode(), Client.ClientID, Org.OrgID).GetHashCode();
+            return new { Period, ClientID, OrgID }.GetHashCode();
         }
     }
 }

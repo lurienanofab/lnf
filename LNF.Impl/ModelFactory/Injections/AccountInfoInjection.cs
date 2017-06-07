@@ -1,5 +1,4 @@
-﻿using LNF.Models.Data;
-using LNF.Repository.Data;
+﻿using LNF.Repository.Data;
 
 namespace LNF.Impl.ModelFactory.Injections
 {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LNF
+namespace LNF.Repository
 {
     public interface IModelFactory : ITypeProvider
     {

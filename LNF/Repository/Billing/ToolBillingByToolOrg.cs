@@ -1,17 +1,21 @@
-﻿using LNF.Repository.Data;
-using LNF.Repository.Scheduler;
-using System;
+﻿using System;
 
 namespace LNF.Repository.Billing
 {
     public class ToolBillingByToolOrg : IDataItem
     {
         public virtual DateTime Period { get; set; }
-        public virtual Client Client { get; set; }
-        public virtual Org Org { get; set; }
-        public virtual ChargeType ChargeType { get; set; }
-        public virtual Resource Resource { get; set; }
-        public virtual BillingType BillingType { get; set; }
+        public virtual int ClientID { get; set; }
+        public virtual string LName { get; set; }
+        public virtual string FName { get; set; }
+        public virtual int OrgID { get; set; }
+        public virtual string OrgName { get; set; }
+        public virtual int ChargeTypeID { get; set; }
+        public virtual string ChargeTypeName { get; set; }
+        public virtual int ResourceID { get; set; }
+        public virtual string ResourceName { get; set; }
+        public virtual int BillingTypeID { get; set; }
+        public virtual string BillingTypeName { get; set; }
         public virtual decimal UsageFeeCharged { get; set; }
         public virtual decimal OverTimePenaltyFee { get; set; }
         public virtual decimal UncancelledPenaltyFee { get; set; }
@@ -31,14 +35,14 @@ namespace LNF.Repository.Billing
             if (item == null) return false;
 
             return item.Period == Period
-                && item.Client.ClientID == Client.ClientID
-                && item.Org.OrgID == Org.OrgID
-                && item.Resource.ResourceID == Resource.ResourceID;
+                && item.ClientID == ClientID
+                && item.OrgID == OrgID
+                && item.ResourceID == ResourceID;
         }
 
         public override int GetHashCode()
         {
-            return string.Format("{0}|{1}|{2}|{3}", Period.GetHashCode(), Client.ClientID, Org.OrgID, Resource.ResourceID).GetHashCode();
+            return new { Period, ClientID, OrgID, ResourceID }.GetHashCode();
         }
     }
 }

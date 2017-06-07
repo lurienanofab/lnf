@@ -28,7 +28,7 @@ namespace LNF.Models.Scheduler
         public string LabDisplayName { get; set; }
         public int ProcessTechID { get; set; }
         public string ProcessTechName { get; set; }
-        public string Description { get; set; }
+        public string ResourceDescription { get; set; }
         public TimeSpan Granularity { get; set; }
         public TimeSpan ReservFence { get; set; }
         public TimeSpan MinReservTime { get; set; }

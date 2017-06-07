@@ -1,16 +1,22 @@
-﻿using LNF.Repository.Data;
-using System;
+﻿using System;
 
 namespace LNF.Repository.Billing
 {
     public class RoomBillingByRoomOrg : IDataItem
     {
         public virtual DateTime Period { get; set; }
-        public virtual Client Client { get; set; }
-        public virtual Org Org { get; set; }
-        public virtual Room Room { get; set; }
-        public virtual ChargeType ChargeType { get; set; }
-        public virtual BillingType BillingType { get; set; }
+        public virtual int ClientID { get; set; }
+        public virtual string LName { get; set; }
+        public virtual string FName { get; set; }
+        public virtual int OrgID { get; set; }
+        public virtual string OrgName { get; set; }
+        public virtual int RoomID { get; set; }
+        public virtual string RoomName { get; set; }
+        public virtual string RoomDisplayName { get; set; }
+        public virtual int ChargeTypeID { get; set; }
+        public virtual string ChargeTypeName { get; set; }
+        public virtual int BillingTypeID { get; set; }
+        public virtual string BillingTypeName { get; set; }
         public virtual decimal ChargeDays { get; set; }
         public virtual decimal Entries { get; set; }
         public virtual decimal Hours { get; set; }
@@ -28,14 +34,14 @@ namespace LNF.Repository.Billing
             if (item == null) return false;
 
             return item.Period == Period
-                && item.Client.ClientID == Client.ClientID
-                && item.Org.OrgID == Org.OrgID
-                && item.Room.RoomID == Room.RoomID;
+                && item.ClientID == ClientID
+                && item.OrgID == OrgID
+                && item.RoomID == RoomID;
         }
 
         public override int GetHashCode()
         {
-            return string.Format("{0}|{1}|{2}|{3}", Period.GetHashCode(), Client.ClientID, Org.OrgID, Room.RoomID).GetHashCode();
+            return new { Period, ClientID, OrgID, RoomID }.GetHashCode();
         }
     }
 }

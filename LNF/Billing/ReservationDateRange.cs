@@ -1,4 +1,5 @@
-﻿using LNF.Repository;
+﻿using LNF.Repository.Scheduler;
+using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Scheduler;
 using System;
@@ -16,9 +17,9 @@ namespace LNF.Billing
         public DateTime StartDate { get; }
         public DateTime EndDate { get; }
 
-        public ReservationDateRange(int resourceId, DateTime sd, DateTime ed) : this(GetReservations(resourceId, sd, ed), sd, ed) { }
+        public ReservationDateRange(IEnumerable<Cost> costs, int resourceId, DateTime sd, DateTime ed) : this(GetReservations(costs, resourceId, sd, ed), sd, ed) { }
 
-        public ReservationDateRange(DateTime sd, DateTime ed) : this(GetReservations(0, sd, ed), sd, ed) { }
+        public ReservationDateRange(IEnumerable<Cost> costs, DateTime sd, DateTime ed) : this(GetReservations(costs, 0, sd, ed), sd, ed) { }
 
         public ReservationDateRange(IEnumerable<Reservation> reservations, DateTime sd, DateTime ed)
         {
@@ -93,51 +94,42 @@ namespace LNF.Billing
             return result;
         }
 
-        public static IEnumerable<Reservation> GetReservations(int resourceId, DateTime sd, DateTime ed)
+        public static IEnumerable<Reservation> GetReservations(IEnumerable<Cost> costs, int resourceId, DateTime sd, DateTime ed)
         {
-            IQueryable<Repository.Scheduler.Reservation> query;
+            IQueryable<ReservationInfo> query;
 
             if (resourceId == 0)
-                query = DA.Scheduler.Reservation.Query().Where(x =>
-                    (x.BeginDateTime < ed && x.EndDateTime > sd)
-                    || (x.ActualBeginDateTime.HasValue && x.ActualBeginDateTime.Value < ed && x.ActualEndDateTime.HasValue && x.ActualEndDateTime.Value > sd)
-                );
+                query = DA.Current.Query<ReservationInfo>().Where(x => x.ChargeBeginDateTime < ed && x.ChargeEndDateTime > sd);
             else
-            {
-                query = DA.Scheduler.Reservation.Query().Where(x =>
-                    x.Resource.ResourceID == resourceId
-                    && ((x.BeginDateTime < ed && x.EndDateTime > sd)
-                    || (x.ActualBeginDateTime.HasValue && x.ActualBeginDateTime.Value < ed && x.ActualEndDateTime.HasValue && x.ActualEndDateTime.Value > sd))
-                );
-            }
+                query = DA.Current.Query<ReservationInfo>().Where(x => x.ResourceID == resourceId && x.ChargeBeginDateTime < ed && x.ChargeEndDateTime > sd);
 
             var result = query.Select(x => new Reservation()
             {
                 ReservationID = x.ReservationID,
-                ResourceID = x.Resource.ResourceID,
-                ResourceName = x.Resource.ResourceName,
-                ProcessTechID = x.Resource.ProcessTech.ProcessTechID,
-                ProcessTechName = x.Resource.ProcessTech.ProcessTechName,
-                ClientID = x.Client.ClientID,
-                UserName = x.Client.UserName,
-                DisplayName = Client.GetDisplayName(x.Client.LName, x.Client.FName),
-                ActivityID = x.Activity.ActivityID,
-                ActivityName = x.Activity.ActivityName,
-                AccountID = x.Account.AccountID,
-                AccountName = x.Account.Name,
-                ShortCode = x.Account.ShortCode,
+                ResourceID = x.ResourceID,
+                ResourceName = x.ResourceName,
+                ProcessTechID = x.ProcessTechID,
+                ProcessTechName = x.ProcessTechName,
+                ClientID = x.ClientID,
+                UserName = x.UserName,
+                DisplayName = Client.GetDisplayName(x.LName, x.FName),
+                ActivityID = x.ActivityID,
+                ActivityName = x.ActivityName,
+                AccountID = x.AccountID,
+                AccountName = x.AccountName,
+                ShortCode = x.ShortCode,
                 IsActive = x.IsActive,
                 IsStarted = x.IsStarted,
                 BeginDateTime = x.BeginDateTime,
                 EndDateTime = x.EndDateTime,
                 ActualBeginDateTime = x.ActualBeginDateTime,
                 ActualEndDateTime = x.ActualEndDateTime,
-                ChargeBeginDateTime = x.ChargeBeginDateTime(),
-                ChargeEndDateTime = x.ChargeEndDateTime(),
+                ChargeBeginDateTime = x.ChargeBeginDateTime,
+                ChargeEndDateTime = x.ChargeEndDateTime,
                 LastModifiedOn = x.LastModifiedOn,
-                IsCancelledBeforeAllowedTime = x.IsCancelledBeforeAllowedTime(),
+                IsCancelledBeforeCutoff = x.IsCancelledBeforeCutoff(),
                 ChargeMultiplier = x.ChargeMultiplier,
-                Cost = x.GetResourceCost()
+                Cost = x.GetResourceCost(costs)
             }).ToList();
 
             return result;
@@ -167,7 +159,7 @@ namespace LNF.Billing
             public DateTime ChargeBeginDateTime { get; set; }
             public DateTime ChargeEndDateTime { get; set; }
             public DateTime LastModifiedOn { get; set; }
-            public bool IsCancelledBeforeAllowedTime { get; set; }
+            public bool IsCancelledBeforeCutoff { get; set; }
             public double ChargeMultiplier { get; set; }
             public ResourceCost Cost { get; set; }
         }

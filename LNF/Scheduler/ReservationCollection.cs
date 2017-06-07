@@ -49,7 +49,7 @@ namespace LNF.Scheduler
             _items = DA.Scheduler.Reservation.SelectByResource(resourceId, sd, ed, true);
         }
 
-        public void SelectByProcessTech(int procTechId, DateTime sd, DateTime ed)
+        public void SelectByProcessTech(int processTechId, DateTime sd, DateTime ed)
         {
             if (sd < Reservation.MinReservationBeginDate)
                 throw new ArgumentOutOfRangeException("sd");
@@ -57,7 +57,7 @@ namespace LNF.Scheduler
             if (ed > Reservation.MaxReservationEndDate)
                 throw new ArgumentOutOfRangeException("ed");
 
-            _items = DA.Scheduler.Reservation.SelectByProcessTech(procTechId, sd, ed, true);
+            _items = DA.Scheduler.Reservation.SelectByProcessTech(processTechId, sd, ed, true);
         }
 
         public void SelectByClient(int clientId, DateTime sd, DateTime ed)

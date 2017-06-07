@@ -1,27 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {
-    public class ToolBillingByToolOrgMap : ClassMap<ToolBillingByToolOrg>
+    internal class ToolBillingByToolOrgMap : ClassMap<ToolBillingByToolOrg>
     {
-        public ToolBillingByToolOrgMap()
+        internal ToolBillingByToolOrgMap()
         {
             ReadOnly();
             Schema("Billing.dbo");
             Table("v_ToolBillingByToolOrg");
             CompositeId()
                 .KeyProperty(x => x.Period)
-                .KeyReference(x => x.Client)
-                .KeyReference(x => x.Org)
-                .KeyReference(x => x.Resource);
-            References(x => x.ChargeType);
-            References(x => x.BillingType);
+                .KeyProperty(x => x.ClientID)
+                .KeyProperty(x => x.OrgID)
+                .KeyProperty(x => x.ResourceID);
+            Map(x => x.LName);
+            Map(x => x.FName);
+            Map(x => x.OrgName);
+            Map(x => x.ResourceName);
+            Map(x => x.ChargeTypeID);
+            Map(x => x.ChargeTypeName);
+            Map(x => x.BillingTypeID);
+            Map(x => x.BillingTypeName);
             Map(x => x.UsageFeeCharged);
             Map(x => x.OverTimePenaltyFee);
             Map(x => x.UncancelledPenaltyFee);

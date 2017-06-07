@@ -13,7 +13,7 @@
         public string BuildingName { get; set; }
         public bool BuildingIsActive { get; set; }
         public string ProcessTechName { get; set; }
-        public string Description { get; set; }
+        public string ProcessTechDescription { get; set; }
         public bool ProcessTechIsActive { get; set; }
     }
 }

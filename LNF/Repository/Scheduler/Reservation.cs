@@ -78,20 +78,6 @@ namespace LNF.Repository.Scheduler
             }
         }
 
-        public virtual bool IsCurrentlyOutsideGracePeriod()
-        {
-            DateTime gp = BeginDateTime.AddMinutes(Resource.GracePeriod);
-            return DateTime.Now > gp;
-        }
-
-        public virtual bool IsCancelledBeforeAllowedTime()
-        {
-            if (!CancelledDateTime.HasValue)
-                return false;
-            else
-                return CancelledDateTime.Value.AddHours(2) < BeginDateTime;
-        }
-
         public virtual double ReservedDuration()
         {
             return (EndDateTime - BeginDateTime).TotalMinutes;
@@ -389,20 +375,6 @@ namespace LNF.Repository.Scheduler
 
             // also an entry into history is made
             DA.Scheduler.ReservationHistory.Insert("Update", "procReservationUpdate", this, modifiedByClientId);
-        }
-
-        public virtual ResourceCost GetResourceCost()
-        {
-            DateTime? cutoff = ChargeBeginDateTime().LastOfMonth(); // always check the whole month, and cutoff is 'on or before' (i.e. <=)
-            ResourceCost result = new ResourceCost(Resource.ResourceID, Account.Org.OrgType.ChargeType, cutoff);
-            return result;
-        }
-
-        public virtual ResourceCost GetResourceCost(IEnumerable<Cost> costs)
-        {
-            DateTime? cutoff = ChargeBeginDateTime();
-            ResourceCost result = new ResourceCost(costs, Account.Org.OrgType.ChargeType);
-            return result;
         }
 
         public virtual void Delete(int? modifiedByClientId)

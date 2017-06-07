@@ -2,6 +2,7 @@
 using LNF.CommonTools;
 using LNF.Repository.Data;
 using System.Linq;
+using System;
 
 namespace LNF.Data
 {
@@ -19,7 +20,7 @@ namespace LNF.Data
             if (room == null)
                 return string.Format("[unknown:{0}]", roomId);
             else
-                return room.GetDisplayNameOrDefault();
+                return room.RoomDisplayName;
         }
     }
 }

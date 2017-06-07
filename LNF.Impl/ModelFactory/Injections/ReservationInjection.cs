@@ -1,6 +1,6 @@
 ﻿using LNF.Models.Scheduler;
+using LNF.Repository;
 using LNF.Repository.Scheduler;
-using LNF.Scheduler;
 
 namespace LNF.Impl.ModelFactory.Injections
 {

@@ -12,7 +12,7 @@ namespace LNF.Repository.Scheduler
         public virtual bool Editable { get; set; }
         public virtual ActivityAccountType AccountType { get; set; }
         public virtual int UserAuth { get; set; }
-        public virtual int InviteeType { get; set; }
+        public virtual ActivityInviteeType InviteeType { get; set; }
         public virtual int InviteeAuth { get; set; }
         public virtual int StartEndAuth { get; set; }
         public virtual int NoReservFenceAuth { get; set; }

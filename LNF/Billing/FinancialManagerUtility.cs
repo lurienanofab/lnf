@@ -16,7 +16,7 @@ namespace LNF.Billing
             DateTime lastMonth = DateTime.Now.Date.AddMonths(-1); //last month of today
             DateTime period = lastMonth.FirstOfMonth();
             
-            return FinancialManagerUtility.SendMonthlyUserUsageEmails(period, options);
+            return SendMonthlyUserUsageEmails(period, options);
         }
 
         public static int SendMonthlyUserUsageEmails(DateTime period, MonthlyEmailOptions options)

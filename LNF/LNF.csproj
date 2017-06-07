@@ -139,7 +139,9 @@
     <Compile Include="Feedback\AggregateItem.cs" />
     <Compile Include="Feedback\NegativeIssueUtility.cs" />
     <Compile Include="Feedback\PositiveIssueUtility.cs" />
-    <Compile Include="IModelFactory.cs" />
+    <Compile Include="Reporting\ClientItemUtility.cs" />
+    <Compile Include="Reporting\ReportGenerator.cs" />
+    <Compile Include="Repository\IModelFactory.cs" />
     <Compile Include="Inventory\CategoryUtility.cs" />
     <Compile Include="Inventory\Extensions.cs" />
     <Compile Include="Ordering\Attachment.cs" />
@@ -413,7 +415,9 @@
     <Compile Include="Repository\Reporting\AfterHours.cs" />
     <Compile Include="Repository\Reporting\ClientEmailPreference.cs" />
     <Compile Include="Repository\Reporting\EmailPreference.cs" />
-    <Compile Include="Repository\Reporting\UsageCharge.cs" />
+    <Compile Include="Repository\Reporting\ManagerUsageCharge.cs" />
+    <Compile Include="Repository\Reporting\UsageChargeBase.cs" />
+    <Compile Include="Repository\Reporting\UserUsageCharge.cs" />
     <Compile Include="Repository\Repository.cs" />
     <Compile Include="Repository\RepositoryUtility.cs" />
     <Compile Include="Repository\Scheduler\Activity.cs" />
@@ -438,6 +442,7 @@
     <Compile Include="Repository\Scheduler\Reservation.cs" />
     <Compile Include="Repository\Scheduler\ReservationGroup.cs" />
     <Compile Include="Repository\Scheduler\ReservationHistory.cs" />
+    <Compile Include="Repository\Scheduler\ReservationInfo.cs" />
     <Compile Include="Repository\Scheduler\ReservationInvitee.cs" />
     <Compile Include="Repository\Scheduler\ReservationLog.cs" />
     <Compile Include="Repository\Scheduler\ReservationOnTheFly.cs" />
@@ -459,7 +464,6 @@
     <Compile Include="Repository\UnitOfWorkAdapter.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Scheduler\ActivityInviteeType.cs" />
     <Compile Include="Scheduler\AutoEndLog.cs" />
     <Compile Include="Scheduler\AvailableInviteeItem.cs" />
     <Compile Include="Scheduler\Data\AuthLevelData.cs" />

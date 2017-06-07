@@ -135,7 +135,10 @@ namespace LNF.CommonTools
                 rowsSelectedFromToolDataClean = dtToolDataClean.Rows.Count;
 
                 using (var bcp = CreateToolDataBulkCopy())
+                {
                     bcp.WriteToServer(dtToolDataClean);
+                    rowsInsertedIntoToolData = dtToolDataClean.Rows.Count;
+                }
 
                 //adjust ToolData to add the days and months data
                 using (var dba = DA.Current.GetAdapter())

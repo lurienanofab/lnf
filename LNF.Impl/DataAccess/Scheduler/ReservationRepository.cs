@@ -309,12 +309,12 @@ namespace LNF.Impl.DataAccess.Scheduler
                     ((x.BeginDateTime < endDate && x.EndDateTime > startDate) || (x.ActualBeginDateTime < endDate && x.ActualEndDateTime > startDate))).ToList();
         }
 
-        public IList<Reservation> SelectByProcessTech(int procTechId, DateTime startDate, DateTime endDate, bool includeDeleted)
+        public IList<Reservation> SelectByProcessTech(int processTechId, DateTime startDate, DateTime endDate, bool includeDeleted)
         {
             if (includeDeleted)
-                return Query().Where(x => x.Resource.ProcessTech.ProcessTechID == procTechId && x.BeginDateTime < endDate && x.EndDateTime > startDate).ToList();
+                return Query().Where(x => x.Resource.ProcessTech.ProcessTechID == processTechId && x.BeginDateTime < endDate && x.EndDateTime > startDate).ToList();
             else
-                return Query().Where(x => x.Resource.ProcessTech.ProcessTechID == procTechId && x.BeginDateTime < endDate && x.EndDateTime > startDate && x.IsActive).ToList();
+                return Query().Where(x => x.Resource.ProcessTech.ProcessTechID == processTechId && x.BeginDateTime < endDate && x.EndDateTime > startDate && x.IsActive).ToList();
         }
 
         public IList<Reservation> SelectByClient(int clientId, DateTime startDate, DateTime endDate, bool includeDeleted)

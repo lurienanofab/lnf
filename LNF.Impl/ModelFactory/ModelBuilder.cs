@@ -81,6 +81,16 @@ namespace LNF.Impl.ModelFactory
 
                 return result;
             }
+
+            public static RoomModel CreateRoomModel(Room source)
+            {
+                var result = new RoomModel();
+
+                result.InjectFrom(source);
+                result.RoomDisplayName = source.DisplayName;
+
+                return result;
+            }
         }
 
         public static class Scheduler
@@ -108,6 +118,7 @@ namespace LNF.Impl.ModelFactory
                 var result = new BuildingModel();
 
                 result.InjectFrom(source);
+                result.BuildingDescription = source.Description;
                 result.BuildingIsActive = source.IsActive;
 
                 return result;
@@ -117,11 +128,13 @@ namespace LNF.Impl.ModelFactory
             {
                 int roomId = 0;
                 string roomName = string.Empty;
+                string roomDisplayName = string.Empty;
 
                 if (source.Room != null)
                 {
                     roomId = source.Room.RoomID;
                     roomName = source.Room.RoomName;
+                    roomDisplayName = source.Room.DisplayName;
                 }
 
                 var result = new LabModel();
@@ -132,7 +145,8 @@ namespace LNF.Impl.ModelFactory
                 result.BuildingIsActive = source.Building.IsActive;
                 result.RoomID = roomId;
                 result.RoomName = roomName;
-                result.LabDisplayName = source.GetDisplayName();
+                result.RoomDisplayName = roomDisplayName;
+                result.LabDescription = source.Description;
                 result.LabIsActive = source.IsActive;
 
                 return result;
@@ -147,11 +161,12 @@ namespace LNF.Impl.ModelFactory
                 result.GroupName = source.Group.GroupName;
                 result.LabID = source.Lab.LabID;
                 result.LabName = source.Lab.LabName;
-                result.LabDisplayName = source.Lab.GetDisplayName();
+                result.LabDisplayName = source.Lab.DisplayName;
                 result.LabIsActive = source.Lab.IsActive;
                 result.BuildingID = source.Lab.Building.BuildingID;
                 result.BuildingName = source.Lab.Building.BuildingName;
                 result.BuildingIsActive = source.Lab.Building.IsActive;
+                result.ProcessTechDescription = source.Description;
                 result.ProcessTechIsActive = source.IsActive;
 
                 return result;
@@ -166,7 +181,7 @@ namespace LNF.Impl.ModelFactory
                 result.BuildingName = source.ProcessTech.Lab.Building.BuildingName;
                 result.LabID = source.ProcessTech.Lab.LabID;
                 result.LabName = source.ProcessTech.Lab.LabName;
-                result.LabDisplayName = source.ProcessTech.Lab.GetDisplayName();
+                result.LabDisplayName = source.ProcessTech.Lab.DisplayName;
                 result.ProcessTechID = source.ProcessTech.ProcessTechID;
                 result.ProcessTechName = source.ProcessTech.ProcessTechName;
                 result.Granularity = TimeSpan.FromMinutes(source.Granularity);
@@ -179,6 +194,7 @@ namespace LNF.Impl.ModelFactory
                 result.AutoEnd = TimeSpan.FromMinutes(source.AutoEnd);
                 result.MinCancelTime = TimeSpan.FromMinutes(source.MinCancelTime);
                 result.UnloadTime = TimeSpan.FromMinutes(source.UnloadTime.GetValueOrDefault(0));
+                result.ResourceDescription = source.Description;
                 result.ResourceIsActive = source.IsActive;
 
                 return result;

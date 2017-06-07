@@ -73,7 +73,6 @@ namespace LNF.Scheduler
 
             if (result == null || result.Count == 0)
             {
-
                 result = DA.Current.Query<ResourceTree>().Where(x => x.ClientID == cm.ClientID).ToList();
                 cm.SetContextItem("ResourceTree", result);
             }
@@ -567,7 +566,8 @@ namespace LNF.Scheduler
 
         public static IList<ResourceCost> GetResourceCosts(this ResourceModel item)
         {
-            return ResourceCost.GetAll(item.ResourceID);
+            IEnumerable<Cost> costs = DA.Current.Query<Cost>().Where(x => (x.RecordID == item.ResourceID && x.TableNameOrDescription == "ToolCost") || x.TableNameOrDescription == "ToolOvertimeCost");
+            return ResourceCost.GetAll(costs, item.ResourceID);
         }
 
         public static double SelectReservableMinutes(this ResourceModel item, int clientId, DateTime now)
@@ -629,7 +629,7 @@ namespace LNF.Scheduler
             {
                 BuildingID = x.BuildingID,
                 BuildingName = x.BuildingName,
-                Description = x.BuildingDescription,
+                BuildingDescription = x.BuildingDescription,
                 BuildingIsActive = x.BuildingIsActive
             }).ToList();
 
@@ -645,7 +645,7 @@ namespace LNF.Scheduler
                 LabID = x.LabID,
                 LabName = x.LabName,
                 LabDisplayName = x.LabDisplayName,
-                Description = x.LabDescription,
+                LabDescription = x.LabDescription,
                 LabIsActive = x.LabIsActive,
                 RoomID = x.RoomID,
                 RoomName = x.RoomName,
@@ -659,19 +659,19 @@ namespace LNF.Scheduler
 
         public static IList<ProcessTechModel> GetProcessTechs(this IEnumerable<ResourceTree> tree)
         {
-            var distinct = tree.Select(x => new { x.ProcessTechID, x.ProcessTechName, x.ProcessTechIsActive, x.ProcessTechGroupID, x.ProcessTechGroupName, x.LabID, x.LabName, x.LabDisplayName, x.LabDescription, x.LabIsActive, x.RoomID, x.RoomName, x.BuildingID, x.BuildingName, x.BuildingIsActive }).Distinct();
+            var distinct = tree.Select(x => new { x.ProcessTechID, x.ProcessTechName, x.ProcessTechDescription, x.ProcessTechIsActive, x.ProcessTechGroupID, x.ProcessTechGroupName, x.LabID, x.LabName, x.LabDisplayName, x.LabDescription, x.LabIsActive, x.RoomID, x.RoomName, x.BuildingID, x.BuildingName, x.BuildingIsActive }).Distinct();
 
             var result = distinct.OrderBy(x => x.LabID).Select(x => new ProcessTechModel()
             {
                 ProcessTechID = x.ProcessTechID,
                 ProcessTechName = x.ProcessTechName,
+                ProcessTechDescription = x.ProcessTechDescription,
                 ProcessTechIsActive = x.ProcessTechIsActive,
                 GroupID = x.ProcessTechGroupID,
                 GroupName = x.ProcessTechGroupName,
                 LabID = x.LabID,
                 LabName = x.LabName,
                 LabDisplayName = x.LabDisplayName,
-                Description = x.LabDescription,
                 LabIsActive = x.LabIsActive,
                 BuildingID = x.BuildingID,
                 BuildingName = x.BuildingName,
@@ -704,6 +704,7 @@ namespace LNF.Scheduler
                 ResourceID = x.ResourceID,
                 ResourceIsActive = x.ResourceIsActive,
                 ResourceName = x.ResourceName,
+                ResourceDescription = x.ResourceDescription,
                 State = x.State,
                 StateNotes = x.StateNotes,
                 UnloadTime = TimeSpan.FromMinutes(x.UnloadTime),
@@ -713,7 +714,6 @@ namespace LNF.Scheduler
                 LabID = x.LabID,
                 LabName = x.LabName,
                 LabDisplayName = x.LabDisplayName,
-                Description = x.LabDescription,
                 BuildingID = x.BuildingID,
                 BuildingName = x.BuildingName
             }).ToList();

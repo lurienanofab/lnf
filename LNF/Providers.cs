@@ -1,4 +1,5 @@
 ﻿using LNF.Hooks;
+using LNF.Repository;
 using System;
 using System.ComponentModel;
 using System.Configuration;

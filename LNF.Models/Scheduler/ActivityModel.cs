@@ -1,6 +1,4 @@
-﻿
-
-namespace LNF.Models.Scheduler
+﻿namespace LNF.Models.Scheduler
 {
     public class ActivityModel
     {
@@ -11,7 +9,7 @@ namespace LNF.Models.Scheduler
         public bool Editable { get; set; }
         public ActivityAccountType AccountType { get; set; }
         public int UserAuth { get; set; }
-        public int InviteeType { get; set; }
+        public ActivityInviteeType InviteeType { get; set; }
         public int InviteeAuth { get; set; }
         public int StartEndAuth { get; set; }
         public int NoReservFenceAuth { get; set; }
@@ -19,27 +17,5 @@ namespace LNF.Models.Scheduler
         public string Description { get; set; }
         public bool IsActive { get; set; }
         public bool IsFacilityDownTime { get; set; }
-
-        //public static ActivityModel Create(Activity source)
-        //{
-        //    return new ActivityModel()
-        //    {
-        //        ActivityID = source.ActivityID,
-        //        ActivityName = source.ActivityName,
-        //        ListOrder = source.ListOrder,
-        //        Chargeable = source.Chargeable,
-        //        Editable = source.Editable,
-        //        AccountType = source.AccountType,
-        //        UserAuth = source.UserAuth,
-        //        InviteeType = source.InviteeType,
-        //        InviteeAuth = source.InviteeAuth,
-        //        StartEndAuth = source.StartEndAuth,
-        //        NoReservFenceAuth = source.NoReservFenceAuth,
-        //        NoMaxSchedAuth = source.NoMaxSchedAuth,
-        //        Description = source.Description,
-        //        IsActive = source.IsActive,
-        //        IsFacilityDownTime = source.IsFacilityDownTime
-        //    };
-        //}
     }
 }

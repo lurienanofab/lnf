@@ -37,7 +37,7 @@ namespace LNF.Repository.Scheduler
 
         IList<Reservation> SelectEndableReservations(int resourceId);
         IList<Reservation> SelectByResource(int resourceId, DateTime startDate, DateTime endDate, bool includeDeleted);
-        IList<Reservation> SelectByProcessTech(int procTechId, DateTime startDate, DateTime endDate, bool includeDeleted);
+        IList<Reservation> SelectByProcessTech(int processTechId, DateTime startDate, DateTime endDate, bool includeDeleted);
         IList<Reservation> SelectByClient(int clientId, DateTime startDate, DateTime endDate, bool includeDeleted);
         IList<Reservation> SelectRecent(int resourceId);
     }

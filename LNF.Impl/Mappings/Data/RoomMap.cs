@@ -3,9 +3,9 @@ using LNF.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class RoomMap : ClassMap<Room>
+    internal class RoomMap : ClassMap<Room>
     {
-        public RoomMap()
+        internal RoomMap()
         {
             Schema("sselData.dbo");
             Id(x => x.RoomID);

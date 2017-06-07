@@ -2,6 +2,7 @@
 using LNF.Models.Data;
 using LNF.Models.Ordering;
 using LNF.Models.Scheduler;
+using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Repository.Ordering;
 using LNF.Repository.Scheduler;
@@ -22,6 +23,7 @@ namespace LNF.Impl.ModelFactory
             //// ***** Data Maps
             Mapper.AddMap<ClientAccount, ClientAccountModel>(ModelBuilder.Data.CreateClientAccountModel);
             Mapper.AddMap<GlobalCost, GlobalCostModel>(ModelBuilder.Data.CreateGlobalCostModel);
+            Mapper.AddMap<Room, RoomModel>(ModelBuilder.Data.CreateRoomModel);
 
             //// ***** Scheduler Maps
             Mapper.AddMap<Building, BuildingModel>(ModelBuilder.Scheduler.CreateBuildingModel);

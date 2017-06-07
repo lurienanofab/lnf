@@ -1,5 +1,6 @@
 ﻿using LNF.Billing;
 using LNF.Repository;
+using LNF.Repository.Data;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -422,7 +423,10 @@ namespace LNF.CommonTools
 
             DataRow[] rows = dtToolDataClean.AsEnumerable().Where(x => x.RowState != DataRowState.Deleted).ToArray();
 
-            ReservationDateRange range = new ReservationDateRange(sd, ed);
+            string[] tableName = { "ToolCost", "ToolOvertimeCost" };
+            IEnumerable<Cost> costs = DA.Current.Query<Cost>().Where(x => tableName.Contains(x.TableNameOrDescription)).ToList();
+
+            ReservationDateRange range = new ReservationDateRange(costs, sd, ed);
             ReservationDurations durations = new ReservationDurations(range);
 
             // loop through reservations and get the TransferredDuration quantity for each
@@ -435,7 +439,7 @@ namespace LNF.CommonTools
 
                 var item = durations.FirstOrDefault(x => x.Reservation.ReservationID == reservationId);
 
-                double uses = dr.Field<double>("Uses");
+                var uses = dr.Field<double>("Uses");
 
                 if (item != null)
                     dr.SetField("TransferredDuration", item.TransferredDuration.TotalMinutes * uses);

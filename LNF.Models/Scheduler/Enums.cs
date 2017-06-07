@@ -9,6 +9,14 @@ namespace LNF.Models.Scheduler
         Both = 2
     }
 
+    public enum ActivityInviteeType
+    {
+        None = 1,
+        Optional = 2,
+        Required = 3,
+        Single = 4
+    }
+
     [Flags]
     public enum ClientAuthLevel
     {
