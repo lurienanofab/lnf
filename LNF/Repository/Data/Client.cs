@@ -96,7 +96,7 @@ namespace LNF.Repository.Data
         /// </summary>
         public virtual string DisplayName
         {
-            get { return GetDisplayName(LName, FName); }
+            get { return ClientModel.GetDisplayName(LName, FName); }
         }
 
         /// <summary>
@@ -376,6 +376,7 @@ namespace LNF.Repository.Data
         /// <summary>
         /// Gets a Client display name in the standard format
         /// </summary>
+        [Obsolete("Use LNF.Models.Data.ClientModel.GetDisplayName instead")]
         public static string GetDisplayName(string lname, string fname)
         {
             return string.Join(", ", new[] { lname, fname }.Where(x => !string.IsNullOrEmpty(x))).Trim();

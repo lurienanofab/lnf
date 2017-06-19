@@ -1,4 +1,5 @@
 ﻿using LNF.Data;
+using LNF.Models.Data;
 using LNF.Models.Reporting;
 using LNF.Models.Reporting.Individual;
 using LNF.Repository;
@@ -54,7 +55,7 @@ namespace LNF.Reporting
             model.FName = fname;
             model.Period = period;
 
-            var charges = ManagerUsageCharge.SelectByManager(model.ClientID, model.Period, includeRemote);
+            var charges = ManagerUsageCharge.SelectByManager(model.ClientID, model.Period, includeRemote).ToList();
 
             model.Accounts = charges
                 .GroupBy(x => new
@@ -129,12 +130,12 @@ namespace LNF.Reporting
 
         public static string GetClientName(string lname, string fname)
         {
-            return Client.GetDisplayName(lname, fname);
+            return ClientModel.GetDisplayName(lname, fname);
         }
 
         public static string GetClientSort(string lname, string fname)
         {
-            return Client.GetDisplayName(lname, fname);
+            return ClientModel.GetDisplayName(lname, fname);
         }
 
         public static ManagerUsageSummaryAccount CreateManagerUsageSummaryAccount(dynamic args, IEnumerable<ManagerUsageCharge> charges)
@@ -234,7 +235,7 @@ namespace LNF.Reporting
                 {
                     Period = x.Key.Period,
                     BillingCategory = x.Key.BillingCategory,
-                    DisplayName = Client.GetDisplayName(x.Key.LName, x.Key.FName),
+                    DisplayName = ClientModel.GetDisplayName(x.Key.LName, x.Key.FName),
                     Account = GetAccountName(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
                     Sort = x.Key.BillingCategory + ":" + GetAccountSort(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
                     TotalCharge = x.Sum(g => g.TotalCharge),

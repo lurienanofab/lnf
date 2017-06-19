@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Data;
+﻿using LNF.PhysicalAccess;
 using LNF.Repository.Data;
-using LNF.PhysicalAccess;
+using System;
+using System.Collections.Generic;
 
 namespace LNF
 {
@@ -21,5 +18,6 @@ namespace LNF
         void AddClient(Client c);
         void EnableAccess(Client c);
         void DisableAccess(Client c);
+        IEnumerable<RoomDataRaw>  GetRoomData(DateTime sd, DateTime ed, int clientId, string roomName);
     }
 }

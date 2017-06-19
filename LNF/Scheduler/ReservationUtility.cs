@@ -2,6 +2,7 @@
 using LNF.CommonTools;
 using LNF.Data;
 using LNF.Logging;
+using LNF.Models.Data;
 using LNF.Models.Scheduler;
 using LNF.Repository;
 using LNF.Repository.Data;
@@ -617,7 +618,7 @@ namespace LNF.Scheduler
                     ActivityName = res.CurrentActivityName,
                     BeginDateTime = res.CurrentBeginDateTime.Value,
                     EndDateTime = res.CurrentEndDateTime.Value,
-                    DisplayName = Client.GetDisplayName(res.CurrentLastName, res.CurrentFirstName),
+                    DisplayName = ClientModel.GetDisplayName(res.CurrentLastName, res.CurrentFirstName),
                     Editable = res.CurrentActivityEditable,
                     Notes = res.CurrentNotes,
                     ResourceID = res.ResourceID,

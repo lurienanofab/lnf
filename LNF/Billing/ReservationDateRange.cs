@@ -1,6 +1,7 @@
-﻿using LNF.Repository.Scheduler;
+﻿using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
+using LNF.Repository.Scheduler;
 using LNF.Scheduler;
 using System;
 using System.Collections.Generic;
@@ -112,7 +113,7 @@ namespace LNF.Billing
                 ProcessTechName = x.ProcessTechName,
                 ClientID = x.ClientID,
                 UserName = x.UserName,
-                DisplayName = Client.GetDisplayName(x.LName, x.FName),
+                DisplayName = ClientModel.GetDisplayName(x.LName, x.FName),
                 ActivityID = x.ActivityID,
                 ActivityName = x.ActivityName,
                 AccountID = x.AccountID,

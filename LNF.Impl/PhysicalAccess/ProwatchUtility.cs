@@ -121,19 +121,19 @@ namespace LNF.Impl.PhysicalAccess
             }
         }
 
-        public static List<Event> CreateEvents(IEnumerable<DataRow> raw)
+        public static List<Event> CreateEvents(DataTable raw)
         {
-            int[] clientIds = raw.Select(x => x.Field<int>("BADGE_CLIENTID")).Distinct().ToArray();
+            int[] clientIds = raw.AsEnumerable().Select(x => x.Field<int>("BADGE_CLIENTID")).Distinct().ToArray();
 
             var clients = DA.Current.Query<Client>().Where(x => clientIds.Contains(x.ClientID)).ToArray();
             var rooms = DA.Current.Query<Room>().Where(x => x.Active).ToArray();
 
             var result = new List<Event>();
 
-            foreach (var row in raw)
+            foreach (DataRow row in raw.Rows)
             {
-                string eventId = ProwatchUtility.BytesToString((byte[])row["RID"]);
-                string deviceId = ProwatchUtility.BytesToString((byte[])row["LOGDEVDTLID"]);
+                string eventId = BytesToString((byte[])row["RID"]);
+                string deviceId = BytesToString((byte[])row["LOGDEVDTLID"]);
                 string eventDesc = GetEventDescription(deviceId, row["EVNT_DESCRP"].ToString());
                 string deviceDesc = row["LOGDEVADESCRP"].ToString();
                 int cardnum = Convert.ToInt32(row["CARDNO"]); //this is a string padded to 32 length with trailing null chars

@@ -362,7 +362,8 @@ namespace LNF.Data
 
             var c = ClientInfoUtility.FindByUserName(username);
 
-            if (c == null) return null;
+            if (c == null)
+                throw new Exception("Invalid username.");
 
             var clientId = c.ClientID;
 
@@ -374,7 +375,7 @@ namespace LNF.Data
             if (client.CheckPassword(password))
                 return client;
             else
-                return null;
+                throw new Exception("Invalid password.");
         }
 
         public static int GetActiveAccountCount(int clientId)

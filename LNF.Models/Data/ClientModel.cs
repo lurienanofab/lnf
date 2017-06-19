@@ -44,5 +44,10 @@ namespace LNF.Models.Data
         {
             return this.HasPriv(ClientPrivilege.Staff);
         }
+
+        public static string GetDisplayName(string lname, string fname)
+        {
+            return string.Format("{0}, {1}", lname, fname);
+        }
     }
 }

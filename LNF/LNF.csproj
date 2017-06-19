@@ -139,6 +139,7 @@
     <Compile Include="Feedback\AggregateItem.cs" />
     <Compile Include="Feedback\NegativeIssueUtility.cs" />
     <Compile Include="Feedback\PositiveIssueUtility.cs" />
+    <Compile Include="PhysicalAccess\RoomDataRaw.cs" />
     <Compile Include="Reporting\ClientItemUtility.cs" />
     <Compile Include="Reporting\ReportGenerator.cs" />
     <Compile Include="Repository\IModelFactory.cs" />

@@ -73,24 +73,24 @@ namespace LNF.Impl.PhysicalAccess
             return result;
         }
 
-        public IEnumerable<DataRow> RawData(DateTime startDate, DateTime endDate, Client client = null, Room room = null)
+        public DataTable RawData(DateTime sd, DateTime ed, int clientId = 0, string roomName = null)
         {
             using (var dba = ProwatchUtility.GetDBA())
             {
                 string sql = "SELECT * FROM LNF.dbo.RawData WHERE ISNULL(@ClientID, BADGE_CLIENTID) = BADGE_CLIENTID AND ISNULL(@AreaName, LOGDEVADESCRP) = LOGDEVADESCRP AND (EVNT_DAT >= @StartDate AND EVNT_DAT < @EndDate)";
 
-                object clientId = (client == null) ? DBNull.Value : (object)client.ClientID;
-                object areaName = (room == null) ? DBNull.Value : (object)room.RoomName;
+                object cid = (clientId == 0) ? DBNull.Value : (object)clientId;
+                object areaName = string.IsNullOrEmpty(roomName) ? DBNull.Value : (object)roomName;
 
                 DataTable dt = dba
                     .CommandTypeText()
-                    .AddParameter("@ClientID", clientId)
+                    .AddParameter("@ClientID", cid)
                     .AddParameter("@AreaName", areaName)
-                    .AddParameter("@StartDate", startDate)
-                    .AddParameter("@EndDate", endDate)
+                    .AddParameter("@StartDate", sd)
+                    .AddParameter("@EndDate", ed)
                     .FillDataTable(sql);
 
-                return dt.AsEnumerable();
+                return dt;
             }
         }
 
@@ -104,7 +104,7 @@ namespace LNF.Impl.PhysicalAccess
         
         public IEnumerable<Event> GetEvents(DateTime startDate, DateTime endDate, Client client = null, Room room = null)
         {
-            var raw = RawData(startDate, endDate, client, room);
+            var raw = RawData(startDate, endDate, client.ClientID, room.RoomName);
 
             var result = ProwatchUtility.CreateEvents(raw);
 
@@ -190,7 +190,7 @@ namespace LNF.Impl.PhysicalAccess
                 }
                 else
                 {
-                    return ProwatchUtility.CreateEvents(dt.AsEnumerable()).First();
+                    return ProwatchUtility.CreateEvents(dt).First();
                 }
             }
         }
@@ -236,7 +236,7 @@ namespace LNF.Impl.PhysicalAccess
                 }
                 else
                 {
-                    return ProwatchUtility.CreateEvents(dt.AsEnumerable()).First();
+                    return ProwatchUtility.CreateEvents(dt).First();
                 }
             }
         }
@@ -289,6 +289,15 @@ namespace LNF.Impl.PhysicalAccess
         {
             using (var dba = ProwatchUtility.GetDBA())
                 dba.ApplyParameters(new { Action = "DisableAccess", ClientID = c.ClientID }).ExecuteNonQuery("LNF.dbo.ClientUpdate");
+        }
+
+        public IEnumerable<RoomDataRaw> GetRoomData(DateTime sd, DateTime ed, int clientId, string roomName)
+        {
+            using (var dba = ProwatchUtility.GetDBA())
+            {
+                var dt = RawData(sd, ed, clientId, roomName);
+                throw new NotImplementedException();
+            }   
         }
 
         public void Dispose()
