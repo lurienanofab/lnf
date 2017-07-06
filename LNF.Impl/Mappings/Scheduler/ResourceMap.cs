@@ -11,6 +11,7 @@ namespace LNF.Impl.Mappings.Scheduler
             Schema("sselScheduler.dbo");
             Id(x => x.ResourceID).GeneratedBy.Assigned();
             References(x => x.ProcessTech, "ProcessTechID").NotFound.Ignore();
+            References(x => x.Lab, "LabID").NotFound.Ignore();
             Map(x => x.ResourceName);
             Map(x => x.UseCost);
             Map(x => x.HourlyCost);

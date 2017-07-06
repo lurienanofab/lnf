@@ -423,8 +423,7 @@ namespace LNF.CommonTools
 
             DataRow[] rows = dtToolDataClean.AsEnumerable().Where(x => x.RowState != DataRowState.Deleted).ToArray();
 
-            string[] tableName = { "ToolCost", "ToolOvertimeCost" };
-            IEnumerable<Cost> costs = DA.Current.Query<Cost>().Where(x => tableName.Contains(x.TableNameOrDescription)).ToList();
+            var costs = Cost.SelectToolCosts();
 
             ReservationDateRange range = new ReservationDateRange(costs, sd, ed);
             ReservationDurations durations = new ReservationDurations(range);

@@ -82,6 +82,7 @@ namespace LNF.Scheduler
                 res.OTFSchedTime = null;
                 res.IPAddress = null;
                 res.Description = model.ResourceDescription;
+                res.WikiPageUrl = model.WikiPageUrl;
                 res.IsReady = true;
                 res.UnloadTime = Utility.GetNullableMinutesFromTimeSpan(model.UnloadTime);
             }

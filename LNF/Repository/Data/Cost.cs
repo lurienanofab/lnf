@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace LNF.Repository.Data
 {
@@ -13,5 +15,12 @@ namespace LNF.Repository.Data
         public virtual decimal MulVal { get; set; }
         public virtual DateTime EffDate { get; set; }
         public virtual DateTime CreatedDate { get; set; }
+
+        public static IList<Cost> SelectToolCosts()
+        {
+            string[] tableName = { "ToolCost", "ToolOvertimeCost" };
+            var result = DA.Current.Query<Cost>().Where(x => tableName.Contains(x.TableNameOrDescription)).ToList();
+            return result;
+        }
     }
 }

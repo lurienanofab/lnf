@@ -1,10 +1,10 @@
-﻿using System;
+﻿using LNF.Billing;
+using LNF.Repository;
+using LNF.Repository.Data;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using LNF.CommonTools;
-using LNF.Repository;
-using LNF.Billing;
 
 namespace LNF.Tests.CommonTools
 {
@@ -16,7 +16,8 @@ namespace LNF.Tests.CommonTools
         {
             DateTime sd = DateTime.Parse("2016-04-01");
             DateTime ed = DateTime.Parse("2016-05-01");
-            ReservationDateRange range = new ReservationDateRange(sd, ed);
+            var costs = Cost.SelectToolCosts();
+            ReservationDateRange range = new ReservationDateRange(costs, sd, ed);
             List<ReservationDurationItem> all = new List<ReservationDurationItem>();
             //var query = DA.Scheduler.Resource.Query().Where(x => x.ResourceID == 62050);
             var query = DA.Scheduler.Resource.SelectActive();

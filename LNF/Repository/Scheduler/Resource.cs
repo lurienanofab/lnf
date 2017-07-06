@@ -20,6 +20,11 @@ namespace LNF.Repository.Scheduler
         public virtual ProcessTech ProcessTech { get; set; }
 
         /// <summary>
+        /// The lab where the tool is located.
+        /// </summary>
+        public virtual Lab Lab { get; set; }
+
+        /// <summary>
         /// The name of the resource.
         /// </summary>
         public virtual string ResourceName { get; set; }

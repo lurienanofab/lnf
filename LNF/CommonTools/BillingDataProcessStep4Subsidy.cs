@@ -129,7 +129,7 @@ namespace LNF.CommonTools
                 //Save everything back to the main table
                 rowsInsertedIntoTieredSubsidyBilling = SaveNewTieredSubsidyBilling(dtOut);
 
-                //Calculate the real subsidy amount and populate the details
+                //Calculate the real subsidy amount and populate the details, UserPaymentSum is set in this method.
                 CalculateSubsidyFee(period, clientId);
 
                 //Push changes back to billing tables
@@ -350,97 +350,97 @@ namespace LNF.CommonTools
 
             DataTable dtOriginalSubsidyStartDate = GetFirstSubsidyDateTable(clientId);
 
-            SortedList<double, double> TierRegular = new SortedList<double, double>();
-            SortedList<double, double> TierNewUser = new SortedList<double, double>();
-            SortedList<double, double> TierNewFacultyUser = new SortedList<double, double>();
-            SortedList<double, double> CurrentTier = new SortedList<double, double>();
-            TransformTiersIntoSortedDictionary(dtTiers, TierRegular, TierNewUser, TierNewFacultyUser);
+            SortedList<double, double> tierRegular = new SortedList<double, double>();
+            SortedList<double, double> tierNewUser = new SortedList<double, double>();
+            SortedList<double, double> tierNewFacultyUser = new SortedList<double, double>();
+            SortedList<double, double> currentTier = new SortedList<double, double>();
+            TransformTiersIntoSortedDictionary(dtTiers, tierRegular, tierNewUser, tierNewFacultyUser);
 
             DataRow drNew;
-            double StartSum;
-            double EndSum;
-            double UserTotalSum;
+            double startSum;
+            double endSum;
+            double userTotalSum;
             bool isNegative = false;
 
             foreach (DataRow dr in dtIn.Rows)
             {
                 isNegative = false;
-                UserTotalSum = Convert.ToDouble(dr["UserTotalSum"]);
+                userTotalSum = Convert.ToDouble(dr["UserTotalSum"]);
                 if (Convert.ToDouble(dr["UserTotalSum"]) < 0)
                 {
                     isNegative = true;
-                    UserTotalSum *= -1;
+                    userTotalSum *= -1;
                 }
 
-                StartSum = Convert.ToDouble(dr["Accumulated"]);
-                EndSum = StartSum + UserTotalSum;
+                startSum = Convert.ToDouble(dr["Accumulated"]);
+                endSum = startSum + userTotalSum;
 
                 // [2011-02-17] This is code for new faculty billing, must comment out the above expression.
                 // [2016-03-08 jg] Changing priority order to check IsNewStudent first because this is the only type of subsidy
                 //       at this time. The order can now be changed by rearranging the elements in the tierPriority dictionary.
                 Dictionary<string, SortedList<double, double>> tierPriority = new Dictionary<string, SortedList<double, double>>
                 {
-                    { "IsNewStudent", TierNewUser },
-                    { "IsNewFacultyUser", TierNewFacultyUser },
-                    { "Default", TierRegular }
+                    { "IsNewStudent", tierNewUser },
+                    { "IsNewFacultyUser", tierNewFacultyUser },
+                    { "Default", tierRegular }
                 };
 
                 foreach (var kvp in tierPriority)
                 {
                     if (kvp.Key == "Default" || Convert.ToBoolean(dr[kvp.Key]))
                     {
-                        CurrentTier = kvp.Value;
+                        currentTier = kvp.Value;
                         break;
                     }
                 }
 
-                if (CurrentTier == null)
+                if (currentTier == null)
                     throw new InvalidOperationException("Cannot determine the current subsidy tier.");
 
                 //Tier 0 means negative amount - it's possible that we should pay the user for specific month
                 //Tier 1 is the first tier, Tier 2 is second tier  
-                int FloorTier = 0;
-                int TopTier = 0;
+                int floorTier = 0;
+                int topTier = 0;
 
-                foreach (KeyValuePair<double, double> kvp in CurrentTier)
+                foreach (KeyValuePair<double, double> kvp in currentTier)
                 {
-                    if (kvp.Key > StartSum)
+                    if (kvp.Key > startSum)
                     {
                         //it's possible that StartSum is negative
                         break;
                     }
                     else
-                        FloorTier += 1;
+                        floorTier += 1;
                 }
 
-                foreach (KeyValuePair<double, double> kvp in CurrentTier)
+                foreach (KeyValuePair<double, double> kvp in currentTier)
                 {
-                    if (kvp.Key < EndSum)
-                        TopTier += 1;
+                    if (kvp.Key < endSum)
+                        topTier += 1;
                     else
                         break;
                 }
 
                 //after this point, we know which tiers we are in now
-                double CurrentUpperValue = 0;
-                int CurrentTierIndex; //since list is zero indexed based, I need this to keep track of indexing indicator
-                for (int i = FloorTier; i <= TopTier; i++)
+                double currentUpperValue = 0;
+                int currentTierIndex; //since list is zero indexed based, I need this to keep track of indexing indicator
+                for (int i = floorTier; i <= topTier; i++)
                 {
-                    CurrentTierIndex = i - 1;
+                    currentTierIndex = i - 1;
                     drNew = dtDetails.NewRow();
 
                     //Make sure we don't increment when we are at the top level
-                    if (CurrentTierIndex + 1 < CurrentTier.Count)
-                        CurrentUpperValue = CurrentTier.Keys[CurrentTierIndex + 1];
+                    if (currentTierIndex + 1 < currentTier.Count)
+                        currentUpperValue = currentTier.Keys[currentTierIndex + 1];
                     else
                     {
                         //come here when user is in last tier, there is no more upper value
-                        CurrentUpperValue = 999999999;
+                        currentUpperValue = 999999999;
                     }
 
-                    int tierBillingID = Convert.ToInt32(dr["TierBillingID"]);
-                    double floorAmount = CurrentTier.Keys[CurrentTierIndex];
-                    double userPaymentPercentage = CurrentTier.Values[CurrentTierIndex];
+                    int tierBillingID = dr.Field<int>("TierBillingID");
+                    double floorAmount = currentTier.Keys[currentTierIndex];
+                    double userPaymentPercentage = currentTier.Values[currentTierIndex];
 
                     drNew["Period"] = period;
                     drNew["TierBillingID"] = tierBillingID;
@@ -448,31 +448,31 @@ namespace LNF.CommonTools
                     drNew["UserPaymentPercentage"] = userPaymentPercentage;
 
                     double originalApplyAmount = 0; //this is the portion of the total usage charge applied to a given subsidy tier
-                    if (FloorTier == TopTier)
+                    if (floorTier == topTier)
                     {
                         //1st Case: When we are just in one tier, there is no cross tier calculation needed
-                        originalApplyAmount = (isNegative) ? (EndSum - StartSum) * -1 : EndSum - StartSum;
+                        originalApplyAmount = (isNegative) ? (endSum - startSum) * -1 : endSum - startSum;
                     }
                     else
                     {
                         //2nd Case: We have crossed multiple tiers
-                        if (i == TopTier)
+                        if (i == topTier)
                         {
                             //We are in the last tier of multi tier calculation
-                            originalApplyAmount = (isNegative) ? (EndSum - CurrentTier.Keys[CurrentTierIndex]) * -1 : EndSum - CurrentTier.Keys[CurrentTierIndex];
+                            originalApplyAmount = (isNegative) ? (endSum - currentTier.Keys[currentTierIndex]) * -1 : endSum - currentTier.Keys[currentTierIndex];
                         }
                         else
                         {
                             //We are in any tier except last
-                            if (i == FloorTier)
+                            if (i == floorTier)
                             {
                                 //We are in first tier
-                                originalApplyAmount = (isNegative) ? (CurrentUpperValue - StartSum) * -1 : CurrentUpperValue - StartSum;
+                                originalApplyAmount = (isNegative) ? (currentUpperValue - startSum) * -1 : currentUpperValue - startSum;
                             }
                             else
                             {
                                 //we are in the middle tier
-                                originalApplyAmount = (isNegative) ? (CurrentUpperValue - CurrentTier.Keys[CurrentTierIndex]) * -1 : CurrentUpperValue - CurrentTier.Keys[CurrentTierIndex];
+                                originalApplyAmount = (isNegative) ? (currentUpperValue - currentTier.Keys[currentTierIndex]) * -1 : currentUpperValue - currentTier.Keys[currentTierIndex];
                             }
                         }
                     }
@@ -665,7 +665,7 @@ namespace LNF.CommonTools
 
             foreach (DataRow dr in dtIn.Rows)
             {
-                int cid = Convert.ToInt32(dr["ClientID"]);
+                int cid = dr.Field<int>("ClientID");
 
                 DateTime? myLastLabUsagePeriod = GetFiscalYearStartingPeriod(cid, dtLastBillingData);
                 DateTime? mySubsidyStartDate = GetSubsidyStartDate(cid, dtOriginalSubsidyStartDate);
