@@ -624,8 +624,8 @@ namespace LNF.CommonTools
         //from prowatch, but also room data and client data for this month as well.
         public DataTable ReadRoomDataRaw(DateTime sDate, DateTime eDate, out DataSet ds, int clientId = 0, int roomId = 0)
         {
-            string roomName = DA.Current.Single<Room>(roomId).RoomName;
-            IEnumerable<RoomDataRaw> raw = Providers.PhysicalAccess.GetRoomData(sDate, eDate, clientId, roomName);
+            //string roomName = DA.Current.Single<Room>(roomId).RoomName;
+            //IEnumerable<RoomDataRaw> raw = Providers.PhysicalAccess.GetRoomData(sDate, eDate, clientId, roomName);
 
             using (var dba = DA.Current.GetAdapter())
             {
