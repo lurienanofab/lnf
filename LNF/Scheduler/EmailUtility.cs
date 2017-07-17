@@ -191,11 +191,13 @@ namespace LNF.Scheduler
             string invitedModifiedText;
 
             if (modificationType == ReservationModificationType.Created)
-                invitedModifiedText = "invited you to a reservation on";
+                invitedModifiedText = "invited you to a reservation";
             else
-                invitedModifiedText = "modified a reservation that you are invited to";
+                invitedModifiedText = "modified a reservation to which you are invited";
 
-            body = string.Format("{0} has {1} {2} for resource {3}.", rsv.Client.DisplayName, invitedModifiedText, rsv.BeginDateTime.ToString(Reservation.DateFormat), rsv.Resource.ResourceName);
+            body = string.Format("{0} has {1} for resource {2}.", rsv.Client.DisplayName, invitedModifiedText, rsv.Resource.ResourceName);
+            body += Environment.NewLine + string.Format("- Begin time: {0}", rsv.BeginDateTime.ToString(Reservation.DateFormat));
+            body += Environment.NewLine + string.Format("- End time: {0}", rsv.EndDateTime.ToString(Reservation.DateFormat));
 
             foreach (var ri in invitees)
             {
@@ -214,7 +216,7 @@ namespace LNF.Scheduler
 
             if (toAddr.Count == 0) return;
 
-            Providers.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailOnInvited(Reservation rsv, IEnumerable<ReservationInviteeItem> invitees, ReservationModificationType modificationType = ReservationModificationType.Created)", subject, body, fromAddr, toAddr);
+            Providers.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailOnInvited", subject, body, fromAddr, toAddr);
         }
 
         //Send email to invitees when they are uninvited to a reservation
