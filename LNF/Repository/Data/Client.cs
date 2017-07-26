@@ -276,10 +276,10 @@ namespace LNF.Repository.Data
 
         public virtual string AccountEmail(int accountId)
         {
-            var query = ClientOrgUtility.SelectByClientAccount(this, DA.Current.Single<Account>(accountId));
+            var co = ClientOrgUtility.SelectByClientAccount(this, DA.Current.Single<Account>(accountId)).FirstOrDefault();
 
-            if (query.Count() > 0)
-                return query.First().Email;
+            if (co != null)
+                return co.Email;
             else
                 return string.Empty;
         }

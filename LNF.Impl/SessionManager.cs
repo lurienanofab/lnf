@@ -15,7 +15,6 @@ namespace LNF.Impl
         private readonly object _locker = new object();
         private readonly ISessionFactory _sessionFactory;
         private readonly Guid _factoryId;
-        private readonly IDisposable _cacheDisposer;
 
         static SessionManager()
         {
@@ -44,8 +43,6 @@ namespace LNF.Impl
                 var config = SessionConfiguration.GetConfiguration()
                     .Mappings(HandleMappings)
                     .CurrentSessionContext<T>(); //this determines what CurrentSessionContext will be
-
-                _cacheDisposer = config.ConfigureRedisCache();
 
                 if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["NHibernate.Glimpse.Loggers"]))
                 {
@@ -134,9 +131,6 @@ namespace LNF.Impl
 
         public void Dispose()
         {
-            if (_cacheDisposer != null)
-                _cacheDisposer.Dispose();
-
             if (_sessionFactory != null)
                 _sessionFactory.Dispose();
         }
