@@ -168,6 +168,7 @@
     <Compile Include="Mappings\Ordering\StoreManagerReportItemMap.cs" />
     <Compile Include="Mappings\Reporting\AfterHoursMap.cs" />
     <Compile Include="Mappings\Reporting\ClientEmailPreferenceMap.cs" />
+    <Compile Include="Mappings\Reporting\ClientManagerLogMap.cs" />
     <Compile Include="Mappings\Reporting\EmailPreferenceMap.cs" />
     <Compile Include="Mappings\Reporting\ManagerUsageChargeMap.cs" />
     <Compile Include="Mappings\Reporting\UserUsageChargeMap.cs" />

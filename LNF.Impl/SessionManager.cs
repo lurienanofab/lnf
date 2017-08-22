@@ -60,7 +60,9 @@ namespace LNF.Impl
                 SessionLog.AddLogMessage("FactoryID: {0}", _factoryId);
                 SessionLog.AddLogMessage("### New session factory completed at {0:yyyy-MM-dd HH:mm:ss} ({1:#0.0000} seconds)", DateTime.Now, sw.Elapsed.TotalMilliseconds / 1000.0);
 
-                if (!Providers.IsProduction())
+                bool printSessionLog = false;
+
+                if (!Providers.IsProduction() && printSessionLog)
                 {
                     foreach (string line in GetLogMessages())
                         Debug.WriteLine(line);
@@ -96,7 +98,9 @@ namespace LNF.Impl
             {
                 ISession session = _sessionFactory.OpenSession();
                 CurrentSessionContext.Bind(session);
-                Console.WriteLine("Started new session!");
+                var printSessionLog = false;
+                if (!Providers.IsProduction() && printSessionLog)
+                   Debug.WriteLine("Started new session!");
             }
         }
 

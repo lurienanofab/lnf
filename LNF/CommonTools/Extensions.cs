@@ -11,6 +11,29 @@ namespace LNF.CommonTools
 {
     public static class Extensions
     {
+        public static DateTime RoundUp(this DateTime dt, TimeSpan ts)
+        {
+            return new DateTime(((dt.Ticks + ts.Ticks - 1) / ts.Ticks) * ts.Ticks);
+        }
+
+        public static DateTime RoundDown(this DateTime dt, TimeSpan ts)
+        {
+            return new DateTime((dt.Ticks / ts.Ticks) * ts.Ticks);
+        }
+
+        public static IEnumerable<TResult> LeftJoin<TOuter, TInner, TKey, TResult>(this IEnumerable<TOuter> outer, IEnumerable<TInner> inner, Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector)
+        {
+            var join = new List<TResult>();
+
+            foreach (var o in outer)
+            {
+                var matches = inner.Where(x => innerKeySelector(x).Equals(outerKeySelector(o))).DefaultIfEmpty();
+                join.AddRange(matches.Select(m => resultSelector(o, m)));
+            }
+
+            return join;
+        }
+
         public static IEnumerable<TResult> FullOuterJoin<TOuter, TInner, TKey, TResult>(this IEnumerable<TOuter> outer, IEnumerable<TInner> inner, Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector)
             where TInner : class
             where TOuter : class
@@ -27,7 +50,7 @@ namespace LNF.CommonTools
                 {
                     var innerItems = innerLookup[outerKeySelector(outerItem)];
 
-                    return innerItems.Any() ? innerItems : new TInner[] { null };
+                    return innerItems.Any() ? innerItems : new TInner[] { };
                 }, resultSelector).Concat(innerJoinItems);
         }
 

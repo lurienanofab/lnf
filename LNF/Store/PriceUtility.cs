@@ -45,7 +45,7 @@ namespace LNF.Store
 		public static decimal ApplyStoreMultiplier(decimal actPrice, int acctID)
 		{
 			Account acct = DA.Current.Single<Account>(acctID);
-            IList<Cost> costs = DA.Current.Query<Cost>().Where(x => x.ChargeType.ChargeTypeID == acct.Org.OrgType.ChargeType.ChargeTypeID && x.TableNameOrDescription == STORE_MULTIPLIER_COST).ToList();
+            IList<Cost> costs = DA.Current.Query<Cost>().Where(x => x.ChargeTypeID == acct.Org.OrgType.ChargeType.ChargeTypeID && x.TableNameOrDescription == STORE_MULTIPLIER_COST).ToList();
             Cost effectiveCost = costs.OrderBy(x => x.EffDate).Last();
             return actPrice * effectiveCost.MulVal;
 		}

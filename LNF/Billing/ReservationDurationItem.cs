@@ -5,10 +5,10 @@ namespace LNF.Billing
 {
     public class ReservationDurationItem
     {
-        public ReservationDurationItem(ReservationDateRange.Reservation rsv, TimeSpan totalDuration)
+        public ReservationDurationItem(ReservationDateRange.Reservation rsv, TimeSpan utilizedDuration)
         {
             Reservation = rsv;
-            TotalDuration = totalDuration;
+            UtilizedDuration = utilizedDuration;
         }
 
         public ReservationDateRange.Reservation Reservation { get; }
@@ -16,7 +16,7 @@ namespace LNF.Billing
         /// <summary>
         /// The total chargeable time minus the transferred duration (includes overtime).
         /// </summary>
-        public TimeSpan TotalDuration { get; }
+        public TimeSpan UtilizedDuration { get; }
 
         /// <summary>
         /// The scheduled reservation time.
@@ -67,7 +67,7 @@ namespace LNF.Billing
         /// </summary>
         public TimeSpan TransferredDuration
         {
-            get { return ChargeDuration - TotalDuration; }
+            get { return ChargeDuration - UtilizedDuration; }
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace LNF.Billing
         /// </summary>
         public TimeSpan StandardDuration
         {
-            get { return TotalDuration - OverTimeDuration; }
+            get { return UtilizedDuration - OverTimeDuration; }
         }
     }
 }

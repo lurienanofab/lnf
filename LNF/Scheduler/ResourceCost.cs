@@ -18,7 +18,7 @@ namespace LNF.Scheduler
         {
             get
             {
-                return _costs.FirstOrDefault(c => c.ChargeType.ChargeTypeID == ChargeTypeID);
+                return _costs.FirstOrDefault(c => c.ChargeTypeID == ChargeTypeID);
             }
         }
 
@@ -26,7 +26,7 @@ namespace LNF.Scheduler
         {
             get
             {
-                return _overtime.FirstOrDefault(c => c.ChargeType.ChargeTypeID == ChargeTypeID);
+                return _overtime.FirstOrDefault(c => c.ChargeTypeID == ChargeTypeID);
             }
         }
 

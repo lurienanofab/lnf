@@ -1,6 +1,5 @@
 ﻿using LNF.Billing;
 using LNF.Repository;
-using LNF.Repository.Data;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -423,10 +422,8 @@ namespace LNF.CommonTools
 
             DataRow[] rows = dtToolDataClean.AsEnumerable().Where(x => x.RowState != DataRowState.Deleted).ToArray();
 
-            var costs = Cost.SelectToolCosts();
-
-            ReservationDateRange range = new ReservationDateRange(costs, sd, ed);
-            ReservationDurations durations = new ReservationDurations(range);
+            ReservationDateRange range = new ReservationDateRange(sd, ed);
+            ReservationDurations durations = range.CreateReservationDurations();
 
             // loop through reservations and get the TransferredDuration quantity for each
             foreach (DataRow dr in rows)

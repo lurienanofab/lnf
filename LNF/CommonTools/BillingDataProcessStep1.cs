@@ -648,7 +648,7 @@ namespace LNF.CommonTools
                 .Where(x => x.TableNameOrDescription == "RoomCost"
                     && x.RecordID == room.RoomID
                     && x.EffDate < period.AddMonths(1)
-                    && x.ChargeType == account.Org.OrgType.ChargeType)
+                    && x.ChargeTypeID == account.Org.OrgType.ChargeType.ChargeTypeID)
                 .ToArray();
 
             Cost currentCost = roomCost.OrderBy(x => x.EffDate).LastOrDefault();

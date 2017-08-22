@@ -69,16 +69,37 @@ namespace LNF.Impl.DataAccess.Scheduler
             if (repairActivity == null)
                 throw new InvalidOperationException("Cannot start a repair reservation because a repair activity is not defined (Editable = false).");
 
-            //INSERT INTO dbo.Reservation(ResourceID, ClientID, AccountID, ActivityID,
-            //  BeginDateTime, EndDateTime, ActualBeginDateTime, ActualEndDateTime,
-            //  ClientIDBegin, ClientIDEnd, CreatedOn, LastModifiedOn,
-            //  Duration, Notes, ChargeMultiplier, RecurrenceID, ApplyLateChargePenalty, AutoEnd,
-            //  HasProcessInfo, HasInvitees, IsActive, IsStarted, IsUnloaded, MaxReservedDuration, KeepAlive)
-            //VALUES (@ResourceID, @ClientID, sselData.dbo.udf_GetLabAccountID(), @ActivityID,
-            //  @BeginDateTime, @EndDateTime, @ActualBeginDateTime, NULL,
-            //  @ClientID, NULL, GETDATE(), GETDATE(),
-            //  DATEDIFF(minute, @BeginDateTime, @EndDateTime), @Notes, 1, -1, 0, 0,
-            //  0, 0, 1, 1, 1, DATEDIFF(minute, @BeginDateTime, @EndDateTime), 0)
+            /*
+            INSERT INTO dbo.Reservation(ResourceID, ClientID, AccountID, ActivityID,
+              BeginDateTime, EndDateTime, ActualBeginDateTime, ActualEndDateTime,
+              ClientIDBegin, ClientIDEnd, CreatedOn, LastModifiedOn,
+              Duration, Notes, ChargeMultiplier, RecurrenceID, ApplyLateChargePenalty, AutoEnd,
+              HasProcessInfo, HasInvitees, IsActive, IsStarted, IsUnloaded, MaxReservedDuration, KeepAlive)
+            VALUES
+            (
+                @ResourceID, @ClientID, sselData.dbo.udf_GetLabAccountID(), @ActivityID,
+                @BeginDateTime, @EndDateTime
+                , @ActualBeginDateTime
+                , NULL      --ActualEndDateTime
+                , @ClientID --ClientIDBegin
+                , NULL      --ClientIDEnd
+                , GETDATE() --CreatedOn
+                , GETDATE() --LastModifiedOn
+                , DATEDIFF(minute, @BeginDateTime, @EndDateTime)    --Duration
+                , @Notes    --Notes
+                , 1         --ChargeMultiplier
+                , -1        --RecurrenceID
+                , 0         --ApplyLateChargePenalty
+                , 0         --AutoEnd
+                , 0         --HasProcessInfo
+                , 0         --HasInvitees
+                , 1         --IsActive
+                , 1         --IsStarted
+                , 1         --IsUnloaded
+                , DATEDIFF(minute, @BeginDateTime, @EndDateTime)    --MaxReservedDuration
+                , 0         --KeepAlive
+            )
+            */
 
             double duration = (endDateTime - beginDateTime).TotalMinutes;
 
@@ -105,8 +126,8 @@ namespace LNF.Impl.DataAccess.Scheduler
                 HasProcessInfo = false,
                 HasInvitees = false,
                 IsActive = true,
-                IsStarted = false,
-                IsUnloaded = false,
+                IsStarted = true,
+                IsUnloaded = true,
                 MaxReservedDuration = duration,
                 KeepAlive = false
             };

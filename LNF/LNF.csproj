@@ -141,6 +141,7 @@
     <Compile Include="Feedback\PositiveIssueUtility.cs" />
     <Compile Include="PhysicalAccess\RoomDataRaw.cs" />
     <Compile Include="Reporting\ClientItemUtility.cs" />
+    <Compile Include="Reporting\ManagerUsageSummaryItem.cs" />
     <Compile Include="Reporting\ReportGenerator.cs" />
     <Compile Include="Repository\IModelFactory.cs" />
     <Compile Include="Inventory\CategoryUtility.cs" />
@@ -415,6 +416,7 @@
     <Compile Include="Repository\QueryParameters.cs" />
     <Compile Include="Repository\Reporting\AfterHours.cs" />
     <Compile Include="Repository\Reporting\ClientEmailPreference.cs" />
+    <Compile Include="Repository\Reporting\ClientManagerLog.cs" />
     <Compile Include="Repository\Reporting\EmailPreference.cs" />
     <Compile Include="Repository\Reporting\ManagerUsageCharge.cs" />
     <Compile Include="Repository\Reporting\UsageChargeBase.cs" />

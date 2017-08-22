@@ -14,12 +14,12 @@ namespace LNF.Data
 
             var result = query.Join(
                     query.Where(x => x.TableNameOrDescription == tableNameOrDescription && x.EffDate < cutoff)
-                        .GroupBy(x => new { x.ChargeType, x.TableNameOrDescription, x.RecordID })
-                        .Select(x => new { x.Key.ChargeType, x.Key.TableNameOrDescription, x.Key.RecordID, EffDate = x.Max(g => g.EffDate) }).ToArray(),
-                    o => new { o.ChargeType, o.TableNameOrDescription, o.RecordID, o.EffDate },
-                    i => new { i.ChargeType, i.TableNameOrDescription, i.RecordID, i.EffDate },
+                        .GroupBy(x => new { x.ChargeTypeID, x.TableNameOrDescription, x.RecordID })
+                        .Select(x => new { x.Key.ChargeTypeID, x.Key.TableNameOrDescription, x.Key.RecordID, EffDate = x.Max(g => g.EffDate) }).ToArray(),
+                    o => new { o.ChargeTypeID, o.TableNameOrDescription, o.RecordID, o.EffDate },
+                    i => new { i.ChargeTypeID, i.TableNameOrDescription, i.RecordID, i.EffDate },
                     (outer, inner) => outer
-                ).OrderBy(x => x.ChargeType.ChargeTypeID)
+                ).OrderBy(x => x.ChargeTypeID)
                 .ThenBy(x => x.TableNameOrDescription)
                 .ThenBy(x => x.RecordID)
                 .ThenBy(x => x.EffDate);
@@ -34,9 +34,9 @@ namespace LNF.Data
             if (chargeTypeId.HasValue)
             {
                 if (recordId.HasValue)
-                    query = DA.Current.Query<Cost>().Where(x => x.TableNameOrDescription == tableNameOrDescription && x.EffDate <= chargeDate && x.ChargeType.ChargeTypeID == chargeTypeId.Value && x.RecordID == recordId.Value);
+                    query = DA.Current.Query<Cost>().Where(x => x.TableNameOrDescription == tableNameOrDescription && x.EffDate <= chargeDate && x.ChargeTypeID == chargeTypeId.Value && x.RecordID == recordId.Value);
                 else
-                    query = DA.Current.Query<Cost>().Where(x => x.TableNameOrDescription == tableNameOrDescription && x.EffDate <= chargeDate && x.ChargeType.ChargeTypeID == chargeTypeId.Value);
+                    query = DA.Current.Query<Cost>().Where(x => x.TableNameOrDescription == tableNameOrDescription && x.EffDate <= chargeDate && x.ChargeTypeID == chargeTypeId.Value);
             }
             else
             {
@@ -50,10 +50,10 @@ namespace LNF.Data
 
             //IList<Cost> query = DA.Current.Query<Cost>().Where(x => x.TableNameOrDescription == tableNameOrDescription && x.EffDate <= chargeDate).ToList();
 
-            var agg = list.GroupBy(c => new { c.ChargeType, c.TableNameOrDescription, c.RecordID })
-                .Select(g => new { ChargeType = g.Key.ChargeType, TableNameOrDescription = g.Key.TableNameOrDescription, RecordID = g.Key.RecordID, EffDate = g.Max(m => m.EffDate) });
+            var agg = list.GroupBy(c => new { c.ChargeTypeID, c.TableNameOrDescription, c.RecordID })
+                .Select(g => new { g.Key.ChargeTypeID, TableNameOrDescription = g.Key.TableNameOrDescription, RecordID = g.Key.RecordID, EffDate = g.Max(m => m.EffDate) });
 
-            IList<Cost> result = list.Join(agg, x => new { x.ChargeType, x.TableNameOrDescription, x.RecordID, x.EffDate }, y => new { y.ChargeType, y.TableNameOrDescription, y.RecordID, y.EffDate }, (x, y) => x).ToList();
+            IList<Cost> result = list.Join(agg, x => new { x.ChargeTypeID, x.TableNameOrDescription, x.RecordID, x.EffDate }, y => new { y.ChargeTypeID, y.TableNameOrDescription, y.RecordID, y.EffDate }, (x, y) => x).ToList();
 
             //return result.Where(x => x.ChargeType == (chargeTypeId.HasValue ? DA.Current.Single<ChargeType>(chargeTypeId.Value) : x.ChargeType) && x.RecordID == (recordId.HasValue ? recordId : x.RecordID)).ToList();
 
@@ -64,11 +64,11 @@ namespace LNF.Data
         {
             string[] tableNames = new string[] { "ToolCost", "ToolCreateReservCost", "ToolMissedReservCost", "ToolOvertimeCost" };
             IList<Cost> query = DA.Current.Query<Cost>().Where(x => x.EffDate < period.AddMonths(1) && tableNames.Contains(x.TableNameOrDescription)).ToList();
-            var groupBy = query.GroupBy(x => new { x.ChargeType, x.TableNameOrDescription, x.RecordID })
+            var groupBy = query.GroupBy(x => new { x.ChargeTypeID, x.TableNameOrDescription, x.RecordID })
                 .Select(g => new { Group = g, Max = g.Max(y => y.CostID) });
             IList<Cost> result = query
                 .Where(x => groupBy.Select(a => a.Max).Contains(x.CostID))
-                .OrderBy(x => x.ChargeType.ChargeTypeID)
+                .OrderBy(x => x.ChargeTypeID)
                 .ThenBy(x => x.TableNameOrDescription)
                 .ThenBy(x => x.RecordID)
                 .ThenBy(x => x.EffDate)
@@ -80,12 +80,12 @@ namespace LNF.Data
         {
             IList<Cost> query = DA.Current.Query<Cost>().Where(x => x.TableNameOrDescription == tableNameOrDescription && x.EffDate <= chargeDate).ToList();
 
-            var agg = query.GroupBy(c => new { c.ChargeType, c.TableNameOrDescription })
-                .Select(g => new { ChargeType = g.Key.ChargeType, TableNameOrDescription = g.Key.TableNameOrDescription, EffDate = g.Max(m => m.EffDate) });
+            var agg = query.GroupBy(c => new { c.ChargeTypeID, c.TableNameOrDescription })
+                .Select(g => new { g.Key.ChargeTypeID, TableNameOrDescription = g.Key.TableNameOrDescription, EffDate = g.Max(m => m.EffDate) });
 
-            IList<Cost> result = query.Join(agg, x => new { x.ChargeType, x.TableNameOrDescription, x.EffDate }, y => new { y.ChargeType, y.TableNameOrDescription, y.EffDate }, (x, y) => x).ToList();
+            IList<Cost> result = query.Join(agg, x => new { x.ChargeTypeID, x.TableNameOrDescription, x.EffDate }, y => new { y.ChargeTypeID, y.TableNameOrDescription, y.EffDate }, (x, y) => x).ToList();
 
-            return result.Where(x => x.ChargeType == (chargeTypeId.HasValue ? DA.Current.Single<ChargeType>(chargeTypeId.Value) : x.ChargeType)).ToList();
+            return result.Where(x => x.ChargeTypeID == (chargeTypeId.HasValue ? chargeTypeId.Value : x.ChargeTypeID)).ToList();
         }
     }
 }

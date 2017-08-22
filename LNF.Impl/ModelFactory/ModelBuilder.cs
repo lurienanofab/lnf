@@ -287,8 +287,8 @@ namespace LNF.Impl.ModelFactory
 
                 result.InjectFrom(source);
                 result.ResourceID = source.RecordID;
-                result.ChargeTypeID = source.ChargeType.ChargeTypeID;
-                result.ChargeTypeName = source.ChargeType.ChargeTypeName;
+                result.ChargeTypeID = source.ChargeTypeID;
+                result.ChargeTypeName = source.GetChargeType().ChargeTypeName;
 
                 return result;
             }
