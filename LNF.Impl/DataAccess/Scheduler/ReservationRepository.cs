@@ -126,8 +126,8 @@ namespace LNF.Impl.DataAccess.Scheduler
                 HasProcessInfo = false,
                 HasInvitees = false,
                 IsActive = true,
-                IsStarted = true,
-                IsUnloaded = true,
+                IsStarted = true, // was false - fixed on 2017-08-21 [jg]
+                IsUnloaded = true, // was false - fixed on 2017-08-21 [jg]
                 MaxReservedDuration = duration,
                 KeepAlive = false
             };
