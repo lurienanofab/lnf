@@ -266,18 +266,22 @@ namespace LNF.Billing
         {
             public static DurationInfo Create(Reservation rsv, IEnumerable<DurationPart> parts)
             {
+                int repairActivityId = 14;
+
                 return new DurationInfo()
                 {
                     PriorityGroup = rsv.PriorityGroup,
                     ReservationID = rsv.ReservationID,
                     IsStarted = rsv.IsStarted,
                     IsActive = rsv.IsActive,
+                    IsRepair = rsv.ActivityID == repairActivityId,
                     BeginDateTime = rsv.BeginDateTime,
                     EndDateTime = rsv.EndDateTime,
                     ActualBeginDateTime = rsv.ActualBeginDateTime,
                     ActualEndDateTime = rsv.ActualEndDateTime,
                     ChargeBeginDateTime = rsv.ChargeBeginDateTime,
                     ChargeEndDateTime = rsv.ChargeEndDateTime,
+                    ChargeMultiplier = rsv.ChargeMultiplier,
                     Parts = parts
                 };
             }
@@ -286,12 +290,14 @@ namespace LNF.Billing
             public int ReservationID { get; private set; }
             public bool IsStarted { get; private set; }
             public bool IsActive { get; private set; }
+            public bool IsRepair { get; private set; }
             public DateTime BeginDateTime { get; private set; }
             public DateTime EndDateTime { get; private set; }
             public DateTime? ActualBeginDateTime { get; private set; }
             public DateTime? ActualEndDateTime { get; private set; }
             public DateTime ChargeBeginDateTime { get; private set; }
             public DateTime ChargeEndDateTime { get; private set; }
+            public double ChargeMultiplier { get; private set; }
             public IEnumerable<DurationPart> Parts { get; private set; }
         }
 
