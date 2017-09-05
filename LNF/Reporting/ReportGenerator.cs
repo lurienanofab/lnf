@@ -16,6 +16,8 @@ namespace LNF.Reporting
 {
     public static class ReportGenerator
     {
+        private static readonly ClientPrivilege _includeInmanagerUsageSummaryPriv = ClientPrivilege.LabUser | ClientPrivilege.RemoteUser;
+
         public static AggregateByOrg CreateAggregateByOrg(int clientId, DateTime period)
         {
             var result = new AggregateByOrg();
@@ -115,7 +117,7 @@ namespace LNF.Reporting
                     SubsidyDiscount = x.Sum(g => g.SubsidyDiscount)
                 })
                 .ToList()
-                .Where(x => x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasFlag(ClientPrivilege.LabUser))
+                .Where(x => x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv))
                 .Select(x => CreateManagerUsageSummaryClient(x, items))
                 .OrderBy(x => x.Sort)
                 .ToList();
@@ -139,7 +141,7 @@ namespace LNF.Reporting
                 Sort = sort,
                 UsageCharge = args.TotalCharge,
                 Subsidy = args.SubsidyDiscount,
-                Accounts = items.Where(x => x.ClientID == clientId && (x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasFlag(ClientPrivilege.LabUser))).Select(x => new AccountItem()
+                Accounts = items.Where(x => x.ClientID == clientId && (x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv))).Select(x => new AccountItem()
                 {
                     AccountID = x.AccountID,
                     AccountName = x.AccountName,
@@ -176,7 +178,7 @@ namespace LNF.Reporting
                 Sort = sort,
                 UsageCharge = args.TotalCharge,
                 Subsidy = args.SubsidyDiscount,
-                Clients = items.Where(x => x.AccountID == accountId && (x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasFlag(ClientPrivilege.LabUser))).Select(x => new ClientItem()
+                Clients = items.Where(x => x.AccountID == accountId && (x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv))).Select(x => new ClientItem()
                 {
                     ClientID = x.ClientID,
                     UserName = x.UserName,
