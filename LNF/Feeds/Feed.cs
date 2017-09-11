@@ -41,7 +41,7 @@ namespace LNF.Feeds
             return fileName + FileExtension;
         }
 
-        public string Render(string FeedName)
+        public string Render(string feedName)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -56,7 +56,7 @@ namespace LNF.Feeds
                     sb.AppendLine("METHOD:PUBLISH");
                     sb.AppendLine("PRODID:-//" + serverIp + "//NONSGML LNF-ICAL 1.0//");
                     sb.AppendLine("VERSION:2.0");
-                    sb.AppendLine("X-WR-CALNAME:" + FeedName);
+                    sb.AppendLine("X-WR-CALNAME:" + feedName);
                     sb.AppendLine("X-WR-CALDESC:LNF OnLine Services Data Feed");
                     sb.AppendLine("X-WR-TIMEZONE:US-Eastern");
                     int i = 0;
@@ -127,7 +127,7 @@ namespace LNF.Feeds
             log.EntryDateTime = DateTime.Now;
             log.RequestIP = GetIP(context);
             log.RequestURL = context.GetRequestUrl().ToString();
-            log.RequestUserAgent = context.GetRequestUserAgent();
+            log.RequestUserAgent = context.GetRequestUserAgent() ?? "unknown";
             DA.Current.Insert(log);
         }
 

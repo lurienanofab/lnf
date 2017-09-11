@@ -163,6 +163,7 @@
     <Compile Include="Cache\MongoCache.cs" />
     <Compile Include="Cache\RedisCache.cs" />
     <Compile Include="Mappings\Billing\RegularExceptionMap.cs" />
+    <Compile Include="Mappings\Data\ReservationFeedMap.cs" />
     <Compile Include="Mappings\Ordering\ApproverInfoMap.cs" />
     <Compile Include="Mappings\Ordering\PurchaserSearchMap.cs" />
     <Compile Include="Mappings\Ordering\StoreManagerReportItemMap.cs" />

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using LNF.Models.Data;
+using LNF.CommonTools;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -173,12 +175,32 @@ namespace LNF.Feeds
                     return result;
                 }
 
-                public static IList<Reservation> AllReservationInDateRange(DateTime sd, DateTime ed, int resourceId = 0)
+                public static IEnumerable<ReservationFeed> AllReservationInDateRange(DateTime sd, DateTime ed, int resourceId = 0)
                 {
+                    IQueryable<ReservationFeed> query;
+
                     if (resourceId == 0)
-                        return DA.Scheduler.Reservation.Query().Where(x => x.BeginDateTime >= sd && x.EndDateTime < ed).ToList();
+                        query = DA.Current.Query<ReservationFeed>().Where(x => x.BeginDateTime >= sd && x.EndDateTime < ed);
                     else
-                        return DA.Scheduler.Reservation.Query().Where(x => x.BeginDateTime >= sd && x.EndDateTime < ed && x.Resource.ResourceID == resourceId).ToList();
+                        query = DA.Current.Query<ReservationFeed>().Where(x => x.BeginDateTime >= sd && x.EndDateTime < ed && x.ResourceID == resourceId);
+
+                    var result = query.ToList();
+
+                    return result;
+                }
+
+                public static IEnumerable<ReservationFeed> AllReservationInDateRange(string username, DateTime sd, DateTime ed, int resourceId = 0)
+                {
+                    IQueryable<ReservationFeed> query;
+
+                    if (resourceId == 0)
+                        query = DA.Current.Query<ReservationFeed>().Where(x => (x.UserName == username || x.Invitees.Contains(username)) && x.BeginDateTime >= sd && x.EndDateTime < ed);
+                    else
+                        query = DA.Current.Query<ReservationFeed>().Where(x => (x.UserName == username || x.Invitees.Contains(username)) && x.BeginDateTime >= sd && x.EndDateTime < ed && x.ResourceID == resourceId);
+
+                    var result = query.ToList();
+
+                    return result;
                 }
 
                 public static int GetResourceID(string resourceId)
@@ -193,7 +215,7 @@ namespace LNF.Feeds
                         return 0;
                 }
 
-                public static Feed CreateFeed(FeedFormats format, string UserName, string ResourceID)
+                public static Feed CreateFeed(FeedFormats format, string username, string resourceId)
                 {
                     switch (format)
                     {
@@ -202,22 +224,20 @@ namespace LNF.Feeds
                             DateTime sd = d.AddDays(-1);
                             DateTime ed = d.AddMonths(4);
                             DataTable dt = InitCalendarTable();
-                            int rid = GetResourceID(ResourceID);
+                            int rid = GetResourceID(resourceId);
 
-                            IList<Reservation> reservations = AllReservationInDateRange(sd, ed, rid);
+                            IEnumerable<ReservationFeed> reservations;
 
-                            IEnumerable<Reservation> query;
-                            if (!string.IsNullOrEmpty(UserName) && UserName != "all")
-                                query = reservations.Where(x => x.Client.UserName == UserName || (x.GetInvitees().ToList().Select(i => i.Invitee.UserName).Contains(UserName)));
+                            // if there is username we must also look for invitees
+                            if (!string.IsNullOrEmpty(username) && username != "all")
+                                reservations = AllReservationInDateRange(username, sd, ed, rid);
                             else
-                                query = reservations;
+                                reservations = AllReservationInDateRange(sd, ed, rid);
 
                             int facilityDowntimeActivityID = 23;
-                            List<Reservation> items = (from Reservation i in query
-                                                       where i.Activity.ActivityID != facilityDowntimeActivityID
-                                                       select i).ToList();
+                            var items = reservations.Where(x => x.ActivityID != facilityDowntimeActivityID).ToList();
 
-                            foreach (Reservation item in items)
+                            foreach (var item in items)
                             {
                                 DataRow dr = dt.NewRow();
                                 dr["DTSTART"] = item.BeginDateTime.ToUniversalTime().ToString("yyyyMMdd'T'HHmmss'Z'");
@@ -227,10 +247,10 @@ namespace LNF.Feeds
                                 dr["LAST-MODIFIED"] = item.LastModifiedOn.ToUniversalTime().ToString("yyyyMMdd'T'HHmmss'Z'");
                                 dr["STATUS"] = (item.IsActive) ? "CONFIRMED" : "CANCELLED";
                                 if (!item.IsActive) dr["METHOD"] = "CANCEL";
-                                dr["SUMMARY"] = string.Format("{0} | {1} ({2})", item.Resource.ResourceName, item.Client.DisplayName, item.Client.AccountEmail(item.Account.AccountID));
+                                dr["SUMMARY"] = string.Format("{0} [{1}] | {2} ({3})", item.ResourceName, item.ResourceID, ClientModel.GetDisplayName(item.LName, item.FName), item.Email);
                                 dr["DESCRIPTION"] = string.Format(
                                     "Activity: {0}\\nStatus: {1}\\nScheduled Start: {2}\\nScheduled End: {3}\\nActual Start: {4}\\nActual End: {5}",
-                                    item.Activity.ActivityName, GetReservationStatus(item), GetDateTime(item.BeginDateTime), GetDateTime(item.EndDateTime), GetDateTime(item.ActualBeginDateTime), GetDateTime(item.ActualEndDateTime)
+                                    item.ActivityName, GetReservationStatus(item), GetDateTime(item.BeginDateTime), GetDateTime(item.EndDateTime), GetDateTime(item.ActualBeginDateTime), GetDateTime(item.ActualEndDateTime)
                                 );
                                 dt.Rows.Add(dr);
                             }
@@ -239,7 +259,7 @@ namespace LNF.Feeds
                             throw new NotImplementedException("Feed format has not been implemented.");
                     }
                 }
-                private static string GetReservationStatus(Reservation item)
+                private static string GetReservationStatus(ReservationFeed item)
                 {
                     string result = "unknown";
                     if (item.IsActive && item.IsStarted && item.ActualEndDateTime == DateTime.MinValue)

@@ -143,6 +143,7 @@
     <Compile Include="Reporting\ClientItemUtility.cs" />
     <Compile Include="Reporting\ManagerUsageSummaryItem.cs" />
     <Compile Include="Reporting\ReportGenerator.cs" />
+    <Compile Include="Repository\Data\ReservationFeed.cs" />
     <Compile Include="Repository\IModelFactory.cs" />
     <Compile Include="Inventory\CategoryUtility.cs" />
     <Compile Include="Inventory\Extensions.cs" />
