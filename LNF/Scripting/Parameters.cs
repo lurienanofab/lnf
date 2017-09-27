@@ -1,6 +1,5 @@
 ﻿using LNF.CommonTools;
 using LNF.Repository;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace LNF.Scripting
@@ -20,7 +19,7 @@ namespace LNF.Scripting
 
             if (!string.IsNullOrEmpty(parameters))
             {
-                Dictionary<string, object> dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(parameters);
+                Dictionary<string, object> dict = Providers.Serialization.Json.Deserialize<Dictionary<string, object>>(parameters);
                 foreach (KeyValuePair<string, object> kvp in dict)
                     result.Set(kvp);
             }

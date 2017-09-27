@@ -173,6 +173,7 @@
     <Compile Include="Mappings\Reporting\EmailPreferenceMap.cs" />
     <Compile Include="Mappings\Reporting\ManagerUsageChargeMap.cs" />
     <Compile Include="Mappings\Reporting\UserUsageChargeMap.cs" />
+    <Compile Include="Mappings\Scheduler\AutoEndLogMap.cs" />
     <Compile Include="Mappings\Scheduler\KioskMap.cs" />
     <Compile Include="Mappings\Scheduler\ReservationInfoMap.cs" />
     <Compile Include="Mappings\Scheduler\ResourceTreeMap.cs" />

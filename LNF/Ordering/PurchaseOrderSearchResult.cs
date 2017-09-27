@@ -1,20 +1,21 @@
-﻿using LNF.Cache;
-using LNF.Models.Ordering;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Driver;
+﻿using LNF.Models.Ordering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
+using System.Runtime.Caching;
 
 namespace LNF.Ordering
 {
     public class PurchaseOrderSearchResult
     {
-        [BsonId]
-        [BsonIgnoreIfDefault]
-        public ObjectId Id { get; set; }
+        private static readonly MemoryCache _cache;
+        private static readonly CacheItemPolicy _policy;
+
+        static PurchaseOrderSearchResult()
+        {
+            _cache = new MemoryCache("PurchaseOrderSearchResult");
+            _policy = new CacheItemPolicy() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(15) };
+        }
 
         public int ClientID { get; set; }
 
@@ -22,17 +23,26 @@ namespace LNF.Ordering
 
         public IList<PurchaseOrderSearchModel> Items { get; set; }
 
-        private static IMongoCollection<PurchaseOrderSearchResult> GetCollection()
+        private static IList<PurchaseOrderSearchResult> GetCollection()
         {
-            return MongoRepository.Default.GetClient().GetDatabase("ordering")
-                .GetCollection<PurchaseOrderSearchResult>("iofsearch")
-                .Expire(TimeSpan.FromMinutes(15), x => x.CreatedAt)
-                .Unique(x => x.ClientID);
+            IList<PurchaseOrderSearchResult> result;
+
+            if (_cache["items"] == null)
+            {
+                result = new List<PurchaseOrderSearchResult>();
+                _cache.Add("items", result, _policy);
+            }
+            else
+            {
+                result = (IList<PurchaseOrderSearchResult>)_cache["items"];
+            }
+
+            return result;
         }
 
-        public static PurchaseOrderSearchResult Get(Expression<Func<PurchaseOrderSearchResult, bool>> filter)
+        public static PurchaseOrderSearchResult Get(Func<PurchaseOrderSearchResult, bool> filter)
         {
-            return GetCollection().Find(filter).FirstOrDefault();
+            return GetCollection().FirstOrDefault(filter);
         }
 
         public static PurchaseOrderSearchResult Set(int clientId, IEnumerable<PurchaseOrderSearchModel> items)
@@ -44,15 +54,41 @@ namespace LNF.Ordering
                 Items = items.ToList()
             };
 
-            GetCollection()
-                .ReplaceOne(x => x.ClientID == clientId, result, new UpdateOptions() { IsUpsert = true });
+            var col = GetCollection();
+            var item = col.FirstOrDefault(x => x.ClientID == clientId);
+
+            bool update = false;
+
+            if (item == null)
+            {
+                col.Add(result);
+                update = true;
+            }
+            else
+            {
+                var index = col.IndexOf(item);
+                if (index != -1)
+                {
+                    col[index] = result;
+                    update = true;
+                }
+            }
+
+            if (update)
+                _cache.Set("items", col, _policy);
 
             return result;
         }
 
         public static void Delete(int clientId)
         {
-            GetCollection().DeleteOne(x => x.ClientID == clientId);
+            var col = GetCollection();
+            var item = col.FirstOrDefault(x => x.ClientID == clientId);
+            if (item != null)
+            {
+                col.Remove(item);
+                _cache.Set("items", col, _policy);
+            }
         }
     }
 }

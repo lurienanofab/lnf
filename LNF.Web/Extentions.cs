@@ -3,16 +3,18 @@ using LNF.CommonTools;
 using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
+using LNF.Scheduler;
 using LNF.Web.Mvc.UI;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.UI.WebControls;
 
 namespace LNF.Web
 {
-    public static class Extentions
+    public static class ListItemCollectionExtentions
     {
         public static void LoadPrivs(this ListItemCollection items)
         {
@@ -52,7 +54,10 @@ namespace LNF.Web
 
             return result;
         }
+    }
 
+    public static class HtmlHelperExtensions
+    {
         public static IHtmlString CreateSiteMenu(this HtmlHelper helper)
         {
             var currentUser = CacheManager.Current.CurrentUser;

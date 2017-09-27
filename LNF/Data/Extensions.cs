@@ -5,7 +5,6 @@ using LNF.Repository;
 using LNF.Repository.Billing;
 using LNF.Repository.Data;
 using LNF.Repository.Scheduler;
-using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -16,34 +15,6 @@ namespace LNF.Data
 {
     public static class CacheManagerExtensions
     {
-        internal static IMongoCollection<CacheObject<AccountModel>> GetAccountCollection(this CacheManager cm)
-        {
-            return cm.GetCollection<AccountModel>("accounts")
-                .Expire(TimeSpan.FromHours(6), x => x.CreatedAt)
-                .Unique(x => x.Value.AccountID);
-        }
-
-        internal static IMongoCollection<CacheObject<ClientAccountModel>> GetClientAccountCollection(this CacheManager cm)
-        {
-            return cm.GetCollection<ClientAccountModel>("clientAccounts")
-                .Expire(TimeSpan.FromHours(1), x => x.CreatedAt)
-                .Unique(x => x.Value.ClientAccountID);
-        }
-
-        internal static IMongoCollection<CacheObject<ClientModel>> GetClientOrgCollection(this CacheManager cm)
-        {
-            return cm.GetCollection<ClientModel>("clientOrgs")
-                .Expire(TimeSpan.FromHours(1), x => x.CreatedAt)
-                .Unique(x => x.Value.ClientOrgID);
-        }
-
-        internal static IMongoCollection<CacheObject<GlobalCostModel>> GetGlobalCostCollection(this CacheManager cm)
-        {
-            return cm.GetCollection<GlobalCostModel>("globalCosts")
-                .Expire(TimeSpan.FromDays(365), x => x.CreatedAt)
-                .Unique(x => x.Value.GlobalID);
-        }
-
         public static AccountModel GetAccount(this CacheManager cm, int accountId)
         {
             IList<AccountModel> list = cm.GetContextItem<IList<AccountModel>>("Accounts");
@@ -58,8 +29,7 @@ namespace LNF.Data
 
             if (result == null)
             {
-                var query = cm.GetAccountCollection().Query(x => x.Value.AccountID == accountId, () => CacheObjectFactory.CreateMany(DA.Current.Query<AccountInfo>().Where(x => x.AccountID == accountId).Model<AccountModel>()), false);
-                result = query.FirstOrDefault().GetValue();
+                result = DA.Current.Query<AccountInfo>().FirstOrDefault(x => x.AccountID == accountId).Model<AccountModel>();
                 list.Add(result);
             }
 
@@ -74,8 +44,7 @@ namespace LNF.Data
 
             if (result == null || result.Count == 0)
             {
-                var query = cm.GetClientAccountCollection().Query(x => x.Value.ClientID == clientId, () => CacheObjectFactory.CreateMany(DA.Current.Query<ClientAccountInfo>().Where(x => x.ClientID == clientId).Model<ClientAccountModel>()), false);
-                result = query.GetValues();
+                result = DA.Current.Query<ClientAccountInfo>().Where(x => x.ClientID == clientId).Model<ClientAccountModel>();
                 cm.SetContextItem(key, result);
             }
 
@@ -115,8 +84,7 @@ namespace LNF.Data
 
             if (result == null || result.Count == 0)
             {
-                var query = cm.GetClientOrgCollection().Query(x => x.Value.ClientID == clientId, () => CacheObjectFactory.CreateMany(DA.Current.Query<ClientOrgInfo>().Where(x => x.ClientID == clientId).Model<ClientModel>()), false);
-                result = query.GetValues();
+                result = DA.Current.Query<ClientOrgInfo>().Where(x => x.ClientID == clientId).Model<ClientModel>();
                 cm.SetContextItem(key, result);
             }
 
@@ -154,8 +122,7 @@ namespace LNF.Data
 
             if (result == null)
             {
-                var query = cm.GetGlobalCostCollection().Query(x => true, () => CacheObjectFactory.CreateMany(DA.Current.Query<GlobalCost>().Model<GlobalCostModel>()), true);
-                result = query.First().GetValue();
+                result = DA.Current.Query<GlobalCost>().FirstOrDefault().Model<GlobalCostModel>();
                 cm.SetContextItem("GlobalCost", result);
             }
 

@@ -2,7 +2,6 @@
 using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Scheduler;
-using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -18,28 +17,6 @@ namespace LNF.Cache
         static CacheManager()
         {
             Current = new CacheManager();
-        }
-
-        public MongoRepository Repository
-        {
-            get
-            {
-                return MongoRepository.Default;
-            }
-        }
-
-        internal IMongoCollection<CacheObject<T>> GetCollection<T>(string name)
-        {
-            return Repository.GetClient()
-                .GetDatabase("cachemgr")
-                .GetCollection<CacheObject<T>>(name);
-        }
-
-        internal IMongoCollection<CacheObject<ClientModel>> GetClientCollection()
-        {
-            return GetCollection<ClientModel>("clients")
-                .Expire(TimeSpan.FromHours(1), x => x.CreatedAt)
-                .Unique(x => x.Value.ClientID);
         }
 
         public string GetCurrentUserName()
@@ -63,8 +40,7 @@ namespace LNF.Cache
 
             if (result == null)
             {
-                var query = GetClientCollection().Query(x => x.Value.UserName == username, () => CacheObjectFactory.CreateMany(DA.Current.Query<ClientInfo>().Where(x => x.UserName == username).Model<ClientModel>()), false);
-                result = query.FirstOrDefault().GetValue();
+                result = DA.Current.Query<ClientInfo>().FirstOrDefault(x => x.UserName == username).Model<ClientModel>();
                 list.Add(result);
             }
 
@@ -85,8 +61,7 @@ namespace LNF.Cache
 
             if (result == null)
             {
-                var query = GetClientCollection().Query(x => x.Value.ClientID == clientId, () => CacheObjectFactory.CreateMany(DA.Current.Query<ClientInfo>().Where(x => x.ClientID == clientId).Model<ClientModel>()), false);
-                result = query.FirstOrDefault().GetValue();
+                result = DA.Current.Query<ClientInfo>().FirstOrDefault(x => x.ClientID == clientId).Model<ClientModel>();
                 if (result != null)
                     list.Add(result);
             }
@@ -183,9 +158,6 @@ namespace LNF.Cache
                     phone = model.Phone;
                     orgId = model.OrgID;
                     maxChargeTypeId = model.MaxChargeTypeID;
-
-                    // unset the UserState object
-                    this.DeleteUserState(clientId);
                 }
             }
             else

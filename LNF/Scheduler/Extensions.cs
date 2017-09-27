@@ -6,7 +6,6 @@ using LNF.Models.Scheduler;
 using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Repository.Scheduler;
-using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -17,54 +16,6 @@ namespace LNF.Scheduler
 {
     public static class CacheManagerExtensions
     {
-        internal static IMongoCollection<CacheObject<UserState>> GetUserStateCollection(this CacheManager cm)
-        {
-            return cm.GetCollection<UserState>("userState")
-                .Expire(TimeSpan.FromMinutes(30), x => x.CreatedAt)
-                .Unique(x => x.Value.ClientID);
-        }
-
-        internal static IMongoCollection<CacheObject<ResourceCostModel>> GetResourceCostCollection(this CacheManager cm)
-        {
-            return cm.GetCollection<ResourceCostModel>("toolCosts")
-                .Expire(TimeSpan.FromDays(7), x => x.CreatedAt)
-                .Unique(x => x.Value.ResourceID, x => x.Value.ChargeTypeID);
-        }
-
-        public static UserState CurrentUserState(this CacheManager cm)
-        {
-            var result = cm.GetUserState(cm.ClientID);
-            return result;
-        }
-
-        public static UserState GetUserState(this CacheManager cm, int clientId)
-        {
-            string key = "UserState#" + clientId.ToString();
-
-            UserState result = cm.GetContextItem<UserState>(key);
-
-            if (result == null)
-            {
-                var query = cm.GetUserStateCollection().Query(x => x.Value.ClientID == clientId, () =>
-                {
-                    var cs = ClientSetting.GetClientSettingOrDefault(clientId);
-                    var userState = UserState.Create(clientId, cs.GetDefaultViewOrDefault());
-                    return new[] { CacheObjectFactory.CreateOne(userState) };
-                }, false);
-
-                result = query.First().GetValue();
-                cm.SetContextItem(key, result);
-            }
-
-            return result;
-        }
-
-        public static bool DeleteUserState(this CacheManager cm, int clientId)
-        {
-            var deleteResult = cm.GetUserStateCollection().DeleteOne(x => x.Value.ClientID == clientId);
-            return deleteResult.IsAcknowledged && deleteResult.DeletedCount > 0;
-        }
-
         public static IList<ResourceTree> ResourceTree(this CacheManager cm)
         {
             // always for the current user
@@ -368,8 +319,7 @@ namespace LNF.Scheduler
 
             if (result == null || result.Count == 0)
             {
-                var query = cm.GetResourceCostCollection().Query(x => x.Value.ResourceID == resourceId, () => CacheObjectFactory.CreateMany(CostUtility.FindCosts("ToolCost", cutoff, null, resourceId).Model<ResourceCostModel>()), false);
-                result = query.GetValues();
+                result = CostUtility.FindCosts("ToolCost", cutoff, null, resourceId).Model<ResourceCostModel>();
                 cm.SetContextItem(key, result);
             }
 
@@ -483,37 +433,15 @@ namespace LNF.Scheduler
         {
             cm.SetSessionValue(SessionKeys.AvailableInvitees, value);
         }
-    }
 
-    public static class UserStateExtensions
-    {
-        //public static bool SetDate(this UserState item, DateTime value)
-        //{
-        //    item.Date = value;
-        //    return item.Save();
-        //}
-
-        public static bool SetView(this UserState item, ViewType value)
+        public static ViewType CurrentViewType(this CacheManager cm)
         {
-            item.View = value;
-            return item.Save();
+            return cm.GetSessionValue("CurrentViewType", () => ViewType.WeekView);
         }
 
-        public static bool AddAction(this UserState item, string description, params object[] args)
+        public static void CurrentViewType(this CacheManager cm, ViewType value)
         {
-            if (item.Actions == null)
-                item.Actions = new List<UserAction>();
-
-            item.Actions.Add(new UserAction() { Time = DateTime.Now, Description = string.Format(description, args) });
-
-            return item.Save();
-        }
-
-        public static bool Save(this UserState item)
-        {
-            var col = CacheManager.Current.GetUserStateCollection();
-            var replaceResult = col.ReplaceOne(x => x.Value.ClientID == item.ClientID, CacheObjectFactory.CreateOne(item), new UpdateOptions() { IsUpsert = true });
-            return replaceResult.IsAcknowledged && replaceResult.ModifiedCount > 0;
+            cm.SetSessionValue("CurrentViewType", value);
         }
     }
 
