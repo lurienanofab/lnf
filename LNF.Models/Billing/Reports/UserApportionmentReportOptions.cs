@@ -22,14 +22,5 @@ namespace LNF.Models.Billing.Reports
         /// Indicates whether or not to actually send the emails. Normally this should be false but it is possible to generate the emails with sending them for testing purposes. The return value will indicate how many emails would be sent
         /// </summary>
         public bool NoEmail { get; set; }
-
-        public string[] GetRecipients()
-        {
-            string setting = ConfigurationManager.AppSettings["UserApportionmentEmailRecipients"];
-            if (string.IsNullOrEmpty(setting))
-                return null;
-            else
-                return setting.Split(',');
-        }
     }
 }

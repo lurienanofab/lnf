@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 
 namespace LNF.Models.Billing.Reports
 {
@@ -19,23 +18,13 @@ namespace LNF.Models.Billing.Reports
         public string Message { get; set; }
 
         /// <summary>
-        /// Indicates whether or not to include the manager as a recipient. Normally this should be true, but it is possible to only use the Recipients property
+        /// Indicates whether or not to include the manager as a recipient. Normally this should be true, but it is possible to set to false for testing purposes.
         /// </summary>
         public bool IncludeManager { get; set; }
 
         public FinancialManagerReportOptions()
         {
             IncludeManager = true;
-        }
-
-        public string[] GetRecipients()
-        {
-            string setting = ConfigurationManager.AppSettings["MonthlyFinancialEmailRecipients"];
-
-            if (string.IsNullOrEmpty(setting))
-                return null;
-            else
-                return setting.Split(',');
         }
     }
 }

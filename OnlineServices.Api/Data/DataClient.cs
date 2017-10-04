@@ -1,6 +1,7 @@
 ﻿using LNF.Models.Data;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -8,7 +9,7 @@ namespace OnlineServices.Api.Data
 {
     public class DataClient : ApiClient
     {
-        internal DataClient(ApiClientOptions options) : base(options) { }
+        internal DataClient() : base(ConfigurationManager.AppSettings["ApiHost"]) { }
 
         public async Task<IEnumerable<ClientModel>> GetClients(int limit, int skip = 0)
         {

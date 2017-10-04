@@ -1,23 +1,17 @@
 ﻿using LNF.Models.Data;
-using System;
+using System.Configuration;
 using System.Threading.Tasks;
 
 namespace OnlineServices.Api.Data
 {
     public class FeedClient : ApiClient
     {
-        internal FeedClient(ApiClientOptions options)
-            : base(new ApiClientOptions()
-            {
-                AccessToken = options.AccessToken,
-                TokenType = options.TokenType,
-                Host = new Uri("https://ssel-apps.eecs.umich.edu/data/feed/")
-            })
-        { }
+        public FeedClient() : base(ConfigurationManager.AppSettings["FeedHost"]) { }
 
         public async Task<DataFeedModel<T>> GetDataFeedResult<T>(string feed)
         {
-            return await Get<DataFeedModel<T>>(feed + "/json");
+            var result = await Get<DataFeedModel<T>>(feed + "/json");
+            return result;
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using LNF.CommonTools;
 using LNF.Models.Data;
-using LNF.Repository.Data;
 using System.Text;
 using System.Web.UI;
 
@@ -10,7 +9,6 @@ namespace LNF.Web.Content
     {
         //private DropDownMenu _Menu = new DropDownMenu();
         private Authorization _Authorization = new Authorization();
-        private ClientInfo _CurrentUser;
 
         public virtual bool ShowMenu
         {

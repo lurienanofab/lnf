@@ -1,12 +1,13 @@
 ﻿using LNF.Models.Control;
 using System;
+using System.Configuration;
 using System.Threading.Tasks;
 
 namespace OnlineServices.Api.Control
 {
     public class ControlClient : ApiClient
     {
-        internal ControlClient(ApiClientOptions options) : base(options) { }
+        internal ControlClient() : base(ConfigurationManager.AppSettings["ApiHost"]) { }
 
         public async Task<object> GetAllBlockStates()
         {

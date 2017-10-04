@@ -1,12 +1,13 @@
 ﻿using LNF.Models.Inventory;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Threading.Tasks;
 
 namespace OnlineServices.Api.Inventory
 {
     public class InventoryClient : ApiClient
     {
-        internal InventoryClient(ApiClientOptions options) : base(options) { }
+        internal InventoryClient() : base(ConfigurationManager.AppSettings["ApiHost"]) { }
 
         public async Task<IEnumerable<CategoryModel>> GetCategories()
         {

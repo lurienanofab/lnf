@@ -1,13 +1,14 @@
 ﻿using LNF.Models.Scheduler;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Threading.Tasks;
 
 namespace OnlineServices.Api.Scheduler
 {
     public class SchedulerClient : ApiClient
     {
-        internal SchedulerClient(ApiClientOptions options) : base(options) { }
+        public SchedulerClient() : base(ConfigurationManager.AppSettings["ApiHost"]) { }
 
         public async Task<ReservationModel> GetReservation(int reservationId)
         {

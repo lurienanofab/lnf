@@ -51,13 +51,18 @@ namespace LNF.Reporting
         {
             if (client == null) return null;
 
+            int internalChargeTypeId = 5;
+
             return new ClientItem()
             {
                 ClientID = client.ClientID,
                 UserName = client.UserName,
                 LName = client.LName,
                 FName = client.FName,
-                Email = client.Email
+                Email = client.Email,
+                IsManager = client.IsManager,
+                IsFinManager = client.IsFinManager,
+                IsInternal = client.ChargeTypeID == internalChargeTypeId
             };
         }
 

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace OnlineServices.Api
@@ -10,15 +12,24 @@ namespace OnlineServices.Api
     {
         protected HttpClient HttpClient;
 
-        internal ApiClient(ApiClientOptions options)
+        public ApiClient(string host)
         {
-            if (options == null)
-                throw new ArgumentNullException("options", "Null ApiClientOptions passed to constructor in OnlineServices.Api.ApiClient.");
-
             HttpClient = new HttpClient();
             HttpClient.Timeout = TimeSpan.FromMinutes(10);
-            HttpClient.BaseAddress = options.Host;
-            HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(options.TokenType, options.AccessToken);
+
+            if (string.IsNullOrEmpty(host))
+                throw new ArgumentNullException("host");
+
+            string username = ConfigurationManager.AppSettings["BasicAuthUsername"];
+            string password = ConfigurationManager.AppSettings["BasicAuthPassword"];
+
+            if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
+            {
+                var byteArray = Encoding.ASCII.GetBytes(string.Format("{0}:{1}", username, password));
+                HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+            }
+
+            HttpClient.BaseAddress = new Uri(host);
         }
 
         public async Task<string> Get(string path)

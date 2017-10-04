@@ -4,13 +4,14 @@ using LNF.Models.Billing.Reports;
 using LNF.Models.Billing.Reports.ServiceUnitBilling;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Threading.Tasks;
 
 namespace OnlineServices.Api.Billing
 {
     public class BillingClient : ApiClient
     {
-        internal BillingClient(ApiClientOptions options) : base(options) { }
+        public BillingClient() : base(ConfigurationManager.AppSettings["ApiHost"]) { }
 
         public async Task<ToolSUB> GetToolSUB(DateTime sd, DateTime ed, int clientId = 0)
         {

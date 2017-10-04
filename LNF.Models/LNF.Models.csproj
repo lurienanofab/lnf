@@ -114,6 +114,7 @@
     <Compile Include="Scheduler\ActivityModel.cs" />
     <Compile Include="Scheduler\BuildingModel.cs" />
     <Compile Include="Scheduler\Enums.cs" />
+    <Compile Include="Scheduler\ExpiringCard.cs" />
     <Compile Include="Scheduler\KioskModel.cs" />
     <Compile Include="Scheduler\LabModel.cs" />
     <Compile Include="Scheduler\ProcessInfoLineModel.cs" />
