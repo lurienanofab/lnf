@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Net.Http;
 using System.Threading.Tasks;
+using LNF.Models.Data.Utility.BillingChecks;
 
 namespace OnlineServices.Api.Data
 {
     public class DataClient : ApiClient
     {
-        internal DataClient() : base(ConfigurationManager.AppSettings["ApiHost"]) { }
+        public DataClient() : base(ConfigurationManager.AppSettings["ApiHost"]) { }
 
         public async Task<IEnumerable<ClientModel>> GetClients(int limit, int skip = 0)
         {
@@ -116,6 +117,28 @@ namespace OnlineServices.Api.Data
             postData.Add("", data);
             HttpContent content = new FormUrlEncodedContent(postData);
             return await Put<bool>(string.Format("data/servicelog/{0}", id), content);
+        }
+
+        public async Task<IEnumerable<AutoEndProblem>> GetAutoEndProblems(DateTime period)
+        {
+            var result = await Get<IEnumerable<AutoEndProblem>>(string.Format("data/utility/billing-checks/auto-end-problems?period={0:yyyy-MM-dd}", period));
+            return result;
+        }
+
+        public async Task<int> FixAllAutoEndProblems(DateTime period)
+        {
+            var result = await Get<int>(string.Format("data/utility/billing-checks/auto-end-problems/fix-all?period={0:yyyy-MM-dd}", period));
+            return result;
+        }
+
+        public async Task<int> FixAutoEndProblem(DateTime period, int reservationId)
+        {
+            if (reservationId <= 0)
+                throw new ArgumentOutOfRangeException("reservationId");
+
+            var result = await Get<int>(string.Format("data/utility/billing-checks/auto-end-problems/fix?period={0:yyyy-MM-dd}&reservationId={1}", period, reservationId));
+
+            return result;
         }
     }
 }

@@ -183,7 +183,7 @@
     <Compile Include="Mvc\UI\PeriodPicker.cs" />
     <Compile Include="Mvc\UI\SubMenu.cs" />
     <Compile Include="Mvc\FilterConfig.cs" />
-    <Compile Include="Mvc\HelperExtentions.cs" />
+    <Compile Include="Mvc\HtmlHelperExtensions.cs" />
     <Compile Include="Mvc\LNFActionFilterAttribute.cs" />
     <Compile Include="Mvc\LNFAuthorizeAttribute.cs" />
     <Compile Include="Mvc\BaseModel.cs" />

@@ -2,6 +2,7 @@
 using LNF.Models.Billing.Process;
 using LNF.Models.Billing.Reports;
 using LNF.Models.Billing.Reports.ServiceUnitBilling;
+using LNF.Models.Data.Utility.BillingChecks;
 using System;
 using System.Collections.Generic;
 using System.Configuration;

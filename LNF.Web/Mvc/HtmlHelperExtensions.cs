@@ -15,7 +15,7 @@ using System.Web.Routing;
 
 namespace LNF.Web.Mvc
 {
-    public static class HelperExtentions
+    public static class HtmlHelperExtensions
     {
         public static IHtmlString BootstrapMenu(this HtmlHelper helper, IEnumerable<DropDownMenuItem> items, string logoUrl = "", object htmlAttributes = null)
         {
