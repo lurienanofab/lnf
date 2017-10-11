@@ -25,6 +25,8 @@ namespace LNF.Ordering
         public int POID { get; }
         public int DisplayOption { get; }
         public string ShortCode { get; }
+        public int Skip { get; }
+        public int Take { get; }
 
         public PurchaseOrderSearchFilter()
         {

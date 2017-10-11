@@ -1,4 +1,6 @@
-﻿using LNF.Data;
+﻿using System.Linq;
+using System.Data;
+using LNF.Data;
 using LNF.Repository;
 using LNF.Repository.Ordering;
 using System;
@@ -94,6 +96,41 @@ namespace LNF.Ordering
         public static TrackingCheckpoint Find(TrackingCheckpoints checkpoint)
         {
             return DA.Current.Single<TrackingCheckpoint>(Convert.ToInt32(checkpoint));
+        }
+
+        public static DataTable SelectTrackingData(int poid)
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("TrackingID", typeof(int));
+            dt.Columns.Add("POID", typeof(int));
+            dt.Columns.Add("ClientID", typeof(int));
+            dt.Columns.Add("TrackingDateTime", typeof(DateTime));
+            dt.Columns.Add("CheckpointID", typeof(int));
+            dt.Columns.Add("CheckpointText", typeof(string));
+            dt.Columns.Add("TrackingData", typeof(string));
+
+            var trackingItems = DA.Current.Query<Tracking>().Where(x => x.PurchaseOrder.POID == poid).ToList();
+            var checkpointItems = DA.Current.Query<TrackingCheckpoint>().ToList();
+
+            foreach (var item in trackingItems)
+            {
+                var ndr = dt.NewRow();
+                ndr.SetField("TrackingID", item.TrackingID);
+                ndr.SetField("POID", item.PurchaseOrder.POID);
+                ndr.SetField("ClientID", item.Client.ClientID);
+                ndr.SetField("TrackingDateTime", item.TrackingDateTime);
+                ndr.SetField("CheckpointID", item.TrackingCheckpoint.TrackingCheckpointID);
+                ndr.SetField("CheckpointText", GetCheckpointText(item));
+                ndr.SetField("TrackingData", item.TrackingData);
+                dt.Rows.Add(ndr);
+            }
+
+            return dt;
+        }
+
+        public static string GetCheckpointText(Tracking item)
+        {
+            return string.Format("{0} by {1}, {2}", item.TrackingCheckpoint.CheckpointName, item.Client.LName, item.Client.FName);
         }
     }
 }

@@ -211,15 +211,13 @@ namespace LNF.Ordering
             return false;
         }
 
-        public static void SaveRealPO(int poid, string reqNum, string realPO, string purchNotes)
+        public static void SaveRealPO(PurchaseOrder po, string reqNum, string realPO, string purchNotes)
         {
+            if (po == null)
+                throw new ArgumentNullException("po");
+
             string currentRealPO;
             bool currentIsOrdered;
-
-            PurchaseOrder po = DA.Current.Single<PurchaseOrder>(poid);
-
-            if (po == null)
-                throw new Exception(string.Format("Cannot find PurchaseOrder with POID = {0}", poid));
 
             currentRealPO = po.RealPO;
             currentIsOrdered = po.Status == Status.Ordered;
@@ -268,12 +266,10 @@ namespace LNF.Ordering
             }
         }
 
-        public static void CancelPO(int poid)
+        public static void Cancel(PurchaseOrder po)
         {
-            PurchaseOrder po = DA.Current.Single<PurchaseOrder>(poid);
-
             if (po == null)
-                throw new Exception(string.Format("Cannot find PurchaseOrder with POID = {0}", poid));
+                throw new ArgumentNullException("po");
 
             po.Status = Status.Cancelled;
 
@@ -398,6 +394,106 @@ namespace LNF.Ordering
             var details = DA.Current.Query<PurchaseOrderDetail>().Where(x => x.PurchaseOrder.POID == poid);
             // The nullable cast will allow for cases where a PO has no details
             var result = details.Sum(x => (double?)(x.Quantity * x.UnitPrice)).GetValueOrDefault();
+            return result;
+        }
+
+        public static int Insert(int clientId, int vendorId, int? accountId, int approverId, DateTime neededDate, bool oversized, int shippingMethodId, string notes, bool attention)
+        {
+            /*
+            INSERT INTO dbo.PurchaseOrder (ClientID, AccountID, VendorID, CreatedDate, NeededDate, ApproverID, Oversized, ShippingMethodID, Notes, Attention, StatusID)
+            VALUES (@ClientID, @AccountID, @VendorID, @CreatedDate, @NeededDate, @ApproverID, @Oversized, @ShippingMethodID, @Notes, @Attention, 1)
+
+            1 = Status.Draft
+            */
+
+            var po = new PurchaseOrder()
+            {
+                Client = DA.Current.Single<Client>(clientId),
+                AccountID = accountId,
+                Vendor = DA.Current.Single<Vendor>(vendorId),
+                CreatedDate = DateTime.Now,
+                NeededDate = neededDate,
+                Approver = DA.Current.Single<Client>(approverId),
+                Oversized = oversized,
+                ShippingMethod = DA.Current.Single<ShippingMethod>(shippingMethodId),
+                Notes = notes,
+                Attention = attention,
+                Status = Status.Draft
+            };
+
+            DA.Current.Insert(po);
+
+            TrackingUtility.Track(TrackingCheckpoints.DraftCreated, po, clientId, new { VendorID = vendorId, AccountID = accountId, ApproverID = approverId });
+
+            return po.POID;
+        }
+
+        public static bool IsClaimed(int poid, out int purchaserId, out string purchaserName, out string reqNum, out string realPO, out string purchNotes)
+        {
+            var result = false;
+
+            purchaserId = 0;
+            purchaserName = string.Empty;
+            reqNum = string.Empty;
+            realPO = string.Empty;
+            purchNotes = string.Empty;
+
+            var po = DA.Current.Single<PurchaseOrder>(poid);
+
+            if (po != null)
+            {
+                if (po.PurchaserID.HasValue)
+                {
+                    purchaserId = po.PurchaserID.Value;
+                    purchaserName = po.GetPurchaser().DisplayName;
+                    realPO = po.RealPO;
+                    result = true;
+                }
+
+                reqNum = po.ReqNum;
+                purchNotes = po.PurchaserNotes;
+            }
+
+            return result;
+        }
+
+        public static bool ManuallyProcess(PurchaseOrder po)
+        {
+            if (po == null)
+                throw new ArgumentNullException("po");
+
+            try
+            {
+                po.Status = Status.ProcessedManually;
+                TrackingUtility.Track(TrackingCheckpoints.ManuallyProcessed, po, CacheManager.Current.ClientID);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static void Claim(PurchaseOrder po, int clientId)
+        {
+            var purchaser = DA.Current.Single<Client>(clientId);
+
+            if (po != null && purchaser != null)
+            {
+                po.PurchaserID = purchaser.ClientID;
+                TrackingUtility.Track(TrackingCheckpoints.Claimed, po, clientId);
+            }
+        }
+
+        public static string SelectStatus(int poid)
+        {
+            var result = string.Empty;
+
+            var po = DA.Current.Single<PurchaseOrder>(poid);
+
+            if (po != null)
+                result = po.Status.StatusName;
+
             return result;
         }
     }

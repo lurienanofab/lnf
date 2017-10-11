@@ -15,6 +15,7 @@ using FluentNHibernate.Conventions.Instances;
 using FluentNHibernate.Conventions.Inspections;
 using FluentNHibernate.Conventions.AcceptanceCriteria;
 using LNF.CommonTools;
+using NHibernate.Engine;
 
 namespace LNF.Impl.Conventions
 {
@@ -55,8 +56,7 @@ namespace LNF.Impl.Conventions
             return x.GetHashCode();
         }
 
-
-        public object NullSafeGet(IDataReader rs, string[] names, object owner)
+        public object NullSafeGet(DbDataReader rs, string[] names, ISessionImplementor session, object owner)
         {
             if (names.Length != 1)
                 throw new InvalidOperationException("names array has more than one element. can't handle this!");
@@ -64,14 +64,12 @@ namespace LNF.Impl.Conventions
             var val = Convert.ToString(rs[names[0]]);
 
             if (!string.IsNullOrEmpty(val))
-            {
                 return XElement.Parse(val);
-            }
 
             return null;
         }
 
-        public void NullSafeSet(IDbCommand cmd, object value, int index)
+        public void NullSafeSet(DbCommand cmd, object value, int index, ISessionImplementor session)
         {
             var parameter = (DbParameter)cmd.Parameters[index];
 
@@ -96,24 +94,14 @@ namespace LNF.Impl.Conventions
             return copy;
         }
 
-        public object Replace(object original, object target, object owner)
-        {
-            throw new NotImplementedException();
-        }
-
         public object Assemble(object cached, object owner)
         {
             var val = Convert.ToString(cached);
 
             if (!string.IsNullOrEmpty(val))
-            {
                 return XElement.Parse(val);
-            }
             else
-            {
                 return null;
-            }
-
         }
 
         public object Disassemble(object value)
@@ -121,21 +109,14 @@ namespace LNF.Impl.Conventions
             var val = value as XElement;
 
             if (val != null)
-            {
                 return val.ToString();
-            }
             else
-            {
                 return null;
-            }
         }
 
         public SqlType[] SqlTypes
         {
-            get
-            {
-                return new[] { new XmlSqlType() };
-            }
+            get { return new[] { new XmlSqlType() }; }
         }
 
         public Type ReturnedType
@@ -146,6 +127,11 @@ namespace LNF.Impl.Conventions
         public bool IsMutable
         {
             get { return true; }
+        }
+
+        public object Replace(object original, object target, object owner)
+        {
+            return DeepCopy(original);
         }
     }
 }

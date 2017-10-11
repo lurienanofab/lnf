@@ -5,6 +5,7 @@ using LNF.Repository.Ordering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Data;
 
 namespace LNF.Ordering
 {
@@ -51,6 +52,15 @@ namespace LNF.Ordering
 
             //returns the newly created vendor
             return v;
+        }
+
+        public static DataTable GetClientsWithVendors()
+        {
+            using (var adap = DA.Current.GetAdapter())
+            {
+                adap.AddParameter("@Action", "GetClientsWithVendors");
+                return adap.FillDataTable("IOF.dbo.spVendor_Select");
+            }
         }
     }
 }

@@ -136,7 +136,7 @@ namespace LNF.Billing
             {
                 //2010-11 ReservationFee needs to be caluclated here [not sure why, the formula is exactly the same as the computed column ReservationFeeOld]
                 if (item.IsStarted && item.ResourceRate > 0)
-                    item.ReservationFee2 = Convert.ToDecimal(item.ReservationRate * item.Uses * item.ChargeMultiplier);
+                    item.ReservationFee2 = item.ReservationRate * item.Uses * item.ChargeMultiplier;
                 else
                     item.ReservationFee2 = 0;
             }
@@ -152,24 +152,24 @@ namespace LNF.Billing
         {
             //before April 2011
             if (item.Period < April2011)
-                item.UsageFeeCharged = Convert.ToDecimal(((item.ChargeMultiplier * ((item.ActDuration - item.OverTime) / 60)) * item.ResourceRate) * (item.IsStarted ? 1 : 0));
+                item.UsageFeeCharged = ((item.ChargeMultiplier * ((item.ActDuration - item.OverTime) / 60)) * item.ResourceRate) * (item.IsStarted ? 1 : 0);
             //as of April 2011 and before June 2013
             else if (item.Period >= April2011 && item.Period < June2013)
-                item.UsageFeeCharged = Convert.ToDecimal(((item.ChargeMultiplier * (((item.ChargeDuration - item.OverTime) - item.TransferredDuration) / 60)) * item.ResourceRate) * (1 - (item.IsCancelledBeforeAllowedTime ? 1 : 0)));
+                item.UsageFeeCharged = ((item.ChargeMultiplier * (((item.ChargeDuration - item.OverTime) - item.TransferredDuration) / 60)) * item.ResourceRate) * (1 - (item.IsCancelledBeforeAllowedTime ? 1 : 0));
             //as of October 2015 ["as of June 2013" is no longer true because we continued to use UsageFee20110401 for billing after this date until 2015-10-01. The UsageFeeCharged column should always have the value of *what we actually billed* so I have to overwrite the UsageFeeCharged column with the values in UsageFee20110401 for the date range 2013-06-01 to 2015-10-01]
             else
             {
                 decimal amount = 0;
 
                 //first start with AddVal
-                amount += Convert.ToDecimal(item.Uses) * item.PerUseRate;
+                amount += item.Uses * item.PerUseRate;
 
                 //next add any charges based on AcctPer and MulVal
                 //item.ResourceRate is the MulVal (i.e. per period charge) and item.RatePeriod is AcctPer
-                decimal rpc = item.RatePeriodCharge(Convert.ToDecimal(item.ChargeDuration) - item.OverTime - Convert.ToDecimal(item.TransferredDuration));
+                decimal rpc = item.RatePeriodCharge(item.ChargeDuration - item.OverTime - item.TransferredDuration);
                 amount += rpc;
 
-                item.UsageFeeCharged = Convert.ToDecimal(amount * Convert.ToDecimal(item.ChargeMultiplier) * (1 - (item.IsCancelledBeforeAllowedTime ? 1 : 0)));
+                item.UsageFeeCharged = amount * item.ChargeMultiplier * (1 - (item.IsCancelledBeforeAllowedTime ? 1 : 0));
             }
         }
 
@@ -184,12 +184,12 @@ namespace LNF.Billing
             else if (item.Period >= April2011 && item.Period < June2013)
             {
                 if (item.IsCancelledBeforeAllowedTime)
-                    item.BookingFee = Convert.ToDecimal(item.ResourceRate * (item.MaxReservedDuration / 60)) * bookingFeePercentage * Convert.ToDecimal(item.ChargeMultiplier);
+                    item.BookingFee = item.ResourceRate * (item.MaxReservedDuration / 60) * bookingFeePercentage * item.ChargeMultiplier;
                 else
                 {
                     //if user made smaller reservation and used it, we still charge those old booking fee
                     if (item.MaxReservedDuration > item.ChargeDuration)
-                        item.BookingFee = Convert.ToDecimal(item.ResourceRate * ((item.MaxReservedDuration - item.ChargeDuration) / 60)) * bookingFeePercentage * Convert.ToDecimal(item.ChargeMultiplier);
+                        item.BookingFee = item.ResourceRate * ((item.MaxReservedDuration - item.ChargeDuration) / 60) * bookingFeePercentage * item.ChargeMultiplier;
                     else
                         item.BookingFee = 0;
                 }
@@ -203,8 +203,8 @@ namespace LNF.Billing
                 if (item.IsCancelledBeforeAllowedTime)
                 {
                     //only charge a booking fee on the PerUseRate when the reservation was canceled
-                    amount += Convert.ToDecimal(item.Uses) * item.PerUseRate;
-                    amount += item.RatePeriodCharge(Convert.ToDecimal(item.MaxReservedDuration));
+                    amount += item.Uses * item.PerUseRate;
+                    amount += item.RatePeriodCharge(item.MaxReservedDuration);
                 }
                 else
                 {
@@ -214,11 +214,11 @@ namespace LNF.Billing
                         //charged on the difference. In this case it doesn't make sense to also
                         //inlcude the per use charge (if any) because they will be charged for
                         //that regardless.
-                        amount += item.RatePeriodCharge(Convert.ToDecimal(item.MaxReservedDuration - item.ChargeDuration - item.TransferredDuration));
+                        amount += item.RatePeriodCharge(item.MaxReservedDuration - item.ChargeDuration - item.TransferredDuration);
                     }
                 }
 
-                item.BookingFee = amount * bookingFeePercentage * Convert.ToDecimal(item.ChargeMultiplier);
+                item.BookingFee = amount * bookingFeePercentage * item.ChargeMultiplier;
             }
         }
 
@@ -251,7 +251,7 @@ namespace LNF.Billing
             }
 
             // Rounding to two decmial places because that is what is displayed on the User Usage Summary
-            decimal result = Math.Round(duration * factor, 2) * Convert.ToDecimal(item.ResourceRate);
+            decimal result = Math.Round(duration * factor, 2) * item.ResourceRate;
 
             return result;
         }

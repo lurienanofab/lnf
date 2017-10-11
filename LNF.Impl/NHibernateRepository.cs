@@ -59,7 +59,12 @@ namespace LNF.Impl
         public IQueryable<T> Cache<T>(Repository.CacheMode mode = Repository.CacheMode.Normal) where T : IDataItem
         {
             NHibernate.CacheMode cm = (NHibernate.CacheMode)mode;
-            return Session.Query<T>().Cacheable().CacheMode(cm);
+
+            return Session.Query<T>().SetOptions(opts =>
+            {
+                opts.SetCacheable(true);
+                opts.SetCacheMode(cm);
+            });
         }
 
         public int Count<T>() where T : IDataItem

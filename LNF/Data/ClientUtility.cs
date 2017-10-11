@@ -10,15 +10,6 @@ namespace LNF.Data
 {
     public static class ClientUtility
     {
-        /// <summary>
-        /// The current authenticated session client.
-        /// </summary>
-        [Obsolete("User ClientInfoUtility.Current instead.")]
-        public static Client Current
-        {
-            get { return ClientInfoUtility.Current.GetClient(); }
-        }
-
         public static Client Find(int clientId)
         {
             return DA.Current.Single<Client>(clientId);
@@ -412,6 +403,70 @@ namespace LNF.Data
             }
 
             return result;
+        }
+
+        public static IList<Client> GetActiveClients()
+        {
+            DateTime ed = DateTime.Now.AddDays(1);
+            DateTime sd = ed.AddMonths(-1);
+            return GetActiveClients(sd, ed);
+        }
+
+        public static IList<Client> GetActiveClients(DateTime sd, DateTime ed)
+        {
+            /*
+             * this method should return the same results as sselData.dbo.Client_Select @Action = 'All'
+             *
+             * 	IF @eDate IS NULL
+             *  BEGIN
+             *      IF @Action='NeedApportionment'
+             *          SET @eDate = DATEADD(MM, 1, @sDate)
+             *      ELSE
+             *          SET @eDate = DATEADD(DD, 1, GETDATE())
+             *  END
+             *
+             *  IF @sDate IS NULL
+             *      SET @sDate = DATEADD(MM, -1, @eDate)
+
+             *  SELECT DISTINCT c.ClientID, c.FName, c.MName, c.LName, c.UserName, c.[Password], c.PasswordHash, c.DemCitizenID, c.DemGenderID
+             *      , c.DemRaceID, c.DemEthnicID, c.DemDisabilityID, c.Privs, c.Communities, c.TechnicalInterestID, c.Active, c.isChecked, c.isSafetyTest
+             *      , c.LName + ', ' + c.FName AS DisplayName
+             *  FROM Client c
+             *  WHERE (c.Privs & @Privs > 0) AND c.ClientID IN
+             *  (
+             *      SELECT Record
+             *      FROM ActiveLog
+             *      WHERE TableName = 'Client' AND
+             *        EnableDate < @eDate AND
+             *        ((DisableDate IS NULL) OR (DisableDate > @sDate))
+             *  )
+             *  ORDER BY DisplayName 
+             *  
+             */
+
+            var activeLogs = DA.Current.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.EnableDate < ed && (!x.DisableDate.HasValue || x.DisableDate.Value > sd));
+
+            var join = activeLogs
+                .Join(DA.Current.Query<Client>(), o => o.Record, i => i.ClientID, (o, i) => new { ActiveLog = o, Client = i });
+
+            return join.Select(x => x.Client).ToList();
+        }
+
+        public static IList<Client> GetActiveClients(ClientPrivilege priv)
+        {
+            DateTime ed = DateTime.Now.AddDays(1);
+            DateTime sd = ed.AddMonths(-1);
+            return GetActiveClients(sd, ed, priv);
+        }
+
+        public static IList<Client> GetActiveClients(DateTime sd, DateTime ed, ClientPrivilege priv)
+        {
+            var activeLogs = DA.Current.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.EnableDate < ed && (!x.DisableDate.HasValue || x.DisableDate.Value > sd));
+
+            var join = activeLogs
+                .Join(DA.Current.Query<Client>(), o => o.Record, i => i.ClientID, (o, i) => new { ActiveLog = o, Client = i });
+
+            return join.Where(x => (x.Client.Privs & priv) > 0).Select(x => x.Client).ToList();
         }
     }
 }
