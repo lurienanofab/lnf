@@ -156,6 +156,13 @@ namespace LNF.Repository.Data
             return DA.Current.Single<Org>(c.OrgID);
         }
 
+        public virtual ClientOrg PrimaryClientOrg()
+        {
+            ClientInfo c = GetClientInfo();
+            if (c == null) return null;
+            return DA.Current.Single<ClientOrg>(c.ClientOrgID);
+        }
+
         public virtual ChargeType MaxChargeType()
         {
             var result = ActiveClientOrgs()
@@ -350,19 +357,7 @@ namespace LNF.Repository.Data
         /// <returns>The number of rows updated.</returns>
         public virtual int SetPassword(string password)
         {
-            var pw = Providers.Encryption.EncryptText(password);
-            var hash = Providers.Encryption.Hash(password);
-
-            int result = 0;
-
-            using (var dba = DA.Current.GetAdapter())
-            {
-                result = dba
-                    .ApplyParameters(new { Action = "SetPassword", ClientID = ClientID, Password = pw, PasswordHash = hash })
-                    .ExecuteNonQuery("dbo.Client_Password");
-            }
-
-            return result;
+            return ClientUtility.SetPassword(ClientID, password);
         }
 
         /// <summary>

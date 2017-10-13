@@ -204,7 +204,7 @@ namespace LNF.Data
                 c.LName = lname;
                 c.MName = CleanMiddleName(mname);
                 c.UserName = username;
-                c.SetPassword(c.UserName);
+                SetPassword(c.ClientID, c.UserName);
 
                 c.DemCitizenID = demCitizenId;
                 c.DemEthnicID = demEthnicId;
@@ -245,12 +245,15 @@ namespace LNF.Data
             co.Enable();
 
             //find any address that need to be dealt with
-            foreach (Address aa in addedAddress)
+            if (addedAddress != null && addedAddress.Count() > 0)
             {
-                co.ClientAddressID = aa.AddressID;
+                foreach (Address aa in addedAddress)
+                {
+                    co.ClientAddressID = aa.AddressID;
+                }
             }
 
-            if (deletedAddress.Count() > 0)
+            if (deletedAddress != null && deletedAddress.Count() > 0)
             {
                 co.ClientAddressID = 0;
                 DA.Current.Delete(deletedAddress);
@@ -268,17 +271,15 @@ namespace LNF.Data
                 ca.ClientOrg = co;
             }
 
-            //done here after ClientAccount has been updated
-            //if (addClient) //reenabling a client
-            //    c.EnableAccess = c.HasPriv(ClientPrivilege.PhysicalAccess);
-            //else
-            //    c.EnableAccess = PrivUtility.HasPriv(ClientPrivilege.PhysicalAccess, PrivUtility.CalculatePriv(privs));
-
             //for clients who have Lab User Privs only, only allow access if they have an active account
             //if access is not enabled, show an alert
             AccessCheck check = AccessCheck.Create(c);
 
-            if (!check.EnableAccess())
+            string reason;
+            bool canEnableAccess = check.CanEnableAccess(out reason);
+            bool enableAccess = true;
+
+            if (!canEnableAccess)
             {
                 if (check.HasPhysicalAccessPriv)
                     c.Privs -= ClientPrivilege.PhysicalAccess;
@@ -286,19 +287,29 @@ namespace LNF.Data
                 if (check.HasStoreUserPriv)
                     c.Privs -= ClientPrivilege.StoreUser;
 
-                alert = "Store and physical access disabled for this client - no active accounts.";
+                alert = string.Format("Store and physical access disabled. {0}", reason); ;
+
+                enableAccess = false;
             }
 
-            //if client has been disabled for a 'long time', do not enable access and alert user
-            if (addClient && check.EnableAccess())
+            //if client has been disabled for a "long time", do not enable access and alert user
+            if (addClient && canEnableAccess)
             {
                 if (!check.AllowReenable())
                 {
                     if (check.HasPhysicalAccessPriv)
                         c.Privs -= ClientPrivilege.PhysicalAccess;
 
-                    alert += "Note that this client has been inactive for so long that access is not automatically reenabled. Please see the Lab Manager.";
+                    alert = "Note that this client has been inactive for so long that access is not automatically reenabled. Physical access has been disabled.";
+
+                    enableAccess = false;
                 }
+            }
+
+
+            if (addClient && enableAccess)
+            {
+                Providers.PhysicalAccess.EnableAccess(c);
             }
 
             return c;
@@ -308,7 +319,10 @@ namespace LNF.Data
         {
             AccessCheck check = AccessCheck.Create(c);
 
-            if (check.EnableAccess()) //access should be enabled per privs and accounts
+            string reason;
+            bool canEnableAccess = check.CanEnableAccess(out reason);
+
+            if (canEnableAccess) //access should be enabled per privs and accounts
             {
                 if (!check.IsPhysicalAccessEnabled()) //does not already have physical access
                 {
@@ -336,6 +350,8 @@ namespace LNF.Data
 
         public static string CleanMiddleName(string raw)
         {
+            if (raw == null) raw = string.Empty;
+
             //strip period if entered
             string stripped = raw.Trim();
             if (stripped.Length > 0)
@@ -356,30 +372,22 @@ namespace LNF.Data
             if (c == null)
                 throw new Exception("Invalid username.");
 
-            var clientId = c.ClientID;
-
             if (!string.IsNullOrEmpty(Providers.DataAccess.UniversalPassword) && password == Providers.DataAccess.UniversalPassword)
-                return Find(clientId);
+                return Find(c.ClientID);
 
-            var client = Find(clientId);
-
-            if (client.CheckPassword(password))
-                return client;
+            if (CheckPassword(c.ClientID, password))
+                return Find(c.ClientID);
             else
                 throw new Exception("Invalid password.");
         }
 
+        /// <summary>
+        /// Returns the number of currently active accounts for a given client.
+        /// </summary>
         public static int GetActiveAccountCount(int clientId)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                int result = dba
-                    .CommandTypeText()
-                    .ApplyParameters(new { ClientID = clientId })
-                    .ExecuteScalar<int>("SELECT COUNT(*) FROM v_ActiveLogClientAccount WHERE ClientID = @ClientID AND DisableDate IS NULL");
-
-                return result;
-            }
+            int result = DA.Current.Query<ActiveLogClientAccount>().Count(x => x.ClientID == clientId && !x.DisableDate.HasValue);
+            return result;
         }
 
         /// <summary>
@@ -393,14 +401,20 @@ namespace LNF.Data
             var pw = Providers.Encryption.EncryptText(password);
             var hash = Providers.Encryption.Hash(password);
 
-            bool result = false;
+            bool result = DA.Current.NamedQueryResult<bool>("CheckPassword", new { ClientID = clientId, Password = pw, PasswordHash = hash });
 
-            using (var dba = DA.Current.GetAdapter())
-            {
-                result = dba
-                    .ApplyParameters(new { Action = "CheckPassword", ClientID = clientId, Password = pw, PasswordHash = hash })
-                    .ExecuteScalar<bool>("dbo.Client_Password");
-            }
+            return result;
+        }
+
+        /// <summary>
+        /// Sets the user's password.
+        /// </summary>
+        public static int SetPassword(int clientId, string password)
+        {
+            var pw = Providers.Encryption.EncryptText(password);
+            var hash = Providers.Encryption.Hash(password);
+
+            int result = DA.Current.NamedQueryResult<int>("SetPassword", new { ClientID = clientId, Password = pw, PasswordHash = hash });
 
             return result;
         }
@@ -415,8 +429,10 @@ namespace LNF.Data
         public static IList<Client> GetActiveClients(DateTime sd, DateTime ed)
         {
             /*
-             * this method should return the same results as sselData.dbo.Client_Select @Action = 'All'
-             *
+             * ------------------------------------------------------------------------------------------
+             * -- this method should return the same results as sselData.dbo.Client_Select @Action = 'All'
+             * ------------------------------------------------------------------------------------------
+             * 
              * 	IF @eDate IS NULL
              *  BEGIN
              *      IF @Action='NeedApportionment'

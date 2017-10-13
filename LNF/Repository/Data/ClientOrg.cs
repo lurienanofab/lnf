@@ -1,4 +1,6 @@
+using System.Linq;
 using System;
+using System.Collections.Generic;
 
 namespace LNF.Repository.Data
 {
@@ -83,5 +85,20 @@ namespace LNF.Repository.Data
         /// </summary>
         /// <returns>A table name string value</returns>
         public override string TableName() { return "ClientOrg"; }
+
+        public virtual IQueryable<ClientAccount> ClientAccounts()
+        {
+            return DA.Current.Query<ClientAccount>().Where(x => x.ClientOrg.ClientOrgID == ClientOrgID);
+        }
+
+        public virtual IQueryable<ClientManager> ClientManagersWhereIsManager()
+        {
+            return DA.Current.Query<ClientManager>().Where(x => x.ManagerOrg.ClientOrgID == ClientOrgID);
+        }
+
+        public virtual IQueryable<ClientManager> ClientManagersWhereIsEmployee()
+        {
+            return DA.Current.Query<ClientManager>().Where(x => x.ClientOrg.ClientOrgID == ClientOrgID);
+        }
     }
 }

@@ -39,5 +39,14 @@ namespace LNF.Data
 
             return result;
         }
+
+        public static IEnumerable<Community> GetCommunities(int c)
+        {
+            foreach (var comm in DA.Current.Query<Community>().ToList())
+            {
+                if ((comm.CommunityFlag & c) > 0)
+                    yield return comm;
+            }
+        }
     }
 }

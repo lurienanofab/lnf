@@ -32,26 +32,39 @@ namespace LNF.Data
             result._HasPhysicalAccessPriv = c.HasPriv(ClientPrivilege.PhysicalAccess);
             result._HasLabUserPriv = c.HasPriv(ClientPrivilege.LabUser);
             result._HasStoreUserPriv = c.HasPriv(ClientPrivilege.StoreUser);
-            result._HasActiveAccounts = c.ClientAccounts().Any(x => x.Active && x.ClientOrg.Active);
+            result._HasActiveAccounts = ClientUtility.GetActiveAccountCount(c.ClientID) > 0;
             return result;
         }
 
-        public bool EnableAccess()
+        public bool CanEnableAccess(out string reason)
         {
             if (!IsActive)
+            {
+                reason = "This client is not active.";
                 return false;
+            }
 
             if (!HasPhysicalAccessPriv)
+            {
+                reason = "This client does not physical access.";
                 return false;
+            }
 
             if (!HasLabUserPriv)
-                return true; // this is the plant or vendor case: they have physical access but not lab user
-            
+            {
+                reason = "This client has physical access. Skipped active account check for non-lab-user client (staff, plant, vendor, etc).";
+                return true; // this is the staff, plant or vendor case: they have physical access but not lab user
+            }
+
             // at this point we know they have physical access and also the lab user priv, so we need to check for active accounts
             if (HasActiveAccounts)
+            {
+                reason = "This client has Physical Access and Lab User privileges, and at least one active account.";
                 return true;
+            }
 
             // no active accounts so false
+            reason = "This client has no active accounts.";
             return false;
         }
 
@@ -61,7 +74,7 @@ namespace LNF.Data
         }
 
         /// <summary>
-        /// Checks if the client is currently enabled in the access system.
+        /// Checks if the client is currently enabled in the access system by looking for an badge that is not expired.
         /// </summary>
         public bool IsPhysicalAccessEnabled()
         {

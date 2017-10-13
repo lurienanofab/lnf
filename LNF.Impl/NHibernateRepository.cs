@@ -112,11 +112,10 @@ namespace LNF.Impl
             Session.Evict(item);
         }
 
-        public T SqlResult<T>(string sql, object parameters)
+        public T SqlQueryResult<T>(string sql, object parameters)
         {
             var query = Session.CreateSQLQuery(sql);
-            foreach (var prop in parameters.GetType().GetProperties())
-                query.SetParameter(prop.Name, prop.GetValue(parameters), NHibernateUtil.GuessType(prop.PropertyType));
+            ApplyParameters(query, parameters);
             T result = query.UniqueResult<T>();
             return result;
         }
@@ -124,9 +123,23 @@ namespace LNF.Impl
         public IList<T> SqlQuery<T>(string sql, object parameters) where T : IDataItem
         {
             var query = Session.CreateSQLQuery(sql);
-            foreach (var prop in parameters.GetType().GetProperties())
-                query.SetParameter(prop.Name, prop.GetValue(parameters), NHibernateUtil.GuessType(prop.PropertyType));
+            ApplyParameters(query, parameters);
             IList<T> result = query.SetResultTransformer(Transformers.AliasToBean<T>()).List<T>();
+            return result;
+        }
+        public T NamedQueryResult<T>(string name, object parameters)
+        {
+            var query = Session.GetNamedQuery(name);
+            ApplyParameters(query, parameters);
+            T result = query.UniqueResult<T>();
+            return result;
+        }
+
+        public IList<T> NamedQuery<T>(string name, object parameters) where T : IDataItem
+        {
+            var query = Session.GetNamedQuery(name);
+            ApplyParameters(query, parameters);
+            IList<T> result = query.List<T>();
             return result;
         }
 
@@ -149,6 +162,12 @@ namespace LNF.Impl
             }
 
             return proxy;
+        }
+
+        private void ApplyParameters(IQuery query, object parameters)
+        {
+            foreach (var prop in parameters.GetType().GetProperties())
+                query.SetParameter(prop.Name, prop.GetValue(parameters), NHibernateUtil.GuessType(prop.PropertyType));
         }
     }
 

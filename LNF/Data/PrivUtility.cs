@@ -3,6 +3,7 @@ using LNF.Repository;
 using LNF.Repository.Data;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace LNF.Data
 {
@@ -101,6 +102,15 @@ namespace LNF.Data
         public static string[] GetPrivTypes(ClientPrivilege privs)
         {
             return privs.ToString().Split(',').Select(x => x.Trim()).ToArray();
+        }
+
+        public static IEnumerable<Priv> GetPrivs(ClientPrivilege privs)
+        {
+            foreach(var p in DA.Current.Query<Priv>().ToList())
+            {
+                if ((privs & p.PrivFlag) > 0)
+                    yield return p;
+            }
         }
     }
 }

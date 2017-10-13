@@ -371,21 +371,6 @@ namespace LNF.Data
 
     public static class ClientOrgExtensions
     {
-        public static IQueryable<ClientAccount> ClientAccounts(this ClientOrg item)
-        {
-            return DA.Current.Query<ClientAccount>().Where(x => x.ClientOrg.ClientOrgID == item.ClientOrgID);
-        }
-
-        public static IQueryable<ClientManager> Managers(this ClientOrg item)
-        {
-            return DA.Current.Query<ClientManager>().Where(x => x.ManagerOrg.ClientOrgID == item.ClientOrgID);
-        }
-
-        public static IQueryable<ClientManager> Employees(this ClientOrg item)
-        {
-            return DA.Current.Query<ClientManager>().Where(x => x.ClientOrg.ClientOrgID == item.ClientOrgID);
-        }
-
         public static ClientAccount GetDryBoxClientAccount(this ClientOrg item)
         {
             IList<ClientAccount> query = DA.Current.Query<ClientAccount>().Where(x => x.ClientOrg.ClientOrgID == item.ClientOrgID).ToList();

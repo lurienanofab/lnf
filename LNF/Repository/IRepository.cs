@@ -127,9 +127,13 @@ namespace LNF.Repository
         /// </summary>
         void Evict(IDataItem item);
 
-        T SqlResult<T>(string sql, object parameters);
+        T SqlQueryResult<T>(string sql, object parameters);
 
         IList<T> SqlQuery<T>(string sql, object parameters) where T : IDataItem;
+
+        T NamedQueryResult<T>(string name, object paramters);
+
+        IList<T> NamedQuery<T>(string name, object parametrs) where T : IDataItem;
 
         /// <summary>
         /// Returns the base instance of a proxy class if the implementation uses proxy classes (as NHibernate does). If the item is not a proxy the object is simply returned.
