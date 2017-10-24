@@ -58,13 +58,13 @@ namespace LNF.Billing
         public static int UpdateBillingType(Client client, Account acct, BillingType billingType, DateTime period)
         {
             string queryName = "UpdateBillingTypeToolBilling" + ((RepositoryUtility.IsCurrentPeriod(period)) ? "Temp" : string.Empty);
-            return DA.Current.QueryBuilder().ApplyParameters(new
+            return DA.Current.NamedQuery(queryName, new
             {
-                ClientID = client.ClientID,
-                AccountID = acct.AccountID,
-                BillingTypeID = billingType.BillingTypeID,
+                client.ClientID,
+                acct.AccountID,
+                billingType.BillingTypeID,
                 Period = period
-            }).NamedQuery(queryName).Update();
+            }).Update();
         }
 
         public static int UpdateChargeMultiplierByReservationToolBilling(Reservation rsv)
@@ -98,10 +98,7 @@ namespace LNF.Billing
         public static int UpdateAccountByReservationToolBilling(this Reservation rsv)
         {
             string queryName = "UpdateAccountToolBilling" + (rsv.InCurrentPeriod() ? "Temp" : string.Empty);
-            return DA.Current.QueryBuilder()
-                .ApplyParameters(new { ReservationID = rsv.ReservationID, AccountID = rsv.Account.AccountID })
-                .NamedQuery(queryName)
-                .Update();
+            return DA.Current.NamedQuery(queryName, new { rsv.ReservationID, rsv.Account.AccountID }).Update();
         }
 
         public static IList<ToolBilling> ForSUBReport(DateTime StartPeriod, DateTime EndPeriod, ref IList<SubLineItem> lineItems)
@@ -487,44 +484,24 @@ namespace LNF.Billing
 
         public static int UpdateChargeMultiplierByReservationToolDataClean(Reservation rsv)
         {
-            return DA.Current.QueryBuilder()
-                .ApplyParameters(new
-                {
-                    ReservationID = rsv.ReservationID,
-                    ChargeMultiplier = rsv.ChargeMultiplier
-                }).NamedQuery("UpdateChargeMultiplierToolDataClean").Update();
+            return DA.Current.NamedQuery("UpdateChargeMultiplierToolDataClean", new { rsv.ReservationID, rsv.ChargeMultiplier }).Update();
         }
 
         public static int UpdateAccountByReservationToolDataClean(Reservation rsv)
         {
-            return DA.Current.QueryBuilder()
-                .ApplyParameters(new
-                {
-                    ReservationID = rsv.ReservationID,
-                    AccountID = rsv.Account.AccountID
-                }).NamedQuery("UpdateAccountToolDataClean").Update();
+            return DA.Current.NamedQuery("UpdateAccountToolDataClean", new { rsv.ReservationID, rsv.Account.AccountID }).Update();
         }
         #endregion
 
         #region ToolData
         public static int UpdateChargeMultiplierByReservationToolData(Reservation rsv)
         {
-            return DA.Current.QueryBuilder()
-                .ApplyParameters(new
-                {
-                    ReservationID = rsv.ReservationID,
-                    ChargeMultiplier = rsv.ChargeMultiplier
-                }).NamedQuery("UpdateChargeMultiplierToolData").Update();
+            return DA.Current.NamedQuery("UpdateChargeMultiplierToolData", new { rsv.ReservationID, rsv.ChargeMultiplier }).Update();
         }
 
         public static int UpdateAccountByReservationToolData(Reservation rsv)
         {
-            return DA.Current.QueryBuilder()
-                .ApplyParameters(new
-                {
-                    ReservationID = rsv.ReservationID,
-                    AccountID = rsv.Account.AccountID
-                }).NamedQuery("UpdateAccountToolData").Update();
+            return DA.Current.NamedQuery("UpdateAccountToolData", new { rsv.ReservationID, rsv.Account.AccountID }).Update();
         }
 
         public static int MinimumDaysForApportionment(this ClientOrg co, Room r, DateTime period)

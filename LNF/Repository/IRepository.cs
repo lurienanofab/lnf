@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Data;
-using System.Data.SqlClient;
+using System.Linq;
 
 namespace LNF.Repository
 {
@@ -108,8 +108,6 @@ namespace LNF.Repository
         /// </summary>
         T Merge<T>(T item) where T : class, IDataItem;
 
-        QueryBuilder QueryBuilder();
-
         /// <summary>
         /// Retrieves a UnitOfWorkAdapter object that shares a transaction with this instance.
         /// </summary>
@@ -127,18 +125,38 @@ namespace LNF.Repository
         /// </summary>
         void Evict(IDataItem item);
 
-        T SqlQueryResult<T>(string sql, object parameters);
+        INamedQuery NamedQuery(string name, object parameters = null);
 
-        IList<T> SqlQuery<T>(string sql, object parameters) where T : IDataItem;
-
-        T NamedQueryResult<T>(string name, object paramters);
-
-        IList<T> NamedQuery<T>(string name, object parametrs) where T : IDataItem;
+        ISqlQuery SqlQuery(string sql, object parameters = null);
 
         /// <summary>
         /// Returns the base instance of a proxy class if the implementation uses proxy classes (as NHibernate does). If the item is not a proxy the object is simply returned.
         /// </summary>
         object Unproxy(IDataItem proxy);
+    }
+
+    public interface IQueryBase
+    {
+        /// <summary>
+        /// Convenience method to return a single instance that matches the query, or null if the query returns no results.
+        /// </summary>
+        T Result<T>() where T : struct;
+
+        /// <summary>
+        /// Execute the update or delete statement.
+        /// </summary>
+        int Update();
+    }
+
+    public interface INamedQuery : IQueryBase
+    {
+        IList<T> List<T>() where T : IDataItem;
+    }
+
+    public interface ISqlQuery : IQueryBase
+    {
+        IList<T> List<T>();
+        IList<IDictionary> List();
     }
 
     public interface IBulkCopy : IDisposable

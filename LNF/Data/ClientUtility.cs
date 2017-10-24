@@ -15,6 +15,11 @@ namespace LNF.Data
             return DA.Current.Single<Client>(clientId);
         }
 
+        public static Client Find(string username)
+        {
+            return DA.Current.Query<Client>().FirstOrDefault(x => x.UserName == username);
+        }
+
         public static Client FindByDisplayName(string displayName)
         {
             string[] splitter = displayName.Split(',');
@@ -37,15 +42,15 @@ namespace LNF.Data
         /// <param name="period">The period during which clients must be active</param>
         /// <param name="displayAllUsersToStaff">When true all users are displayed if the current user is staff</param>
         /// <returns>A list of active clients during the period, filtered on the current user</returns>
-        public static IList<Client> FindByPeriod(Client client, DateTime period, bool displayAllUsersToStaff = false)
+        public static IEnumerable<Client> FindByPeriod(Client client, DateTime period, bool displayAllUsersToStaff = false)
         {
             //populate the user dropdown list
 
             DateTime sd = period;
             DateTime ed = sd.AddMonths(1);
 
-            IList<ActiveLogClientAccount> allClientAccountsActiveInPeriod = DA.Current
-                .Query<ActiveLogClientAccount>().Where(x => x.EnableDate < ed && (x.DisableDate == null || x.DisableDate > sd))
+            IList<ActiveLogClientAccount> allClientAccountsActiveInPeriod = DA.Current.Query<ActiveLogClientAccount>()
+                .Where(x => x.EnableDate < ed && (x.DisableDate == null || x.DisableDate > sd))
                 .ToList();
 
             // check for administrator, manager, or normal user
@@ -90,7 +95,7 @@ namespace LNF.Data
             return result;
         }
 
-        public static IList<Client> FindByClientPrivilege(ClientPrivilege priv, bool? active = true)
+        public static IEnumerable<Client> FindByPrivilege(ClientPrivilege priv, bool? active = true)
         {
             IQueryable<Client> query;
 
@@ -104,7 +109,7 @@ namespace LNF.Data
             return result;
         }
 
-        public static IList<Client> FindByCommunity(int flag, bool? active = true)
+        public static IEnumerable<Client> FindByCommunity(int flag, bool? active = true)
         {
             IQueryable<Client> query;
 
@@ -118,7 +123,7 @@ namespace LNF.Data
             return result.ToList();
         }
 
-        public static IList<Client> FindByTools(IEnumerable<int> resourceIds, bool? active = true)
+        public static IEnumerable<Client> FindByTools(IEnumerable<int> resourceIds, bool? active = true)
         {
             List<Client> result = new List<Client>();
             List<ResourceClient> rclist = new List<ResourceClient>();
@@ -134,7 +139,7 @@ namespace LNF.Data
             return result;
         }
 
-        public static IList<Client> FindByManager(int managerClientId, bool? active = true)
+        public static IEnumerable<Client> FindByManager(int managerClientId, bool? active = true)
         {
             List<Client> result = new List<Client>();
             List<ClientManager> cmlist = new List<ClientManager>();
@@ -142,10 +147,12 @@ namespace LNF.Data
 
             if (active.HasValue)
             {
-                mgrClientOrgs = DA.Current.Query<ClientOrg>().Where(x => x.Client.ClientID == managerClientId && (x.IsFinManager || x.IsManager) && x.Active == active.Value).ToList();
+                mgrClientOrgs = DA.Current.Query<ClientOrg>().Where(x => x.Client.ClientID == managerClientId && (x.IsFinManager || x.IsManager)).ToList();
+
                 foreach (ClientOrg co in mgrClientOrgs)
                     cmlist.AddRange(DA.Current.Query<ClientManager>().Where(x => x.ManagerOrg == co && x.Active == active.Value));
-                result.AddRange(cmlist.Where(x => x.ClientOrg.Active == active.Value && x.ClientOrg.Client.Active == active.Value).Select(x => x.ClientOrg.Client));
+
+                result.AddRange(cmlist.Select(x => x.ClientOrg.Client));
             }
             else
             {
@@ -158,67 +165,60 @@ namespace LNF.Data
             return result;
         }
 
-        public static Client NewClient(int id, string username, string password, string lname, string fname, ClientPrivilege privs, bool active)
+        public static Client NewClient(string username, string password, string lname, string fname, ClientPrivilege privs, bool active)
         {
             var result = new Client()
             {
-                ClientID = id,
                 UserName = username,
                 LName = lname,
                 FName = fname,
-                Privs = privs,
-                Active = active
+                Privs = privs
             };
 
-            result.SetPassword(password);
+            DA.Current.Insert(result);
+
+            SetPassword(result.ClientID, password);
+
+            if (active)
+                result.Enable();
+            else
+                result.Disable();
 
             return result;
         }
 
-        public static Client StoreClientInfo(ref int clientId, bool isNewClientEntry, bool addClient, string lname, string fname, string mname, string username, int demCitizenId, int demEthnicId, int demRaceId, int demGenderId, int demDisabilityId, IEnumerable<Priv> privs, IEnumerable<Community> communities, int technicalInterestId, Org org, Role role, Department dept, string email, string phone, bool isManager, bool isFinManager, DateTime? subsidyStartDate, DateTime? newFacultyStartDate, IEnumerable<Address> addedAddress, IEnumerable<Address> deletedAddress, IEnumerable<ClientManager> clientManagers, IEnumerable<ClientAccount> clientAccounts, ref string alert)
+        public static Client StoreClientInfo(ref int clientId, string lname, string fname, string mname, string username, ClientDemographics demographics, IEnumerable<Priv> privs, IEnumerable<Community> communities, int technicalFieldId, Org org, Role role, Department dept, string email, string phone, bool isManager, bool isFinManager, DateTime? subsidyStart, DateTime? newFacultyStart, IEnumerable<Address> addedAddress, IEnumerable<Address> deletedAddress, IEnumerable<ClientManager> clientManagers, IEnumerable<ClientAccount> clientAccounts, out string alert)
         {
-            alert = string.Empty;
-
             //add rows to Client, ClientSite and ClientOrg for new entries
 
-            Client c = null;
+            Client c = DA.Current.Single<Client>(clientId);
+
+            bool isNewClientEntry = c == null;
 
             if (isNewClientEntry)
             {
                 //add an entry to the client table
-                c = NewClient(0, username, username, lname, fname, PrivUtility.CalculatePriv(privs), true);
-
-                DA.Current.Insert(c);
-
+                c = NewClient(username, username, lname, fname, PrivUtility.CalculatePriv(privs), true);
                 clientId = c.ClientID;
             }
             else
             {
-                c = DA.Current.Single<Client>(clientId);
-            }
-
-            //if entering new or modifying, update the fields
-            if (!addClient)
-            {
+                c.UserName = username;
                 c.FName = fname;
                 c.LName = lname;
-                c.MName = CleanMiddleName(mname);
-                c.UserName = username;
-                SetPassword(c.ClientID, c.UserName);
-
-                c.DemCitizenID = demCitizenId;
-                c.DemEthnicID = demEthnicId;
-                c.DemRaceID = demRaceId;
-                c.DemGenderID = demGenderId;
-                c.DemDisabilityID = demDisabilityId;
 
                 //store Privs's
                 c.Privs = PrivUtility.CalculatePriv(privs);
 
-                //store NULL for non-entered usertype
-                c.Communities = CommunityUtility.CalculateFlag(communities);
-                c.TechnicalFieldID = technicalInterestId;
+                SetPassword(c.ClientID, c.UserName);
             }
+
+            c.MName = CleanMiddleName(mname);
+            demographics.Update(c);
+
+            //store NULL for non-entered usertype
+            c.Communities = CommunityUtility.CalculateFlag(communities);
+            c.TechnicalFieldID = technicalFieldId;
 
             //next the ClientOrg table
             ClientOrg co = DA.Current.Query<ClientOrg>().FirstOrDefault(x => x.Client == c && x.Org == org);
@@ -226,10 +226,13 @@ namespace LNF.Data
             if (co == null)
             {
                 // need new row in ClientOrg
-                co = new ClientOrg();
-                co.Client = c;
-                co.Org = org;
-                co.ClientAddressID = 0;
+                co = new ClientOrg
+                {
+                    Client = c,
+                    Org = org,
+                    ClientAddressID = 0
+                };
+
                 DA.Current.Insert(co);
             }
 
@@ -239,8 +242,8 @@ namespace LNF.Data
             co.Phone = phone;
             co.IsManager = isManager;
             co.IsFinManager = isFinManager;
-            co.SubsidyStartDate = subsidyStartDate;
-            co.NewFacultyStartDate = newFacultyStartDate;
+            co.SubsidyStartDate = subsidyStart;
+            co.NewFacultyStartDate = newFacultyStart;
 
             co.Enable();
 
@@ -271,81 +274,82 @@ namespace LNF.Data
                 ca.ClientOrg = co;
             }
 
-            //for clients who have Lab User Privs only, only allow access if they have an active account
-            //if access is not enabled, show an alert
+            // For clients who have Lab User priv only, only allow access if they
+            // have an active account. If access is not enabled, show an alert.
             AccessCheck check = AccessCheck.Create(c);
-
-            string reason;
-            bool canEnableAccess = check.CanEnableAccess(out reason);
-            bool enableAccess = true;
-
-            if (!canEnableAccess)
-            {
-                if (check.HasPhysicalAccessPriv)
-                    c.Privs -= ClientPrivilege.PhysicalAccess;
-
-                if (check.HasStoreUserPriv)
-                    c.Privs -= ClientPrivilege.StoreUser;
-
-                alert = string.Format("Store and physical access disabled. {0}", reason); ;
-
-                enableAccess = false;
-            }
-
-            //if client has been disabled for a "long time", do not enable access and alert user
-            if (addClient && canEnableAccess)
-            {
-                if (!check.AllowReenable())
-                {
-                    if (check.HasPhysicalAccessPriv)
-                        c.Privs -= ClientPrivilege.PhysicalAccess;
-
-                    alert = "Note that this client has been inactive for so long that access is not automatically reenabled. Physical access has been disabled.";
-
-                    enableAccess = false;
-                }
-            }
-
-
-            if (addClient && enableAccess)
-            {
-                Providers.PhysicalAccess.EnableAccess(c);
-            }
+            UpdatePhysicalAccess(check, out alert);
 
             return c;
         }
 
-        public static AccessCheck UpdatePhysicalAccess(Client c)
+        public static bool UpdatePhysicalAccess(AccessCheck check, out string alert)
         {
-            AccessCheck check = AccessCheck.Create(c);
+            bool result;
 
-            string reason;
-            bool canEnableAccess = check.CanEnableAccess(out reason);
-
-            if (canEnableAccess) //access should be enabled per privs and accounts
+            if (check.CanEnableAccess()) //access should be enabled per privs and accounts
             {
                 if (!check.IsPhysicalAccessEnabled()) //does not already have physical access
                 {
                     if (check.AllowReenable()) //access can be enabled based on old account rule
-                        Providers.PhysicalAccess.EnableAccess(c);
+                    {
+                        check.EnablePhysicalAccess();
+                        alert = string.Empty;
+                        result = true;
+                    }
+                    else
+                    {
+                        //if client has been disabled for a "long time", do not enable access and alert user
+                        check.RemovePhysicalAccessPriv();
+                        alert = "Note that this client has been inactive for so long that access is not automatically reenabled. The Physical Access privilege has been removed.";
+                        result = false;
+                    }
+                }
+                else
+                {
+                    // can enable access and physical access already enabled
+                    alert = string.Empty;
+                    result = true;
                 }
             }
-            else
+            else //access should not be enabled per privs and accounts
             {
-                // remove PhysicalAccess priv
-                if (check.HasPhysicalAccessPriv)
-                    c.Privs -= ClientPrivilege.PhysicalAccess;
+                string temp = string.Empty;
+                string reason = check.Reason;
 
                 if (check.IsPhysicalAccessEnabled())
-                    Providers.PhysicalAccess.DisableAccess(c);
+                {
+                    check.DisablePhysicalAccess();
+                    temp += reason + " Physical access has been disabled.";
+                    reason = string.Empty;
+                }
+
+                // remove PhysicalAccess priv
+                if (check.HasPhysicalAccessPriv)
+                {
+                    check.RemovePhysicalAccessPriv();
+                    temp = reason + " The Physical Access privilege has been removed.";
+                    reason = string.Empty;
+                }
+
+                // remove StoreUser priv if LabUser and no ActiveAccounts
+                if (check.HasLabUserPriv && check.HasStoreUserPriv && !check.HasActiveAccounts)
+                {
+                    check.RemoveStoreUserPriv();
+                    temp += reason + " The Store User privilege has been removed.";
+                    reason = string.Empty;
+                }
+
+                alert = temp.Trim();
+
+                // alert will be empty if nothing changed (privs removed or access disabled)
+
+                result = false;
             }
 
-            // remove StoreUser priv if LabUser and no ActiveAccounts
-            if (check.HasLabUserPriv && check.HasStoreUserPriv && !check.HasActiveAccounts)
-                c.Privs -= ClientPrivilege.StoreUser;
+            // alert should be an empty string unless access is not enabled (result = false)
+            // and something changed (privs removed or access disabled)
 
-            //recheck physical access
-            return AccessCheck.Create(c);
+            return result;
         }
 
         public static string CleanMiddleName(string raw)
@@ -401,7 +405,7 @@ namespace LNF.Data
             var pw = Providers.Encryption.EncryptText(password);
             var hash = Providers.Encryption.Hash(password);
 
-            bool result = DA.Current.NamedQueryResult<bool>("CheckPassword", new { ClientID = clientId, Password = pw, PasswordHash = hash });
+            bool result = DA.Current.NamedQuery("CheckPassword", new { ClientID = clientId, Password = pw, PasswordHash = hash }).Result<bool>();
 
             return result;
         }
@@ -414,19 +418,19 @@ namespace LNF.Data
             var pw = Providers.Encryption.EncryptText(password);
             var hash = Providers.Encryption.Hash(password);
 
-            int result = DA.Current.NamedQueryResult<int>("SetPassword", new { ClientID = clientId, Password = pw, PasswordHash = hash });
+            int result = DA.Current.NamedQuery("SetPassword", new { ClientID = clientId, Password = pw, PasswordHash = hash }).Result<int>();
 
             return result;
         }
 
-        public static IList<Client> GetActiveClients()
+        public static IEnumerable<Client> GetActiveClients()
         {
             DateTime ed = DateTime.Now.AddDays(1);
             DateTime sd = ed.AddMonths(-1);
             return GetActiveClients(sd, ed);
         }
 
-        public static IList<Client> GetActiveClients(DateTime sd, DateTime ed)
+        public static IEnumerable<Client> GetActiveClients(DateTime sd, DateTime ed)
         {
             /*
              * ------------------------------------------------------------------------------------------
@@ -468,14 +472,14 @@ namespace LNF.Data
             return join.Select(x => x.Client).ToList();
         }
 
-        public static IList<Client> GetActiveClients(ClientPrivilege priv)
+        public static IEnumerable<Client> GetActiveClients(ClientPrivilege priv)
         {
             DateTime ed = DateTime.Now.AddDays(1);
             DateTime sd = ed.AddMonths(-1);
             return GetActiveClients(sd, ed, priv);
         }
 
-        public static IList<Client> GetActiveClients(DateTime sd, DateTime ed, ClientPrivilege priv)
+        public static IEnumerable<Client> GetActiveClients(DateTime sd, DateTime ed, ClientPrivilege priv)
         {
             var activeLogs = DA.Current.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.EnableDate < ed && (!x.DisableDate.HasValue || x.DisableDate.Value > sd));
 

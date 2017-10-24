@@ -64,6 +64,16 @@ namespace LNF.Ordering
             return !(po.ApprovalDate == null);
         }
 
+        public static bool Approve(int poid, int realApproverClientId, ref string errmsg)
+        {
+            var po = DA.Current.Single<PurchaseOrder>(poid);
+
+            if (po == null)
+                throw new ItemNotFoundException<PurchaseOrder>(x => x.POID, poid);
+
+            return Approve(po, realApproverClientId, ref errmsg);
+        }
+
         public static bool Approve(PurchaseOrder po, int realApproverClientId, ref string errmsg)
         {
             try
@@ -79,6 +89,16 @@ namespace LNF.Ordering
                 errmsg = ex.Message;
                 return false;
             }
+        }
+
+        public static bool Reject(int poid, int realApproverClientId, ref string errmsg)
+        {
+            var po = DA.Current.Single<PurchaseOrder>(poid);
+
+            if (po == null)
+                throw new ItemNotFoundException<PurchaseOrder>(x => x.POID, poid);
+
+            return Reject(po, realApproverClientId, ref errmsg);
         }
 
         public static bool Reject(PurchaseOrder po, int realApproverClientId, ref string errmsg)

@@ -17,9 +17,9 @@ namespace LNF.CommonTools
             get { return new ReadToolDataManager(); }
         }
 
-        public static ReadStoreDataManager Store(DateTime startDate, DateTime endDate, int clientId = 0, int itemId = 0)
+        public static ReadStoreDataManager Store
         {
-            return ReadStoreDataManager.Create(startDate, endDate, clientId, itemId);
+            get { return new ReadStoreDataManager(); }
         }
 
         public static ReadMiscDataManager Misc

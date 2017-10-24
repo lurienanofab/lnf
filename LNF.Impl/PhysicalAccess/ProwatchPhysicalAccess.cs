@@ -285,10 +285,22 @@ namespace LNF.Impl.PhysicalAccess
                 dba.ApplyParameters(new { Action = "EnableAccess", ClientID = c.ClientID }).ExecuteNonQuery("LNF.dbo.ClientUpdate");
         }
 
+        public void EnableAccess(Client c, DateTime expireOn)
+        {
+            using (var dba = ProwatchUtility.GetDBA())
+                dba.ApplyParameters(new { Action = "EnableAccess", ClientID = c.ClientID, ExpireOn = expireOn }).ExecuteNonQuery("LNF.dbo.ClientUpdate");
+        }
+
         public void DisableAccess(Client c)
         {
             using (var dba = ProwatchUtility.GetDBA())
                 dba.ApplyParameters(new { Action = "DisableAccess", ClientID = c.ClientID }).ExecuteNonQuery("LNF.dbo.ClientUpdate");
+        }
+
+        public void DisableAccess(Client c, DateTime expireOn)
+        {
+            using (var dba = ProwatchUtility.GetDBA())
+                dba.ApplyParameters(new { Action = "DisableAccess", ClientID = c.ClientID, ExpireOn = expireOn }).ExecuteNonQuery("LNF.dbo.ClientUpdate");
         }
 
         public IEnumerable<RoomDataRaw> GetRoomData(DateTime sd, DateTime ed, int clientId, string roomName)

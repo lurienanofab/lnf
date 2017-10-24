@@ -51,8 +51,8 @@ namespace LNF.CommonTools
                 //table locking
 
                 //always write all items at the same time
-                var reader = ReadStoreDataManager.Create(StartDate, EndDate, ClientID, ItemID);
-                var dtSource = reader.ReadStoreDataFiltered();
+                var reader = new ReadStoreDataManager();
+                var dtSource = reader.ReadStoreDataFiltered(StartDate, EndDate, ClientID);
 
                 rowsSelectedFromStore = dtSource.Rows.Count;
 
@@ -124,8 +124,8 @@ namespace LNF.CommonTools
                 }
 
                 //get all store data for period
-                ReadStoreDataManager readStoreData = ReadStoreDataManager.Create(StartDate, EndDate, ClientID, ItemID);
-                DataTable dtStoreDataClean = readStoreData.ReadStoreDataClean(ReadStoreDataManager.StoreDataCleanOption.RechargeItems);
+                ReadStoreDataManager readStoreData = new ReadStoreDataManager();
+                DataTable dtStoreDataClean = readStoreData.ReadStoreDataClean(ReadStoreDataManager.StoreDataCleanOption.RechargeItems, StartDate, EndDate, ClientID, ItemID);
 
                 rowsSelectedFromStoreDataClean = dtStoreDataClean.Rows.Count;
 

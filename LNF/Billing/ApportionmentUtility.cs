@@ -23,18 +23,12 @@ namespace LNF.Billing
 
         public static IList<ApportionmentClient> SelectApportionmentClients(DateTime startDate, DateTime endDate)
         {
-            return DA.Current.QueryBuilder()
-                .ApplyParameters(new { StartDate = startDate, EndDate = endDate })
-                .NamedQuery("SelectApportionmentClients")
-                .List<ApportionmentClient>();
+            return DA.Current.NamedQuery("SelectApportionmentClients", new { StartDate = startDate, EndDate = endDate }).List<ApportionmentClient>();
         }
 
         public static int PopulateRoomApportionData(DateTime period)
         {
-            return DA.Current.QueryBuilder()
-                .ApplyParameters(new { Period = period })
-                .NamedQuery("PopulateRoomApportionData")
-                .Update();
+            return DA.Current.NamedQuery("PopulateRoomApportionData", new { Period = period }).Result<int>();
         }
 
         /// <summary>

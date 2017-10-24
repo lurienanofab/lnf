@@ -13,7 +13,7 @@ namespace LNF.Billing
             //base query
             var baseQuery = DA.Current.Query<AccountSubsidy>()
                 .Where(x => x.EnableDate < ed && (x.DisableDate == null || x.DisableDate > sd))
-                .ToArray();
+                .ToList();
 
             // step1: it is possible to have duplicates because of disabling and re-enabling in the same
             //        date range, in this case get the last one by joining to self grouped by max AccountSubsidyID
@@ -23,7 +23,7 @@ namespace LNF.Billing
                 i => i.AccountSubsidyID,
                 (o, i) => o);
 
-            return step1.OrderBy(x => x.AccountID).ToArray();
+            return step1.OrderBy(x => x.AccountID).ToList();
         }
     }
 }

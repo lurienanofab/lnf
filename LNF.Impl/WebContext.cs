@@ -231,14 +231,18 @@ namespace LNF.Impl
 
         public virtual Client LogIn(string username, string password)
         {
-            object pwobj = (!string.IsNullOrEmpty(Providers.DataAccess.UniversalPassword) && password.Equals(Providers.DataAccess.UniversalPassword)) ? null : Providers.Encryption.EncryptText(password);
-            Client client = DA.Current.QueryBuilder()
-                .AddParameter("UserName", username)
-                .AddParameter("Password", pwobj)
-                .AddParameter("IPAddress", UserHostAddress)
-                .SqlQuery("EXEC sselData.dbo.Client_Select @Action='LoginCheck', @UserName=:UserName, @Password=:Password, @IPAddress=:IPAddress")
-                .List<Client>()
-                .FirstOrDefault();
+            string pw;
+
+            if (!string.IsNullOrEmpty(Providers.DataAccess.UniversalPassword) && password.Equals(Providers.DataAccess.UniversalPassword))
+                pw = null;
+            else
+                pw = Providers.Encryption.EncryptText(password);
+
+            string ip = UserHostAddress;
+
+            string sql = "EXEC sselData.dbo.Client_Select @Action='LoginCheck', @UserName=:username, @Password=:pw, @IPAddress=:ip";
+            Client client = DA.Current.SqlQuery(sql, new { username, pw, ip}).List<Client>().FirstOrDefault();
+
             return client;
         }
 

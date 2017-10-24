@@ -53,28 +53,28 @@ namespace LNF.Scheduler
 
         public static Reservation Create(Resource resource, Client client, Account account, Activity activity, DateTime beginDateTime, DateTime endDateTime, double duration, string notes, bool autoEnd, bool hasProcessInfo, bool hasInvitees, ReservationRecurrence recurrence, bool isActive, bool keepAlive, double maxReservedDuration, Client modifiedBy)
         {
-            int? recurId = (recurrence == null) ? null : (int?)recurrence.RecurrenceID;
-            return DA.Current.QueryBuilder()
-                .AddParameter("ResourceID", resource.ResourceID)
-                .AddParameter("ClientID", client.ClientID)
-                .AddParameter("AccountID", account.AccountID)
-                .AddParameter("ActivityID", activity.ActivityID)
-                .AddParameter("BeginDateTime", beginDateTime)
-                .AddParameter("EndDateTime", endDateTime)
-                .AddParameter("Duration", duration)
-                .AddParameter("Notes", notes)
-                .AddParameter("AutoEnd", autoEnd)
-                .AddParameter("HasProcessInfo", hasProcessInfo)
-                .AddParameter("HasInvitees", hasInvitees)
-                .AddParameter("RecurrenceID", recurId)
-                .AddParameter("IsActive", isActive)
-                .AddParameter("CreatedOn", DateTime.Now)
-                .AddParameter("KeepAlive", keepAlive)
-                .AddParameter("MaxReservedDuration", maxReservedDuration)
-                .AddParameter("ModifiedByClientID", modifiedBy.ClientID)
-                .NamedQuery("CreateReservation")
-                .List<Reservation>()
-                .FirstOrDefault();
+            int? recurId = (recurrence == null) ? default(int?) : recurrence.RecurrenceID;
+
+            return DA.Current.NamedQuery("CreateReservation", new
+            {
+                resource.ResourceID,
+                client.ClientID,
+                account.AccountID,
+                activity.ActivityID,
+                BeginDateTime = beginDateTime,
+                EndDateTime = endDateTime,
+                Duration = duration,
+                Notes = notes,
+                AutoEnd = autoEnd,
+                HasProcessInfo = hasProcessInfo,
+                HasInvitees = hasInvitees,
+                RecurrenceID = recurId,
+                IsActive = isActive,
+                CreatedOn = DateTime.Now,
+                KeepAlive = keepAlive,
+                MaxReservedDuration = maxReservedDuration,
+                ModifiedByClientID = modifiedBy.ClientID
+            }).List<Reservation>().FirstOrDefault();
         }
 
         public static Reservation FromDataRow(DataRow dr)
@@ -87,33 +87,29 @@ namespace LNF.Scheduler
 
         public static IList<Reservation> SelectAutoEnd()
         {
-            return DA.Current.QueryBuilder().NamedQuery("SelectAutoEndReservations").List<Reservation>();
+            return DA.Current.NamedQuery("SelectAutoEndReservations").List<Reservation>();
         }
 
         public static IList<Reservation> SelectPastEndableRepair()
         {
-            return DA.Current.QueryBuilder().NamedQuery("SelectPastEndableRepairReservations").List<Reservation>();
+            return DA.Current.NamedQuery("SelectPastEndableRepairReservations").List<Reservation>();
         }
 
         public static IList<Reservation> SelectPastUnstarted()
         {
-            return DA.Current.QueryBuilder().NamedQuery("SelectPastUnstartedReservations").List<Reservation>();
+            return DA.Current.NamedQuery("SelectPastUnstartedReservations").List<Reservation>();
         }
 
         //Ends a past unstarted reservation
         public static int EndPastUnstarted(Reservation rsv, DateTime endDate, int clientId)
         {
             //ClientID might be -1
-            return DA.Current
-                .QueryBuilder()
-                .ApplyParameters(new
-                {
-                    ReservationID = rsv.ReservationID,
-                    EndDateTime = endDate,
-                    ClientID = clientId
-                })
-                .NamedQuery("EndPastUnstartedReservations")
-                .Update();
+            return DA.Current.NamedQuery("EndPastUnstartedReservations", new
+            {
+                rsv.ReservationID,
+                EndDateTime = endDate,
+                ClientID = clientId
+            }).Result<int>();
         }
 
         public static IList<Reservation> SelectExisting(Resource resource)
@@ -133,10 +129,8 @@ namespace LNF.Scheduler
 
         public static int GetAvailableSchedMin(int resourceId, int clientId)
         {
-            return DA.Current.QueryBuilder()
-                .ApplyParameters(new { ResourceID = resourceId, ClientID = clientId })
-                .SqlQuery("EXEC sselScheduler.dbo.procReservationSelect @Action = 'GetAvailableSchedMin', @ResourceID = :ResourceID, @ClientID = :ClientID")
-                .Result<int>();
+            string sql = "EXEC sselScheduler.dbo.procReservationSelect @Action = 'GetAvailableSchedMin', @ResourceID = :resourceId, @ClientID = :clientId";
+            return DA.Current.SqlQuery(sql, new { resourceId, clientId }).Result<int>();
         }
 
         ///<summary>

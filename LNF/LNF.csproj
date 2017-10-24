@@ -69,15 +69,19 @@
   <ItemGroup>
     <Compile Include="Billing\AccountSubsidyUtility.cs" />
     <Compile Include="Billing\Extensions.cs" />
+    <Compile Include="Billing\ExternalInvoiceUsage.cs" />
     <Compile Include="Billing\ExternalInvoiceManager.cs" />
-    <Compile Include="Billing\InvoiceLineItem.cs" />
-    <Compile Include="Billing\InvoiceSummaryItem.cs" />
+    <Compile Include="Billing\ExternalInvoice.cs" />
+    <Compile Include="Billing\ExternalInvoiceLineItem.cs" />
+    <Compile Include="Billing\ExternalInvoiceHeader.cs" />
+    <Compile Include="Billing\ExternalInvoiceSummaryItem.cs" />
     <Compile Include="Billing\ReservationDateRange.cs" />
     <Compile Include="Billing\ReservationDurationItem.cs" />
     <Compile Include="Billing\ReservationDurations.cs" />
     <Compile Include="Billing\RoomBillingUtility.cs" />
     <Compile Include="Billing\LineCostUtility.cs" />
     <Compile Include="Cache\CacheItemNotFoundException.cs" />
+    <Compile Include="ItemNotFoundException.cs" />
     <Compile Include="Cache\CacheManager.cs" />
     <Compile Include="Cache\CacheObject.cs" />
     <Compile Include="Cache\SessionKeys.cs" />
@@ -88,6 +92,7 @@
     <Compile Include="Data\AccountUtility.cs" />
     <Compile Include="Data\ClientAccountInfoUtility.cs" />
     <Compile Include="Data\ClientAccountUtility.cs" />
+    <Compile Include="Data\ClientDemographics.cs" />
     <Compile Include="Data\ClientEqualityComparer.cs" />
     <Compile Include="Data\ClientInfoUtility.cs" />
     <Compile Include="Data\ClientManagerUtility.cs" />
@@ -227,7 +232,6 @@
     <Compile Include="PhysicalAccess\Area.cs" />
     <Compile Include="PhysicalAccess\Badge.cs" />
     <Compile Include="PhysicalAccess\Card.cs" />
-    <Compile Include="PhysicalAccess\Extensions.cs" />
     <Compile Include="PhysicalAccess\Status.cs" />
     <Compile Include="PhysicalAccess\Event.cs" />
     <Compile Include="Data\ActiveLogItem.cs" />
@@ -389,7 +393,6 @@
     <Compile Include="Repository\Ordering\Tracking.cs" />
     <Compile Include="Repository\Ordering\TrackingCheckpoint.cs" />
     <Compile Include="Repository\Ordering\Vendor.cs" />
-    <Compile Include="Repository\QueryBuilder.cs" />
     <Compile Include="Repository\QueryParameter.cs" />
     <Compile Include="Repository\QueryParameters.cs" />
     <Compile Include="Repository\Reporting\AfterHours.cs" />

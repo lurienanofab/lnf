@@ -65,10 +65,18 @@ namespace LNF.Ordering
 
         public static string GetPhysicalPath(int poid)
         {
-            string result = Path.Combine(ConfigurationManager.AppSettings["AttachmentsDirectory"], poid.ToString());
+            string attachmentsDir = ConfigurationManager.AppSettings["AttachmentsDirectory"];
 
-            if (result.StartsWith("."))
-                result = Providers.Context.Current.GetServerPath(result);
+            if (string.IsNullOrEmpty(attachmentsDir))
+                throw new InvalidOperationException("Missing required appSetting: AttachmentsDirectory");
+
+            if (attachmentsDir.StartsWith("."))
+                attachmentsDir = Providers.Context.Current.GetServerPath(attachmentsDir);
+
+            if (!Directory.Exists(attachmentsDir))
+                Directory.CreateDirectory(attachmentsDir);
+
+            string result = Path.Combine(attachmentsDir, poid.ToString());
 
             if (!Directory.Exists(result))
                 Directory.CreateDirectory(result);
@@ -85,6 +93,10 @@ namespace LNF.Ordering
         public static string GetUrl(int poid, string fileName)
         {
             string vp = ConfigurationManager.AppSettings["AttachmentsVirtualPath"]; //should contain {0} and {1} to be replaced by POID and FileName
+
+            if (string.IsNullOrEmpty(vp))
+                throw new InvalidOperationException("Missing required appSetting: AttachmentsVirtualPath");
+
             string absolutePath = Providers.Context.Current.GetAbsolutePath(string.Format(vp, poid, fileName));
             return Providers.Context.Current.GetRequestUrl().GetLeftPart(UriPartial.Authority) + absolutePath;
         }

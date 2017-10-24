@@ -17,7 +17,9 @@ namespace LNF
         int[] CheckPassbackViolations(DateTime startDate, DateTime endDate);
         void AddClient(Client c);
         void EnableAccess(Client c);
+        void EnableAccess(Client c, DateTime expireOn);
         void DisableAccess(Client c);
+        void DisableAccess(Client c, DateTime expireOn);
         IEnumerable<RoomDataRaw>  GetRoomData(DateTime sd, DateTime ed, int clientId, string roomName);
     }
 }

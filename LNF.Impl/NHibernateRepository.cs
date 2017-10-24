@@ -87,11 +87,6 @@ namespace LNF.Impl
             return Session.Merge(item);
         }
 
-        public QueryBuilder QueryBuilder()
-        {
-            return new NHibernateQueryBuilder(Session);
-        }
-
         public UnitOfWorkAdapter GetAdapter()
         {
             return new NHibernateUnitOfWorkAdapter(Session);
@@ -112,35 +107,18 @@ namespace LNF.Impl
             Session.Evict(item);
         }
 
-        public T SqlQueryResult<T>(string sql, object parameters)
-        {
-            var query = Session.CreateSQLQuery(sql);
-            ApplyParameters(query, parameters);
-            T result = query.UniqueResult<T>();
-            return result;
-        }
-
-        public IList<T> SqlQuery<T>(string sql, object parameters) where T : IDataItem
-        {
-            var query = Session.CreateSQLQuery(sql);
-            ApplyParameters(query, parameters);
-            IList<T> result = query.SetResultTransformer(Transformers.AliasToBean<T>()).List<T>();
-            return result;
-        }
-        public T NamedQueryResult<T>(string name, object parameters)
+        public INamedQuery NamedQuery(string name, object parameters = null)
         {
             var query = Session.GetNamedQuery(name);
             ApplyParameters(query, parameters);
-            T result = query.UniqueResult<T>();
-            return result;
+            return new NHibernateNamedQuery(query);
         }
 
-        public IList<T> NamedQuery<T>(string name, object parameters) where T : IDataItem
+        public ISqlQuery SqlQuery(string sql, object parameters = null)
         {
-            var query = Session.GetNamedQuery(name);
+            var query = Session.CreateSQLQuery(sql);
             ApplyParameters(query, parameters);
-            IList<T> result = query.List<T>();
-            return result;
+            return new NHibernateSqlQuery(query);
         }
 
         private ICriteria CreateCriteria<T>() where T : class
@@ -171,7 +149,7 @@ namespace LNF.Impl
         }
     }
 
-    public class NHibernateSqlQuery : SqlQuery
+    public class NHibernateSqlQuery : ISqlQuery
     {
         IQuery query;
 
@@ -180,28 +158,28 @@ namespace LNF.Impl
             this.query = query;
         }
 
-        public override IList<T> List<T>()
+        public IList<T> List<T>()
         {
             return query.SetResultTransformer(Transformers.AliasToBean<T>()).List<T>();
         }
 
-        public override IList<IDictionary> List()
+        public IList<IDictionary> List()
         {
             return query.SetResultTransformer(Transformers.AliasToEntityMap).List<IDictionary>();
         }
 
-        public override T Result<T>()
+        public T Result<T>() where T : struct
         {
             return query.UniqueResult<T>();
         }
 
-        public override int Update()
+        public int Update()
         {
             return query.ExecuteUpdate();
         }
     }
 
-    public class NHibernateNamedQuery : NamedQuery
+    public class NHibernateNamedQuery : INamedQuery
     {
         private IQuery query;
 
@@ -210,51 +188,19 @@ namespace LNF.Impl
             this.query = query;
         }
 
-        public override IList<T> List<T>()
+        public IList<T> List<T>() where T : IDataItem
         {
             return query.List<T>();
         }
 
-        public override T Result<T>()
+        public T Result<T>() where T : struct
         {
             return query.UniqueResult<T>();
         }
 
-        public override int Update()
+        public int Update()
         {
             return query.ExecuteUpdate();
-        }
-    }
-
-    public class NHibernateQueryBuilder : QueryBuilder
-    {
-        private ISession session;
-        private ICriteria criteria;
-
-        internal NHibernateQueryBuilder(ISession session)
-        {
-            this.session = session;
-        }
-
-        private ICriteria GetCriteria<T>() where T : class
-        {
-            if (criteria == null)
-                criteria = session.CreateCriteria<T>().SetCacheable(true);
-            return criteria;
-        }
-
-        public override NamedQuery NamedQuery(string name)
-        {
-            IQuery query = session.GetNamedQuery(name);
-            query.ApplyParameters(queryParams);
-            return new NHibernateNamedQuery(query);
-        }
-
-        public override SqlQuery SqlQuery(string sql)
-        {
-            IQuery query = session.CreateSQLQuery(sql);
-            query.ApplyParameters(queryParams);
-            return new NHibernateSqlQuery(query);
         }
     }
 

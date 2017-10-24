@@ -8,7 +8,7 @@ namespace LNF.Tests.Web
     public class ServerJScriptTests
     {
         [TestMethod]
-        public void CanJSEncode()
+        public void ServerJScript_JSEncodeTest()
         {
             Assert.AreEqual("hello\\nworld", ServerJScript.JSEncode("hello\nworld"));
             Assert.AreEqual("hello\\nworld", ServerJScript.JSEncode("hello\r\nworld"));

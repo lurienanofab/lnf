@@ -136,11 +136,9 @@ namespace LNF.Billing
 
         public static IList<IToolBilling> SelectToolBillingData<T>(Client client, DateTime period) where T : IToolBilling
         {
-            IList<T> query = DA.Current.QueryBuilder()
-                .ApplyParameters(new { Period = period, ClientID = client.ClientID })
-                .SqlQuery("EXEC Billing.dbo.ToolData_Select @Action='ForToolBilling', @Period=:Period, @ClientID=:ClientID")
-                .List<T>();
-            IList<IToolBilling> result = query.Select(x => x as IToolBilling).ToList();
+            string sql = "EXEC Billing.dbo.ToolData_Select @Action='ForToolBilling', @Period=:period, @ClientID=:ClientID";
+            var query = DA.Current.SqlQuery(sql, new { period, client.ClientID }).List<T>();
+            var result = query.Select(x => x as IToolBilling).ToList();
             return result;
         }
 

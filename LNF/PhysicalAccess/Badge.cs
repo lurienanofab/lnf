@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Data;
 
 namespace LNF.PhysicalAccess
 {
@@ -24,6 +21,16 @@ namespace LNF.PhysicalAccess
         public IEnumerable<Card> GetCards()
         {
             return Providers.PhysicalAccess.GetCards(this);
+        }
+
+        public bool IsExpired()
+        {
+            return ExpireDate <= DateTime.Now;
+        }
+
+        public bool IsActive()
+        {
+            return ExpireDate > DateTime.Now;
         }
     }
 }

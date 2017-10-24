@@ -33,7 +33,8 @@ namespace LNF.Billing
                 //but no email is actually sent. This is just for testing/debugging purposes.
 
                 //Get managers list and associated clients info
-                var query = DA.Current.QueryBuilder().ApplyParameters(new { p = period }).SqlQuery("EXEC sselData.dbo.Report_MonthlyFinacialManager @Period=:p").List();
+                string sql = "EXEC sselData.dbo.Report_MonthlyFinacialManager @Period=:period";
+                var query = DA.Current.SqlQuery(sql, new { period }).List();
 
                 queryCount = query.Count;
 

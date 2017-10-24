@@ -1,9 +1,11 @@
 ﻿using LNF.Data;
 using LNF.Models.Data;
+using LNF.Repository;
 using LNF.Repository.Data;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace LNF.Tests.Data
@@ -11,61 +13,79 @@ namespace LNF.Tests.Data
     [TestClass]
     public class ClientUtilityTests
     {
-        private LNF.Repository.IUnitOfWork uow;
+        private static IUnitOfWork _uow;
+        private static TestContext _context;
 
-        [TestInitialize]
-        public void TestSetup()
+        [ClassInitialize]
+        public static void Initialize(TestContext context)
         {
-            uow = Providers.DataAccess.StartUnitOfWork();
+            _context = context;
+            _uow = Providers.DataAccess.StartUnitOfWork();
         }
 
-        [TestCleanup]
-        public void TestCleanup()
+        [ClassCleanup]
+        public static void Cleanup()
         {
-            uow.Dispose();
+            // clean up;
+            var c = ClientUtility.Find("newclient");
+            if (c != null)
+            {
+                
+                DA.Current.Delete(c);
+                DA.Current.Delete(DA.Current.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.Record == c.ClientID));
+            }
+
+            _uow.Dispose();
         }
 
         [TestMethod]
-        public void CanGetActiveClients()
+        public void ClientUtility_GetActiveClientsTest()
         {
             DateTime sd = DateTime.Parse("2016-01-01");
             DateTime ed = DateTime.Parse("2017-01-01");
             ClientPrivilege priv = ClientPrivilege.LabUser;
 
-            IList<Client> clients;
+            IEnumerable<Client> clients;
 
             clients = ClientUtility.GetActiveClients(sd, ed, priv);
-            Assert.AreEqual(646, clients.Count);
+            Assert.AreEqual(646, clients.Count());
 
             clients = ClientUtility.GetActiveClients(sd, ed);
-            Assert.AreEqual(1558, clients.Count);
+            Assert.AreEqual(1558, clients.Count());
 
             clients = ClientUtility.GetActiveClients(priv);
-            Assert.AreEqual(517, clients.Count);
+            Assert.AreEqual(517, clients.Count());
 
             clients = ClientUtility.GetActiveClients();
-            Assert.AreEqual(1314, clients.Count);
+            Assert.AreEqual(1314, clients.Count());
         }
 
         [TestMethod]
-        public void CanCheckPassword()
+        public void ClientUtility_CheckPasswordTest()
         {
             bool result = ClientUtility.CheckPassword(1600, "test");
             Assert.AreEqual(true, result);
         }
 
         [TestMethod]
-        public void CanGetActiveAccountCount()
+        public void ClientUtility_SetPasswordTest()
+        {
+            int result = ClientUtility.SetPassword(1600, "test");
+            Assert.AreEqual(1, result);
+        }
+
+        [TestMethod]
+        public void ClientUtility_GetActiveAccountCountTest()
         {
             int result = ClientUtility.GetActiveAccountCount(1600);
             Assert.AreEqual(1, result);
         }
 
         [TestMethod]
-        public void CanLogin()
+        public void ClientUtility_LoginTest()
         {
             Client client;
-            
+
             client = ClientUtility.Login("test", "test");
             Assert.IsNotNull(client);
             Assert.AreEqual(1600, client.ClientID);
@@ -74,7 +94,7 @@ namespace LNF.Tests.Data
             {
                 client = ClientUtility.Login("ztest", "test");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Assert.AreEqual("Invalid username.", ex.Message);
             }
@@ -90,7 +110,7 @@ namespace LNF.Tests.Data
         }
 
         [TestMethod]
-        public void CanCleanMiddleName()
+        public void ClientUtility_CleanMiddleNameTest()
         {
             string result;
 
@@ -108,40 +128,48 @@ namespace LNF.Tests.Data
         }
 
         [TestMethod]
-        public void CanUpdatePhysicalAccess()
+        public void ClientUtility_UpdatePhysicalAccessTest()
         {
             Client c;
             AccessCheck check;
+            bool hasAccess;
+            string alert;
 
             c = ClientUtility.Find(1600);
-            check = ClientUtility.UpdatePhysicalAccess(c);
-            string reason;
 
+            check = AccessCheck.Create(c);
+            hasAccess = ClientUtility.UpdatePhysicalAccess(check, out alert);
             Assert.IsTrue(!check.AllowReenable());
-            Assert.IsTrue(!check.CanEnableAccess(out reason));
+            Assert.IsTrue(!check.CanEnableAccess());
             Assert.IsTrue(check.HasActiveAccounts);
             Assert.IsTrue(check.HasLabUserPriv);
             Assert.IsTrue(!check.HasPhysicalAccessPriv);
-            Assert.IsTrue(!check.HasStoreUserPriv);
+            Assert.IsTrue(check.HasStoreUserPriv);
             Assert.IsTrue(check.IsActive);
             Assert.IsTrue(!check.IsPhysicalAccessEnabled());
+            _context.WriteLine("alert: {0}", alert);
 
             c = ClientUtility.Find(1301);
-            check = ClientUtility.UpdatePhysicalAccess(c);
+            check = AccessCheck.Create(c);
+            hasAccess = ClientUtility.UpdatePhysicalAccess(check, out alert);
             Assert.IsTrue(check.AllowReenable());
-            Assert.IsTrue(check.CanEnableAccess(out reason));
+            Assert.IsTrue(check.CanEnableAccess());
             Assert.IsTrue(check.HasActiveAccounts);
             Assert.IsTrue(!check.HasLabUserPriv);
             Assert.IsTrue(check.HasPhysicalAccessPriv);
             Assert.IsTrue(check.HasStoreUserPriv);
             Assert.IsTrue(check.IsActive);
             Assert.IsTrue(check.IsPhysicalAccessEnabled());
+            _context.WriteLine("alert: {0}", alert);
         }
 
         [TestMethod]
-        public void CanStoreClientInfo()
+        public void ClientUtility_StoreClientInfoTest()
         {
             var c0 = ClientUtility.Find(1600);
+
+            c0.AddPriv(ClientPrivilege.PhysicalAccess);
+
             int clientId = c0.ClientID;
             var org = c0.PrimaryOrg();
             var co = c0.PrimaryClientOrg();
@@ -150,18 +178,177 @@ namespace LNF.Tests.Data
             var comms = CommunityUtility.GetCommunities(c0.Communities).ToList();
             var clientManagers = co.ClientManagersWhereIsEmployee().Where(x => x.Active).ToList();
             var clientAccounts = co.ClientAccounts().Where(x => x.Active).ToList();
+            var demographics = ClientDemographics.Create(c0);
 
-            var c1 = ClientUtility.StoreClientInfo(ref clientId, false, true, "User", "Test", null, "test", c0.DemCitizenID, c0.DemEthnicID, c0.DemRaceID, c0.DemGenderID, c0.DemDisabilityID, privs, comms, c0.TechnicalFieldID, org, co.Role, co.Department, co.Email, co.Phone, co.IsManager, co.IsFinManager, co.SubsidyStartDate, co.NewFacultyStartDate, null, null, clientManagers, clientAccounts, ref alert);
+            var c1 = ClientUtility.StoreClientInfo(
+                clientId: ref clientId,
+                lname: "User",
+                fname: "Test",
+                mname: null,
+                username: "test",
+                demographics: demographics,
+                privs: privs,
+                communities: comms,
+                technicalFieldId: c0.TechnicalFieldID,
+                org: org,
+                role: co.Role,
+                dept: co.Department,
+                email: co.Email,
+                phone: co.Phone,
+                isManager: co.IsManager,
+                isFinManager: co.IsFinManager,
+                subsidyStart: co.SubsidyStartDate,
+                newFacultyStart: co.NewFacultyStartDate,
+                addedAddress: null,
+                deletedAddress: null,
+                clientManagers: clientManagers,
+                clientAccounts: clientAccounts,
+                alert: out alert);
+
             Assert.AreEqual(c0, c1);
 
             var possibleAlerts = new
             {
-                inactiveTooLong = "Note that this client has been inactive for so long that access is not automatically reenabled. Please see the Lab Manager.",
-                noPhysicalAccess = "Store and physical access disabled. This client does not physical access.",
-                noActiveAcounts = "Store and physical access disabled for this client - no active accounts."
+                noPhysicalAccessPrivAlreadyDisabled = "This client does not have the Physical Access privilege. Physical access was already disabled.",
+                inactiveTooLongPhysicalAccessPrivRemoted = "Note that this client has been inactive for so long that access is not automatically reenabled. The Physical Access privilege has been removed."
             };
 
-            Assert.AreEqual(possibleAlerts.noPhysicalAccess, alert);
+            //Assert.AreEqual(possibleAlerts.noPhysicalAccessPrivAlreadyDisabled, alert);
+            Assert.AreEqual(possibleAlerts.inactiveTooLongPhysicalAccessPrivRemoted, alert);
+            Assert.IsFalse(c0.HasPriv(ClientPrivilege.PhysicalAccess));
+        }
+
+        [TestMethod]
+        public void ClientUtility_NewClientTest()
+        {
+            Client c = ClientUtility.NewClient("newclient", "newclient", "Client", "New", ClientPrivilege.LabUser, true);
+            Assert.IsTrue(c.ClientID > 0);
+            Assert.AreEqual("newclient", c.UserName);
+        }
+
+        [TestMethod]
+        public void ClientUtility_FindByManagerTest()
+        {
+            IEnumerable<Client> clients;
+
+            clients = ClientUtility.FindByManager(155);
+            int activeCount = clients.Count();
+
+            clients = ClientUtility.FindByManager(155, false);
+            int inactiveCount = clients.Count();
+
+            clients = ClientUtility.FindByManager(155, null);
+            Assert.AreEqual(activeCount + inactiveCount, clients.Count());
+        }
+
+        [TestMethod]
+        public void ClientUtility_FindByToolsTest()
+        {
+            IEnumerable<Client> clients;
+            int[] tools = { 10020, 10030, 61081 };
+
+            clients = ClientUtility.FindByTools(tools);
+            int activeCount = clients.Count();
+
+            clients = ClientUtility.FindByTools(tools, false);
+            int inactiveCount = clients.Count();
+
+            clients = ClientUtility.FindByTools(tools, null);
+            Assert.AreEqual(activeCount + inactiveCount, clients.Count());
+        }
+
+
+        [TestMethod]
+        public void ClientUtility_FindByCommunityTest()
+        {
+            IEnumerable<Client> clients;
+            int flag = 1 | 2 | 8 | 16;
+
+            clients = ClientUtility.FindByCommunity(flag);
+            int activeCount = clients.Count();
+
+            clients = ClientUtility.FindByCommunity(flag, false);
+            int inactiveCount = clients.Count();
+
+            clients = ClientUtility.FindByCommunity(flag, null);
+            Assert.AreEqual(activeCount + inactiveCount, clients.Count());
+        }
+
+        [TestMethod]
+        public void ClientUtility_FindByPrivilegeTest()
+        {
+            IEnumerable<Client> clients;
+            ClientPrivilege privs = ClientPrivilege.LabUser;
+
+            clients = ClientUtility.FindByPrivilege(privs);
+            int activeCount = clients.Count();
+
+            clients = ClientUtility.FindByPrivilege(privs, false);
+            int inactiveCount = clients.Count();
+
+            clients = ClientUtility.FindByPrivilege(privs, null);
+            Assert.AreEqual(activeCount + inactiveCount, clients.Count());
+        }
+
+        [TestMethod]
+        public void ClientUtility_FindByPeriodTest()
+        {
+            IEnumerable<Client> clients;
+            DateTime period = DateTime.Parse("2017-06-01");
+            Client test = DA.Current.Single<Client>(1600);
+
+            // normal user, do not show all
+            clients = ClientUtility.FindByPeriod(test, period);
+            Assert.AreEqual(1, clients.Count()); //only itself
+
+            clients = ClientUtility.FindByPeriod(test, period, true);
+            Assert.AreEqual(1, clients.Count()); //only itself
+
+            test.AddPriv(ClientPrivilege.Staff);
+
+            // staff user, do not show all
+            clients = ClientUtility.FindByPeriod(test, period);
+            Assert.AreEqual(1, clients.Count()); //only itself
+
+            // staff user, show all
+            clients = ClientUtility.FindByPeriod(test, period, true);
+            Assert.AreEqual(1059, clients.Count()); //everyone
+
+            test.RemovePriv(ClientPrivilege.Staff);
+
+            test.AddPriv(ClientPrivilege.Administrator);
+
+            // admin user, do not show all
+            clients = ClientUtility.FindByPeriod(test, period);
+            Assert.AreEqual(1059, clients.Count()); //everyone
+
+            // admin user, show all
+            clients = ClientUtility.FindByPeriod(test, period, true);
+            Assert.AreEqual(1059, clients.Count()); //everyone
+
+            test.RemovePriv(ClientPrivilege.Administrator);
+        }
+
+        [TestMethod]
+        public void ClientUtility_FindByDisplayNameTest()
+        {
+            var c = ClientUtility.FindByDisplayName("User, Test");
+            Assert.IsNotNull(c);
+            Assert.AreEqual("test", c.UserName);
+        }
+
+        [TestMethod]
+        public void ClientUtility_FindTest()
+        {
+            Client c;
+
+            c = ClientUtility.Find(1600);
+            Assert.IsNotNull(c);
+            Assert.AreEqual("test", c.UserName);
+
+            c = ClientUtility.Find("jgett");
+            Assert.IsNotNull(c);
+            Assert.AreEqual(1301, c.ClientID);
         }
     }
 }

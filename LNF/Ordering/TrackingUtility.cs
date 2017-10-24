@@ -58,6 +58,16 @@ namespace LNF.Ordering
             InsertNewTrackingItem(checkpoint, po, clientId, null);
         }
 
+        public static void Track(TrackingCheckpoints checkpoint, int poid, int clientId)
+        {
+            var po = DA.Current.Single<PurchaseOrder>(poid);
+
+            if (po == null)
+                throw new ItemNotFoundException<PurchaseOrder>(x => x.POID, poid);
+
+            InsertNewTrackingItem(checkpoint, po, clientId, null);
+        }
+
         private static void InsertNewTrackingItem(TrackingCheckpoints checkpoint, PurchaseOrder po, int clientId, XmlDocument trackingData)
         {
             if (!IsActiveCheckpoint(checkpoint)) return;

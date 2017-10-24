@@ -17,39 +17,19 @@ namespace LNF.CommonTools
             RechargeItems = 1
         }
 
-        private ReadStoreDataManager() { }
+        public ReadStoreDataManager() { }
 
-        private DateTime _StartDate { get; set; }
-        private DateTime _EndDate { get; set; }
-        private int _ClientID { get; set; }
-        private int _ItemID { get; set; }
-
-        public DateTime StartDate { get { return _StartDate; } }
-        public DateTime EndDate { get { return _EndDate; } }
-        public int ClientID { get { return _ClientID; } }
-        public int ItemID { get { return _ItemID; } }
-
-        public static ReadStoreDataManager Create(DateTime startDate, DateTime endDate, int clientId = 0, int itemId = 0)
+        public DataTable ReadStoreData(DateTime period, int clientId = 0, int itemId = 0)
         {
-            ReadStoreDataManager result = new ReadStoreDataManager();
-            result._StartDate = startDate;
-            result._EndDate = endDate;
-            result._ClientID = clientId;
-            result._ItemID = itemId;
-            return result;
-        }
-
-        public DataTable ReadStoreData()
-        {
-            using (var dba = DA.Current.GetAdapter())
+            using (var adap = DA.Current.GetAdapter())
             {
-                dba.SelectCommand
+                adap.SelectCommand
                     .AddParameter("@Action", "AggByPeriod")
-                    .AddParameter("@Period", StartDate)
-                    .AddParameterIf("@ClientID", ClientID > 0, ClientID)
-                    .AddParameterIf("@ItemID", ItemID > 0, ItemID);
+                    .AddParameter("@Period", period)
+                    .AddParameterIf("@ClientID", clientId > 0, clientId)
+                    .AddParameterIf("@ItemID", itemId > 0, itemId);
 
-                var dt = dba.FillDataTable("StoreData_Select");
+                var dt = adap.FillDataTable("StoreData_Select");
                 dt.TableName = "StoreUsage";
 
                 return dt;
@@ -58,40 +38,40 @@ namespace LNF.CommonTools
 
         //Making AllItems true for all items is logical.
         //However, in the SP, we need to pass in a 0 for all items.
-        public DataTable ReadStoreDataClean(StoreDataCleanOption option)
+        public DataTable ReadStoreDataClean(StoreDataCleanOption option, DateTime sd, DateTime ed, int clientId = 0, int itemId = 0)
         {
             //need to use DA.Current.GetAdapter() because of DryBox data
-            using (var adapter = DA.Current.GetAdapter())
+            using (var adap = DA.Current.GetAdapter())
             {
-                adapter.SelectCommand
+                adap.SelectCommand
                     .AddParameter("@Action", "ByClient")
-                    .AddParameter("@sDate", StartDate)
-                    .AddParameter("@eDate", EndDate)
+                    .AddParameter("@sDate", sd)
+                    .AddParameter("@eDate", ed)
                     .AddParameter("@AllItems", (int)option)
-                    .AddParameterIf("@ClientID", ClientID > 0, ClientID)
-                    .AddParameterIf("@ItemID", ItemID > 0, ItemID);
+                    .AddParameterIf("@ClientID", clientId > 0, clientId)
+                    .AddParameterIf("@ItemID", itemId > 0, itemId);
 
-                return adapter.FillDataTable("StoreDataClean_Select");
+                return adap.FillDataTable("StoreDataClean_Select");
             }
         }
 
-        public DataTable ReadStoreDataFiltered()
+        public DataTable ReadStoreDataFiltered(DateTime sd, DateTime ed, int clientId = 0)
         {
             //Cannot imagine what sort of cleaning would be needed, but for consistency...
             //Instead of calling StoreDataRaw once per client, pass ClientID=0 for all clients.
-            return ReadStoreDataRaw();
+            return ReadStoreDataRaw(sd, ed, clientId);
         }
 
-        public DataTable ReadStoreDataRaw()
+        public DataTable ReadStoreDataRaw(DateTime sd, DateTime ed, int clientId = 0)
         {
             //need to use DA.Current.GetAdapter() because of DryBox data
             using (var dba = DA.Current.GetAdapter())
             {
                 dba.SelectCommand
                     .AddParameter("@Action", "StoreDataRaw")
-                    .AddParameter("@sDate", StartDate)
-                    .AddParameter("@eDate", EndDate)
-                    .AddParameterIf("@ClientID", ClientID > 0, ClientID);
+                    .AddParameter("@sDate", sd)
+                    .AddParameter("@eDate", ed)
+                    .AddParameterIf("@ClientID", clientId > 0, clientId);
 
                 return dba.FillDataTable("sselMAS_Select");
             }

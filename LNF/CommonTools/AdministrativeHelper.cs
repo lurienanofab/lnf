@@ -20,7 +20,7 @@ namespace LNF.CommonTools
 
         public static IEnumerable<string> GetEmailListByPrivilege(ClientPrivilege privs)
         {
-            IEnumerable<string> result = ClientUtility.FindByClientPrivilege(privs).Select(c => c.PrimaryEmail());
+            IEnumerable<string> result = ClientUtility.FindByPrivilege(privs).Select(c => c.PrimaryEmail());
             return result;
         }
     }

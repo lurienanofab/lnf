@@ -60,7 +60,7 @@ namespace LNF.Scheduler
             var result = cm.Activities(x => x.ActivityID == activityId).FirstOrDefault();
 
             if (result == null)
-                throw new CacheItemNotFoundException("Activity", "ActivityID", activityId);
+                throw new CacheItemNotFoundException<Activity>(x => x.ActivityID, activityId);
 
             return result;
         }
@@ -112,7 +112,7 @@ namespace LNF.Scheduler
             var result = cm.Buildings(x => x.BuildingID == buildingId).FirstOrDefault();
 
             if (result == null)
-                throw new CacheItemNotFoundException("Building", "BuildingID", buildingId);
+                throw new CacheItemNotFoundException<Building>(x => x.BuildingID, buildingId);
 
             return result;
         }
@@ -147,7 +147,7 @@ namespace LNF.Scheduler
             var result = cm.Labs(x => x.LabID == labId).FirstOrDefault();
 
             if (result == null)
-                throw new CacheItemNotFoundException("Lab", "LabID", labId);
+                throw new CacheItemNotFoundException<Lab>(x => x.LabID, labId);
 
             return result;
         }
@@ -182,7 +182,7 @@ namespace LNF.Scheduler
             var result = cm.ProcessTechs(x => x.ProcessTechID == processTechId).FirstOrDefault();
 
             if (result == null)
-                throw new CacheItemNotFoundException("ProcessTech", "ProcessTechID", processTechId);
+                throw new CacheItemNotFoundException<ProcessTech>(x => x.ProcessTechID, processTechId);
 
             return result;
         }
@@ -216,7 +216,7 @@ namespace LNF.Scheduler
             var result = cm.Resources(x => x.ResourceID == resourceId).FirstOrDefault();
 
             if (result == null)
-                throw new CacheItemNotFoundException("Resource", "ResourceID", resourceId);
+                throw new CacheItemNotFoundException<Resource>(x => x.ResourceID, resourceId);
 
             return result;
         }

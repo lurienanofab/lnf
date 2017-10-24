@@ -35,7 +35,8 @@ namespace LNF.Impl.Logging
 
         protected override int OnPurge(DateTime cutoff)
         {
-            var count = DA.Current.QueryBuilder().AddParameter("@cutoff", cutoff).SqlQuery("DELETE dbo.ServiceLog WHERE LogDateTime < @cutoff").Result<int>();
+            string sql = "DELETE dbo.ServiceLog WHERE LogDateTime < @cutoff";
+            var count = DA.Current.SqlQuery(sql, new { cutoff }).Update();
             return count;
         }
     }

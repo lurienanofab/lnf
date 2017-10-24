@@ -31,7 +31,7 @@ namespace LNF.Ordering
             return query.OrderBy(x => x.VendorName);
         }
 
-        public static Vendor CopyData(Client toClient, Vendor fromVendor)
+        public static Vendor CopyData(int toClientId, Vendor fromVendor)
         {
             Vendor v = new Vendor()
             {
@@ -39,7 +39,7 @@ namespace LNF.Ordering
                 Address1 = fromVendor.Address1,
                 Address2 = fromVendor.Address2,
                 Address3 = fromVendor.Address3,
-                ClientID = toClient.ClientID,
+                ClientID = toClientId,
                 Contact = fromVendor.Contact,
                 Email = fromVendor.Email,
                 Fax = fromVendor.Fax,

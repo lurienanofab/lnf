@@ -30,6 +30,18 @@ namespace LNF.Models.Data
             return (item.Privs & privs) > 0;
         }
 
+        public static void AddPriv(this IPrivileged item, ClientPrivilege privs)
+        {
+            if (item == null) return;
+            item.Privs |= privs;
+        }
+
+        public static void RemovePriv(this IPrivileged item, ClientPrivilege privs)
+        {
+            if (item == null) return;
+            item.Privs &= ~privs;
+        }
+
         public static string[] Roles(this IPrivileged item)
         {
             return item.Privs.ToString().Split(',').Select(x => x.Trim()).ToArray();
