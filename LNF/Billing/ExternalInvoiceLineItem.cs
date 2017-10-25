@@ -5,10 +5,9 @@ namespace LNF.Billing
 {
     public class ExternalInvoiceLineItem
     {
-        public int ClientID { get; set; }
-        public int OrgAcctID { get; set; }
         public int AccountID { get; set; }
         public int OrgID { get; set; }
+        public int ClientID { get; set; }
         public int ChargeTypeID { get; set; }
         public string LName { get; set; }
         public string FName { get; set; }

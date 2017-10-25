@@ -20,7 +20,7 @@ namespace LNF.Billing
             using (var dba = DA.Current.GetAdapter())
             {
                 DataTable dt = dba.ApplyParameters(new { Action = "ActiveExternal", sDate = sd, eDate = ed }).FillDataTable("Org_Select");
-                dt.PrimaryKey = new[] { dt.Columns["OrgAcctID"] }; //this is pointless because AccountID is already unique
+                dt.PrimaryKey = new[] { dt.Columns["AccountID"] };
                 return dt;
             }
         }
@@ -185,10 +185,9 @@ namespace LNF.Billing
         {
             return new ExternalInvoiceLineItem()
             {
-                ClientID = dr.Field<int>("ClientID"),
-                OrgAcctID = dr.Field<int>("OrgAcctID"),
-                OrgID = dr.Field<int>("OrgID"),
                 AccountID = dr.Field<int>("AccountID"),
+                OrgID = dr.Field<int>("OrgID"),
+                ClientID = dr.Field<int>("ClientID"),
                 ChargeTypeID = dr.Field<int>("ChargeTypeID"),
                 LName = dr.Field<string>("LName"),
                 FName = dr.Field<string>("FName"),

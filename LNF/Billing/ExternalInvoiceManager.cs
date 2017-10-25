@@ -27,7 +27,7 @@ namespace LNF.Billing
         /// </summary>
         public ExternalInvoiceManager(int accountId, DateTime sd, DateTime ed, bool showRemote)
         {
-            AccountID = 0;
+            AccountID = accountId;
             StartDate = sd;
             EndDate = ed;
             ShowRemote = showRemote;
@@ -59,9 +59,9 @@ namespace LNF.Billing
             }
         }
 
-        public IList<ExternalInvoice> GetInvoices(int orgAcctId = 0)
+        public IList<ExternalInvoice> GetInvoices(int accountId = 0)
         {
-            var headers = GetHeaders(orgAcctId);
+            var headers = GetHeaders(accountId);
             IList<ExternalInvoice> result = new List<ExternalInvoice>();
 
             foreach (var h in headers)
@@ -86,11 +86,11 @@ namespace LNF.Billing
             return new ExternalInvoiceUsage(result);
         }
 
-        public IEnumerable<ExternalInvoiceHeader> GetHeaders(int orgAcctId = 0)
+        public IEnumerable<ExternalInvoiceHeader> GetHeaders(int accountId = 0)
         {
             var headers = new List<ExternalInvoiceHeader>();
 
-            var lineItems = _data.SelectMany(x => x.Value).Where(x => orgAcctId == 0 || x.OrgAcctID == orgAcctId);
+            var lineItems = _data.SelectMany(x => x.Value).Where(x => accountId == 0 || x.AccountID == accountId);
 
             // First get orgs based on usage. If one has usage it should be included even if it's not active.
             foreach (var item in lineItems)
@@ -99,9 +99,8 @@ namespace LNF.Billing
                 {
                     headers.Add(new ExternalInvoiceHeader()
                     {
-                        OrgAcctID = item.OrgAcctID,
-                        OrgID = item.OrgID,
                         AccountID = item.AccountID,
+                        OrgID = item.OrgID,
                         OrgName = item.OrgName,
                         AccountName = item.AccountName,
                         PoEndDate = item.PoEndDate,
@@ -127,9 +126,8 @@ namespace LNF.Billing
                         // found an active org with no activity
                         headers.Add(new ExternalInvoiceHeader()
                         {
-                            OrgAcctID = dr.Field<int>("OrgAcctID"),
-                            OrgID = dr.Field<int>("OrgID"),
                             AccountID = dr.Field<int>("AccountID"),
+                            OrgID = dr.Field<int>("OrgID"),
                             OrgName = dr.Field<string>("OrgName"),
                             AccountName = dr.Field<string>("Name"),
                             PoEndDate = dr.Field<DateTime?>("PoEndDate"),

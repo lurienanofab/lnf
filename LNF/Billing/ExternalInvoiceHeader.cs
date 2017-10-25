@@ -4,9 +4,8 @@ namespace LNF.Billing
 {
     public class ExternalInvoiceHeader
     {
-        public int OrgAcctID { get; set; }
-        public int OrgID { get; set; }
         public int AccountID { get; set; }
+        public int OrgID { get; set; }
         public string OrgName { get; set; }
         public string AccountName { get; set; }
         public DateTime? PoEndDate { get; set; }
