@@ -41,9 +41,16 @@ namespace LNF.Data
             _acctNum = AccountNumber.Parse(_acct.Number);
         }
 
+        public static AccountChartFields Create(Account acct)
+        {
+            return new AccountChartFields(acct);
+        }
+
         private Account _acct;
         private AccountNumber _acctNum;
 
+        public int AccountID { get { return _acct.AccountID; } }
+        public string AccountName { get { return _acct.Name; } }
         public string Number { get { return _acct.Number; } }
         public string Account { get { return _acctNum.Account; } }
         public string Fund { get { return _acctNum.Fund; } }
@@ -55,10 +62,15 @@ namespace LNF.Data
 
         public override string ToString()
         {
-            if (_acct.Org.OrgType.OrgTypeID == 1)
+            if (IsChartFieldOrg(_acct.Org))
                 return string.Join("-", Account, Fund, Department, Program, Class, Project);
             else
                 return Number;
+        }
+
+        public static bool IsChartFieldOrg(Org org)
+        {
+            return org.OrgType.OrgTypeID == 1;
         }
     }
 }

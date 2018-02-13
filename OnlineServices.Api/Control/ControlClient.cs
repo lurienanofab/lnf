@@ -7,7 +7,7 @@ namespace OnlineServices.Api.Control
 {
     public class ControlClient : ApiClient
     {
-        internal ControlClient() : base(ConfigurationManager.AppSettings["ApiHost"]) { }
+        public ControlClient() : base(ConfigurationManager.AppSettings["ApiHost"]) { }
 
         public async Task<object> GetAllBlockStates()
         {

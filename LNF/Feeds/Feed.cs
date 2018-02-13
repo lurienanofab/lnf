@@ -1,4 +1,5 @@
-﻿using LNF.Repository;
+﻿using LNF.CommonTools;
+using LNF.Repository;
 using LNF.Repository.Data;
 using System;
 using System.Data;
@@ -62,7 +63,7 @@ namespace LNF.Feeds
                     int i = 0;
                     foreach (DataRow dr in _Data.Rows)
                     {
-                        dr["UID"] = RepositoryUtility.ConvertTo(dr["UID"], "feed_item_" + i.ToString()) + "@" + serverIp;
+                        dr["UID"] = Utility.ConvertTo(dr["UID"], "feed_item_" + i.ToString()) + "@" + serverIp;
                         if (dr["DTSTAMP"] == DBNull.Value)
                             dr["DTSTAMP"] = utc_build_time.ToString("yyyyMMdd'T'HHmmss'Z'");
                         if (dr["LOCATION"] == DBNull.Value)

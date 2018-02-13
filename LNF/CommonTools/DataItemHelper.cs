@@ -1,5 +1,4 @@
-﻿using LNF.Repository;
-using System;
+﻿using System;
 using System.Data;
 using System.Reflection;
 
@@ -11,9 +10,7 @@ namespace LNF.CommonTools
 
         public DataItemHelper(object obj)
         {
-            if (obj == null)
-                throw new ArgumentNullException("obj");
-            _obj = obj;
+            _obj = obj ?? throw new ArgumentNullException("obj");
         }
 
         public bool IsDataRow
@@ -70,7 +67,7 @@ namespace LNF.CommonTools
             if (string.IsNullOrEmpty(key))
                 throw new ArgumentException("The parameter key must not be null or empty.");
             object temp = Value(key);
-            T result = RepositoryUtility.ConvertTo<T>(temp, defval);
+            T result = Utility.ConvertTo(temp, defval);
             return result;
         }
 

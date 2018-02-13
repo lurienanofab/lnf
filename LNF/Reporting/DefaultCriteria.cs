@@ -1,4 +1,5 @@
-﻿using LNF.Data;
+﻿using LNF.CommonTools;
+using LNF.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using System;
@@ -44,7 +45,7 @@ namespace LNF.Reporting
                 return defval;
             string raw = parameters[key];
             if (string.IsNullOrEmpty(raw)) return defval;
-            return RepositoryUtility.ConvertTo(raw, defval);
+            return Utility.ConvertTo(raw, defval);
         }
 
         public IEnumerable<Client> ActiveClients()

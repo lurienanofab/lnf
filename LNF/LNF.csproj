@@ -125,6 +125,7 @@
     <Compile Include="Reporting\ClientItemUtility.cs" />
     <Compile Include="Reporting\ManagerUsageSummaryItem.cs" />
     <Compile Include="Reporting\ReportGenerator.cs" />
+    <Compile Include="Repository\Bytes.cs" />
     <Compile Include="Repository\Data\ReservationFeed.cs" />
     <Compile Include="Repository\IModelFactory.cs" />
     <Compile Include="Inventory\CategoryUtility.cs" />
@@ -401,7 +402,6 @@
     <Compile Include="Repository\Reporting\EmailPreference.cs" />
     <Compile Include="Repository\Reporting\ManagerUsageCharge.cs" />
     <Compile Include="Repository\Reporting\Template.cs" />
-    <Compile Include="Repository\Reporting\UsageChargeBase.cs" />
     <Compile Include="Repository\Reporting\UserUsageCharge.cs" />
     <Compile Include="Repository\Repository.cs" />
     <Compile Include="Repository\RepositoryUtility.cs" />

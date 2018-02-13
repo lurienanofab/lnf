@@ -289,16 +289,16 @@ namespace LNF.Impl.Reporting
 
             public ToolUtilizationItem(DataRow dr)
             {
-                ActivityID = RepositoryUtility.ConvertTo(dr["ActivityID"], 0);
-                ResourceID = RepositoryUtility.ConvertTo(dr["ResourceID"], 0);
-                ProcessTechID = RepositoryUtility.ConvertTo(dr["ProcessTechID"], 0);
-                LabID = RepositoryUtility.ConvertTo(dr["LabID"], 0);
-                ActivityName = RepositoryUtility.ConvertTo(dr["ActivityName"], string.Empty);
-                ResourceName = RepositoryUtility.ConvertTo(dr["ResourceName"], string.Empty);
-                ProcessTechName = RepositoryUtility.ConvertTo(dr["ProcessTechName"], string.Empty);
-                ChargeDuration = RepositoryUtility.ConvertTo(dr["ChargeDuration"], 0D);
-                SchedDuration = RepositoryUtility.ConvertTo(dr["SchedDuration"], 0D);
-                ActDuration = RepositoryUtility.ConvertTo(dr["ActDuration"], 0D);
+                ActivityID = Utility.ConvertTo(dr["ActivityID"], 0);
+                ResourceID = Utility.ConvertTo(dr["ResourceID"], 0);
+                ProcessTechID = Utility.ConvertTo(dr["ProcessTechID"], 0);
+                LabID = Utility.ConvertTo(dr["LabID"], 0);
+                ActivityName = Utility.ConvertTo(dr["ActivityName"], string.Empty);
+                ResourceName = Utility.ConvertTo(dr["ResourceName"], string.Empty);
+                ProcessTechName = Utility.ConvertTo(dr["ProcessTechName"], string.Empty);
+                ChargeDuration = Utility.ConvertTo(dr["ChargeDuration"], 0D);
+                SchedDuration = Utility.ConvertTo(dr["SchedDuration"], 0D);
+                ActDuration = Utility.ConvertTo(dr["ActDuration"], 0D);
             }
         }
     }

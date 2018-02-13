@@ -1,4 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Conventions;
 using LNF.Models.Billing;
 using LNF.Repository.Reporting;
 
@@ -11,9 +12,10 @@ namespace LNF.Impl.Mappings.Reporting
             Schema("Reporting.dbo");
             Table("v_UserUsageCharges");
             ReadOnly();
+
             Id(x => x.UsageChargeID);
-            Map(x => x.BillingCategory).CustomType<GenericEnumMapper<BillingCategory>>();
             Map(x => x.Period);
+            Map(x => x.BillingCategory).CustomType<GenericEnumMapper<BillingCategory>>();
             Map(x => x.ClientID);
             Map(x => x.UserName);
             Map(x => x.LName);

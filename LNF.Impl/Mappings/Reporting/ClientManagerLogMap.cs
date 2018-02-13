@@ -10,15 +10,18 @@ namespace LNF.Impl.Mappings.Reporting
             Schema("Reporting.dbo");
             Table("v_ClientManagerLog");
             ReadOnly();
+
             CompositeId()
                 .KeyProperty(x => x.ManagerLogID)
                 .KeyProperty(x => x.UserLogID);
+            Map(x => x.ManagerTableName);
+            Map(x => x.ManagerRecord);
             Map(x => x.ManagerEnableDate);
             Map(x => x.ManagerDisableDate);
+            Map(x => x.UserTableName);
+            Map(x => x.UserRecord);
             Map(x => x.UserEnableDate);
             Map(x => x.UserDisableDate);
-            Map(x => x.ManagerClientAccountID);
-            Map(x => x.UserClientAccountID);
             Map(x => x.ManagerClientID);
             Map(x => x.ManagerUserName);
             Map(x => x.ManagerLName);
@@ -42,6 +45,12 @@ namespace LNF.Impl.Mappings.Reporting
             Map(x => x.OrgID);
             Map(x => x.OrgName);
             Map(x => x.IsSubsidyOrg);
+            Map(x => x.IsRemote);
+            Map(x => x.RemoteClientClientID);
+            Map(x => x.RemoteClientUserName);
+            Map(x => x.RemoteClientLName);
+            Map(x => x.RemoteClientFName);
+            Map(x => x.RemoteClientEmail);
         }
     }
 }

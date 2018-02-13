@@ -7,13 +7,15 @@ namespace LNF.Repository.Reporting
     public class ClientManagerLog : IDataItem
     {
         public virtual int ManagerLogID { get; set; }
-        public virtual int UserLogID { get; set; }
+        public virtual string ManagerTableName { get; set; }
+        public virtual int ManagerRecord { get; set; }
         public virtual DateTime ManagerEnableDate { get; set; }
         public virtual DateTime? ManagerDisableDate { get; set; }
+        public virtual int UserLogID { get; set; }
+        public virtual string UserTableName { get; set; }
+        public virtual int UserRecord { get; set; }
         public virtual DateTime UserEnableDate { get; set; }
         public virtual DateTime? UserDisableDate { get; set; }
-        public virtual int ManagerClientAccountID { get; set; }
-        public virtual int UserClientAccountID { get; set; }
         public virtual int ManagerClientID { get; set; }
         public virtual string ManagerUserName { get; set; }
         public virtual string ManagerLName { get; set; }
@@ -28,10 +30,12 @@ namespace LNF.Repository.Reporting
         public virtual bool ManagerIsFinancialManager { get; set; }
         public virtual bool UserIsTechnicalManager { get; set; }
         public virtual bool UserIsFinancialManager { get; set; }
+
         /// <summary>
         /// Indicates if the user is also an account manager.
         /// </summary>
         public virtual bool UserManager { get; set; }
+
         public virtual ClientPrivilege UserPrivs { get; set; }
         public virtual int AccountID { get; set; }
         public virtual string AccountName { get; set; }
@@ -40,6 +44,12 @@ namespace LNF.Repository.Reporting
         public virtual int OrgID { get; set; }
         public virtual string OrgName { get; set; }
         public virtual bool IsSubsidyOrg { get; set; }
+        public virtual bool IsRemote { get; set; }
+        public virtual int RemoteClientClientID { get; set; }
+        public virtual string RemoteClientUserName { get; set; }
+        public virtual string RemoteClientLName { get; set; }
+        public virtual string RemoteClientFName { get; set; }
+        public virtual string RemoteClientEmail { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -64,6 +74,15 @@ namespace LNF.Repository.Reporting
         {
             var query = DA.Current.Query<ClientManagerLog>().Where(x => x.ManagerClientID == clientId
                 && (x.ManagerEnableDate < ed && (x.ManagerDisableDate == null || x.ManagerDisableDate.Value > sd))
+                && (x.UserEnableDate < ed && (x.UserDisableDate == null || x.UserDisableDate.Value > sd)));
+
+            return query;
+        }
+
+        public static IQueryable<ClientManagerLog> SelectByPeriod(DateTime sd, DateTime ed)
+        {
+            var query = DA.Current.Query<ClientManagerLog>().Where(x =>
+                (x.ManagerEnableDate < ed && (x.ManagerDisableDate == null || x.ManagerDisableDate.Value > sd))
                 && (x.UserEnableDate < ed && (x.UserDisableDate == null || x.UserDisableDate.Value > sd)));
 
             return query;

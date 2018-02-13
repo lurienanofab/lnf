@@ -2,21 +2,23 @@
 using LNF.Repository;
 using LNF.Repository.Data;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
 namespace LNF
 {
-    public class SiteMenu
+    public class SiteMenu : IEnumerable<Menu>
     {
+        private IList<Menu> _items;
+
         public ClientModel Client { get; }
 
         private SiteMenu(ClientModel client)
         {
-            if (client == null)
-                throw new ArgumentNullException("The parameter client cannot be null.");
-            Client = client;
+            Client = client ?? throw new ArgumentNullException("client");
+            SelectMenuItems();
         }
 
         public static SiteMenu Create(ClientModel client)
@@ -34,11 +36,10 @@ namespace LNF
             get { return Providers.Context.Current.UserHostAddress.StartsWith("192.168.1"); }
         }
 
-        public IList<Menu> Select()
+        private void SelectMenuItems()
         {
-            IList<Menu> menu = DA.Current.Query<Menu>().Where(x => !x.Deleted && x.Active).ToList();
-            SetLoginUrl(menu);
-            return menu;
+            _items = DA.Current.Query<Menu>().Where(x => !x.Deleted && x.Active).ToList();
+            SetLoginUrl(_items);
 
             //bool useIOF2 = this.UseIOF2;
 
@@ -104,6 +105,16 @@ namespace LNF
             {
                 logout.MenuURL = Providers.Context.LoginUrl;
             }
+        }
+
+        public IEnumerator<Menu> GetEnumerator()
+        {
+            return _items.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

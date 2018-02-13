@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LNF.CommonTools;
+using System;
 using System.Data;
 using System.Data.Common;
 
@@ -227,7 +228,7 @@ namespace LNF.Repository
         {
             SelectCommand.CommandText = sql;
             object obj = SelectCommand.ExecuteScalar();
-            T result = RepositoryUtility.ConvertTo<T>(obj, default(T));
+            T result = Utility.ConvertTo(obj, default(T));
             OnStatementExecuted(CreateEventArgs("ExecuteScalar", new[] { sql }, -1));
             return result;
         }

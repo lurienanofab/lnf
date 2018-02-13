@@ -1,16 +1,14 @@
 ﻿using LNF.CommonTools;
 using LNF.Repository;
-using LNF.Repository.Ordering;
 using System;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Linq.Expressions;
 
 namespace LNF.Ordering
 {
     public class PurchaseOrderSearchFilter
     {
-        private bool _refresh;
+        //private bool _refresh;
 
         public int ClientID { get; }
         public bool IncludeSelf { get; }
@@ -28,6 +26,7 @@ namespace LNF.Ordering
         public int Skip { get; }
         public int Take { get; }
 
+        [Obsolete]
         public PurchaseOrderSearchFilter()
         {
             ClientID = Providers.Context.Current.GetRequestValueOrDefault("clientId", -999);
@@ -43,7 +42,7 @@ namespace LNF.Ordering
             POID = Providers.Context.Current.GetRequestValueOrDefault("poid", 0);
             DisplayOption = Providers.Context.Current.GetRequestValueOrDefault("displayOption", 0);
             ShortCode = Providers.Context.Current.GetRequestValueOrDefault("shortCode", string.Empty);
-            _refresh = bool.Parse(Providers.Context.Current.GetRequestValueOrDefault("refresh", "false"));
+            //_refresh = bool.Parse(Providers.Context.Current.GetRequestValueOrDefault("refresh", "false"));
         }
 
         private int[] GetStatusListFromString(string list)
@@ -68,12 +67,12 @@ namespace LNF.Ordering
             POID = nvc.Value("poid", 0);
             DisplayOption = nvc.Value("displayOption", 0);
             ShortCode = nvc.Value("shortCode", string.Empty);
-            _refresh = nvc.Value("refresh", false);
+            //_refresh = nvc.Value("refresh", false);
         }
 
-        public bool Refresh()
-        {
-            return _refresh;
-        }
+        //public bool Refresh()
+        //{
+        //    return _refresh;
+        //}
     }
 }

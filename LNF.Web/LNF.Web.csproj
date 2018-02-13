@@ -149,6 +149,9 @@
     <Compile Include="Content\LNFUserControl.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Content\RedirectPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="RequestLog.cs" />
     <Compile Include="ReturnToAttribute.cs" />
     <Compile Include="Controls\BootstrapModal.cs" />

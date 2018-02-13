@@ -1,3 +1,4 @@
+using LNF.Data;
 using LNF.Models.Data;
 using System;
 
@@ -110,13 +111,18 @@ namespace LNF.Repository.Data
         /// <returns>The AccountID</returns>
         public override int Record() { return AccountID; }
 
+        public virtual AccountChartFields GetChartFields()
+        {
+            return new AccountChartFields(this);
+        }
+
         /// <summary>
         /// Gets the full name of the account - including ShortCode, Name, and OrgName
         /// </summary>
         /// <returns>The string value of the full account name</returns>
         public virtual string GetFullAccountName()
         {
-            return Account.GetFullAccountName(ShortCode, Name, Org.OrgName);
+            return GetFullAccountName(ShortCode, Name, Org.OrgName);
         }
 
         /// <summary>

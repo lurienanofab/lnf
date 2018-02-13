@@ -41,9 +41,7 @@ namespace LNF.Web.Controls.Navigation
 
             _Items.Clear();
 
-            var menuItems = DataSource.Select();
-
-            var parents = menuItems.Where(x => x.MenuParentID == 0).OrderBy(x => x.SortOrder);
+            var parents = DataSource.Where(x => x.MenuParentID == 0).OrderBy(x => x.SortOrder);
 
             foreach (var pmenu in parents)
             {
@@ -58,7 +56,7 @@ namespace LNF.Web.Controls.Navigation
                 else
                     p.Target = Target;
 
-                var children = menuItems.Where(x => x.MenuParentID == pmenu.MenuID).OrderBy(x => x.SortOrder);
+                var children = DataSource.Where(x => x.MenuParentID == pmenu.MenuID).OrderBy(x => x.SortOrder);
 
                 foreach (var cmenu in children)
                 {

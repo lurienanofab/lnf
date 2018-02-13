@@ -1,5 +1,4 @@
 ﻿using LNF.CommonTools;
-using LNF.Repository;
 using System.Collections.Generic;
 
 namespace LNF.Scripting
@@ -46,7 +45,7 @@ namespace LNF.Scripting
         {
             object result = this[key];
             if (result == null) return defval;
-            else return RepositoryUtility.ConvertTo(result, defval);
+            else return Utility.ConvertTo(result, defval);
         }
 
         public string Replace(string input)

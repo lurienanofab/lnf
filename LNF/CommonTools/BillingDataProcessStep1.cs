@@ -89,6 +89,8 @@ namespace LNF.CommonTools
                 dtResult.Columns["Entries"].DefaultValue = 0;
                 dtResult.Columns["Entries"].AllowDBNull = false;
 
+                dtAccount.Columns.Add("IsGrowerObserver", typeof(bool), string.Format("BillingTypeID = {0}", (int)BillingType.Grower_Observer));
+
                 int cid = 0;
                 int roomId = 0;
                 int accountId = 0;
@@ -128,7 +130,7 @@ namespace LNF.CommonTools
                             physicalDays = rowsRoomMonth[0].Field<int>("PhysicalDays");
                             totalHours = Convert.ToDecimal(rowsRoomMonth[0].Field<double>("TotalHoursPerMonth"));
 
-                            //hard code the roomID here.  No better alternative
+                            //hard code the roomID here.  No better alternative [really??]
                             int[] napRooms = { 2, 4 };
                             if (napRooms.Contains(roomId))
                             {
@@ -156,28 +158,29 @@ namespace LNF.CommonTools
 
                                 if (!isFound)
                                 {
-                                    //not found, so this is probably a remote processing account, we should add it to the drowsaccount
-                                    DataRow newrow = dtAccount.NewRow();
-                                    newrow["AccountID"] = dr["AccountID"];
-                                    newrow["ClientID"] = cid;
-                                    newrow["OrgID"] = dr["OrgID"];
-                                    newrow["ChargeTypeID"] = dr["ChargeTypeID"];
+                                    //not found, so this is probably a remote processing account, we should add it to dtAccount
+                                    DataRow ndr = dtAccount.NewRow();
+                                    ndr["AccountID"] = dr["AccountID"];
+                                    ndr["ClientID"] = cid;
+                                    ndr["OrgID"] = dr["OrgID"];
+                                    ndr["ChargeTypeID"] = dr["ChargeTypeID"];
 
                                     DataRow[] drsClientRemote = dtClientRemote.Select(string.Format("ClientID = {0} AND AccountID = {1}", cid, dr["AccountID"]));
 
                                     if (drsClientRemote.Length > 0)
-                                        newrow["BillingTypeID"] = BillingType.Remote;
+                                        ndr["BillingTypeID"] = BillingType.Remote;
                                     else
-                                        newrow["BillingTypeID"] = BillingType.RegularException;
+                                        ndr["BillingTypeID"] = BillingType.RegularException;
 
-                                    dtAccount.Rows.Add(newrow);
+                                    dtAccount.Rows.Add(ndr);
 
                                     remoteAccounts.Add(dr.Field<int>("AccountID"));
                                 }
                             }
 
                             //we might have new remote accounts added, so we have to regenerate all the rows with this client
-                            DataRow[] drowsAccountWithRemote = dtAccount.Select(string.Format("ClientID = {0}", cid));
+                            // [2017-11-01 jg] need to have any Grower/Observer orgs at the end because physical days will be set to zero, so do them last
+                            DataRow[] drowsAccountWithRemote = dtAccount.Select(string.Format("ClientID = {0}", cid), "IsGrowerObserver ASC, OrgID ASC, AccountID ASC");
                             numberOfAccountsPerClient = drowsAccountWithRemote.Length;
 
                             //This is used to distinguish different orgs so we can do apportionment later on
@@ -192,8 +195,8 @@ namespace LNF.CommonTools
                             bool isGrowerObserver = drowsAccountWithRemote.Any(x => x.Field<int>("BillingTypeID") == BillingType.Grower_Observer);
                             int numberOfOrgs = drowsAccountWithRemote.Select(x => x.Field<int>("OrgID")).Distinct().Count();
 
-                            if (isGrowerObserver && numberOfOrgs > 1)
-                                throw new InvalidOperationException(string.Format("A grower/observer has multiple orgs but this is not allowed. [Period = {0:yyyy-MM-dd}, ClientID = {1}, RoomID = {2}]", period, cid, roomId));
+                            //if (isGrowerObserver && numberOfOrgs > 1)
+                            //    throw new InvalidOperationException(string.Format("A grower/observer has multiple orgs but this is not allowed. [Period = {0:yyyy-MM-dd}, ClientID = {1}, RoomID = {2}]", period, cid, roomId));
 
                             foreach (DataRow arow in drowsAccountWithRemote)
                             {

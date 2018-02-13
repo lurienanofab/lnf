@@ -1,12 +1,7 @@
-﻿using System;
+﻿using LNF.CommonTools;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Data;
-using LNF.CommonTools;
-using LNF.Repository;
-using LNF.Repository.Data;
-using LNF.Repository.Scheduler;
 
 namespace LNF.Helpdesk
 {
@@ -35,7 +30,7 @@ namespace LNF.Helpdesk
                     Subject = dr["subject"].ToString(),
                     CreatedOn = DateTime.Parse(dr["created"].ToString()),
                     AssignedTo = dr["assigned_to"].ToString(),
-                    ResourceID = RepositoryUtility.ConvertTo(dr["resource_id"], 0)
+                    ResourceID = Utility.ConvertTo(dr["resource_id"], 0)
                 });
             }
 

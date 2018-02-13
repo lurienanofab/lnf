@@ -702,11 +702,11 @@ namespace LNF.Scheduler
                 {
                     if (dr.RowState != DataRowState.Deleted)
                     {
-                        int rsvId = RepositoryUtility.ConvertTo(dr["ReservationID"], 0);
+                        int rsvId = Utility.ConvertTo(dr["ReservationID"], 0);
 
                         if (rsvId <= 0) rsvId = reservationId;
 
-                        int inviteeId = RepositoryUtility.ConvertTo(dr["InviteeID"], 0);
+                        int inviteeId = Utility.ConvertTo(dr["InviteeID"], 0);
 
                         if (rsvId != 0 && inviteeId != 0)
                         {

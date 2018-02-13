@@ -7,15 +7,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Linq.Expressions;
 
 namespace LNF.Ordering
 {
     public class PurchaseOrderSearchUtility
     {
-        public static DataTablesResult<PurchaseOrderSearchModel> GetDataTablesResult()
+        public static DataTablesResult<PurchaseOrderSearchModel> GetDataTablesResult(PurchaseOrderSearchFilter filter)
         {
-            IList<PurchaseOrderSearchModel> query = SearchTools.GetQuery();
+            IList<PurchaseOrderSearchModel> query = SearchTools.GetQuery(filter);
 
             if (query == null) return null;
 
@@ -124,12 +123,14 @@ namespace LNF.Ordering
                 return nvc;
             }
 
+            [Obsolete]
             public static IList<PurchaseOrderSearchModel> GetQuery(NameValueCollection nvc)
             {
                 PurchaseOrderSearchFilter filter = new PurchaseOrderSearchFilter(nvc);
                 return GetQuery(filter);
             }
 
+            [Obsolete]
             public static IList<PurchaseOrderSearchModel> GetQuery()
             {
                 PurchaseOrderSearchFilter filter = new PurchaseOrderSearchFilter();
@@ -138,16 +139,16 @@ namespace LNF.Ordering
 
             public static IList<PurchaseOrderSearchModel> GetQuery(PurchaseOrderSearchFilter filter)
             {
-                if (filter.Refresh())
-                    ClearSearchQuery();
+                //if (filter.Refresh())
+                //    ClearSearchQuery();
 
-                IList<PurchaseOrderSearchModel> query = RetrieveSearchQuery();
+                IList<PurchaseOrderSearchModel> query; //= RetrieveSearchQuery();
 
-                if (query == null)
-                {
-                    query = SearchPO(filter.ClientID, filter.IncludeSelf, filter.OtherClientID, filter.VendorID, filter.VendorNameList, filter.VendorNameText, filter.VendorSearchType, filter.Keywords, filter.PartNum, filter.StatusList, filter.POID, filter.DisplayOption, filter.ShortCode).Model<PurchaseOrderSearchModel>();
-                    StoreSearchQuery(query);
-                }
+                //if (query == null)
+                //{
+                query = SearchPO(filter.ClientID, filter.IncludeSelf, filter.OtherClientID, filter.VendorID, filter.VendorNameList, filter.VendorNameText, filter.VendorSearchType, filter.Keywords, filter.PartNum, filter.StatusList, filter.POID, filter.DisplayOption, filter.ShortCode).Model<PurchaseOrderSearchModel>();
+                //StoreSearchQuery(query);
+                //}
 
                 return query;
             }
@@ -161,25 +162,25 @@ namespace LNF.Ordering
                     return o.ToString();
             }
 
-            public static IList<PurchaseOrderSearchModel> RetrieveSearchQuery()
-            {
-                IList<PurchaseOrderSearchModel> result = null;
-                int clientId = CacheManager.Current.ClientID;
-                var searchResult = PurchaseOrderSearchResult.Get(x => x.ClientID == clientId);
-                if (searchResult != null)
-                    result = searchResult.Items;
-                return result;
-            }
+            //public static IList<PurchaseOrderSearchModel> RetrieveSearchQuery()
+            //{
+            //    IList<PurchaseOrderSearchModel> result = null;
+            //    int clientId = CacheManager.Current.ClientID;
+            //    var searchResult = PurchaseOrderSearchResult.Get(x => x.ClientID == clientId);
+            //    if (searchResult != null)
+            //        result = searchResult.Items;
+            //    return result;
+            //}
 
-            public static void StoreSearchQuery(IList<PurchaseOrderSearchModel> query)
-            {
-                PurchaseOrderSearchResult.Set(CacheManager.Current.ClientID, query);
-            }
+            //public static void StoreSearchQuery(IList<PurchaseOrderSearchModel> query)
+            //{
+            //    PurchaseOrderSearchResult.Set(CacheManager.Current.ClientID, query);
+            //}
 
-            public static void ClearSearchQuery()
-            {
-                PurchaseOrderSearchResult.Delete(CacheManager.Current.ClientID);
-            }
+            //public static void ClearSearchQuery()
+            //{
+            //    PurchaseOrderSearchResult.Delete(CacheManager.Current.ClientID);
+            //}
         }
     }
 }

@@ -56,15 +56,40 @@ namespace LNF.CommonTools
             switch (format)
             {
                 case "html":
-                    sb.AppendLine(@"<table style=""border-collapse: collapse;"">");
+                case "html-bootstrap":
+                    var dict = new Dictionary<string, IDictionary<string, string>>()
+                    {
+                        { "html", new Dictionary<string, string>() {
+                            { "table-style", "border-collapse: collapse;" },
+                            { "table-class", "" },
+                            { "th-style", "font-size: 9pt; padding: 5px; background-color: #D2D2D2; border: solid 1px #808080;" },
+                            { "th-class", "" },
+                            { "td-deleted-style", "font-size: 9pt; padding: 5px; border: solid 1px #808080; font-style: italic;" },
+                            { "td-deleted-class", "" },
+                            { "td-style", "font-size: 9pt; padding: 5px; border: solid 1px #808080;" },
+                            { "td-class", "" }
+                        }},
+                        { "html-bootstrap", new Dictionary<string, string>() {
+                            { "table-style", "" },
+                            { "table-class", "table table-striped" },
+                            { "th-style", "" },
+                            { "th-class", "" },
+                            { "td-deleted-style", "font-style: italic;" },
+                            { "td-deleted-class", "text-muted" },
+                            { "td-style", "" },
+                            { "td-class", "" }
+                        }}
+                    };
+
+                    sb.AppendLine(string.Format(@"<table class=""{0}"" style=""{1}"">", dict[format]["table-class"], dict[format]["table-style"]));
                     sb.AppendLine("<thead>");
                     sb.AppendLine("<tr>");
                     foreach (DataColumn dc in columns)
                     {
-                        sb.AppendLine(@"<th style=""font-size: 9pt; padding: 5px; background-color: #D2D2D2; border: solid 1px #808080;"">" + dc.ColumnName + "</th>");
+                        sb.AppendLine(string.Format(@"<th class=""{0}"" style=""{1}"">{2}</th>", dict[format]["th-class"], dict[format]["th-style"], dc.ColumnName));
                     }
                     if (showRowState)
-                        sb.Append(@"<th style=""font-size: 9pt; padding: 5px; background-color: #D2D2D2; border: solid 1px #808080;"">RowState</th>");
+                        sb.Append(string.Format(@"<th class=""{0}"" style=""{1}"">RowState</th>", dict[format]["th-class"], dict[format]["th-style"]));
                     sb.AppendLine("</tr>");
                     sb.AppendLine("</thead>");
                     sb.AppendLine("<tbody>");
@@ -73,17 +98,17 @@ namespace LNF.CommonTools
                         sb.AppendLine("<tr>");
                         if (dr.RowState == DataRowState.Deleted)
                         {
-                            sb.AppendLine(@"<td colspan=""" + columns.Count.ToString() + @""" style=""font-size: 9pt; padding: 5px; border: solid 1px #808080; font-style: italic"">deleted</td>");
+                            sb.AppendLine(string.Format(@"<td colspan=""{0}"" class=""{1}"" style=""{2}"">deleted</td>", columns.Count, dict[format]["td-deleted-class"], dict[format]["td-deleted-style"]));
                         }
                         else
                         {
                             foreach (DataColumn dc in columns)
                             {
-                                sb.AppendLine(@"<td style=""font-size: 9pt; padding: 5px; border: solid 1px #808080;"">" + dr[dc.ColumnName].ToString() + "</td>");
+                                sb.AppendLine(string.Format(@"<td class=""{0}"" style=""{1}"">{2}</td>", dict[format]["td-class"], dict[format]["td-style"], dr[dc.ColumnName]));
                             }
                         }
                         if (showRowState)
-                            sb.Append(@"<td style=""font-size: 9pt; padding: 5px; border: solid 1px #808080;"">" + dr.RowState.ToString() + "</th>");
+                            sb.Append(string.Format(@"<td class=""{0}"" style=""{1}"">{2}</td>", dict[format]["td-class"], dict[format]["td-style"], dr.RowState));
                         sb.AppendLine("</tr>");
                     }
                     sb.AppendLine("</tbody>");
@@ -148,7 +173,6 @@ namespace LNF.CommonTools
             return Math.Round(value, digits, MidpointRounding.AwayFromZero);
         }
 
-        [Obsolete("Replaced by LNF.Repository.RepositoryUtility.ConvertTo")]
         public static T ConvertTo<T>(object obj, T defval)
         {
             if (obj == null)
@@ -161,7 +185,7 @@ namespace LNF.CommonTools
 
             try
             {
-                result = (T)Convert.ChangeType(obj, RepositoryUtility.GetUnderlyingType(typeof(T)));
+                result = (T)Convert.ChangeType(obj, GetUnderlyingType(typeof(T)));
             }
             catch
             {
@@ -178,11 +202,33 @@ namespace LNF.CommonTools
             return result;
         }
 
-        [Obsolete("Replaced by LNF.Repository.RepositoryUtility.TryConvertTo")]
+        /// <summary>
+        /// Tries to convert an object to the specified type
+        /// </summary>
+        /// <typeparam name="T">The expected return value</typeparam>
+        /// <param name="value">The object which will be set to the converted value</param>
+        /// <param name="result">A value that indicates if the conversion was successful</param>
+        /// <param name="defval">The value to set result to if conversion fails for any reason</param>
+        /// <returns>True if the conversion was successful, otherwise false</returns>
         public static bool TryConvertTo<T>(object value, out T result, T defval)
         {
-            result = Utility.ConvertTo(value, defval); ;
+            result = ConvertTo(value, defval); ;
             return !result.Equals(defval);
+        }
+
+        /// <summary>
+        /// Returns the underlying type of the given type. If the given type is nullable the underlying type is returned. Otherwise the given type is returned
+        /// </summary>
+        /// <param name="t">The specified type</param>
+        /// <returns>A type that is the underlying type of the specified type</returns>
+        public static Type GetUnderlyingType(Type t)
+        {
+            Type result;
+            if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Nullable<>))
+                result = Nullable.GetUnderlyingType(t);
+            else
+                result = t;
+            return result;
         }
 
         //I want to use Insert commands (because this is truly what's happening)
@@ -473,7 +519,7 @@ namespace LNF.CommonTools
         public static TKey PropertyValue<TSource, TKey>(TSource source, Expression<Func<TSource, TKey>> exp)
         {
             string propName = PropertyName(exp);
-            return RepositoryUtility.ConvertTo<TKey>(source.GetType().GetProperty(propName).GetValue(source, null), default(TKey));
+            return Utility.ConvertTo<TKey>(source.GetType().GetProperty(propName).GetValue(source, null), default(TKey));
         }
 
         public static string Left(string s, int length)
@@ -583,7 +629,7 @@ namespace LNF.CommonTools
                 return result;
             string order = (s.StartsWith(",")) ? s.Substring(1) : s;
             if (!string.IsNullOrEmpty(order))
-                result = order.Split(',').Select(x => RepositoryUtility.ConvertTo(x, 0)).ToArray();
+                result = order.Split(',').Select(x => Utility.ConvertTo(x, 0)).ToArray();
             return result;
         }
 

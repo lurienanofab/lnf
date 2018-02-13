@@ -199,12 +199,13 @@ namespace LNF.Data
                 throw new ArgumentNullException("item");
 
             int record = item.Record();
+
             if (record == 0)
                 throw new ArgumentException("Record cannot be zero. If this is a new object it should be inserted first.", "item");
 
             item.Active = true;
 
-            ActiveLog alog = DA.Current.Query<ActiveLog>().FirstOrDefault(x => x.Record == record && x.TableName == item.TableName() && x.DisableDate == null);
+            ActiveLog alog = DA.Current.Query<ActiveLog>().FirstOrDefault(x => x.Record == record && x.TableName == item.TableName() && !x.DisableDate.HasValue);
 
             // if an ActiveLog with null DisableDate already exists then there is no reason to create a new one or do anything else
             if (alog == null)

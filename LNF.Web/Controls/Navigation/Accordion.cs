@@ -1,4 +1,4 @@
-﻿using LNF.Repository;
+﻿using LNF.CommonTools;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -105,8 +105,8 @@ namespace LNF.Web.Controls.Navigation
                 AccordionParentItem p = new AccordionParentItem();
                 if (pdr["MenuText"] == DBNull.Value) throw new DataException("Column \"MenuText\" cannot be null.");
                 p.Text = pdr["MenuText"].ToString();
-                p.NavigateURL = RepositoryUtility.ConvertTo(pdr["MenuURL"], "#");
-                p.Visible = RepositoryUtility.ConvertTo(pdr["MenuVisible"], false);
+                p.NavigateURL = Utility.ConvertTo(pdr["MenuURL"], "#");
+                p.Visible = Utility.ConvertTo(pdr["MenuVisible"], false);
 
                 DataRow[] children = this.DataSource.Select("MenuParentID = " + pdr["MenuID"].ToString());
                 foreach (DataRow cdr in children)
@@ -114,8 +114,8 @@ namespace LNF.Web.Controls.Navigation
                     AccordionChildItem c = new AccordionChildItem();
                     if (cdr["MenuText"] == DBNull.Value) throw new DataException("Column \"MenuText\" cannot be null.");
                     c.Text = cdr["MenuText"].ToString();
-                    c.NavigateURL = RepositoryUtility.ConvertTo(cdr["MenuURL"], "#");
-                    c.Visible = RepositoryUtility.ConvertTo(cdr["MenuVisible"], false);
+                    c.NavigateURL = Utility.ConvertTo(cdr["MenuURL"], "#");
+                    c.Visible = Utility.ConvertTo(cdr["MenuVisible"], false);
 
                     p.ChildItems.Add(c);
                 }

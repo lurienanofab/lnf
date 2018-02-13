@@ -80,17 +80,17 @@ namespace LNF.Impl.PhysicalAccess
             return new Card()
             {
                 ID = row["ID"],
-                ClientID = RepositoryUtility.ConvertTo(row["BADGE_CLIENTID"], 0),
-                UserName = RepositoryUtility.ConvertTo(row["BADGE_SSEL_UNAME"], string.Empty),
-                LastName = RepositoryUtility.ConvertTo(row["LNAME"], string.Empty),
-                FirstName = RepositoryUtility.ConvertTo(row["FNAME"], string.Empty),
-                Number = RepositoryUtility.ConvertTo(row["CARDNO"], 0),
+                ClientID = Utility.ConvertTo(row["BADGE_CLIENTID"], 0),
+                UserName = Utility.ConvertTo(row["BADGE_SSEL_UNAME"], string.Empty),
+                LastName = Utility.ConvertTo(row["LNAME"], string.Empty),
+                FirstName = Utility.ConvertTo(row["FNAME"], string.Empty),
+                Number = Utility.ConvertTo(row["CARDNO"], 0),
                 LastAccess = Utility.ConvertObjectToNullableDateTime(row["LAST_ACC"]),
-                CardIssueDate = RepositoryUtility.ConvertTo(row["CARD_ISSUE_DATE"], DateTime.Now),
-                CardExpireDate = RepositoryUtility.ConvertTo(row["CARD_EXPIRE_DATE"], DateTime.Now),
-                BadgeIssueDate = RepositoryUtility.ConvertTo(row["BADGE_ISSUE_DATE"], DateTime.Now),
-                BadgeExpireDate = RepositoryUtility.ConvertTo(row["BADGE_EXPIRE_DATE"], DateTime.Now),
-                Status = GetCardStatus(RepositoryUtility.ConvertTo(row["STAT_COD"], string.Empty))
+                CardIssueDate = Utility.ConvertTo(row["CARD_ISSUE_DATE"], DateTime.Now),
+                CardExpireDate = Utility.ConvertTo(row["CARD_EXPIRE_DATE"], DateTime.Now),
+                BadgeIssueDate = Utility.ConvertTo(row["BADGE_ISSUE_DATE"], DateTime.Now),
+                BadgeExpireDate = Utility.ConvertTo(row["BADGE_EXPIRE_DATE"], DateTime.Now),
+                Status = GetCardStatus(Utility.ConvertTo(row["STAT_COD"], string.Empty))
             };
         }
 

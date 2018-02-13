@@ -16,33 +16,10 @@ namespace LNF.Repository
         /// <param name="obj">The object to convert</param>
         /// <param name="defval">The default value to return if conversion fails for any reason</param>
         /// <returns>A value of type T</returns>
+        [Obsolete("Replaced by LNF.CommonTools.Utility.ConvertTo")]
         public static T ConvertTo<T>(object obj, T defval)
         {
-            if (obj == null)
-                return defval;
-
-            if (obj == DBNull.Value)
-                return defval;
-
-            T result = default(T);
-
-            try
-            {
-                result = (T)Convert.ChangeType(obj, GetUnderlyingType(typeof(T)));
-            }
-            catch
-            {
-                try
-                {
-                    result = (T)obj;
-                }
-                catch
-                {
-                    result = defval;
-                }
-            }
-
-            return result;
+            return CommonTools.Utility.ConvertTo(obj, defval);
         }
 
         /// <summary>
@@ -53,10 +30,10 @@ namespace LNF.Repository
         /// <param name="result">A value that indicates if the conversion was successful</param>
         /// <param name="defval">The value to set result to if conversion fails for any reason</param>
         /// <returns>True if the conversion was successful, otherwise false</returns>
+        [Obsolete("Replaced by LNF.CommonTools.Utility.TryConvertTo")]
         public static bool TryConvertTo<T>(object value, out T result, T defval)
         {
-            result = ConvertTo(value, defval); ;
-            return !result.Equals(defval);
+            return CommonTools.Utility.TryConvertTo(value, out result, defval);
         }
 
         /// <summary>
@@ -64,14 +41,10 @@ namespace LNF.Repository
         /// </summary>
         /// <param name="t">The specified type</param>
         /// <returns>A type that is the underlying type of the specified type</returns>
+        [Obsolete("Replaced by LNF.CommonTools.Utility.GetUnderlyingType")]
         public static Type GetUnderlyingType(Type t)
         {
-            Type result;
-            if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Nullable<>))
-                result = Nullable.GetUnderlyingType(t);
-            else
-                result = t;
-            return result;
+            return CommonTools.Utility.GetUnderlyingType(t);
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using LNF.Repository;
+﻿using LNF.CommonTools;
+using LNF.Repository;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -81,7 +82,7 @@ namespace LNF.CommonTools
         ///</summary>
         public static T Value<T>(this NameValueCollection nvc, string key, T defval)
         {
-            return RepositoryUtility.ConvertTo(nvc[key], defval);
+            return Utility.ConvertTo(nvc[key], defval);
         }
 
         ///<summary>
@@ -162,7 +163,7 @@ namespace LNF.CommonTools
             if (obj == null)
                 return defval;
             else
-                return RepositoryUtility.ConvertTo(obj, defval);
+                return Utility.ConvertTo(obj, defval);
         }
 
         public static DateTime FirstOfMonth(this DateTime date)

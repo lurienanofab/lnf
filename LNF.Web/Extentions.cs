@@ -64,7 +64,6 @@ namespace LNF.Web
 
             List<DropDownMenuItem> items = SiteMenu
                 .Create(currentUser)
-                .Select()
                 .Select(x => new DropDownMenuItem()
                 {
                     ID = x.MenuID,

@@ -1,5 +1,6 @@
 ﻿using LNF.CommonTools;
 using LNF.Data;
+using LNF.Models.Billing;
 using LNF.Models.Data;
 using LNF.Models.Reporting;
 using LNF.Models.Reporting.Individual;
@@ -44,90 +45,88 @@ namespace LNF.Reporting
             return result;
         }
 
-        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, ClientItem client, bool includeRemote)
+        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, ClientItem manager, bool includeRemote)
         {
-            return CreateManagerUsageSummary(period, client.ClientID, client.UserName, client.LName, client.FName, includeRemote);
+            return CreateManagerUsageSummary(period, manager.ClientID, manager.UserName, manager.LName, manager.FName, includeRemote);
         }
 
-        public static IEnumerable<ManagerUsageSummaryItem> GetManagerUsageSummaryItems(int clientId, DateTime period, bool includeRemote)
+        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, int clientId, string username, string lname, string fname, bool includeRemote)
         {
-            var charges = ManagerUsageCharge.SelectByManager(clientId, period, includeRemote).ToList();
-
-            var logs = ClientManagerLog.SelectByManager(clientId, period, period.AddMonths(1)).ToList();
-
-            var join = logs.LeftJoin(
-                inner: charges,
-                outerKeySelector: o => new { o.ManagerClientID, o.UserClientID, o.AccountID },
-                innerKeySelector: i => new { i.ManagerClientID, UserClientID = i.ClientID, i.AccountID },
-                resultSelector: (o, i) => ManagerUsageSummaryItem.Create(o, i));
-
-            return join;
+            var items = GetManagerUsageSummaryItems(clientId, period, includeRemote);
+            return CreateManagerUsageSummary(period, clientId, username, lname, fname, items);
         }
 
-        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, int clientId, string userName, string lname, string fname, bool includeRemote)
+        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, ClientItem manager, IEnumerable<ManagerUsageSummaryItem> items)
         {
-            var model = new ManagerUsageSummary();
-            model.ClientID = clientId;
-            model.UserName = userName;
-            model.LName = lname;
-            model.FName = fname;
-            model.Period = period;
-
-            var items = GetManagerUsageSummaryItems(model.ClientID, model.Period, includeRemote);
-
-            model.Accounts = items
-                .GroupBy(x => new
-                {
-                    x.AccountID,
-                    x.ShortCode,
-                    x.AccountNumber,
-                    x.AccountName,
-                    x.OrgName
-                })
-                .Select(x => new
-                {
-                    x.Key.AccountID,
-                    x.Key.ShortCode,
-                    x.Key.AccountNumber,
-                    x.Key.AccountName,
-                    x.Key.OrgName,
-                    TotalCharge = x.Sum(g => g.TotalCharge),
-                    SubsidyDiscount = x.Sum(g => g.SubsidyDiscount)
-                })
-                .ToList()
-                .Select(x => CreateManagerUsageSummaryAccount(x, items))
-                .OrderBy(x => x.Sort)
-                .ToList();
-
-            model.Clients = items
-                .GroupBy(x => new
-                {
-                    x.ClientID,
-                    x.LName,
-                    x.FName,
-                    x.Privs
-                })
-                .Select(x => new
-                {
-                    x.Key.ClientID,
-                    x.Key.LName,
-                    x.Key.FName,
-                    x.Key.Privs,
-                    TotalCharge = x.Sum(g => g.TotalCharge),
-                    SubsidyDiscount = x.Sum(g => g.SubsidyDiscount)
-                })
-                .ToList()
-                .Where(x => x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv))
-                .Select(x => CreateManagerUsageSummaryClient(x, items))
-                .OrderBy(x => x.Sort)
-                .ToList();
-
-            model.ShowSubsidyColumn = items.Any(x => x.IsSubsidyOrg);
-
-            return model;
+            return CreateManagerUsageSummary(period, manager.ClientID, manager.UserName, manager.LName, manager.FName, items);
         }
 
-        public static ManagerUsageSummaryClient CreateManagerUsageSummaryClient(dynamic args, IEnumerable<ManagerUsageSummaryItem> items)
+        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, int clientId, string username, string lname, string fname, IEnumerable<ManagerUsageSummaryItem> items)
+        {
+            var result = new ManagerUsageSummary();
+            result.ClientID = clientId;
+            result.UserName = username;
+            result.LName = lname;
+            result.FName = fname;
+            result.Period = period;
+
+            /*===== Accounts =========================================*/
+            var groupByAccount = items.GroupBy(x => new
+            {
+                x.AccountID,
+                x.ShortCode,
+                x.AccountNumber,
+                x.AccountName,
+                x.OrgName
+            }).ToList();
+
+            var accountItems = groupByAccount.Select(x => new ManagerUsageSummaryAccountItem()
+            {
+                AccountID = x.Key.AccountID,
+                ShortCode = x.Key.ShortCode,
+                AccountNumber = x.Key.AccountNumber,
+                AccountName = x.Key.AccountName,
+                OrgName = x.Key.OrgName,
+                TotalCharge = x.Sum(g => g.TotalCharge),
+                SubsidyDiscount = x.Sum(g => g.SubsidyDiscount)
+            }).ToList();
+
+            var managerUsageSummaryAccounts = accountItems.Select(x => CreateManagerUsageSummaryAccount(x, items)).ToList();
+
+            result.Accounts = managerUsageSummaryAccounts;
+
+            /*===== Clients ==========================================*/
+            var groupByClient = items.GroupBy(x => new
+            {
+                x.ClientID,
+                x.LName,
+                x.FName,
+                x.Privs
+            }).ToList();
+
+            var clientItems = groupByClient.Select(x => new ManagerUsageSummaryClientItem()
+            {
+                ClientID = x.Key.ClientID,
+                LName = x.Key.LName,
+                FName = x.Key.FName,
+                Privs = x.Key.Privs,
+                TotalCharge = x.Sum(g => g.TotalCharge),
+                SubsidyDiscount = x.Sum(g => g.SubsidyDiscount)
+            }).ToList();
+
+            var clientItemsFiltered = clientItems.Where(x => x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv)).ToList();
+
+            var managerUsageSummaryClients = clientItemsFiltered.Select(x => CreateManagerUsageSummaryClient(x, items)).ToList();
+
+            result.Clients = managerUsageSummaryClients;
+
+            /*===== Subsidy ==========================================*/
+            result.ShowSubsidyColumn = items.Any(x => x.IsSubsidyOrg);
+
+            return result;
+        }
+
+        public static ManagerUsageSummaryClient CreateManagerUsageSummaryClient(ManagerUsageSummaryClientItem args, IEnumerable<ManagerUsageSummaryItem> items)
         {
             int clientId = args.ClientID;
             string name = GetClientName(args.LName, args.FName);
@@ -154,6 +153,37 @@ namespace LNF.Reporting
             };
         }
 
+        public static IEnumerable<ManagerUsageSummaryItem> GetManagerUsageSummaryItems(int clientId, DateTime period, bool includeRemote)
+        {
+            var logs = ClientManagerLog.SelectByManager(clientId, period, period.AddMonths(1)).ToList();
+
+            var charges = ManagerUsageCharge.SelectByManager(clientId, period, includeRemote).ToList();
+
+            var join = logs.LeftJoin(
+                inner: charges,
+                outerKeySelector: o => new { o.ManagerClientID, o.UserClientID, o.AccountID },
+                innerKeySelector: i => new { i.ManagerClientID, i.UserClientID, i.AccountID },
+                resultSelector: (o, i) => ManagerUsageSummaryItem.Create(o, i)).ToList();
+
+            return join;
+        }
+
+        [Obsolete("DO NOT USE")]
+        public static IEnumerable<ManagerUsageSummaryItem> GetManagerUsageSummaryItems(DateTime period, bool includeRemote)
+        {
+            var logs = ClientManagerLog.SelectByPeriod(period, period.AddMonths(1));
+
+            var charges = ManagerUsageCharge.SelectByPeriod(period, includeRemote);
+
+            var join = logs.LeftJoin(
+                inner: charges,
+                outerKeySelector: o => new { o.ManagerClientID, o.UserClientID, o.AccountID },
+                innerKeySelector: i => new { i.ManagerClientID, i.UserClientID, i.AccountID },
+                resultSelector: (o, i) => ManagerUsageSummaryItem.Create(o, i));
+
+            return join;
+        }
+
         public static string GetClientName(string lname, string fname)
         {
             return ClientModel.GetDisplayName(lname, fname);
@@ -164,11 +194,11 @@ namespace LNF.Reporting
             return ClientModel.GetDisplayName(lname, fname);
         }
 
-        public static ManagerUsageSummaryAccount CreateManagerUsageSummaryAccount(dynamic args, IEnumerable<ManagerUsageSummaryItem> items)
+        public static ManagerUsageSummaryAccount CreateManagerUsageSummaryAccount(ManagerUsageSummaryAccountItem item, IEnumerable<ManagerUsageSummaryItem> items)
         {
-            int accountId = args.AccountID;
-            string name = GetAccountName(args.ShortCode, args.AccountNumber, args.AccountName, args.OrgName);
-            string sort = GetAccountSort(args.ShortCode, args.AccountNumber, args.AccountName, args.OrgName);
+            int accountId = item.AccountID;
+            string name = GetAccountName(item.ShortCode, item.AccountNumber, item.AccountName, item.OrgName);
+            string sort = GetAccountSort(item.ShortCode, item.AccountNumber, item.AccountName, item.OrgName);
 
             var comparer = new ClientItemEqualityComparer();
 
@@ -176,8 +206,8 @@ namespace LNF.Reporting
             {
                 Name = name,
                 Sort = sort,
-                UsageCharge = args.TotalCharge,
-                Subsidy = args.SubsidyDiscount,
+                UsageCharge = item.TotalCharge,
+                Subsidy = item.SubsidyDiscount,
                 Clients = items.Where(x => x.AccountID == accountId && (x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv))).Select(x => new ClientItem()
                 {
                     ClientID = x.ClientID,
@@ -250,32 +280,31 @@ namespace LNF.Reporting
             return result;
         }
 
-        public static XElement GetManagerUsageDetail(DateTime sd, DateTime ed, Client mgr, bool remote = false)
+        public static string GetManagerUsageDetailJson(IEnumerable<ManagerUsageDetailItem> items)
         {
-            var charges = DA.Current.Query<ManagerUsageCharge>().Where(x => x.Period >= sd && x.Period < ed && x.ManagerClientID == mgr.ClientID && (!x.IsRemote || remote));
+            var result = items.Select(x =>
+            new
+            {
+                x.Period,
+                BillingCategory = x.BillingCategory.ToString(),
+                x.UserName,
+                x.DisplayName,
+                x.Account,
+                x.TotalCharge,
+                x.SubsidyDiscount,
+                x.SubsidyOrg
+            });
 
-            var result = charges
-                .GroupBy(x => new { x.Period, x.BillingCategory, x.LName, x.FName, x.ShortCode, x.AccountNumber, x.AccountName, x.OrgName, x.IsSubsidyOrg })
-                .ToList()
-                .Select(x => new
-                {
-                    Period = x.Key.Period,
-                    BillingCategory = x.Key.BillingCategory,
-                    DisplayName = ClientModel.GetDisplayName(x.Key.LName, x.Key.FName),
-                    Account = GetAccountName(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
-                    Sort = x.Key.BillingCategory + ":" + GetAccountSort(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
-                    TotalCharge = x.Sum(g => g.TotalCharge),
-                    SubsidyDiscount = x.Sum(g => g.SubsidyDiscount),
-                    SubsidyOrg = x.Key.IsSubsidyOrg
-                })
-                .OrderBy(x => x.DisplayName)
-                .ThenBy(x => x.Sort)
-                .ToList();
+            return Providers.Serialization.Json.SerializeObject(result);
+        }
 
+        public static XElement GetManagerUsageDetailXml(IEnumerable<ManagerUsageDetailItem> items)
+        {
             var xdoc = new XElement("table",
-                result.Select(x => new XElement("row",
+                items.Select(x => new XElement("row",
                     new XElement("Period", x.Period),
-                    new XElement("BillingCategory", x.BillingCategory),
+                    new XElement("BillingCategory", x.BillingCategory.ToString()),
+                    new XElement("UserName", x.UserName),
                     new XElement("DisplayName", x.DisplayName),
                     new XElement("Account", x.Account),
                     new XElement("TotalCharge", x.TotalCharge.ToString("#,##0.00")),
@@ -286,5 +315,70 @@ namespace LNF.Reporting
 
             return xdoc;
         }
+
+        public static IEnumerable<ManagerUsageDetailItem> GetManagerUsageDetailItems(DateTime sd, DateTime ed, Client mgr, bool remote = false)
+        {
+            IEnumerable<ManagerUsageCharge> charges;
+
+            if (mgr == null)
+                charges = DA.Current.Query<ManagerUsageCharge>().Where(x => x.Period >= sd && x.Period < ed && (!x.IsRemote || remote));
+            else
+                charges = DA.Current.Query<ManagerUsageCharge>().Where(x => x.Period >= sd && x.Period < ed && x.ManagerClientID == mgr.ClientID && (!x.IsRemote || remote));
+
+            var result = charges
+                .GroupBy(x => new { x.Period, x.BillingCategory, x.ManagerUserName, x.UserLName, x.UserFName, x.ShortCode, x.AccountNumber, x.AccountName, x.OrgName, x.IsSubsidyOrg })
+                .ToList()
+                .Select(x => new ManagerUsageDetailItem()
+                {
+                    Period = x.Key.Period,
+                    BillingCategory = x.Key.BillingCategory,
+                    UserName = x.Key.ManagerUserName,
+                    DisplayName = ClientModel.GetDisplayName(x.Key.UserLName, x.Key.UserFName),
+                    Account = GetAccountName(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
+                    Sort = x.Key.BillingCategory + ":" + GetAccountSort(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
+                    TotalCharge = x.Sum(g => g.TotalCharge),
+                    SubsidyDiscount = x.Sum(g => g.SubsidyDiscount),
+                    SubsidyOrg = x.Key.IsSubsidyOrg
+                })
+                .OrderBy(x => x.DisplayName)
+                .ThenBy(x => x.Sort)
+                .ToList();
+
+            return result;
+        }
+    }
+
+    public class ManagerUsageDetailItem
+    {
+        public DateTime Period { get; set; }
+        public BillingCategory BillingCategory { get; set; }
+        public string UserName { get; set; }
+        public string DisplayName { get; set; }
+        public string Account { get; set; }
+        public string Sort { get; set; }
+        public double TotalCharge { get; set; }
+        public double SubsidyDiscount { get; set; }
+        public bool SubsidyOrg { get; set; }
+    }
+
+    public class ManagerUsageSummaryAccountItem
+    {
+        public int AccountID { get; set; }
+        public string ShortCode { get; set; }
+        public string AccountNumber { get; set; }
+        public string AccountName { get; set; }
+        public string OrgName { get; set; }
+        public double TotalCharge { get; set; }
+        public double SubsidyDiscount { get; set; }
+    }
+
+    public class ManagerUsageSummaryClientItem
+    {
+        public int ClientID { get; set; }
+        public string LName { get; set; }
+        public string FName { get; set; }
+        public ClientPrivilege Privs { get; set; }
+        public double TotalCharge { get; set; }
+        public double SubsidyDiscount { get; set; }
     }
 }

@@ -11,7 +11,7 @@ namespace LNF.Impl.Mappings.Reporting
             Table("Template");
             Id(x => x.TemplateID);
             Map(x => x.TemplateName);
-            Map(x => x.TemplateContent);
+            Map(x => x.TemplateContent).CustomType("StringClob").CustomSqlType("nvarchar(max)");
             Map(x => x.Report);
         }
     }

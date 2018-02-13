@@ -1,4 +1,5 @@
-﻿using LNF.Repository;
+﻿using LNF.CommonTools;
+using LNF.Repository;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -114,7 +115,7 @@ namespace LNF
         {
             QueryParameter item = Find(name);
             if (item != null)
-                return RepositoryUtility.ConvertTo(item.Value, defval);
+                return Utility.ConvertTo(item.Value, defval);
             else
                 return defval;
         }

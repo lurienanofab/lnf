@@ -1,4 +1,5 @@
-﻿using LNF.Models.Data;
+﻿using LNF.CommonTools;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Scheduler;
@@ -226,17 +227,17 @@ namespace LNF.Cache
 
         public bool WagoEnabled
         {
-            get { return RepositoryUtility.ConvertTo(Providers.Context.Current.GetAppSetting("WagoEnabled"), false); }
+            get { return Utility.ConvertTo(Providers.Context.Current.GetAppSetting("WagoEnabled"), false); }
         }
 
         public bool UseStartReservationPage
         {
-            get { return RepositoryUtility.ConvertTo(Providers.Context.Current.GetAppSetting("UseStartReservationPage"), false); }
+            get { return Utility.ConvertTo(Providers.Context.Current.GetAppSetting("UseStartReservationPage"), false); }
         }
 
         public bool ShowCanceledForModification
         {
-            get { return RepositoryUtility.ConvertTo(Providers.Context.Current.GetAppSetting("ShowCanceledForModification"), false); }
+            get { return Utility.ConvertTo(Providers.Context.Current.GetAppSetting("ShowCanceledForModification"), false); }
         }
 
         public string ErrorID

@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using LNF.CommonTools;
+using System.Xml;
 
 namespace LNF.Repository.Data
 {
@@ -53,7 +54,7 @@ namespace LNF.Repository.Data
             if (node == null)
                 node = SetPreference(name, defval);
             result = node.Attributes["value"].Value;
-            return RepositoryUtility.ConvertTo(result, defval);
+            return Utility.ConvertTo(result, defval);
         }
 
         public virtual XmlNode SetPreference(string name, object value)

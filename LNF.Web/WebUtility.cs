@@ -58,6 +58,20 @@ namespace LNF.Web
                 return inVal.ToString();
         }
 
+        public static string FillField<T>(object value, T defval, string format = "{0}")
+        {
+            T item;
+
+            if (value == DBNull.Value)
+                item = defval;
+            else
+                item = (T)value;
+
+            string result = string.Format(format, item);
+
+            return result;
+        }
+
         public static string StripHTML(string html)
         {
             string result = string.Empty;
@@ -110,7 +124,7 @@ namespace LNF.Web
             span.InnerHtml = "&times;";
 
             button.Controls.Add(span);
-            
+
             var modalTitle = new HtmlGenericControl("h4");
             modalTitle.Attributes.Add("class", "modal-title");
             modalTitle.InnerHtml = title;
@@ -207,5 +221,5 @@ namespace LNF.Web
             //Control.Attributes.Add("onmouseover", strMouseover);
             //Control.Attributes.Add("onmouseout", "return nd();");
         }
-}
+    }
 }

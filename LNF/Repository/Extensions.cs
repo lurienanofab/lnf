@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LNF.CommonTools;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -430,7 +431,7 @@ namespace LNF.Repository
         /// <returns>A value of Type T (if conversion fails for any reason the default value of Type T is returned)</returns>
         public static T ExecuteScalar<T>(this DbCommand cmd)
         {
-            return RepositoryUtility.ConvertTo<T>(cmd.ExecuteScalar(), default(T));
+            return Utility.ConvertTo(cmd.ExecuteScalar(), default(T));
         }
 
         /// <summary>
@@ -491,7 +492,7 @@ namespace LNF.Repository
         public static T GetParameterValue<T>(this DbCommand cmd, string name)
         {
             object obj = cmd.Parameters[name].Value;
-            return RepositoryUtility.ConvertTo<T>(obj, default(T));
+            return Utility.ConvertTo(obj, default(T));
         }
 
         /// <summary>
@@ -537,7 +538,7 @@ namespace LNF.Repository
         {
             try
             {
-                return RepositoryUtility.ConvertTo<T>(reader[name], default(T));
+                return Utility.ConvertTo(reader[name], default(T));
             }
             catch
             {

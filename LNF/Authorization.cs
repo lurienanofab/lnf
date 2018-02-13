@@ -1,7 +1,7 @@
 ﻿using LNF.Cache;
+using LNF.CommonTools;
 using LNF.Data;
 using LNF.Models.Data;
-using LNF.Repository;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -87,7 +87,7 @@ namespace LNF
             if (rows.Length > 0)
             {
                 //just use the first one, the AuthTypes will always be the same for duplicates (same as the last one added).
-                result = (ClientPrivilege)RepositoryUtility.ConvertTo(rows[0]["AuthTypes"], 0);
+                result = (ClientPrivilege)Utility.ConvertTo(rows[0]["AuthTypes"], 0);
             }
             return result;
         }
@@ -97,7 +97,7 @@ namespace LNF
             if (_AppPages == null) return;
             foreach (DataRow dr in _AppPages.Rows)
             {
-                ClientPrivilege authTypes = (ClientPrivilege)RepositoryUtility.ConvertTo(dr["AuthTypes"], 0);
+                ClientPrivilege authTypes = (ClientPrivilege)Utility.ConvertTo(dr["AuthTypes"], 0);
                 if (authTypes == 0)
                     dr["Visible"] = true;
                 else
@@ -208,8 +208,8 @@ namespace LNF
 
             public Group(DataRowView drv)
             {
-                GroupID = RepositoryUtility.ConvertTo(drv["GroupID"], 0);
-                GroupName = RepositoryUtility.ConvertTo(drv["GroupName"], string.Empty);
+                GroupID = Utility.ConvertTo(drv["GroupID"], 0);
+                GroupName = Utility.ConvertTo(drv["GroupName"], string.Empty);
             }
         }
 
@@ -235,15 +235,15 @@ namespace LNF
 
             public AppPage(DataRowView drv)
             {
-                ID = RepositoryUtility.ConvertTo(drv["ID"], 0);
-                GroupID = RepositoryUtility.ConvertTo(drv["GroupID"], 0);
-                FileName = RepositoryUtility.ConvertTo(drv["FileName"], string.Empty);
-                QueryString = RepositoryUtility.ConvertTo(drv["QueryString"], string.Empty);
-                PageUrl = RepositoryUtility.ConvertTo(drv["PageUrl"], string.Empty);
-                ButtonText = RepositoryUtility.ConvertTo(drv["ButtonText"], "undefined");
-                ToolTip = RepositoryUtility.ConvertTo(drv["ToolTip"], string.Empty);
-                AuthTypes = (ClientPrivilege)RepositoryUtility.ConvertTo(drv["AuthTypes"], 0);
-                Visible = RepositoryUtility.ConvertTo(drv["Visible"], true);
+                ID = Utility.ConvertTo(drv["ID"], 0);
+                GroupID = Utility.ConvertTo(drv["GroupID"], 0);
+                FileName = Utility.ConvertTo(drv["FileName"], string.Empty);
+                QueryString = Utility.ConvertTo(drv["QueryString"], string.Empty);
+                PageUrl = Utility.ConvertTo(drv["PageUrl"], string.Empty);
+                ButtonText = Utility.ConvertTo(drv["ButtonText"], "undefined");
+                ToolTip = Utility.ConvertTo(drv["ToolTip"], string.Empty);
+                AuthTypes = (ClientPrivilege)Utility.ConvertTo(drv["AuthTypes"], 0);
+                Visible = Utility.ConvertTo(drv["Visible"], true);
             }
         }
     }
