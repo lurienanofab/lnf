@@ -40,7 +40,7 @@ namespace LNF.Web.Content
             get { return _Authorization; }
         }
 
-        public ClientModel CurrentUser
+        public ClientItem CurrentUser
         {
             get { return Page.CurrentUser; }
         }

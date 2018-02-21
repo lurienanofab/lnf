@@ -10,161 +10,6 @@ namespace LNF.Data
 {
     public static class ClientUtility
     {
-        public static Client Find(int clientId)
-        {
-            return DA.Current.Single<Client>(clientId);
-        }
-
-        public static Client Find(string username)
-        {
-            return DA.Current.Query<Client>().FirstOrDefault(x => x.UserName == username);
-        }
-
-        public static Client FindByDisplayName(string displayName)
-        {
-            string[] splitter = displayName.Split(',');
-
-            if (splitter.Length < 2)
-                return null;
-
-            string lname = splitter[0].Trim();
-            string fname = splitter[1].Trim();
-
-            Client result = DA.Current.Query<Client>().FirstOrDefault(x => x.LName == lname && x.FName == fname);
-
-            return result;
-        }
-
-        /// <summary>
-        /// Find Clients that were active during the period, filtered on the current user status. Administrators see all users, Staff see themselves only unless displayAllUsersToStaff is true, Managers see themselves and any users they manage, Normal users see only themselves.
-        /// </summary>
-        /// <param name="client">The current user</param>
-        /// <param name="period">The period during which clients must be active</param>
-        /// <param name="displayAllUsersToStaff">When true all users are displayed if the current user is staff</param>
-        /// <returns>A list of active clients during the period, filtered on the current user</returns>
-        public static IEnumerable<Client> FindByPeriod(Client client, DateTime period, bool displayAllUsersToStaff = false)
-        {
-            //populate the user dropdown list
-
-            DateTime sd = period;
-            DateTime ed = sd.AddMonths(1);
-
-            IList<ActiveLogClientAccount> allClientAccountsActiveInPeriod = DA.Current.Query<ActiveLogClientAccount>()
-                .Where(x => x.EnableDate < ed && (x.DisableDate == null || x.DisableDate > sd))
-                .ToList();
-
-            // check for administrator, manager, or normal user
-
-            List<Client> result = new List<Client>();
-
-            bool isUserStaffAndAllowedAllUserInfo = client.HasPriv(ClientPrivilege.Staff) && displayAllUsersToStaff;
-
-            int[] clientIds = null;
-
-            if (client.HasPriv(ClientPrivilege.Administrator | ClientPrivilege.Developer) || isUserStaffAndAllowedAllUserInfo)
-            {
-                //administrators see everyone
-                clientIds = allClientAccountsActiveInPeriod.Select(x => x.ClientID).Distinct().ToArray();
-            }
-            else
-            {
-                //not an admin - get all of this user's ClientAccounts
-                var clientAccts = allClientAccountsActiveInPeriod.Where(x => x.ClientID == client.ClientID).ToArray();
-
-                var temp = new List<int>();
-
-                foreach (ActiveLogClientAccount ca in clientAccts)
-                {
-                    //check to see if they are a manager
-                    if (ca.Manager)
-                    {
-                        var otherClientAccts = allClientAccountsActiveInPeriod.Where(x => x.AccountID == ca.AccountID);
-                        temp.AddRange(otherClientAccts.Select(x => x.ClientID).ToArray());
-                    }
-                    else
-                    {
-                        temp.Add(client.ClientID);
-                    }
-                }
-
-                clientIds = temp.Distinct().ToArray();
-            }
-
-            result = DA.Current.Query<Client>().Where(x => clientIds.Contains(x.ClientID)).ToList();
-
-            return result;
-        }
-
-        public static IEnumerable<Client> FindByPrivilege(ClientPrivilege priv, bool? active = true)
-        {
-            IQueryable<Client> query;
-
-            if (active.HasValue)
-                query = DA.Current.Query<Client>().Where(x => x.Active == active.Value);
-            else
-                query = DA.Current.Query<Client>();
-
-            IList<Client> result = query.Where(x => (x.Privs & priv) > 0).ToList();
-
-            return result;
-        }
-
-        public static IEnumerable<Client> FindByCommunity(int flag, bool? active = true)
-        {
-            IQueryable<Client> query;
-
-            if (active.HasValue)
-                query = DA.Current.Query<Client>().Where(x => x.Active == active.Value);
-            else
-                query = DA.Current.Query<Client>();
-
-            var result = query.Where(x => (x.Communities & flag) > 0);
-
-            return result.ToList();
-        }
-
-        public static IEnumerable<Client> FindByTools(IEnumerable<int> resourceIds, bool? active = true)
-        {
-            List<Client> result = new List<Client>();
-            List<ResourceClient> rclist = new List<ResourceClient>();
-
-            foreach (int id in resourceIds)
-                rclist.AddRange(DA.Current.Query<ResourceClient>().Where(x => x.ClientID > 0 && x.Resource.ResourceID == id && (x.Expiration == null || x.Expiration.Value < DateTime.Now)));
-
-            if (active.HasValue)
-                result.AddRange(rclist.Select(x => DA.Current.Single<Client>(x.ClientID)).Where(x => x.Active == active.Value));
-            else
-                result.AddRange(rclist.Select(x => DA.Current.Single<Client>(x.ClientID)));
-
-            return result;
-        }
-
-        public static IEnumerable<Client> FindByManager(int managerClientId, bool? active = true)
-        {
-            List<Client> result = new List<Client>();
-            List<ClientManager> cmlist = new List<ClientManager>();
-            IList<ClientOrg> mgrClientOrgs;
-
-            if (active.HasValue)
-            {
-                mgrClientOrgs = DA.Current.Query<ClientOrg>().Where(x => x.Client.ClientID == managerClientId && (x.IsFinManager || x.IsManager)).ToList();
-
-                foreach (ClientOrg co in mgrClientOrgs)
-                    cmlist.AddRange(DA.Current.Query<ClientManager>().Where(x => x.ManagerOrg == co && x.Active == active.Value));
-
-                result.AddRange(cmlist.Select(x => x.ClientOrg.Client));
-            }
-            else
-            {
-                mgrClientOrgs = DA.Current.Query<ClientOrg>().Where(x => x.Client.ClientID == managerClientId && (x.IsFinManager || x.IsManager)).ToList();
-                foreach (ClientOrg co in mgrClientOrgs)
-                    cmlist.AddRange(DA.Current.Query<ClientManager>().Where(x => x.ManagerOrg == co));
-                result.AddRange(cmlist.Select(x => x.ClientOrg.Client));
-            }
-
-            return result;
-        }
-
         public static Client NewClient(string username, string password, string lname, string fname, ClientPrivilege privs, bool active)
         {
             var result = new Client()
@@ -377,10 +222,10 @@ namespace LNF.Data
                 throw new Exception("Invalid username.");
 
             if (!string.IsNullOrEmpty(Providers.DataAccess.UniversalPassword) && password == Providers.DataAccess.UniversalPassword)
-                return Find(c.ClientID);
+                return DA.Current.Single<Client>(c.ClientID);
 
             if (CheckPassword(c.ClientID, password))
-                return Find(c.ClientID);
+                return DA.Current.Single<Client>(c.ClientID);
             else
                 throw new Exception("Invalid password.");
         }
@@ -479,14 +324,14 @@ namespace LNF.Data
             return GetActiveClients(sd, ed, priv);
         }
 
-        public static IEnumerable<Client> GetActiveClients(DateTime sd, DateTime ed, ClientPrivilege priv)
+        public static IQueryable<Client> GetActiveClients(DateTime sd, DateTime ed, ClientPrivilege priv)
         {
             var activeLogs = DA.Current.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.EnableDate < ed && (!x.DisableDate.HasValue || x.DisableDate.Value > sd));
 
             var join = activeLogs
                 .Join(DA.Current.Query<Client>(), o => o.Record, i => i.ClientID, (o, i) => new { ActiveLog = o, Client = i });
 
-            return join.Where(x => (x.Client.Privs & priv) > 0).Select(x => x.Client).ToList();
+            return join.Where(x => (x.Client.Privs & priv) > 0).Select(x => x.Client);
         }
     }
 }

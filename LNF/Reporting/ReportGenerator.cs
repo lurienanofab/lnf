@@ -45,7 +45,7 @@ namespace LNF.Reporting
             return result;
         }
 
-        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, ClientItem manager, bool includeRemote)
+        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, Models.Reporting.ClientItem manager, bool includeRemote)
         {
             return CreateManagerUsageSummary(period, manager.ClientID, manager.UserName, manager.LName, manager.FName, includeRemote);
         }
@@ -56,7 +56,7 @@ namespace LNF.Reporting
             return CreateManagerUsageSummary(period, clientId, username, lname, fname, items);
         }
 
-        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, ClientItem manager, IEnumerable<ManagerUsageSummaryItem> items)
+        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, Models.Reporting.ClientItem manager, IEnumerable<ManagerUsageSummaryItem> items)
         {
             return CreateManagerUsageSummary(period, manager.ClientID, manager.UserName, manager.LName, manager.FName, items);
         }
@@ -186,12 +186,12 @@ namespace LNF.Reporting
 
         public static string GetClientName(string lname, string fname)
         {
-            return ClientModel.GetDisplayName(lname, fname);
+            return Models.Data.ClientItem.GetDisplayName(lname, fname);
         }
 
         public static string GetClientSort(string lname, string fname)
         {
-            return ClientModel.GetDisplayName(lname, fname);
+            return Models.Data.ClientItem.GetDisplayName(lname, fname);
         }
 
         public static ManagerUsageSummaryAccount CreateManagerUsageSummaryAccount(ManagerUsageSummaryAccountItem item, IEnumerable<ManagerUsageSummaryItem> items)
@@ -208,7 +208,7 @@ namespace LNF.Reporting
                 Sort = sort,
                 UsageCharge = item.TotalCharge,
                 Subsidy = item.SubsidyDiscount,
-                Clients = items.Where(x => x.AccountID == accountId && (x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv))).Select(x => new ClientItem()
+                Clients = items.Where(x => x.AccountID == accountId && (x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv))).Select(x => new Models.Reporting.ClientItem()
                 {
                     ClientID = x.ClientID,
                     UserName = x.UserName,
@@ -252,7 +252,7 @@ namespace LNF.Reporting
             return sort;
         }
 
-        public static UserUsageSummary CreateUserUsageSummary(DateTime period, ClientItem client)
+        public static UserUsageSummary CreateUserUsageSummary(DateTime period, Models.Reporting.ClientItem client)
         {
             bool showDisclaimer = false;
 
@@ -333,7 +333,7 @@ namespace LNF.Reporting
                     Period = x.Key.Period,
                     BillingCategory = x.Key.BillingCategory,
                     UserName = x.Key.ManagerUserName,
-                    DisplayName = ClientModel.GetDisplayName(x.Key.UserLName, x.Key.UserFName),
+                    DisplayName = Models.Data.ClientItem.GetDisplayName(x.Key.UserLName, x.Key.UserFName),
                     Account = GetAccountName(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
                     Sort = x.Key.BillingCategory + ":" + GetAccountSort(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
                     TotalCharge = x.Sum(g => g.TotalCharge),

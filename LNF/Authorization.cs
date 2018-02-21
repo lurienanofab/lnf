@@ -13,7 +13,7 @@ namespace LNF
         private DataTable _AppPages;
         private DataTable _Groups;
 
-        public ClientModel CurrentUser
+        public ClientItem CurrentUser
         {
             get { return CacheManager.Current.CurrentUser; }
         }

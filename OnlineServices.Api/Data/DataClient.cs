@@ -12,32 +12,32 @@ namespace OnlineServices.Api.Data
     {
         public DataClient() : base(ConfigurationManager.AppSettings["ApiHost"]) { }
 
-        public async Task<IEnumerable<ClientModel>> GetClients(int limit, int skip = 0)
+        public async Task<IEnumerable<ClientItem>> GetClients(int limit, int skip = 0)
         {
-            return await Get<IEnumerable<ClientModel>>(string.Format("data/client?limit={0}&skip={1}", limit, skip));
+            return await Get<IEnumerable<ClientItem>>(string.Format("data/client?limit={0}&skip={1}", limit, skip));
         }
 
-        public async Task<ClientModel> GetClient(int clientId)
+        public async Task<ClientItem> GetClient(int clientId)
         {
-            return await Get<ClientModel>(string.Format("data/client/{0}", clientId));
+            return await Get<ClientItem>(string.Format("data/client/{0}", clientId));
         }
 
-        public async Task<IEnumerable<ClientModel>> GetActiveClients(ClientPrivilege privs = 0)
+        public async Task<IEnumerable<ClientItem>> GetActiveClients(ClientPrivilege privs = 0)
         {
-            return await Get<IEnumerable<ClientModel>>(string.Format("data/client/active?privs={0}", (int)privs));
+            return await Get<IEnumerable<ClientItem>>(string.Format("data/client/active?privs={0}", (int)privs));
         }
 
-        public async Task<IEnumerable<ClientModel>> GetActiveClients(DateTime sd, DateTime ed, ClientPrivilege privs = 0)
+        public async Task<IEnumerable<ClientItem>> GetActiveClients(DateTime sd, DateTime ed, ClientPrivilege privs = 0)
         {
-            return await Get<IEnumerable<ClientModel>>(string.Format("data/client/active/range?sd={0:yyyy-MM-dd}&ed={1:yyyy-MM-dd}&privs={2}", sd, ed, (int)privs));
+            return await Get<IEnumerable<ClientItem>>(string.Format("data/client/active/range?sd={0:yyyy-MM-dd}&ed={1:yyyy-MM-dd}&privs={2}", sd, ed, (int)privs));
         }
 
-        public async Task<ClientModel> AddClient(ClientModel client)
+        public async Task<ClientItem> AddClient(ClientItem client)
         {
-            return await Post<ClientModel>("data/client", client);
+            return await Post<ClientItem>("data/client", client);
         }
 
-        public async Task<bool> UpdateClient(ClientModel client)
+        public async Task<bool> UpdateClient(ClientItem client)
         {
             return await Put<bool>("data/client", client);
         }

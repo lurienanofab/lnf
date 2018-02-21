@@ -10,7 +10,7 @@ namespace LNF.Impl.ModelFactory.Injections
         {
             SetTargetProperty(target, "ChargeBeginDateTime", obj, x => x.ChargeBeginDateTime());
             SetTargetProperty(target, "ChargeEndDateTime", obj, x => x.ChargeEndDateTime());
-            SetTargetProperty(target, "Invitees", obj, x => x.GetInvitees().Model<ReservationInviteeModel>());
+            SetTargetProperty(target, "Invitees", obj, x => x.GetInvitees().Model<ReservationInviteeItem>());
         }
     }
 }

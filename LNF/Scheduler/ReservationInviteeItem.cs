@@ -1,5 +1,6 @@
 ﻿using LNF.Data;
 using LNF.Repository;
+using LNF.Repository.Data;
 using LNF.Repository.Scheduler;
 
 namespace LNF.Scheduler
@@ -16,7 +17,7 @@ namespace LNF.Scheduler
             {
                 ReservationID = source.Reservation.ReservationID,
                 InviteeID = source.Invitee.ClientID,
-                DisplayName = source.Invitee.DisplayName
+                DisplayName = Client.GetDisplayName(source.Invitee.LName, source.Invitee.FName)
             };
         }
 
@@ -25,7 +26,7 @@ namespace LNF.Scheduler
             ReservationInvitee key = new ReservationInvitee()
             {
                 Reservation = DA.Current.Single<Reservation>(ReservationID),
-                Invitee = ClientUtility.Find(InviteeID)
+                Invitee = DA.Current.Single<Client>(InviteeID)
             };
 
             if (key.Reservation == null || key.Invitee == null)
@@ -57,7 +58,7 @@ namespace LNF.Scheduler
             ReservationInvitee ri = new ReservationInvitee()
             {
                 Reservation = DA.Current.Single<Reservation>(ReservationID),
-                Invitee = ClientUtility.Find(InviteeID)
+                Invitee = DA.Current.Single<Client>(InviteeID)
             };
 
             if (!Exists(ri))

@@ -82,7 +82,7 @@
     <Compile Include="Control\PointStateModel.cs" />
     <Compile Include="Data\AccountModel.cs" />
     <Compile Include="Data\ClientAccountModel.cs" />
-    <Compile Include="Data\ClientModel.cs" />
+    <Compile Include="Data\ClientItem.cs" />
     <Compile Include="Data\ClientRemoteModel.cs" />
     <Compile Include="Data\DataFeedModel.cs" />
     <Compile Include="Data\DryBoxModel.cs" />
@@ -117,6 +117,7 @@
     <Compile Include="Scheduler\BuildingModel.cs" />
     <Compile Include="Scheduler\Enums.cs" />
     <Compile Include="Scheduler\ExpiringCard.cs" />
+    <Compile Include="Scheduler\IAuthorized.cs" />
     <Compile Include="Scheduler\KioskModel.cs" />
     <Compile Include="Scheduler\LabModel.cs" />
     <Compile Include="Scheduler\ProcessInfoLineModel.cs" />
@@ -124,10 +125,12 @@
     <Compile Include="Scheduler\ProcessTechGroupModel.cs" />
     <Compile Include="Scheduler\ProcessTechModel.cs" />
     <Compile Include="Scheduler\ReservationHistoryUpdate.cs" />
-    <Compile Include="Scheduler\ReservationInviteeModel.cs" />
-    <Compile Include="Scheduler\ReservationModel.cs" />
+    <Compile Include="Scheduler\ReservationInviteeItem.cs" />
+    <Compile Include="Scheduler\ReservationItem.cs" />
     <Compile Include="Scheduler\ReservationProcessInfoModel.cs" />
     <Compile Include="Scheduler\ReservationRecurrenceModel.cs" />
+    <Compile Include="Scheduler\ReservationState.cs" />
+    <Compile Include="Scheduler\ReservationStateItem.cs" />
     <Compile Include="Scheduler\ReservationTime.cs" />
     <Compile Include="Scheduler\ResourceClientModel.cs" />
     <Compile Include="Scheduler\ResourceCostModel.cs" />

@@ -2,14 +2,13 @@
 
 namespace LNF.Models.Data
 {
-    public class ClientModel : IPrivileged
+    public class ClientItem : IPrivileged
     {
         public int ClientID { get; set; }
         public string UserName { get; set; }
         public string FName { get; set; }
         public string MName { get; set; }
         public string LName { get; set; }
-        public string DisplayName { get; set; }
         public int DemCitizenID { get; set; }
         public int DemGenderID { get; set; }
         public int DemRaceID { get; set; }
@@ -29,6 +28,7 @@ namespace LNF.Models.Data
         public string OrgName { get; set; }
         public bool ClientOrgActive { get; set; }
         public int MaxChargeTypeID { get; set; }
+        public string DisplayName { get { return GetDisplayName(LName, FName); } }
 
         public bool HasWatchedEthicalVideo()
         {
@@ -47,7 +47,7 @@ namespace LNF.Models.Data
 
         public static string GetDisplayName(string lname, string fname)
         {
-            return string.Format("{0}, {1}", lname, fname);
+            return string.Join(", ", new[] { lname, fname }.Where(x => !string.IsNullOrEmpty(x))).Trim();
         }
     }
 }

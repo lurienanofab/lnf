@@ -3,7 +3,7 @@ using System;
 
 namespace LNF.Repository.Scheduler
 {
-    public class ResourceClient : IDataItem
+    public class ResourceClient : IDataItem, IAuthorized
     {
         public virtual int ResourceClientID { get; set; }
         public virtual Resource Resource { get; set; }

@@ -1,5 +1,5 @@
-﻿using LNF.Data;
-using LNF.Models.Data;
+﻿using LNF.Models.Data;
+using LNF.Repository.Data;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -20,7 +20,7 @@ namespace LNF.CommonTools
 
         public static IEnumerable<string> GetEmailListByPrivilege(ClientPrivilege privs)
         {
-            IEnumerable<string> result = ClientUtility.FindByPrivilege(privs).Select(c => c.PrimaryEmail());
+            IEnumerable<string> result = Client.FindByPrivilege(privs).Select(c => c.PrimaryEmail());
             return result;
         }
     }

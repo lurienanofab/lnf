@@ -46,7 +46,7 @@ namespace LNF.Web.Mvc
 
         public string ErrorPartial { get; set; }
 
-        public ClientModel CurrentUser
+        public ClientItem CurrentUser
         {
             get
             {

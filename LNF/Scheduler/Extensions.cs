@@ -271,20 +271,9 @@ namespace LNF.Scheduler
 
         public static ClientAuthLevel GetAuthLevel(this CacheManager cm, int resourceId, int clientId)
         {
-            ClientModel client = cm.GetClient(clientId);
-
-            if (client.HasPriv(ClientPrivilege.Administrator | ClientPrivilege.Developer))
-                return ClientAuthLevel.ToolEngineer;
-
-            var rc = cm.GetResourceClient(resourceId, clientId);
-
-            if (rc == null)
-                return ClientAuthLevel.UnauthorizedUser;
-
-            if (resourceId == 0)
-                return ClientAuthLevel.UnauthorizedUser;
-
-            return rc.AuthLevel;
+            var client = cm.GetClient(clientId);
+            var resourceClients = cm.ResourceClients(resourceId);
+            return ReservationUtility.GetAuthLevel(resourceClients, client, resourceId);
         }
 
         public static void ClearResourceClients(this CacheManager cm, int resourceId)
@@ -662,7 +651,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public static ClientModel GetCurrentClient(this IEnumerable<ResourceTree> tree, int resourceId)
+        public static ClientItem GetCurrentClient(this IEnumerable<ResourceTree> tree, int resourceId)
         {
             ResourceTree item = tree.Where(x => x.ResourceID == resourceId).FirstOrDefault();
 
@@ -675,7 +664,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public static ClientModel GetClient(this IEnumerable<ResourceTree> tree)
+        public static ClientItem GetClient(this IEnumerable<ResourceTree> tree)
         {
             var item = tree.Select(x => new { x.ClientID }).FirstOrDefault();
 

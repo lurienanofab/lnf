@@ -1,4 +1,4 @@
-﻿namespace LNF.Scheduler
+﻿namespace LNF.Models.Scheduler
 {
     public enum ReservationState
     {

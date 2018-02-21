@@ -76,42 +76,42 @@ namespace LNF.Data
             return cm.ActiveClientAccounts(cm.ClientID);
         }
 
-        public static IList<ClientModel> ClientOrgs(this CacheManager cm, int clientId)
+        public static IList<ClientItem> ClientOrgs(this CacheManager cm, int clientId)
         {
             string key = "ClientOrgs#" + clientId.ToString();
 
-            IList<ClientModel> result = cm.GetContextItem<IList<ClientModel>>(key);
+            IList<ClientItem> result = cm.GetContextItem<IList<ClientItem>>(key);
 
             if (result == null || result.Count == 0)
             {
-                result = DA.Current.Query<ClientOrgInfo>().Where(x => x.ClientID == clientId).Model<ClientModel>();
+                result = DA.Current.Query<ClientOrgInfo>().Where(x => x.ClientID == clientId).Model<ClientItem>();
                 cm.SetContextItem(key, result);
             }
 
             return result;
         }
 
-        public static IList<ClientModel> ActiveClientOrgs(this CacheManager cm, int clientId)
+        public static IList<ClientItem> ActiveClientOrgs(this CacheManager cm, int clientId)
         {
             return cm.ClientOrgs(clientId).Where(x => x.ClientOrgActive).ToList();
         }
 
-        public static ClientModel GetClientOrg(this CacheManager cm, int clientId, int orgId)
+        public static ClientItem GetClientOrg(this CacheManager cm, int clientId, int orgId)
         {
             return cm.ClientOrgs(clientId).FirstOrDefault(x => x.OrgID == orgId);
         }
 
-        public static ClientModel GetActiveClientOrg(this CacheManager cm, int clientId, int orgId)
+        public static ClientItem GetActiveClientOrg(this CacheManager cm, int clientId, int orgId)
         {
             return cm.ActiveClientOrgs(clientId).FirstOrDefault(x => x.OrgID == orgId);
         }
 
-        public static IList<ClientModel> CurrentUserClientOrgs(this CacheManager cm)
+        public static IList<ClientItem> CurrentUserClientOrgs(this CacheManager cm)
         {
             return cm.ClientOrgs(cm.ClientID);
         }
 
-        public static IList<ClientModel> CurrentUserActiveClientOrgs(this CacheManager cm)
+        public static IList<ClientItem> CurrentUserActiveClientOrgs(this CacheManager cm)
         {
             return cm.ActiveClientOrgs(cm.ClientID);
         }
@@ -366,7 +366,38 @@ namespace LNF.Data
 
         public static Client GetClient(this ClientInfo item)
         {
-            return ClientUtility.Find(item.ClientID);
+            return DA.Current.Single<Client>(item.ClientID);
+        }
+
+        public static ClientItem GetClientItem(this ClientInfo item)
+        {
+            return new ClientItem()
+            {
+                ClientID = item.ClientID,
+                UserName = item.UserName,
+                FName = item.FName,
+                MName = item.MName,
+                LName = item.LName,
+                DemCitizenID = item.DemCitizenID,
+                DemGenderID = item.DemGenderID,
+                DemRaceID = item.DemRaceID,
+                DemEthnicID = item.DemEthnicID,
+                DemDisabilityID = item.DemDisabilityID,
+                Privs = item.Privs,
+                Communities = item.Communities,
+                TechnicalFieldID = item.TechnicalInterestID,
+                TechnicalFieldName = item.TechnicalInterestName,
+                IsChecked = item.IsChecked,
+                IsSafetyTest = item.IsSafetyTest,
+                ClientActive = item.ClientActive,
+                ClientOrgID = item.ClientOrgID,
+                Phone = item.Phone,
+                Email = item.Email,
+                OrgID = item.OrgID,
+                OrgName = item.OrgName,
+                ClientOrgActive = item.ClientOrgActive,
+                MaxChargeTypeID = item.MaxChargeTypeID
+            };
         }
     }
 

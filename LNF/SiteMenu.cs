@@ -13,15 +13,15 @@ namespace LNF
     {
         private IList<Menu> _items;
 
-        public ClientModel Client { get; }
+        public ClientItem Client { get; }
 
-        private SiteMenu(ClientModel client)
+        private SiteMenu(ClientItem client)
         {
             Client = client ?? throw new ArgumentNullException("client");
             SelectMenuItems();
         }
 
-        public static SiteMenu Create(ClientModel client)
+        public static SiteMenu Create(ClientItem client)
         {
             return new SiteMenu(client);
         }

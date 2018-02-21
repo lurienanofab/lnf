@@ -1,9 +1,9 @@
-﻿using System.Linq;
-using System.Data;
-using LNF.Data;
-using LNF.Repository;
+﻿using LNF.Repository;
+using LNF.Repository.Data;
 using LNF.Repository.Ordering;
 using System;
+using System.Data;
+using System.Linq;
 using System.Xml;
 
 namespace LNF.Ordering
@@ -83,7 +83,7 @@ namespace LNF.Ordering
             {
                 TrackingCheckpoint = Find(checkpoint),
                 PurchaseOrder = po,
-                Client = ClientUtility.Find(clientId),
+                Client = DA.Current.Single<Client>(clientId),
                 TrackingData = data,
                 TrackingDateTime = DateTime.Now
             };

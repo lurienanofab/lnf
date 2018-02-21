@@ -3,6 +3,7 @@ using LNF.CommonTools;
 using LNF.Data;
 using LNF.Email;
 using LNF.Helpdesk;
+using LNF.Models.Data;
 using LNF.Models.Scheduler;
 using LNF.Repository;
 using LNF.Repository.Scheduler;
@@ -61,7 +62,7 @@ namespace LNF.Scheduler
                 CreateTicketResult result = service.CreateTicket
                 (
                     resourceId: res.ResourceID,
-                    name: client.DisplayName,
+                    name: ClientItem.GetDisplayName(client.LName, client.FName),
                     email: primary.Email,
                     queue: res.HelpdeskEmail,
                     subject: subjectText,
@@ -127,7 +128,7 @@ namespace LNF.Scheduler
             var client = CacheManager.Current.GetClient(clientId);
             string result = "Resource ID: " + res.ResourceID.ToString() + Environment.NewLine
                 + "Resource Name: " + res.ResourceName + Environment.NewLine
-                + "Created By: " + client.DisplayName + Environment.NewLine
+                + "Created By: " + ClientItem.GetDisplayName(client.LName, client.FName) + Environment.NewLine
                 + "Reservation: " + reservationText + Environment.NewLine
                 + "Type: " + ticketType;
             return result;

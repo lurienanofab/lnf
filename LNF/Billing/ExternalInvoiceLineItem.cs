@@ -23,7 +23,7 @@ namespace LNF.Billing
 
         public string DisplayName
         {
-            get { return ClientModel.GetDisplayName(LName, FName); }
+            get { return ClientItem.GetDisplayName(LName, FName); }
         }
 
         public double LineTotal

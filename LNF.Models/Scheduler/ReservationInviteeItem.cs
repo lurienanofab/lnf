@@ -3,7 +3,7 @@
     /// <summary>
     /// An invitee to a reservation
     /// </summary>
-    public class ReservationInviteeModel
+    public class ReservationInviteeItem
     {
         /// <summary>
         /// The id for the Reservation

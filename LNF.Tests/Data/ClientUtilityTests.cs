@@ -27,7 +27,7 @@ namespace LNF.Tests.Data
         public static void Cleanup()
         {
             // clean up;
-            var c = ClientUtility.Find("newclient");
+            var c = Client.Find("newclient");
             if (c != null)
             {
                 
@@ -135,7 +135,7 @@ namespace LNF.Tests.Data
             bool hasAccess;
             string alert;
 
-            c = ClientUtility.Find(1600);
+            c = DA.Current.Single<Client>(1600);
 
             check = AccessCheck.Create(c);
             hasAccess = ClientUtility.UpdatePhysicalAccess(check, out alert);
@@ -149,7 +149,7 @@ namespace LNF.Tests.Data
             Assert.IsTrue(!check.IsPhysicalAccessEnabled());
             _context.WriteLine("alert: {0}", alert);
 
-            c = ClientUtility.Find(1301);
+            c = DA.Current.Single<Client>(1301);
             check = AccessCheck.Create(c);
             hasAccess = ClientUtility.UpdatePhysicalAccess(check, out alert);
             Assert.IsTrue(check.AllowReenable());
@@ -166,7 +166,7 @@ namespace LNF.Tests.Data
         [TestMethod]
         public void ClientUtility_StoreClientInfoTest()
         {
-            var c0 = ClientUtility.Find(1600);
+            var c0 = DA.Current.Single<Client>(1600);
 
             c0.AddPriv(ClientPrivilege.PhysicalAccess);
 
@@ -231,13 +231,13 @@ namespace LNF.Tests.Data
         {
             IEnumerable<Client> clients;
 
-            clients = ClientUtility.FindByManager(155);
+            clients = Client.FindByManager(155);
             int activeCount = clients.Count();
 
-            clients = ClientUtility.FindByManager(155, false);
+            clients = Client.FindByManager(155, false);
             int inactiveCount = clients.Count();
 
-            clients = ClientUtility.FindByManager(155, null);
+            clients = Client.FindByManager(155, null);
             Assert.AreEqual(activeCount + inactiveCount, clients.Count());
         }
 
@@ -247,13 +247,13 @@ namespace LNF.Tests.Data
             IEnumerable<Client> clients;
             int[] tools = { 10020, 10030, 61081 };
 
-            clients = ClientUtility.FindByTools(tools);
+            clients = Client.FindByTools(tools);
             int activeCount = clients.Count();
 
-            clients = ClientUtility.FindByTools(tools, false);
+            clients = Client.FindByTools(tools, false);
             int inactiveCount = clients.Count();
 
-            clients = ClientUtility.FindByTools(tools, null);
+            clients = Client.FindByTools(tools, null);
             Assert.AreEqual(activeCount + inactiveCount, clients.Count());
         }
 
@@ -264,13 +264,13 @@ namespace LNF.Tests.Data
             IEnumerable<Client> clients;
             int flag = 1 | 2 | 8 | 16;
 
-            clients = ClientUtility.FindByCommunity(flag);
+            clients = Client.FindByCommunity(flag);
             int activeCount = clients.Count();
 
-            clients = ClientUtility.FindByCommunity(flag, false);
+            clients = Client.FindByCommunity(flag, false);
             int inactiveCount = clients.Count();
 
-            clients = ClientUtility.FindByCommunity(flag, null);
+            clients = Client.FindByCommunity(flag, null);
             Assert.AreEqual(activeCount + inactiveCount, clients.Count());
         }
 
@@ -280,13 +280,13 @@ namespace LNF.Tests.Data
             IEnumerable<Client> clients;
             ClientPrivilege privs = ClientPrivilege.LabUser;
 
-            clients = ClientUtility.FindByPrivilege(privs);
+            clients = Client.FindByPrivilege(privs);
             int activeCount = clients.Count();
 
-            clients = ClientUtility.FindByPrivilege(privs, false);
+            clients = Client.FindByPrivilege(privs, false);
             int inactiveCount = clients.Count();
 
-            clients = ClientUtility.FindByPrivilege(privs, null);
+            clients = Client.FindByPrivilege(privs, null);
             Assert.AreEqual(activeCount + inactiveCount, clients.Count());
         }
 
@@ -298,20 +298,20 @@ namespace LNF.Tests.Data
             Client test = DA.Current.Single<Client>(1600);
 
             // normal user, do not show all
-            clients = ClientUtility.FindByPeriod(test, period);
+            clients = Client.FindByPeriod(test, period);
             Assert.AreEqual(1, clients.Count()); //only itself
 
-            clients = ClientUtility.FindByPeriod(test, period, true);
+            clients = Client.FindByPeriod(test, period, true);
             Assert.AreEqual(1, clients.Count()); //only itself
 
             test.AddPriv(ClientPrivilege.Staff);
 
             // staff user, do not show all
-            clients = ClientUtility.FindByPeriod(test, period);
+            clients = Client.FindByPeriod(test, period);
             Assert.AreEqual(1, clients.Count()); //only itself
 
             // staff user, show all
-            clients = ClientUtility.FindByPeriod(test, period, true);
+            clients = Client.FindByPeriod(test, period, true);
             Assert.AreEqual(1059, clients.Count()); //everyone
 
             test.RemovePriv(ClientPrivilege.Staff);
@@ -319,11 +319,11 @@ namespace LNF.Tests.Data
             test.AddPriv(ClientPrivilege.Administrator);
 
             // admin user, do not show all
-            clients = ClientUtility.FindByPeriod(test, period);
+            clients = Client.FindByPeriod(test, period);
             Assert.AreEqual(1059, clients.Count()); //everyone
 
             // admin user, show all
-            clients = ClientUtility.FindByPeriod(test, period, true);
+            clients = Client.FindByPeriod(test, period, true);
             Assert.AreEqual(1059, clients.Count()); //everyone
 
             test.RemovePriv(ClientPrivilege.Administrator);
@@ -332,7 +332,7 @@ namespace LNF.Tests.Data
         [TestMethod]
         public void ClientUtility_FindByDisplayNameTest()
         {
-            var c = ClientUtility.FindByDisplayName("User, Test");
+            var c = Client.FindByDisplayName("User, Test");
             Assert.IsNotNull(c);
             Assert.AreEqual("test", c.UserName);
         }
@@ -342,11 +342,11 @@ namespace LNF.Tests.Data
         {
             Client c;
 
-            c = ClientUtility.Find(1600);
+            c = DA.Current.Single<Client>(1600);
             Assert.IsNotNull(c);
             Assert.AreEqual("test", c.UserName);
 
-            c = ClientUtility.Find("jgett");
+            c = Client.Find("jgett");
             Assert.IsNotNull(c);
             Assert.AreEqual(1301, c.ClientID);
         }

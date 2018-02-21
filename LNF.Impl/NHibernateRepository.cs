@@ -144,8 +144,11 @@ namespace LNF.Impl
 
         private void ApplyParameters(IQuery query, object parameters)
         {
-            foreach (var prop in parameters.GetType().GetProperties())
-                query.SetParameter(prop.Name, prop.GetValue(parameters), NHibernateUtil.GuessType(prop.PropertyType));
+            if (parameters != null)
+            {
+                foreach (var prop in parameters.GetType().GetProperties())
+                    query.SetParameter(prop.Name, prop.GetValue(parameters), NHibernateUtil.GuessType(prop.PropertyType));
+            }
         }
     }
 

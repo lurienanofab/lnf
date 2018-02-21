@@ -27,42 +27,42 @@ namespace LNF.Cache
             return user.Identity.Name;
         }
 
-        public ClientModel GetClient(string username)
+        public ClientItem GetClient(string username)
         {
-            IList<ClientModel> list = GetContextItem<IList<ClientModel>>("Clients");
+            IList<ClientItem> list = GetContextItem<IList<ClientItem>>("Clients");
 
             if (list == null)
             {
-                list = new List<ClientModel>();
+                list = new List<ClientItem>();
                 SetContextItem("Clients", list);
             }
 
-            ClientModel result = list.FirstOrDefault(x => x.UserName == username);
+            ClientItem result = list.FirstOrDefault(x => x.UserName == username);
 
             if (result == null)
             {
-                result = DA.Current.Query<ClientInfo>().FirstOrDefault(x => x.UserName == username).Model<ClientModel>();
+                result = DA.Current.Query<ClientInfo>().FirstOrDefault(x => x.UserName == username).Model<ClientItem>();
                 list.Add(result);
             }
 
             return result;
         }
 
-        public ClientModel GetClient(int clientId)
+        public ClientItem GetClient(int clientId)
         {
-            IList<ClientModel> list = GetContextItem<IList<ClientModel>>("Clients");
+            IList<ClientItem> list = GetContextItem<IList<ClientItem>>("Clients");
 
             if (list == null)
             {
-                list = new List<ClientModel>();
+                list = new List<ClientItem>();
                 SetContextItem("Clients", list);
             }
 
-            ClientModel result = list.FirstOrDefault(x => x.ClientID == clientId);
+            ClientItem result = list.FirstOrDefault(x => x.ClientID == clientId);
 
             if (result == null)
             {
-                result = DA.Current.Query<ClientInfo>().FirstOrDefault(x => x.ClientID == clientId).Model<ClientModel>();
+                result = DA.Current.Query<ClientInfo>().FirstOrDefault(x => x.ClientID == clientId).Model<ClientItem>();
                 if (result != null)
                     list.Add(result);
             }
@@ -73,11 +73,11 @@ namespace LNF.Cache
         /// <summary>
         /// The currently logged in user. Returns null if no one is logged in.
         /// </summary>
-        public ClientModel CurrentUser
+        public ClientItem CurrentUser
         {
             get
             {
-                var result = GetContextItem<ClientModel>("CurrentUser");
+                var result = GetContextItem<ClientItem>("CurrentUser");
 
                 if (result == null)
                 {
@@ -94,7 +94,7 @@ namespace LNF.Cache
         /// </summary>
         public void CheckSession()
         {
-            ClientModel model = null;
+            ClientItem model = null;
 
             if (Providers.Context.Current.User.Identity.IsAuthenticated)
             {

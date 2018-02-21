@@ -209,7 +209,7 @@ namespace LNF.Billing
                 ProcessTechName = x.ProcessTechName,
                 ClientID = x.ClientID,
                 UserName = x.UserName,
-                DisplayName = ClientModel.GetDisplayName(x.LName, x.FName),
+                DisplayName = ClientItem.GetDisplayName(x.LName, x.FName),
                 ActivityID = x.ActivityID,
                 ActivityName = x.ActivityName,
                 AccountID = x.AccountID,

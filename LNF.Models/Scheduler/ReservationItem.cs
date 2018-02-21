@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using LNF.Models.Data;
 
 namespace LNF.Models.Scheduler
 {
-    public class ReservationModel
+    public class ReservationItem
     {
         public int ReservationID { get; set; }
         public int ResourceID { get; set; }
@@ -12,7 +13,7 @@ namespace LNF.Models.Scheduler
         public string UserName { get; set; }
         public string LName { get; set; }
         public string FName { get; set; }
-        public string DisplayName { get; set; }
+        public ClientPrivilege Privs { get; set; }
         public int AccountID { get; set; }
         public string AccountName { get; set; }
         public string ShortCode { get; set; }
@@ -46,6 +47,11 @@ namespace LNF.Models.Scheduler
         public DateTime? OriginalBeginDateTime { get; set; }
         public DateTime? OriginalEndDateTime { get; set; }
         public DateTime? OriginalModifiedOn { get; set; }
-        public IEnumerable<ReservationInviteeModel> Invitees { get; set; }
+        public bool Editable { get; set; }
+        public bool IsFacilityDownTime { get; set; }
+        public int MinCancelTime { get; set; }
+        public int MinReservTime { get; set; }
+        public ClientAuthLevel StartEndAuth { get; set; }
+        public IEnumerable<ReservationInviteeItem> Invitees { get; set; }
     }
 }

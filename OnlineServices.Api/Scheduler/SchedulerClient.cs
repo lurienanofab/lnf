@@ -10,12 +10,12 @@ namespace OnlineServices.Api.Scheduler
     {
         public SchedulerClient() : base(ConfigurationManager.AppSettings["ApiHost"]) { }
 
-        public async Task<ReservationModel> GetReservation(int reservationId)
+        public async Task<ReservationItem> GetReservation(int reservationId)
         {
-            return await Get<ReservationModel>(string.Format("scheduler/reservation/{0}", reservationId));
+            return await Get<ReservationItem>(string.Format("scheduler/reservation/{0}", reservationId));
         }
 
-        public async Task<IEnumerable<ReservationModel>> GetReservations(DateTime sd, DateTime ed, int clientId = 0, int activityId = 0, bool? started = null, bool? active = null)
+        public async Task<IEnumerable<ReservationItem>> GetReservations(DateTime sd, DateTime ed, int clientId = 0, int activityId = 0, bool? started = null, bool? active = null)
         {
             string qs = string.Empty;
             
@@ -25,7 +25,7 @@ namespace OnlineServices.Api.Scheduler
             if (active.HasValue)
                 qs += "&active=" + active.Value.ToString().ToLower();
 
-            return await Get<IEnumerable<ReservationModel>>(string.Format("scheduler/reservation?sd={0:yyyy-MM-dd}&ed={1:yyyy-MM-dd}&clientId={2}&activityId={3}{4}", sd, ed, clientId, activityId, qs));
+            return await Get<IEnumerable<ReservationItem>>(string.Format("scheduler/reservation?sd={0:yyyy-MM-dd}&ed={1:yyyy-MM-dd}&clientId={2}&activityId={3}{4}", sd, ed, clientId, activityId, qs));
         }
 
         public async Task<bool> UpdateHistory(ReservationHistoryUpdate model)

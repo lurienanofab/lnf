@@ -10,7 +10,7 @@ namespace LNF.Reporting
 {
     public static class ClientItemUtility
     {
-        public static IEnumerable<ClientItem> SelectCurrentActiveClients()
+        public static IEnumerable<Models.Reporting.ClientItem> SelectCurrentActiveClients()
         {
             var result = DA.Current.Query<ClientInfo>()
                 .Where(x => x.ClientActive)
@@ -20,7 +20,7 @@ namespace LNF.Reporting
             return result.ToList();
         }
 
-        public static IEnumerable<ClientItem> SelectActiveClients(DateTime period)
+        public static IEnumerable<Models.Reporting.ClientItem> SelectActiveClients(DateTime period)
         {
             var result = DA.Current.Query<ClientInfo>()
                 .FindActive(x => x.ClientID, period, period.AddMonths(1))
@@ -30,7 +30,7 @@ namespace LNF.Reporting
             return result.ToList();
         }
 
-        public static IEnumerable<ClientItem> SelectActiveManagers(DateTime period)
+        public static IEnumerable<Models.Reporting.ClientItem> SelectActiveManagers(DateTime period)
         {
             var managers = DA.Current.Query<ClientAccountInfo>().Where(x => x.Manager).FindActive(x => x.ClientAccountID, period, period.AddMonths(1));
 
@@ -40,20 +40,20 @@ namespace LNF.Reporting
             return items.Distinct(comparer).OrderBy(x => x.LName).ThenBy(x => x.FName).ToList();
         }
 
-        public static ClientItem GetManagerFor(int clientId, DateTime period)
+        public static Models.Reporting.ClientItem GetManagerFor(int clientId, DateTime period)
         {
             var managers = DA.Current.Query<ClientAccountInfo>().Where(x => x.Manager).FindActive(x => x.ClientAccountID, period, period.AddMonths(1));
 
             throw new NotImplementedException();
         }
 
-        public static ClientItem CreateClientItem(ClientOrgInfoBase client)
+        public static  Models.Reporting.ClientItem CreateClientItem(ClientOrgInfoBase client)
         {
             if (client == null) return null;
 
             int internalChargeTypeId = 5;
 
-            return new ClientItem()
+            return new Models.Reporting.ClientItem()
             {
                 ClientID = client.ClientID,
                 UserName = client.UserName,
@@ -66,7 +66,7 @@ namespace LNF.Reporting
             };
         }
 
-        public static ClientItem CreateClientItem(int clientId)
+        public static Models.Reporting.ClientItem CreateClientItem(int clientId)
         {
             ClientInfo c = DA.Current.Query<ClientInfo>().FirstOrDefault(x => x.ClientID == clientId);
             return CreateClientItem(c);

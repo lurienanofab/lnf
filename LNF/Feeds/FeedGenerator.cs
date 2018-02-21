@@ -247,7 +247,7 @@ namespace LNF.Feeds
                                 dr["LAST-MODIFIED"] = item.LastModifiedOn.ToUniversalTime().ToString("yyyyMMdd'T'HHmmss'Z'");
                                 dr["STATUS"] = (item.IsActive) ? "CONFIRMED" : "CANCELLED";
                                 if (!item.IsActive) dr["METHOD"] = "CANCEL";
-                                dr["SUMMARY"] = string.Format("{0} [{1}] | {2} ({3})", item.ResourceName, item.ResourceID, ClientModel.GetDisplayName(item.LName, item.FName), item.Email);
+                                dr["SUMMARY"] = string.Format("{0} [{1}] | {2} ({3})", item.ResourceName, item.ResourceID, ClientItem.GetDisplayName(item.LName, item.FName), item.Email);
                                 dr["DESCRIPTION"] = string.Format(
                                     "Activity: {0}\\nStatus: {1}\\nScheduled Start: {2}\\nScheduled End: {3}\\nActual Start: {4}\\nActual End: {5}",
                                     item.ActivityName, GetReservationStatus(item), GetDateTime(item.BeginDateTime), GetDateTime(item.EndDateTime), GetDateTime(item.ActualBeginDateTime), GetDateTime(item.ActualEndDateTime)

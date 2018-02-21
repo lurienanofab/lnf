@@ -1,14 +1,11 @@
-﻿using LNF.Cache;
-using LNF.Models.Data;
+﻿using LNF.Models.Data;
 using LNF.Models.Scheduler;
 using LNF.Repository.Data;
-using LNF.Scheduler;
 using System;
-using System.Linq;
 
 namespace LNF.Repository.Scheduler
 {
-    public class ResourceClientInfo : IDataItem
+    public class ResourceClientInfo : IDataItem, IPrivileged, IAuthorized
     {
         public virtual int ResourceClientID { get; set; }
         public virtual int ResourceID { get; set; }

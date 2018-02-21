@@ -468,7 +468,7 @@
     <Compile Include="Scheduler\ReservationInviteeUtility.cs" />
     <Compile Include="Scheduler\ReservationProcessInfoItem.cs" />
     <Compile Include="Scheduler\ReservationProcessInfoUtility.cs" />
-    <Compile Include="Scheduler\ReservationState.cs" />
+    <Compile Include="Scheduler\ReservationStateArgs.cs" />
     <Compile Include="Scheduler\ResourceClientInfoUtility.cs" />
     <Compile Include="Scheduler\ResourceCost.cs" />
     <Compile Include="Scheduler\OnTheFlyUtility.cs" />
@@ -589,6 +589,7 @@
     <Compile Include="Scheduler\ResourceClientUtility.cs" />
     <Compile Include="CommonTools\DataTableManager.cs" />
     <Compile Include="IScriptingProvider.cs" />
+    <Compile Include="Scheduler\ResourceItem.cs" />
     <Compile Include="Scheduler\ResourceStatusUtility.cs" />
     <Compile Include="Scheduler\ResourceUtility.cs" />
     <Compile Include="Scripting\Data.cs" />

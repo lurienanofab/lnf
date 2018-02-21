@@ -21,7 +21,7 @@ namespace LNF.Scheduler
         //public const int PREVIOUS_GRANULARITY = 0;
         //public const int FUTURE_GRANULARITY = 1;
 
-        private static readonly ReservationState[] TruthTable = new[]
+        public static readonly ReservationState[] TruthTable = new[]
         {
             ReservationState.Other, ReservationState.Other, ReservationState.Other, ReservationState.Other,
             ReservationState.Other, ReservationState.Other, ReservationState.Other, ReservationState.Other,
@@ -41,14 +41,19 @@ namespace LNF.Scheduler
             ReservationState.Undefined, ReservationState.Undefined, ReservationState.Undefined, ReservationState.Undefined
         };
 
-        private static readonly ReservationState[] TruthTableTE = new[]
+        public static readonly ReservationState[] TruthTableTE = new[]
         {
             ReservationState.Undefined, ReservationState.StartOnly, ReservationState.Editable, ReservationState.StartOrDelete
         };
 
-        public static int GetSubStateVal(bool isInLab, bool isReserver, bool isInvited, bool isAuth, bool beforeMCT, bool isStartable)
+        public static int GetSubStateVal(bool isInLab, bool isReserver, bool isInvited, bool isAuthorized, bool isBeforeMinCancelTime, bool isStartable)
         {
-            return (isInLab ? 32 : 0) + (isReserver ? 16 : 0) + (isInvited ? 8 : 0) + (isAuth ? 4 : 0) + (beforeMCT ? 2 : 0) + (isStartable ? 1 : 0);
+            return (isInLab ? 32 : 0)
+                + (isReserver ? 16 : 0)
+                + (isInvited ? 8 : 0)
+                + (isAuthorized ? 4 : 0)
+                + (isBeforeMinCancelTime ? 2 : 0)
+                + (isStartable ? 1 : 0);
         }
 
         public static Reservation Create(Resource resource, Client client, Account account, Activity activity, DateTime beginDateTime, DateTime endDateTime, double duration, string notes, bool autoEnd, bool hasProcessInfo, bool hasInvitees, ReservationRecurrence recurrence, bool isActive, bool keepAlive, double maxReservedDuration, Client modifiedBy)
@@ -314,21 +319,28 @@ namespace LNF.Scheduler
         {
             // Get Reservation Info
             var rsv = DA.Current.Single<Reservation>(reservationId);
+            var client = DA.Current.Single<Client>(clientId);
 
-            // Repair Reservations, returns immediately
-            if (!rsv.Activity.Editable) return ReservationState.Repair;
+            return GetReservationState(rsv, client, isInLab);
+        }
 
-            // Determine Ownership
-            bool isReserver = rsv.Client.ClientID == clientId;
+        public static ReservationState GetReservationState(Reservation rsv, Client client, bool isInLab)
+        {
+            var args = ReservationStateArgs.Create(rsv, client, isInLab);
 
-            // Determine Invition
-            bool isInvited = DA.Current.Query<ReservationInvitee>().Any(x => x.Reservation.ReservationID == reservationId && x.Invitee.ClientID == clientId);
+            try
+            {
+                return GetReservationState(args);
+            }
+            catch (Exception ex)
+            {
+                string errmsg = string.Format(string.Format("Unable to determine reservation state for ReservationID: {0}, BeginDateTime: {1:yyyy-MM-dd HH:mm:ss}, ResourceID: {2}, isReserver: {3}, isInvited: {4}, isAuthorized: {5}, beforeMinCancelTime: {6}", rsv.ReservationID, rsv.BeginDateTime, rsv.Resource.ResourceID, args.IsReserver, args.IsInvited, args.IsAuthorized, args.IsBeforeMinCancelTime));
+                throw new Exception(errmsg, ex);
+            }
+        }
 
-            // Determine Authorization
-            ClientAuthLevel userAuth = CacheManager.Current.GetAuthLevel(rsv.Resource.ResourceID, clientId);
-            bool isAuthorized = (userAuth & (ClientAuthLevel)rsv.Activity.StartEndAuth) > 0;
-            bool isEngineer = (userAuth & ClientAuthLevel.ToolEngineer) > 0;
-
+        public static ReservationState GetReservationState(ReservationStateArgs args)
+        {
             // This is the truth table for non tool engineer 
             // note that having both R and I true is meaningless
             // L - IsInLab
@@ -416,40 +428,31 @@ namespace LNF.Scheduler
             // Note that the four cases in which the res can be started are modified by IsInLab. 
             // if this is false, the state changes as shown above 
 
-            if (rsv.ActualBeginDateTime == null && rsv.ActualEndDateTime == null)
+            // Repair Reservations, returns immediately
+            if (!args.IsRepair) return ReservationState.Repair;
+
+            if (args.ActualBeginDateTime == null && args.ActualEndDateTime == null)
             {
                 // reservations that have not yet been started
-                if (rsv.EndDateTime <= DateTime.Now) // should never occur - if in the past, the actuals should exist
+                if (args.EndDateTime <= DateTime.Now) // should never occur - if in the past, the actuals should exist
                 {
-                    if (isReserver)
+                    if (args.IsReserver)
                         return ReservationState.PastSelf;
                     else
                         return ReservationState.PastOther;
                 }
 
-                // Get Resource Info
-                var res = rsv.Resource;
-
-                bool beforeMinCancelTime = (DateTime.Now <= rsv.BeginDateTime.AddMinutes(-1 * res.MinCancelTime));
-                int graceSeconds = 60 * res.GracePeriod + 10;
-                bool isStartable = (DateTime.Now > rsv.BeginDateTime.AddMinutes(-1 * res.MinReservTime));
-
-                // redefine MCT for tool engineers - can edit up until scheduled start time                
-                ReservationState result = GetUnstartedReservationState(rsv.BeginDateTime, res.MinReservTime, isInLab, isEngineer, isReserver, isInvited, isAuthorized, beforeMinCancelTime);
-
-                if (result == ReservationState.Undefined)
-                    throw new Exception(string.Format("Unable to determine reservation state for ReservationID: {0}, BeginDateTime: {1:yyyy-MM-dd HH:mm:ss}, ResourceID: {2}, isReserver: {3}, isInvited: {4}, isAuthorized: {5}, beforeMinCancelTime: {6}", reservationId, rsv.BeginDateTime, res.ResourceID, isReserver, isInvited, isAuthorized, beforeMinCancelTime));
-
-                return result;
+                // redefine min cancel time (MCT) for tool engineers - can edit up until scheduled start time
+                return GetUnstartedReservationState(args.BeginDateTime, args.MinReservTime, args.IsInLab, args.IsToolEngineer, args.IsReserver, args.IsInvited, args.IsAuthorized, args.IsBeforeMinCancelTime);
             }
-            else if (rsv.ActualBeginDateTime != null && rsv.ActualEndDateTime == null)
+            else if (args.ActualBeginDateTime != null && args.ActualEndDateTime == null)
             {
                 // reservations that have been started
-                if (isReserver || isEngineer)
+                if (args.IsReserver || args.IsToolEngineer)
                     return ReservationState.Endable;
-                else if (isInvited)
+                else if (args.IsInvited)
                 {
-                    if (userAuth != ClientAuthLevel.UnauthorizedUser && userAuth != ClientAuthLevel.RemoteUser)
+                    if (args.UserAuth != ClientAuthLevel.UnauthorizedUser && args.UserAuth != ClientAuthLevel.RemoteUser)
                         //2008-06-26 Sandrine requested that invitee should be able to end the reservation
                         return ReservationState.Endable;
                     else
@@ -458,39 +461,69 @@ namespace LNF.Scheduler
                 else
                     return ReservationState.ActiveNotEndable;
             }
-            else if (rsv.ActualEndDateTime != null)
+            else if (args.ActualBeginDateTime != null && args.ActualEndDateTime != null)
             {
+                // at this point actualEndDateTime must not be null, and
+                // we don't care if actualBeginDateTime is null or not
+
                 // reservations in the past OR it's Facility Down Time reservation
-                if (rsv.Activity.IsFacilityDownTime)
+                if (args.IsFacilityDownTime)
                 {
                     // Facility Down Time, it must be editable if it's not started yet
-                    if (rsv.ActualEndDateTime.HasValue && rsv.ActualEndDateTime.Value < DateTime.Now && isEngineer)
+                    if (args.ActualEndDateTime.HasValue && args.ActualEndDateTime.Value < DateTime.Now && args.IsToolEngineer)
                         return ReservationState.PastSelf; // FDT reservation that has already ended
-                    else if (rsv.BeginDateTime > DateTime.Now && isEngineer)
+                    else if (args.BeginDateTime > DateTime.Now && args.IsToolEngineer)
                         return ReservationState.Editable; // FDT reservation that has not started yet
-                    else if (rsv.EndDateTime > DateTime.Now && isEngineer)
+                    else if (args.EndDateTime > DateTime.Now && args.IsToolEngineer)
                         return ReservationState.Endable; //it's endable only if it's not ended yet
                     else
                         return ReservationState.Other;
                 }
 
-                if (isReserver)
+                if (args.IsReserver)
                     return ReservationState.PastSelf;
                 else
                     return ReservationState.PastOther;
             }
-
-            throw new Exception(string.Format("Unable to determine reservation state for ReservationID: {0}", reservationId));
+            else //if (actualBeginDateTime == null && actualEndDateTime != null)
+            {
+                // a reservation cannot have ended if it never began
+                throw new InvalidOperationException("ActualBeginDateTime cannot be null if ActualEndDateTime is not null.");
+            }
         }
 
-        public static ReservationState GetUnstartedReservationState(DateTime beginDateTime, int minReservTime, bool isInLab, bool isEngineer, bool isReserver, bool isInvited, bool isAuthorized, bool beforeMinCancelTime)
-        {
-            bool isStartable = IsStartable(beginDateTime, minReservTime);
 
-            if (isEngineer)
-                return TruthTableTE[GetSubStateVal(false, false, false, false, DateTime.Now <= beginDateTime, isStartable)];
-            else
-                return TruthTable[GetSubStateVal(isInLab, isReserver, isInvited, isAuthorized, beforeMinCancelTime, isStartable)];
+        public static ReservationState GetUnstartedReservationState(DateTime beginDateTime, int minReservTime, bool isInLab, bool isEngineer, bool isReserver, bool isInvited, bool isAuthorized, bool isBeforeMinCancelTime)
+        {
+            var isStartable = IsStartable(beginDateTime, minReservTime);
+
+            var actual = (isEngineer)
+                 ? new { isInLab = false, isReserver = false, isInvited = false, isAuthorized = false, isBeforeMinCancelTime = DateTime.Now <= beginDateTime, isStartable }
+                 : new { isInLab, isReserver, isInvited, isAuthorized, isBeforeMinCancelTime, isStartable };
+
+            var subStateValue = GetSubStateVal(actual.isInLab, actual.isReserver, actual.isInvited, actual.isAuthorized, actual.isBeforeMinCancelTime, actual.isStartable);
+
+            var result = (isEngineer)
+                ? TruthTableTE[subStateValue]
+                : TruthTable[subStateValue];
+
+            if (result == ReservationState.Undefined)
+            {
+                var errmsg = "Unstarted reservation state is undefined."
+                    + " IsEngineer: {0}, IsInLab: {1}, IsReserver: {2}, IsInvited: {3}, IsAuthorized: {4}, IsBeforeMinCancelTime: {5}, IsStartable: {6}, SubStateValue: {7}";
+
+                throw new Exception(string.Format(errmsg,
+                    isEngineer ? "Yes" : "No",
+                    actual.isInLab ? "Yes" : "No",
+                    actual.isReserver ? "Yes" : "No",
+                    actual.isInvited ? "Yes" : "No",
+                    actual.isAuthorized ? "Yes" : "No",
+                    actual.isBeforeMinCancelTime ? "Yes" : "No",
+                    actual.isStartable ? "Yes" : "No",
+                    subStateValue));
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -567,13 +600,20 @@ namespace LNF.Scheduler
 
         public static bool IsStartable(DateTime beginDateTime, int minReservTime)
         {
-            return (DateTime.Now > beginDateTime.AddMinutes(-1 * minReservTime));
+            return IsStartable(DateTime.Now, beginDateTime, minReservTime);
+        }
+
+        public static bool IsStartable(DateTime now, DateTime beginDateTime, int minReservTime)
+        {
+            return (now > beginDateTime.AddMinutes(-1 * minReservTime));
         }
 
         public static void UpdateNotes(Reservation rsv, string notes)
         {
             rsv.Notes = notes;
-            //there is no reason to add reservation history because notes are not tracked in the ReservationHistory table
+
+            // there is no reason to add reservation history
+            // because notes are not tracked in the ReservationHistory table
         }
 
         public static void UpdateCharges(Reservation rsv, double chargeMultiplier)
@@ -612,7 +652,7 @@ namespace LNF.Scheduler
                     ActivityName = res.CurrentActivityName,
                     BeginDateTime = res.CurrentBeginDateTime.Value,
                     EndDateTime = res.CurrentEndDateTime.Value,
-                    DisplayName = ClientModel.GetDisplayName(res.CurrentLastName, res.CurrentFirstName),
+                    DisplayName = ClientItem.GetDisplayName(res.CurrentLastName, res.CurrentFirstName),
                     Editable = res.CurrentActivityEditable,
                     Notes = res.CurrentNotes,
                     ResourceID = res.ResourceID,
@@ -934,30 +974,30 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public static IList<Reservation> SelectHistory(int clientId, DateTime startDate, DateTime endDate)
+        public static IList<Reservation> SelectHistory(int clientId, DateTime sd, DateTime ed)
         {
-            IList<Reservation> result = DA.Scheduler.Reservation.Query()
-                .Where(x => x.Client.ClientID == clientId && (x.BeginDateTime < endDate) && (x.EndDateTime > startDate)).ToList();
+            var result = DA.Current.Query<Reservation>()
+                .Where(x => x.Client.ClientID == clientId && (x.BeginDateTime < ed) && (x.EndDateTime > sd)).ToList();
 
             return result;
         }
 
-        public static IList<Reservation> SelectHistoryToForgiveForRepair(int resourceId, DateTime startDate, DateTime endDate)
+        public static IList<Reservation> SelectHistoryToForgiveForRepair(int resourceId, DateTime sd, DateTime ed)
         {
-            //[2013-05-20 jg] We no longer care if the reservation was cancelled or not, all need to be forgiven
-            //because of the booking fee on uncancelled reservations.
+            //[2013-05-20 jg] We no longer care if the reservation was canceled or not, all need to be forgiven
+            //      because of the booking fee on uncancelled reservations.
 
-            int repairActivityID = 14;
+            int repairActivityId = 14;
 
-            IList<Reservation> result = DA.Scheduler.Reservation.Query().Where(x =>
+            var result = DA.Current.Query<Reservation>().Where(x =>
                 x.Resource.ResourceID == resourceId
-                && (x.BeginDateTime < endDate && x.EndDateTime > startDate) //will include all overlapping reservations
-                && x.Activity.ActivityID != repairActivityID).OrderBy(x => x.BeginDateTime).ToList();
+                && ((x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd)) //will include all overlapping reservations
+                && x.Activity.ActivityID != repairActivityId).OrderBy(x => x.BeginDateTime).ToList();
 
             return result;
         }
 
-        public static IList<Reservation> SelectOverwrittable(int resourceId, DateTime beginDateTime, DateTime endDateTime)
+        public static IList<Reservation> SelectOverwrittable(int resourceId, DateTime sd, DateTime ed)
         {
             // procReservationSelect @Action = 'SelectOverwrittable'
 
@@ -974,15 +1014,15 @@ namespace LNF.Scheduler
 
             IList<Reservation> result = DA.Scheduler.Reservation.Query().Where(x =>
                 x.Resource.ResourceID == resourceId
-                && x.BeginDateTime < endDateTime
-                && x.EndDateTime > beginDateTime
+                && x.BeginDateTime < ed
+                && x.EndDateTime > sd
                 && x.IsActive
                 && x.ActualEndDateTime == null).ToList();
 
             return result;
         }
 
-        public static int UpdateByGroup(int groupId, DateTime beginDateTime, DateTime endDateTime, string notes, int? modifiedByClientId)
+        public static int UpdateByGroup(int groupId, DateTime sd, DateTime ed, string notes, int? modifiedByClientId)
         {
             // This is all that happens in procReservationUpdate @Action = 'ByGroupID'
 
@@ -997,10 +1037,10 @@ namespace LNF.Scheduler
 
             foreach (Reservation rsv in query)
             {
-                rsv.BeginDateTime = beginDateTime;
-                rsv.EndDateTime = endDateTime;
-                rsv.ActualBeginDateTime = beginDateTime;
-                rsv.ActualEndDateTime = endDateTime;
+                rsv.BeginDateTime = sd;
+                rsv.EndDateTime = ed;
+                rsv.ActualBeginDateTime = sd;
+                rsv.ActualEndDateTime = ed;
                 rsv.AppendNotes(notes);
 
                 // also an entry into history is made for each reservation
@@ -1114,6 +1154,22 @@ namespace LNF.Scheduler
             //RETURN @MaxAlloc - @ReservedMinutes
 
             return (maxAlloc - reserved).TotalMinutes;
+        }
+
+        public static ClientAuthLevel GetAuthLevel(IEnumerable<IAuthorized> resourceClients, IPrivileged client, int resourceId)
+        {
+            if (client.HasPriv(ClientPrivilege.Administrator | ClientPrivilege.Developer))
+                return ClientAuthLevel.ToolEngineer;
+
+            var rc = resourceClients.FirstOrDefault(x => x.ClientID == client.ClientID || x.ClientID == -1);
+
+            if (rc == null)
+                return ClientAuthLevel.UnauthorizedUser;
+
+            if (resourceId == 0)
+                return ClientAuthLevel.UnauthorizedUser;
+
+            return rc.AuthLevel;
         }
     }
 }

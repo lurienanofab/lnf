@@ -1,5 +1,6 @@
 ﻿using LNF.Cache;
 using LNF.Data;
+using LNF.Models.Data;
 using LNF.Repository.Feedback;
 using LNF.Scheduler;
 using System.Linq;
@@ -26,7 +27,7 @@ namespace LNF.Feedback
             {
                 var client = CacheManager.Current.GetClient(issue.ClientID);
                 if (client != null)
-                    return client.DisplayName;
+                    return ClientItem.GetDisplayName(client.LName, client.FName);
             }
 
             return null;

@@ -15,7 +15,7 @@ namespace LNF.Models.Reporting.Individual
                 if (Clients == null || Clients.Count() == 0)
                     return string.Empty;
                 else
-                    return string.Join("; ", Clients.Select(x => ClientModel.GetDisplayName(x.LName, x.FName)));
+                    return string.Join("; ", Clients.Select(x => Data.ClientItem.GetDisplayName(x.LName, x.FName)));
             }
         }
     }

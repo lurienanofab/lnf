@@ -95,15 +95,16 @@ namespace LNF.Impl.ModelFactory
 
         public static class Scheduler
         {
-            public static ReservationModel CreateReservationModel(Reservation source)
+            public static ReservationItem CreateReservationModel(Reservation source)
             {
-                var result = new ReservationModel();
+                var result = new ReservationItem();
 
                 result.InjectFrom(source);
                 result.ResourceID = source.Resource.ResourceID;
                 result.ResourceName = source.Resource.ResourceName;
                 result.ClientID = source.Client.ClientID;
-                result.DisplayName = source.Client.DisplayName;
+                result.LName = source.Client.LName;
+                result.FName = source.Client.FName;
                 result.AccountID = source.Account.AccountID;
                 result.AccountName = source.Account.Name;
                 result.ShortCode = source.Account.ShortCode;

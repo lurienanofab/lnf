@@ -37,7 +37,7 @@ namespace LNF.Web.Content
             get { return (LNFPage)base.Page; }
         }
 
-        public ClientModel CurrentUser
+        public ClientItem CurrentUser
         {
             get
             {
