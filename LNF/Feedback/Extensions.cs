@@ -1,6 +1,7 @@
 ﻿using LNF.Cache;
 using LNF.Data;
 using LNF.Models.Data;
+using LNF.Repository;
 using LNF.Repository.Feedback;
 using LNF.Scheduler;
 using System.Linq;
@@ -40,7 +41,7 @@ namespace LNF.Feedback
                 var client = CacheManager.Current.GetClient(issue.ClientID);
                 if (client != null)
                 {
-                    var primary = ClientOrgUtility.GetPrimary(client.ClientID);
+                    var primary = DA.Current.ClientOrgManager().GetPrimary(client.ClientID);
                     if (primary != null)
                         return primary.Email;
                     else
@@ -68,7 +69,7 @@ namespace LNF.Feedback
     {
         public static string GetResourceName(this NegativeIssue issue)
         {
-            var res = CacheManager.Current.Resources(x => x.ResourceID == issue.ResourceID).FirstOrDefault();
+            var res = CacheManager.Current.ResourceTree().Resources().Where(x => x.ResourceID == issue.ResourceID).FirstOrDefault();
 
             if (res != null)
                 return res.ResourceName;

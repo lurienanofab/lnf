@@ -31,7 +31,7 @@ namespace LNF.CommonTools
             ActionInstance inst = ActionInstanceUtility.Find(ActionType.Interlock, resourceId);
 
             if (inst != null)
-                await Providers.Control.SetPointState(inst.GetPoint(), state, duration);
+                await ServiceProvider.Current.Control.SetPointState(inst.GetPoint(), state, duration);
             else
                 throw new ArgumentException(string.Format("No resource was found with ResourceID {0}", resourceId), "resourceId");
         }
@@ -41,7 +41,7 @@ namespace LNF.CommonTools
             ActionInstance inst = ActionInstanceUtility.Find(ActionType.ByPass, actionId);
 
             if (inst != null)
-                Providers.Control.SetPointState(inst.GetPoint(), true, duration);
+                ServiceProvider.Current.Control.SetPointState(inst.GetPoint(), true, duration);
         }
 
         // Get Block data
@@ -63,7 +63,7 @@ namespace LNF.CommonTools
             try
             {
                 blockId = point.Block.BlockID;
-                BlockResponse resp = await Providers.Control.GetBlockState(point.Block);
+                BlockResponse resp = await ServiceProvider.Current.Control.GetBlockState(point.Block);
                 blockState = resp.BlockState;
 
                 if (blockState == null)
@@ -142,7 +142,7 @@ namespace LNF.CommonTools
                             //We try to get returned data
                             try
                             {
-                                BlockResponse resp = await Providers.Control.GetBlockState(blocks.First(x => x.BlockID == blockId));
+                                BlockResponse resp = await ServiceProvider.Current.Control.GetBlockState(blocks.First(x => x.BlockID == blockId));
                                 blockState = resp.EnsureSuccess().BlockState;
                             }
                             catch (Exception ex)
@@ -181,7 +181,7 @@ namespace LNF.CommonTools
         public static async Task<BlockState> GetBlockState(int blockId)
         {
             Block block = DA.Current.Query<Block>().First(x => x.BlockID == blockId);
-            BlockResponse resp = await Providers.Control.GetBlockState(block);
+            BlockResponse resp = await ServiceProvider.Current.Control.GetBlockState(block);
             return resp.EnsureSuccess().BlockState;
         }
 

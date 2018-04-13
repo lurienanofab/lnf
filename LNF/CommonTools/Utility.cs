@@ -24,7 +24,7 @@ namespace LNF.CommonTools
 
         public static string TableDump(DataTable dt)
         {
-            return Utility.TableDump(dt, false);
+            return TableDump(dt, false);
         }
 
         public static string TableDump(DataTable dt, bool showRowState)
@@ -281,7 +281,7 @@ namespace LNF.CommonTools
 
         public static string ToJson(object obj)
         {
-            string result = Providers.Serialization.Json.Serialize(obj);
+            string result = ServiceProvider.Current.Serialization.Json.Serialize(obj);
             return result;
         }
 
@@ -335,7 +335,7 @@ namespace LNF.CommonTools
 
         public static bool IsKiosk()
         {
-            return LNF.Scheduler.KioskUtility.IsKiosk();
+            return Scheduler.KioskUtility.IsKiosk();
         }
 
         public static bool IsMobile()
@@ -343,7 +343,7 @@ namespace LNF.CommonTools
             if (PreferredMobileView() == "standard")
                 return false;
             else
-                return Utility.IsTablet() | Utility.IsPhone();
+                return IsTablet() | IsPhone();
         }
 
         public static bool IsTablet()
@@ -353,10 +353,10 @@ namespace LNF.CommonTools
             if (PreferredMobileView() == "tablet")
                 return true;
 
-            if (!string.IsNullOrEmpty(Providers.Context.Current.GetRequestUserAgent()) && Providers.Context.Current.GetRequestUserAgent().ToLower().Contains("ipad"))
+            if (!string.IsNullOrEmpty(ServiceProvider.Current.Context.GetRequestUserAgent()) && ServiceProvider.Current.Context.GetRequestUserAgent().ToLower().Contains("ipad"))
                 return true;
 
-            if (!string.IsNullOrEmpty(Providers.Context.Current.GetRequestUserAgent()) && Providers.Context.Current.GetRequestUserAgent().ToLower().Contains("android") && !Providers.Context.Current.GetRequestUserAgent().ToLower().Contains("mobile"))
+            if (!string.IsNullOrEmpty(ServiceProvider.Current.Context.GetRequestUserAgent()) && ServiceProvider.Current.Context.GetRequestUserAgent().ToLower().Contains("android") && !ServiceProvider.Current.Context.GetRequestUserAgent().ToLower().Contains("mobile"))
                 return true;
 
             return result;
@@ -369,10 +369,10 @@ namespace LNF.CommonTools
             if (PreferredMobileView() == "phone")
                 return true;
 
-            if (Providers.Context.Current.GetRequestUserAgent().ToLower().Contains("iphone"))
+            if (ServiceProvider.Current.Context.GetRequestUserAgent().ToLower().Contains("iphone"))
                 return true;
 
-            if (Providers.Context.Current.GetRequestUserAgent().ToLower().Contains("android") && Providers.Context.Current.GetRequestUserAgent().ToLower().Contains("mobile"))
+            if (ServiceProvider.Current.Context.GetRequestUserAgent().ToLower().Contains("android") && ServiceProvider.Current.Context.GetRequestUserAgent().ToLower().Contains("mobile"))
                 return true;
 
             return result;
@@ -382,9 +382,9 @@ namespace LNF.CommonTools
         {
             string result = string.Empty;
 
-            if (Providers.Context.Current.GetRequestCookieValue("lnf_mobile_pref_view") != null)
+            if (ServiceProvider.Current.Context.GetRequestCookieValue("lnf_mobile_pref_view") != null)
             {
-                result = Providers.Context.Current.GetRequestCookieValue("lnf_mobile_pref_view");
+                result = ServiceProvider.Current.Context.GetRequestCookieValue("lnf_mobile_pref_view");
             }
 
             return result;
@@ -690,20 +690,6 @@ namespace LNF.CommonTools
             var hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
             var result = string.Concat(hashBytes.Select(b => b.ToString("x2")));
             return result;
-        }
-
-        /// <summary>
-        /// Gets a url for static files (css, js, images, etc.) in the shared static file source
-        /// </summary>
-        public static string GetStaticUrl(string path)
-        {
-            //example: <add key="StaticHost" value="//ssel-apps.eecs.umich.edu/static/"/>
-
-            string defaultHost = "//ssel-apps.eecs.umich.edu/static/";
-            string host = ConfigurationManager.AppSettings["StaticHost"];
-            if (string.IsNullOrEmpty(host))
-                host = defaultHost;
-            return host + path;
         }
 
         public static T NewObject<T>()

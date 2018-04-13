@@ -1,29 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Ordering;
-using FluentNHibernate.Mapping;
 
 namespace LNF.Impl.Mappings.Ordering
 {
-    public class VendorMap : ClassMap<Vendor>
+    internal class VendorMap : ClassMap<Vendor>
     {
-        public VendorMap()
+        internal VendorMap()
         {
             Schema("IOF.dbo");
             Id(x => x.VendorID);
-            Map(x => x.ClientID);
-            Map(x => x.VendorName);
-            Map(x => x.Address1);
-            Map(x => x.Address2);
-            Map(x => x.Address3);
-            Map(x => x.Contact);
-            Map(x => x.Phone);
-            Map(x => x.Fax);
-            Map(x => x.URL);
-            Map(x => x.Email);
-            Map(x => x.Active);
+            Map(x => x.ClientID).Not.Nullable();
+            Map(x => x.VendorName).Not.Nullable();
+            Map(x => x.Address1).Not.Nullable();
+            Map(x => x.Address2).Nullable();
+            Map(x => x.Address3).Nullable();
+            Map(x => x.Contact).Nullable();
+            Map(x => x.Phone).Not.Nullable();
+            Map(x => x.Fax).Nullable();
+            Map(x => x.URL).Nullable();
+            Map(x => x.Email).Nullable();
+            Map(x => x.Active).Not.Nullable();
+            HasMany(x => x.Items).KeyColumn("VendorID").NotFound.Ignore();
         }
     }
 }

@@ -445,13 +445,13 @@ namespace LNF.CommonTools
 
                 if (dba.UpdateDataTable(dtIn, "RoomApportionmentInDaysMonthly_Insert") >= 0)
                 {
-                    if (debug && Providers.Email != null)
-                        Providers.Email.SendMessage(0, "LNF.CommonTools.ApportionmentInDaysMonthlyProcessor.SaveNewApportionDatatoDB(DataTable dtIn)", string.Format("Processing Apportionment Successful - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                    if (debug && ServiceProvider.Current.Email != null)
+                        ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.ApportionmentInDaysMonthlyProcessor.SaveNewApportionDatatoDB(DataTable dtIn)", string.Format("Processing Apportionment Successful - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
                 }
                 else
                 {
-                    if (debug && Providers.Email != null)
-                        Providers.Email.SendMessage(0, "LNF.CommonTools.ApportionmentInDaysMonthlyProcessor.SaveNewApportionDatatoDB(DataTable dtIn)", string.Format("Error in Processing Apportionment - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                    if (debug && ServiceProvider.Current.Email != null)
+                        ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.ApportionmentInDaysMonthlyProcessor.SaveNewApportionDatatoDB(DataTable dtIn)", string.Format("Error in Processing Apportionment - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
                 }
             }
         }

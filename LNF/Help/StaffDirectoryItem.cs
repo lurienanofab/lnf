@@ -6,6 +6,7 @@ namespace LNF.Help
     {
         public int StaffDirectoryID { get; set; }
         public int ClientID { get; set; }
+        public string UserName { get; set; }
         public ClientPrivilege Privs { get; set; }
         public string Name { get; set; }
         public string Hours { get; set; }

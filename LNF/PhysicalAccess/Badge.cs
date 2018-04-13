@@ -20,7 +20,7 @@ namespace LNF.PhysicalAccess
 
         public IEnumerable<Card> GetCards()
         {
-            return Providers.PhysicalAccess.GetCards(this);
+            return ServiceProvider.Current.PhysicalAccess.GetCards(this);
         }
 
         public bool IsExpired()

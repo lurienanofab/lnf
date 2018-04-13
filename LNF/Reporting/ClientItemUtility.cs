@@ -10,66 +10,62 @@ namespace LNF.Reporting
 {
     public static class ClientItemUtility
     {
-        public static IEnumerable<Models.Reporting.ClientItem> SelectCurrentActiveClients()
+        public static IEnumerable<ClientItem> SelectCurrentActiveClients()
         {
-            var result = DA.Current.Query<ClientInfo>()
+            var result = CreateClientItems(DA.Current.Query<ClientInfo>()
                 .Where(x => x.ClientActive)
-                .OrderBy(x => x.DisplayName)
-                .Select(CreateClientItem);
+                .OrderBy(x => x.DisplayName));
 
-            return result.ToList();
+            return result;
         }
 
-        public static IEnumerable<Models.Reporting.ClientItem> SelectActiveClients(DateTime period)
+        public static IEnumerable<ClientItem> SelectActiveClients(DateTime period)
         {
-            var result = DA.Current.Query<ClientInfo>()
-                .FindActive(x => x.ClientID, period, period.AddMonths(1))
-                .OrderBy(x => x.DisplayName)
-                .Select(CreateClientItem);
-
-            return result.ToList();
+            var query = DA.Current.ActiveDataItemManager().FindActive(DA.Current.Query<ClientInfo>(), x => x.ClientID, period, period.AddMonths(1)).AsQueryable();
+            var result = CreateClientItems(query.OrderBy(x => x.DisplayName));
+            return result;
         }
 
-        public static IEnumerable<Models.Reporting.ClientItem> SelectActiveManagers(DateTime period)
+        public static IEnumerable<ClientItem> SelectActiveManagers(DateTime period)
         {
-            var managers = DA.Current.Query<ClientAccountInfo>().Where(x => x.Manager).FindActive(x => x.ClientAccountID, period, period.AddMonths(1));
+            var managers = DA.Current.ActiveDataItemManager().FindActive(DA.Current.Query<ClientAccountInfo>().Where(x => x.Manager), x => x.ClientAccountID, period, period.AddMonths(1));
 
-            var items = managers.Where(x => x.EmailRank == 1).Select(CreateClientItem).ToList();
+            var items = CreateClientItems(managers.Where(x => x.EmailRank == 1).AsQueryable());
 
             var comparer = new ClientItemEqualityComparer();
+
             return items.Distinct(comparer).OrderBy(x => x.LName).ThenBy(x => x.FName).ToList();
         }
 
-        public static Models.Reporting.ClientItem GetManagerFor(int clientId, DateTime period)
+        public static ClientItem GetManagerFor(int clientId, DateTime period)
         {
-            var managers = DA.Current.Query<ClientAccountInfo>().Where(x => x.Manager).FindActive(x => x.ClientAccountID, period, period.AddMonths(1));
-
+            var managers = DA.Current.ActiveDataItemManager().FindActive(DA.Current.Query<ClientAccountInfo>().Where(x => x.Manager), x => x.ClientAccountID, period, period.AddMonths(1));
             throw new NotImplementedException();
         }
 
-        public static  Models.Reporting.ClientItem CreateClientItem(ClientOrgInfoBase client)
+        public static IEnumerable<ClientItem> CreateClientItems(IQueryable<ClientOrgInfoBase> clients)
         {
-            if (client == null) return null;
+            if (clients == null) return null;
 
             int internalChargeTypeId = 5;
 
-            return new Models.Reporting.ClientItem()
+            return clients.Select(x => new ClientItem()
             {
-                ClientID = client.ClientID,
-                UserName = client.UserName,
-                LName = client.LName,
-                FName = client.FName,
-                Email = client.Email,
-                IsManager = client.IsManager,
-                IsFinManager = client.IsFinManager,
-                IsInternal = client.ChargeTypeID == internalChargeTypeId
-            };
+                ClientID = x.ClientID,
+                UserName = x.UserName,
+                LName = x.LName,
+                FName = x.FName,
+                Email = x.Email,
+                IsManager = x.IsManager,
+                IsFinManager = x.IsFinManager,
+                IsInternal = x.ChargeTypeID == internalChargeTypeId
+            }).ToList();
         }
 
-        public static Models.Reporting.ClientItem CreateClientItem(int clientId)
+        public static ClientItem CreateClientItem(int clientId)
         {
-            ClientInfo c = DA.Current.Query<ClientInfo>().FirstOrDefault(x => x.ClientID == clientId);
-            return CreateClientItem(c);
+            var query = DA.Current.Query<ClientInfo>().Where(x => x.ClientID == clientId);
+            return CreateClientItems(query).FirstOrDefault();
         }
     }
 }

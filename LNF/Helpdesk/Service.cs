@@ -35,7 +35,7 @@ namespace LNF.Helpdesk
                 {"141.213.8.37",    "BFCCB07172D97BB934253D0709FEC278"},
                 {"137.117.73.153",  "3A34BDBAFBC2BB5EE72316841068A214"}
             };
-            string ip = Providers.Context.Current.ServerVariables["LOCAL_ADDR"];
+            string ip = ServiceProvider.Current.Context.ServerVariables["LOCAL_ADDR"];
             if (keys.ContainsKey(ip))
                 return keys[ip];
             else
@@ -65,7 +65,7 @@ namespace LNF.Helpdesk
         public TicketDetailResponse SelectTicketDetail(int ticketId)
         {
             string raw = SendPostRequest(_ApiUrl, new { Command = "select-ticket-detail", TicketID = ticketId, f = "json" });
-            TicketDetailResponse result = Providers.Serialization.Json.Deserialize<TicketDetailResponse>(raw);
+            TicketDetailResponse result = ServiceProvider.Current.Serialization.Json.Deserialize<TicketDetailResponse>(raw);
             return result;
         }
 
@@ -79,11 +79,11 @@ namespace LNF.Helpdesk
                         {
                             action = "add-ticket",
                             resourceId = resourceId,
-                            name = Providers.Context.Current.UrlEncode(name),
-                            email = Providers.Context.Current.UrlEncode(email),
-                            queue = Providers.Context.Current.UrlEncode(queue),
-                            subject = Providers.Context.Current.UrlEncode(subject),
-                            message = Providers.Context.Current.UrlEncode(message),
+                            name = ServiceProvider.Current.Context.UrlEncode(name),
+                            email = ServiceProvider.Current.Context.UrlEncode(email),
+                            queue = ServiceProvider.Current.Context.UrlEncode(queue),
+                            subject = ServiceProvider.Current.Context.UrlEncode(subject),
+                            message = ServiceProvider.Current.Context.UrlEncode(message),
                             priority = (int)priority,
                             test = test
                         })
@@ -99,7 +99,7 @@ namespace LNF.Helpdesk
         public TicketDetailResponse PostMessage(int ticketId, string message)
         {
             string raw = SendPostRequest(_ApiUrl, new { Command = "post-message", TicketID = ticketId, Message = message, f = "json" });
-            TicketDetailResponse result = Providers.Serialization.Json.Deserialize<TicketDetailResponse>(raw);
+            TicketDetailResponse result = ServiceProvider.Current.Serialization.Json.Deserialize<TicketDetailResponse>(raw);
             return result;
         }
 

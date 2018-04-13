@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <hibernate-mapping assembly="LNF" namespace="LNF.Repository.Billing" xmlns="urn:nhibernate-mapping-2.2">
-    <!--***** Apportionment ********************************************************************************-->
+    <!--xxxxx Apportionment xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
     <sql-query name="SelectApportionmentClients">
         <return class="ApportionmentClient"/>
         <![CDATA[EXEC sselData.dbo.Client_Select @Action='NeedApportionment', @sDate=:StartDate, @eDate=:EndDate]]>
@@ -8,7 +8,7 @@
     <sql-query name="PopulateRoomApportionData">
         <![CDATA[EXEC sselData.dbo.RoomData_Select @Action='PopulateRoomApportionDataByPeriod', @Period=:Period]]>
     </sql-query>
-    <!--***** ToolBilling **********************************************************************************-->
+    <!--xxxxx ToolBilling xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx**-->
     <sql-query name="UpdateBillingTypeToolBillingTemp">
         <![CDATA[EXEC sselData.dbo.ToolBillingTemp_Update @Action='UpdateBillingType', @ClientID=:ClientID, @AccountID=:AccountID, @BillingTypeID=:BillingTypeID, @Period=:Period]]>
     </sql-query>
@@ -21,14 +21,14 @@
     <sql-query name="UpdateAccountToolBilling">
         <![CDATA[EXEC sselData.dbo.ToolBilling_Update2 @Action='UpdateAccountByReservationID', @ReservationID=:ReservationID, @AccountID=:AccountID]]>
     </sql-query>
-    <!--***** RoomBilling **********************************************************************************-->
+    <!--xxxxx RoomBilling xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx**-->
     <sql-query name="UpdateBillingTypeRoomBillingTemp">
         <![CDATA[EXEC sselData.dbo.RoomBillingTemp_Update @Action='UpdateBillingType', @ClientID=:ClientID, @AccountID=:AccountID, @BillingTypeID=:BillingTypeID, @Period=:Period]]>
     </sql-query>
     <sql-query name="UpdateBillingTypeRoomBilling">
         <![CDATA[EXEC sselData.dbo.RoomApportionmentInDaysMonthly_Update @Action='UpdateBillingType', @ClientID=:ClientID, @AccountID=:AccountID, @BillingTypeID=:BillingTypeID, @Period=:Period]]>
     </sql-query>
-    <!--***** ToolData *************************************************************************************-->
+    <!--xxxxx ToolData xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
     <sql-query name="SelectToolDataForToolBilling">
         <return class="ToolBilling"/>
         <![CDATA[EXEC Billing.dbo.ToolData_Select @Action='ForToolBilling', @Period=:Period]]>
@@ -43,14 +43,14 @@
     <sql-query name="UpdateAccountToolData">
         <![CDATA[EXEC sselData.dbo.ToolData_Update @Action='UpdateAccountByReservationID', @ReservationID=:ReservationID, @AccountID=:AccountID]]>
     </sql-query>
-    <!--***** ToolDataClean ********************************************************************************-->
+    <!--xxxxx ToolDataClean xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
     <sql-query name="UpdateChargeMultiplierToolDataClean">
         <![CDATA[EXEC sselData.dbo.ToolDataClean_Update @Action='UpdateChargeMultiplierByReservationID', @ReservationID=:ReservationID, @ChargeMultiplier=:ChargeMultiplier]]>
     </sql-query>
     <sql-query name="UpdateAccountToolDataClean">
         <![CDATA[EXEC sselData.dbo.ToolDataClean_Update @Action='UpdateAccountByReservationID', @ReservationID=:ReservationID, @AccountID=:AccountID]]>
     </sql-query>
-    <!--***** StoreDataClean ********************************************************************************-->
+    <!--xxxxx StoreDataClean xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
     <sql-query name="DeleteStoreDataClean">
         <![CDATA[DELETE dbo.StoreDataClean WHERE (StatusChangeDate >= :StartDate AND StatusChangeDate < :EndDate) AND ClientID = ISNULL(:ClientID, ClientID) AND ItemID = ISNULL(:ItemID, ItemID) AND CategoryID = ISNULL(:CategoryID, CategoryID)]]>
     </sql-query>

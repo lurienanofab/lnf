@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Data;
-
-namespace LNF.Data
+﻿namespace LNF.Data
 {
     public class ManagerItem
     {
-        private ClientManager clientManager;
+        private Repository.Data.ClientManager clientManager;
 
         public int ClientOrgID { get; set; }
         public string DisplayName { get; set; }
@@ -19,7 +13,7 @@ namespace LNF.Data
             Deleted = false;
         }
 
-        public static ManagerItem Create(ClientManager cm)
+        public static ManagerItem Create(Repository.Data.ClientManager cm)
         {
             ManagerItem result = new ManagerItem();
             result.clientManager = cm;

@@ -1,6 +1,7 @@
 ﻿using LNF.Models.Data;
 using System;
 using System.Linq;
+using LNF.Repository;
 
 namespace LNF.Repository.Data
 {
@@ -40,6 +41,11 @@ namespace LNF.Repository.Data
         public virtual string TableName()
         {
             return "Client";
+        }
+
+        public static ClientInfo Find(string username)
+        {
+            return DA.Current.Query<ClientInfo>().FirstOrDefault(x => x.UserName == username);
         }
     }
 }

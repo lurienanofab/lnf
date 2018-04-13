@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using LNF.Repository.Scheduler;
+﻿using LNF.Data;
+using LNF.Scheduler;
 
 namespace LNF.Repository
 {
@@ -12,19 +8,17 @@ namespace LNF.Repository
         private const string UOW_KEY = "CurrentUnitOfWork";
 
         /// <summary>
-        /// Gets an IRepository instance that uses the current data access context.
+        /// Gets an ISession instance that uses the current data access context.
         /// </summary>
-        public static IRepository Current
-        {
-            get { return Providers.DataAccess.Repository; }
-        }
+        public static ISession Current => ServiceProvider.Current.Resolver.GetInstance<ISession>();
 
-        public static ISchedulerRepositoryCollection Scheduler
-        {
-            get { return Providers.DataAccess.Scheduler; }
-        }
+        public static T Use<T>() where T : IManager => ServiceProvider.Current.Resolver.GetInstance<T>();
 
-        //The methods that were previously defined here have been moved to LNF.UnitOfWork
+        public static IDataRepository DataRepository => ServiceProvider.Current.Resolver.GetInstance<IDataRepository>();
+
+        public static ISchedulerRepository SchedulerRepository => ServiceProvider.Current.Resolver.GetInstance<ISchedulerRepository>();
+
+        //The methods that were previously defined here have been moved to LNF.Repository.ISession
         //I think these methods should only be defined once, so now they are accessed via Current
     }
 }

@@ -24,7 +24,7 @@ namespace LNF.Feedback
 
             if (group == ClientGroup.InLab)
             {
-                IEnumerable<Badge> inlab = Providers.PhysicalAccess.CurrentlyInArea();
+                IEnumerable<Badge> inlab = ServiceProvider.Current.PhysicalAccess.CurrentlyInArea();
                 query = inlab.Select(x => new FeedbackClientItem()
                 {
                     ClientID = x.ClientID,

@@ -45,7 +45,7 @@ namespace LNF.Repository.Email
             if (string.IsNullOrEmpty(RecipientCriteria))
                 return new T();
             else
-                return Providers.Serialization.Json.Deserialize<T>(RecipientCriteria);
+                return ServiceProvider.Current.Serialization.Json.Deserialize<T>(RecipientCriteria);
         }
 
         public virtual bool Send(out string message)

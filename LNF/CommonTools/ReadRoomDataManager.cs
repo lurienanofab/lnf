@@ -648,7 +648,7 @@ namespace LNF.CommonTools
             ds.Tables.Add("clients");
             ds.Tables.Add("rooms");
 
-            List<Event> result = Providers.PhysicalAccess.GetEvents(sDate, eDate, DA.Current.Single<Client>(clientId), DA.Current.Single<Room>(roomId)).ToList();
+            List<Event> result = ServiceProvider.Current.PhysicalAccess.GetEvents(sDate, eDate, DA.Current.Single<Client>(clientId), DA.Current.Single<Room>(roomId)).ToList();
 
             DataTable dtRaw = ds.Tables["raw"];
             //public string UserName { get; set; }

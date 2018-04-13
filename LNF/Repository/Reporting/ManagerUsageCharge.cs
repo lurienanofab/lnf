@@ -23,6 +23,7 @@ namespace LNF.Repository.Reporting
         public virtual string AccountName { get; set; }
         public virtual int OrgID { get; set; }
         public virtual string OrgName { get; set; }
+        public virtual int ChargeTypeID { get; set; }
         public virtual double TotalCharge { get; set; }
         public virtual double SubsidyDiscount { get; set; }
         public virtual bool IsRemote { get; set; }

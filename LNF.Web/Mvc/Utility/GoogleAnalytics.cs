@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Configuration;
 using System.Web;
 using System.Web.Mvc;
-using System.Configuration;
 
 namespace LNF.Web.Mvc.Utility
 {
@@ -13,7 +8,7 @@ namespace LNF.Web.Mvc.Utility
     {
         public bool IsProduction()
         {
-            return Providers.IsProduction();
+            return ServiceProvider.Current.IsProduction();
         }
 
         public string GetTrackingID()

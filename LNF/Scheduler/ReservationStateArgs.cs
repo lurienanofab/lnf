@@ -25,18 +25,24 @@ namespace LNF.Scheduler
         public DateTime? ActualEndDateTime { get; set; }
         public ClientAuthLevel UserAuth { get; set; }
         public bool IsToolEngineer { get { return (UserAuth & ClientAuthLevel.ToolEngineer) > 0; } }
+        public ReservationManager Manager { get; }
 
-        public static ReservationStateArgs Create(Reservation rsv, Client client, bool inlab)
+        public ReservationStateArgs(ReservationManager mgr)
+        {
+            Manager = mgr;
+        }
+
+        public static ReservationStateArgs Create(Reservation rsv, Client client, bool inlab, ReservationManager mgr)
         {
             // Determine Ownership
             bool isReserver = rsv.Client.ClientID == client.ClientID;
 
             // Determine Invition
-            bool isInvited = DA.Current.Query<ReservationInvitee>().Any(x => x.Reservation.ReservationID == rsv.ReservationID && x.Invitee.ClientID == client.ClientID);
+            bool isInvited = mgr.Session.Query<ReservationInvitee>().Any(x => x.Reservation.ReservationID == rsv.ReservationID && x.Invitee.ClientID == client.ClientID);
 
             // Determine Authorization
-            var resourceClients = DA.Current.Query<ResourceClient>().Where(x => x.Resource == rsv.Resource).ToList();
-            var userAuth = ReservationUtility.GetAuthLevel(resourceClients, client, rsv.Resource.ResourceID);
+            var resourceClients = mgr.Session.Query<ResourceClient>().Where(x => x.Resource == rsv.Resource).ToList();
+            var userAuth = mgr.GetAuthLevel(resourceClients, client, rsv.Resource.ResourceID);
             bool isAuthorized = (userAuth & (ClientAuthLevel)rsv.Activity.StartEndAuth) > 0;
 
             bool isBeforeMinCancelTime = (DateTime.Now <= rsv.BeginDateTime.AddMinutes(-1 * rsv.Resource.MinCancelTime));
@@ -45,7 +51,7 @@ namespace LNF.Scheduler
             bool isFacilityDownTime = rsv.Activity.IsFacilityDownTime;
             int minReservTime = rsv.Resource.MinReservTime;
 
-            return new ReservationStateArgs()
+            return new ReservationStateArgs(mgr)
             {
                 IsInLab = inlab,
                 IsReserver = isReserver,
@@ -63,7 +69,7 @@ namespace LNF.Scheduler
             };
         }
 
-        public static ReservationStateArgs Create(ReservationItem rsv, ClientItem client, bool inlab, IEnumerable<Models.Scheduler.ReservationInviteeItem> invitees, IEnumerable<ResourceClientInfo> resourceClients)
+        public static ReservationStateArgs Create(ReservationItem rsv, ClientItem client, bool inlab, IEnumerable<Models.Scheduler.ReservationInviteeItem> invitees, IEnumerable<ResourceClientInfo> resourceClients, ReservationManager mgr)
         {
             // Determine Ownership
             bool isReserver = rsv.ClientID == client.ClientID;
@@ -72,7 +78,7 @@ namespace LNF.Scheduler
             bool isInvited = invitees.Any(x => x.ReservationID == rsv.ReservationID && x.ClientID == client.ClientID);
 
             // Determine Authorization
-            var userAuth = ReservationUtility.GetAuthLevel(resourceClients, client, rsv.ResourceID);
+            var userAuth = mgr.GetAuthLevel(resourceClients, client, rsv.ResourceID);
             bool isAuthorized = (userAuth & rsv.StartEndAuth) > 0;
 
             bool isBeforeMinCancelTime = (DateTime.Now <= rsv.BeginDateTime.AddMinutes(-1 * rsv.MinCancelTime));
@@ -81,7 +87,7 @@ namespace LNF.Scheduler
             bool isFacilityDownTime = rsv.IsFacilityDownTime;
             int minReservTime = rsv.MinReservTime;
 
-            return new ReservationStateArgs()
+            return new ReservationStateArgs(mgr)
             {
                 IsInLab = inlab,
                 IsReserver = isReserver,

@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net.Mail;
-using LNF.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
+﻿using LNF.Repository.Data;
 using LNF.Repository.Email;
+using System.Collections.Generic;
+using System.Net.Mail;
 
 namespace LNF
 {
@@ -14,8 +9,6 @@ namespace LNF
     {
         int ClientID { get; }
         string Caller { get; }
-        Exception Exception { get; }
-        Message GetLogMessage();
         IEmailEnvelope AddRecipients(IEnumerable<string> addresses, AddressType addrType);
         IEmailEnvelope AddRecipients(IEnumerable<Client> addresses, AddressType addrType);
         IEmailEnvelope AddRecipients(string address, AddressType addrType);
@@ -23,6 +16,6 @@ namespace LNF
         IEmailEnvelope SetFrom(string value);
         IEmailEnvelope SetFrom(MailAddress value);
         IEmailEnvelope SetIsBodyHtml(bool isHtml);
-        bool Send();
+        void Send();
     }
 }

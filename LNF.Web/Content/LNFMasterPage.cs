@@ -85,10 +85,5 @@ namespace LNF.Web.Content
         {
             return WebUtility.FindControlRecursive(this, id);
         }
-
-        public string GetStaticUrl(string path)
-        {
-            return Utility.GetStaticUrl(path);
-        }
     }
 }

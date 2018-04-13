@@ -16,6 +16,7 @@ namespace LNF.Impl.Mappings.Ordering
             Map(x => x.StatusID);
             Map(x => x.StatusName);
             Map(x => x.CreatedDate);
+            Map(x => x.CreatedDateText);
             Map(x => x.ClientID);
             Map(x => x.DisplayName);
             Map(x => x.ApproverID);
@@ -26,8 +27,12 @@ namespace LNF.Impl.Mappings.Ordering
             Map(x => x.AccountID);
             Map(x => x.AccountName);
             Map(x => x.ShortCode);
+            Map(x => x.CategoryID);
+            Map(x => x.CategoryNumber);
+            Map(x => x.CategoryName);
             Map(x => x.ItemCount);
             Map(x => x.TotalPrice);
+            Map(x => x.TotalPriceText);
             Map(x => x.PartNum);
             Map(x => x.Description);
         }

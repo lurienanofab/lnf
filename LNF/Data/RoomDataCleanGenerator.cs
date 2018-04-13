@@ -27,7 +27,7 @@ namespace LNF.Data
 
         public RoomDataClean[] Generate()
         {
-            var events = Providers.PhysicalAccess.GetEvents(StartDate, EndDate, Client, Room);
+            var events = ServiceProvider.Current.PhysicalAccess.GetEvents(StartDate, EndDate, Client, Room);
 
             var result = Filter(events);
 

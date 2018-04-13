@@ -7,14 +7,14 @@ namespace LNF.Data
 {
     public static class ClientManagerUtility
     {
-        public static IList<ClientManager> FindManagers(int clientOrgId)
+        public static IList<Repository.Data.ClientManager> FindManagers(int clientOrgId)
         {
-            return DA.Current.Query<ClientManager>().Where(x => x.ManagerOrg.ClientOrgID == clientOrgId).ToList();
+            return DA.Current.Query<Repository.Data.ClientManager>().Where(x => x.ManagerOrg.ClientOrgID == clientOrgId).ToList();
         }
 
-        public static IList<ClientManager> FindEmployees(int clientOrgId)
+        public static IList<Repository.Data.ClientManager> FindEmployees(int clientOrgId)
         {
-            return DA.Current.Query<ClientManager>().Where(x => x.ClientOrg.ClientOrgID == clientOrgId).ToList();
+            return DA.Current.Query<Repository.Data.ClientManager>().Where(x => x.ClientOrg.ClientOrgID == clientOrgId).ToList();
         }
     }
 }

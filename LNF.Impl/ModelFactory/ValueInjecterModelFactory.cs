@@ -20,12 +20,12 @@ namespace LNF.Impl.ModelFactory
     {
         public ValueInjecterModelFactory()
         {
-            //// ***** Data Maps
+            //// xxxxx Data Maps
             Mapper.AddMap<ClientAccount, ClientAccountModel>(ModelBuilder.Data.CreateClientAccountModel);
             Mapper.AddMap<GlobalCost, GlobalCostModel>(ModelBuilder.Data.CreateGlobalCostModel);
             Mapper.AddMap<Room, RoomModel>(ModelBuilder.Data.CreateRoomModel);
 
-            //// ***** Scheduler Maps
+            //// xxxxx Scheduler Maps
             Mapper.AddMap<Building, BuildingModel>(ModelBuilder.Scheduler.CreateBuildingModel);
             Mapper.AddMap<Lab, LabModel>(ModelBuilder.Scheduler.CreateLabModel);
             Mapper.AddMap<ProcessTech, ProcessTechModel>(ModelBuilder.Scheduler.CreateProcessTechModel);
@@ -36,8 +36,8 @@ namespace LNF.Impl.ModelFactory
             Mapper.AddMap<ResourceClient, ResourceClientModel>(ModelBuilder.Scheduler.CreateResourceClientModel);
             Mapper.AddMap<Cost, ResourceCostModel>(ModelBuilder.Scheduler.CreateResourceCostModel);
 
-            //// ***** Ordering Maps
-            Mapper.AddMap<Approver, ApproverModel>(ModelBuilder.Ordering.CreateApproverModel);
+            //// xxxxx Ordering Maps
+            Mapper.AddMap<Approver, ApproverItem>(ModelBuilder.Ordering.CreateApproverModel);
         }
 
         private static readonly IValueInjection[] _injections =

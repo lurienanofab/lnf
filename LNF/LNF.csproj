@@ -11,7 +11,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>LNF</RootNamespace>
     <AssemblyName>LNF</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Nonshipping>true</Nonshipping>
     <TargetFrameworkProfile />
@@ -67,7 +67,7 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Billing\AccountSubsidyUtility.cs" />
+    <Compile Include="Billing\BillingTypeManager.cs" />
     <Compile Include="Billing\Extensions.cs" />
     <Compile Include="Billing\ExternalInvoiceUsage.cs" />
     <Compile Include="Billing\ExternalInvoiceManager.cs" />
@@ -79,8 +79,37 @@
     <Compile Include="Billing\ReservationDurationItem.cs" />
     <Compile Include="Billing\ReservationDurations.cs" />
     <Compile Include="Billing\RoomBillingUtility.cs" />
-    <Compile Include="Billing\LineCostUtility.cs" />
+    <Compile Include="Billing\ToolBillingManager.cs" />
+    <Compile Include="Billing\ToolBillingUtility.cs" />
     <Compile Include="Cache\CacheItemNotFoundException.cs" />
+    <Compile Include="Data\AccountManager.cs" />
+    <Compile Include="Data\ActiveDataItemManager.cs" />
+    <Compile Include="Data\ActiveLogManager.cs" />
+    <Compile Include="Data\ChargeTypeManager.cs" />
+    <Compile Include="Data\ClientAccountManager.cs" />
+    <Compile Include="Data\ClientInfoManager.cs" />
+    <Compile Include="Data\ClientManager.cs" />
+    <Compile Include="Data\ClientOrgManager.cs" />
+    <Compile Include="Data\DryBoxManager.cs" />
+    <Compile Include="Data\IAccountManager.cs" />
+    <Compile Include="Data\IActiveDataItemManager.cs" />
+    <Compile Include="Data\IActiveLogManager.cs" />
+    <Compile Include="Data\IChargeTypeManager.cs" />
+    <Compile Include="Data\IClientAccountManager.cs" />
+    <Compile Include="Data\IClientInfoManager.cs" />
+    <Compile Include="Data\IClientManager.cs" />
+    <Compile Include="Data\IClientOrgManager.cs" />
+    <Compile Include="Data\IClientRemoteManager.cs" />
+    <Compile Include="Data\IDataRepository.cs" />
+    <Compile Include="Data\IDryBoxManager.cs" />
+    <Compile Include="Data\INewsManager.cs" />
+    <Compile Include="Data\IOrgManager.cs" />
+    <Compile Include="Data\IRoomDataManager.cs" />
+    <Compile Include="Data\NewsManager.cs" />
+    <Compile Include="Data\OrgManager.cs" />
+    <Compile Include="Data\RoomDataManager.cs" />
+    <Compile Include="Data\ToolDataManager.cs" />
+    <Compile Include="IDependencyResolver.cs" />
     <Compile Include="ItemNotFoundException.cs" />
     <Compile Include="Cache\CacheManager.cs" />
     <Compile Include="Cache\CacheObject.cs" />
@@ -89,19 +118,14 @@
     <Compile Include="CommonTools\BillingDataProcessStep1.cs" />
     <Compile Include="Control\ErrorResponse.cs" />
     <Compile Include="Control\IControlService.cs" />
-    <Compile Include="Data\AccountUtility.cs" />
     <Compile Include="Data\ClientAccountInfoUtility.cs" />
-    <Compile Include="Data\ClientAccountUtility.cs" />
     <Compile Include="Data\ClientDemographics.cs" />
     <Compile Include="Data\ClientEqualityComparer.cs" />
-    <Compile Include="Data\ClientInfoUtility.cs" />
     <Compile Include="Data\ClientManagerUtility.cs" />
     <Compile Include="Data\ClientOrgInfoUtility.cs" />
     <Compile Include="Data\CostUtility.cs" />
     <Compile Include="Data\Extensions.cs" />
-    <Compile Include="Data\NewsUtility.cs" />
     <Compile Include="Data\RoomDataCleanGenerator.cs" />
-    <Compile Include="Data\RoomDataUtility.cs" />
     <Compile Include="Data\RoomUtility.cs" />
     <Compile Include="Data\StoreDataCleanUtility.cs" />
     <Compile Include="Email\Criteria\ByCommunity.cs" />
@@ -114,30 +138,30 @@
     <Compile Include="Email\IRecipientCriteria.cs" />
     <Compile Include="Email\MassEmailRecipient.cs" />
     <Compile Include="Email\SendMessageArgs.cs" />
-    <Compile Include="Email\SendMessageResult.cs" />
     <Compile Include="Feedback\Extensions.cs" />
     <Compile Include="Feedback\FeedbackClientUtility.cs" />
     <Compile Include="Feedback\FeedbackIssueItem.cs" />
     <Compile Include="Feedback\AggregateItem.cs" />
     <Compile Include="Feedback\NegativeIssueUtility.cs" />
     <Compile Include="Feedback\PositiveIssueUtility.cs" />
+    <Compile Include="Ordering\PurchaseOrderAccountManager.cs" />
     <Compile Include="PhysicalAccess\RoomDataRaw.cs" />
     <Compile Include="Reporting\ClientItemUtility.cs" />
     <Compile Include="Reporting\ManagerUsageSummaryItem.cs" />
     <Compile Include="Reporting\ReportGenerator.cs" />
+    <Compile Include="Repository\IManager.cs" />
+    <Compile Include="Repository\ManagerBase.cs" />
     <Compile Include="Repository\Bytes.cs" />
+    <Compile Include="Repository\Data\Extensions.cs" />
     <Compile Include="Repository\Data\ReservationFeed.cs" />
     <Compile Include="Repository\IModelFactory.cs" />
     <Compile Include="Inventory\CategoryUtility.cs" />
     <Compile Include="Inventory\Extensions.cs" />
-    <Compile Include="Ordering\Attachment.cs" />
     <Compile Include="Ordering\EmailUtility.cs" />
     <Compile Include="Billing\DataTableManager.cs" />
     <Compile Include="Billing\DataTableWriter.cs" />
     <Compile Include="Billing\ExternalInvoiceUtility.cs" />
     <Compile Include="Billing\OrgRechargeUtility.cs" />
-    <Compile Include="DefaultContextProvider.cs" />
-    <Compile Include="IContextProvider.cs" />
     <Compile Include="Logging\FileLogMessage.cs" />
     <Compile Include="Logging\ILogMessage.cs" />
     <Compile Include="Logging\Logger.cs" />
@@ -167,7 +191,6 @@
     <Compile Include="Logging\TextLogMessage.cs" />
     <Compile Include="Logging\XmlLogMessage.cs" />
     <Compile Include="Ordering\Extensions.cs" />
-    <Compile Include="Ordering\PurchaseOrderSearchResult.cs" />
     <Compile Include="PhysicalAccess\EventType.cs" />
     <Compile Include="PhysicalAccess\InLabClient.cs" />
     <Compile Include="Repository\ActiveDataItem.cs" />
@@ -212,20 +235,19 @@
     <Compile Include="DataTables\Response.cs" />
     <Compile Include="DataTables\Search.cs" />
     <Compile Include="DataTables\SortColumn.cs" />
-    <Compile Include="Data\ClientRemoteUtility.cs" />
+    <Compile Include="Data\ClientRemoteManager.cs" />
     <Compile Include="Data\AccessCheck.cs" />
     <Compile Include="CommonTools\Rooms.cs" />
     <Compile Include="DefaultContext.cs" />
     <Compile Include="Authorization.cs" />
-    <Compile Include="Billing\ApportionmentUtility.cs" />
-    <Compile Include="Billing\BillingTypeUtility.cs" />
+    <Compile Include="Billing\ApportionmentManager.cs" />
     <Compile Include="Billing\ClientOrgBillingTypeLogUtility.cs" />
     <Compile Include="Billing\FinancialManagerUtility.cs" />
     <Compile Include="Billing\SubLineItem.cs" />
     <Compile Include="Billing\SubsidyUtility.cs" />
-    <Compile Include="ILogProvider.cs" />
+    <Compile Include="ILogService.cs" />
     <Compile Include="Inventory\InventoryLocationUtility.cs" />
-    <Compile Include="ISerializationProvider.cs" />
+    <Compile Include="ISerializationService.cs" />
     <Compile Include="ISerializer.cs" />
     <Compile Include="Logging\LogMessage.cs" />
     <Compile Include="Logging\LogMessageLevel.cs" />
@@ -238,7 +260,6 @@
     <Compile Include="Data\ActiveLogItem.cs" />
     <Compile Include="Data\ClientPreferenceUtility.cs" />
     <Compile Include="Meter\ReportData.cs" />
-    <Compile Include="Billing\ToolBillingUtility.cs" />
     <Compile Include="CommonTools\AccessPrivs.cs" />
     <Compile Include="CommonTools\AdministrativeHelper.cs" />
     <Compile Include="CommonTools\ApportionmentInDaysMonthlyProcessor.cs" />
@@ -372,7 +393,7 @@
     <Compile Include="Repository\Inventory\LabelRoom.cs" />
     <Compile Include="Repository\Inventory\PrivateChemical.cs" />
     <Compile Include="Repository\Inventory\ResourceInventoryLocation.cs" />
-    <Compile Include="Repository\IRepository.cs" />
+    <Compile Include="Repository\ISession.cs" />
     <Compile Include="Repository\IUnitOfWork.cs" />
     <Compile Include="Repository\Ordering\AdminSetting.cs" />
     <Compile Include="Repository\Ordering\Approver.cs" />
@@ -383,6 +404,7 @@
     <Compile Include="Repository\Ordering\PurchaseOrderAccount.cs" />
     <Compile Include="Repository\Ordering\PurchaseOrderCategory.cs" />
     <Compile Include="Repository\Ordering\PurchaseOrderDetail.cs" />
+    <Compile Include="Repository\Ordering\PurchaseOrderInfo.cs" />
     <Compile Include="Repository\Ordering\PurchaseOrderItem.cs" />
     <Compile Include="Repository\Ordering\PurchaseOrderSearch.cs" />
     <Compile Include="Repository\Ordering\Purchaser.cs" />
@@ -390,7 +412,6 @@
     <Compile Include="Repository\Ordering\Receiving.cs" />
     <Compile Include="Repository\Ordering\ShippingMethod.cs" />
     <Compile Include="Repository\Ordering\Status.cs" />
-    <Compile Include="Repository\Ordering\StoreManagerReportItem.cs" />
     <Compile Include="Repository\Ordering\Tracking.cs" />
     <Compile Include="Repository\Ordering\TrackingCheckpoint.cs" />
     <Compile Include="Repository\Ordering\Vendor.cs" />
@@ -413,7 +434,6 @@
     <Compile Include="Repository\Scheduler\ClientSetting.cs" />
     <Compile Include="Repository\Scheduler\Enums.cs" />
     <Compile Include="Repository\Scheduler\GlobalActivityAuth.cs" />
-    <Compile Include="Repository\Scheduler\ISchedulerRepositoryCollection.cs" />
     <Compile Include="Repository\Scheduler\Kiosk.cs" />
     <Compile Include="Repository\Scheduler\Lab.cs" />
     <Compile Include="Repository\Scheduler\LogProperty.cs" />
@@ -442,7 +462,7 @@
     <Compile Include="Repository\Scheduler\ResourceInfo.cs" />
     <Compile Include="Repository\Scheduler\ResourceLogProperty.cs" />
     <Compile Include="Repository\Scheduler\ResourceStatus.cs" />
-    <Compile Include="Repository\Scheduler\ResourceTree.cs" />
+    <Compile Include="Repository\Scheduler\ResourceTreeItem.cs" />
     <Compile Include="Repository\Scheduler\SchedulerProperty.cs" />
     <Compile Include="Repository\Store\ItemPriceHistory.cs" />
     <Compile Include="Repository\Store\StoreOrder.cs" />
@@ -452,12 +472,14 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Scheduler\AvailableInviteeItem.cs" />
+    <Compile Include="Scheduler\ReservationInviteeManager.cs" />
     <Compile Include="Scheduler\Data\AuthLevelData.cs" />
     <Compile Include="Scheduler\Data\HolidayData.cs" />
     <Compile Include="Scheduler\Data\ReservationInviteeData.cs" />
     <Compile Include="Scheduler\Data\ReservationProcessInfoData.cs" />
     <Compile Include="Scheduler\Data\ResourceClientData.cs" />
     <Compile Include="Scheduler\Extensions.cs" />
+    <Compile Include="Scheduler\ISchedulerRepository.cs" />
     <Compile Include="Scheduler\RecurringReservationTransform.cs" />
     <Compile Include="Scheduler\ReservationCollection.cs" />
     <Compile Include="Scheduler\ReservationDuration.cs" />
@@ -466,6 +488,7 @@
     <Compile Include="Scheduler\ReservationInProgress.cs" />
     <Compile Include="Scheduler\ReservationInviteeItem.cs" />
     <Compile Include="Scheduler\ReservationInviteeUtility.cs" />
+    <Compile Include="Scheduler\ReservationManager.cs" />
     <Compile Include="Scheduler\ReservationProcessInfoItem.cs" />
     <Compile Include="Scheduler\ReservationProcessInfoUtility.cs" />
     <Compile Include="Scheduler\ReservationStateArgs.cs" />
@@ -480,10 +503,8 @@
     <Compile Include="Data\ClientAccountMatrix\MatrixUserAccount.cs" />
     <Compile Include="Data\ClientAccountMatrix\MatrixUserHeader.cs" />
     <Compile Include="Data\ClientAccountInfoSearch.cs" />
-    <Compile Include="Data\ClientOrgUtility.cs" />
     <Compile Include="Data\DataFeedUtility.cs" />
     <Compile Include="Data\ManagerItem.cs" />
-    <Compile Include="Data\OrgUtility.cs" />
     <Compile Include="Helpdesk\TicketDetail.cs" />
     <Compile Include="Helpdesk\TicketDetailResponse.cs" />
     <Compile Include="Helpdesk\TicketInfo.cs" />
@@ -496,11 +517,7 @@
     <Compile Include="Ordering\IOFAccount.cs" />
     <Compile Include="Ordering\IOFClientAccount.cs" />
     <Compile Include="Ordering\PurchaseOrderItemUtility.cs" />
-    <Compile Include="Ordering\PurchaseOrderSearchFilter.cs" />
-    <Compile Include="Data\ActiveLogUtility.cs" />
-    <Compile Include="Data\ClientUtility.cs" />
     <Compile Include="Data\CommunityUtility.cs" />
-    <Compile Include="Data\DryBoxUtility.cs" />
     <Compile Include="Data\PrivUtility.cs" />
     <Compile Include="DateRange.cs" />
     <Compile Include="Feedback\FeedbackClientItem.cs" />
@@ -528,13 +545,10 @@
     <Compile Include="Hooks\HookManager.cs" />
     <Compile Include="Hooks\HookResult.cs" />
     <Compile Include="IContext.cs" />
-    <Compile Include="IControlProvider.cs" />
-    <Compile Include="IDataAccessProvider.cs" />
+    <Compile Include="IControlService.cs" />
+    <Compile Include="IDataAccessService.cs" />
     <Compile Include="Hooks\IHook.cs" />
-    <Compile Include="Ordering\IOFClient.cs" />
     <Compile Include="Ordering\PurchaseOrderDetailUtility.cs" />
-    <Compile Include="Ordering\PurchaseOrderSearchUtility.cs" />
-    <Compile Include="Ordering\PurchaseOrderUtility.cs" />
     <Compile Include="Ordering\TrackingUtility.cs" />
     <Compile Include="Ordering\VendorUtility.cs" />
     <Compile Include="Meter\LogMessageTypes.cs" />
@@ -546,12 +560,12 @@
     <Compile Include="Repository\Reporting\ReportCategory.cs" />
     <Compile Include="Repository\Reporting\Report.cs" />
     <Compile Include="Scheduler\ActivityUtility.cs" />
-    <Compile Include="Scheduler\EmailUtility.cs" />
+    <Compile Include="Scheduler\EmailManager.cs" />
     <Compile Include="Scheduler\KioskUtility.cs" />
     <Compile Include="Scheduler\Properties.cs" />
-    <Compile Include="IPhysicalAccessProvider.cs" />
+    <Compile Include="IPhysicalAccessService.cs" />
     <Compile Include="IEmailEnvelope.cs" />
-    <Compile Include="IEmailProvider.cs" />
+    <Compile Include="IEmailService.cs" />
     <Compile Include="IEmailGroup.cs" />
     <Compile Include="IEmailGroupMember.cs" />
     <Compile Include="IEmailGroupUtility.cs" />
@@ -561,7 +575,8 @@
     <Compile Include="GenericListItem.cs" />
     <Compile Include="Meter\MeterUtility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Providers.cs" />
+    <Compile Include="Scheduler\ResourceManager.cs" />
+    <Compile Include="ServiceProvider.cs" />
     <Compile Include="Reporting\CriteriaWriter.cs" />
     <Compile Include="Reporting\DefaultCriteria.cs" />
     <Compile Include="Reporting\DefaultReport.cs" />
@@ -573,7 +588,7 @@
     <Compile Include="Reporting\UserCriteria.cs" />
     <Compile Include="Repository\Email\Message.cs" />
     <Compile Include="Repository\Email\Recipient.cs" />
-    <Compile Include="IEncryptionProvider.cs" />
+    <Compile Include="IEncryptionService.cs" />
     <Compile Include="Repository\Meter\FileImport.cs" />
     <Compile Include="Repository\Meter\MeterData.cs" />
     <Compile Include="Repository\Meter\MeterReport.cs" />
@@ -582,15 +597,22 @@
     <Compile Include="Repository\Store\Package.cs" />
     <Compile Include="Repository\Store\Price.cs" />
     <Compile Include="Repository\Store\VendorPackage.cs" />
-    <Compile Include="Scheduler\FinOpsUtility.cs" />
+    <Compile Include="Scheduler\FinOpsManager.cs" />
     <Compile Include="Scheduler\HelpdeskUtility.cs" />
     <Compile Include="Scheduler\ReservationRecurrenceUtility.cs" />
-    <Compile Include="Scheduler\ReservationUtility.cs" />
     <Compile Include="Scheduler\ResourceClientUtility.cs" />
     <Compile Include="CommonTools\DataTableManager.cs" />
-    <Compile Include="IScriptingProvider.cs" />
+    <Compile Include="IScriptingService.cs" />
     <Compile Include="Scheduler\ResourceItem.cs" />
     <Compile Include="Scheduler\ResourceStatusUtility.cs" />
+    <Compile Include="Scheduler\ResourceTreeItemCollection.cs" />
+    <Compile Include="Scheduler\ResourceTree\BuildingNode.cs" />
+    <Compile Include="Scheduler\ResourceTree\IResourceTreeNode.cs" />
+    <Compile Include="Scheduler\ResourceTree\LabNode.cs" />
+    <Compile Include="Scheduler\ResourceTree\PathInfo.cs" />
+    <Compile Include="Scheduler\ResourceTree\ProcessTechNode.cs" />
+    <Compile Include="Scheduler\ResourceTree\ResourceNode.cs" />
+    <Compile Include="Scheduler\ResourceTree\ResourceTree.cs" />
     <Compile Include="Scheduler\ResourceUtility.cs" />
     <Compile Include="Scripting\Data.cs" />
     <Compile Include="Scripting\Header.cs" />
@@ -605,7 +627,6 @@
     <Compile Include="Store\StoreOrderUtility.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Ordering\IOFItem.cs" />
     <None Include="app.config" />
     <None Include="LNF.snk" />
     <None Include="Repository\Design\Data.cd" />

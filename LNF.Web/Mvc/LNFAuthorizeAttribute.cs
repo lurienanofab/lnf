@@ -1,7 +1,7 @@
 ﻿using LNF.Cache;
 using LNF.Data;
 using LNF.Models.Data;
-using LNF.Repository.Data;
+using LNF.Repository;
 using System;
 using System.Linq;
 using System.Security.Principal;
@@ -27,7 +27,7 @@ namespace LNF.Web.Mvc
         /// <param name="accessDeniedViewName">The name of the view to display for unauthorized requests. Defaults to "AccessDenied". If null the request will redirect to the login page.</param>
         public LNFAuthorizeAttribute(ClientPrivilege requiredPrivilege = 0, int[] allowedClientIDs = null, Type modelType = null, string accessDeniedViewName = "AccessDenied")
         {
-            ModelType = (modelType == null) ? typeof(AccessDeniedModel) : modelType;
+            ModelType = modelType ?? typeof(AccessDeniedModel);
             RequiredPrivilege = requiredPrivilege;
             AllowedClientIDs = allowedClientIDs;
             AccessDeniedViewName = accessDeniedViewName;
@@ -46,8 +46,8 @@ namespace LNF.Web.Mvc
                     string username = splitter[0];
                     string password = splitter[1];
 
-                    Client c = ClientUtility.Login(username, password);
-                    if (c != null && c.Active)
+                    var c = DA.Current.ClientManager().Login(username, password);
+                    if (c != null && c.ClientActive)
                         httpContext.User = new GenericPrincipal(new GenericIdentity(c.UserName, "Basic"), null);
                 }
             }

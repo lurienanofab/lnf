@@ -11,7 +11,7 @@ namespace LNF.Scripting
     {
         public static IList<IDictionary> Query(string query, Parameters parameters)
         {
-            var q = DA.Current.SqlQuery(query, parameters);
+            var q = DA.Current.SqlQuery(query).SetParameters(parameters);
             var result = q.List();
             return result;
         }

@@ -151,7 +151,12 @@ namespace LNF.Repository.Scheduler
 
         public virtual IList<Reservation> InGranularityWindow()
         {
-            return ReservationUtility.ReservationsInWindow(this, Granularity);
+            return DA.Current.ReservationManager().ReservationsInWindow(this, Granularity);
+        }
+
+        public override string ToString()
+        {
+            return ResourceModel.GetDisplayName(ResourceName, ResourceID);
         }
     }
 }

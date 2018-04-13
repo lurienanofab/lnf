@@ -17,7 +17,7 @@ namespace LNF.Impl.Hooks
                 {
                     if (Context.LoggedInClient.ClientID < 890) //2008-05-19 requested by sandrine not to include new users
                     {
-                        if (!Context.LoggedInClient.HasWatchedEthicalVideo())
+                        if (!Context.HasWatchedEthicalVideo())
                         {
                             Result.Redirect = true;
                             Result.RedirectUrl = "ViewVideo.aspx";
@@ -31,7 +31,7 @@ namespace LNF.Impl.Hooks
             {
                 if (!Context.IsKiosk)
                 {
-                    if (!Context.LoggedInClient.HasTakenSafetyTest())
+                    if (!Context.HasTakenSafetyTest())
                     {
                         Result.Redirect = true;
                         Result.RedirectUrl = "TestHF.aspx";

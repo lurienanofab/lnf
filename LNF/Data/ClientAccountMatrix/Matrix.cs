@@ -56,7 +56,7 @@ namespace LNF.Data.ClientAccountMatrix
             get
             {
                 ClientPrivilege defval = ClientPrivilege.LabUser | ClientPrivilege.Staff | ClientPrivilege.StoreUser | ClientPrivilege.RemoteUser;
-                string value = Providers.Context.Current.GetAppSetting("ClientAccountMatrix.PrivFilter");
+                string value = ServiceProvider.Current.Context.GetAppSetting("ClientAccountMatrix.PrivFilter");
                 if (!string.IsNullOrEmpty(value))
                     return PrivUtility.CalculatePriv(value.Split(','));
                 return defval;
@@ -131,11 +131,14 @@ namespace LNF.Data.ClientAccountMatrix
 
                 item = this[acctID];
 
-                MatrixUserAccount ua = new MatrixUserAccount();
-                ua.AccountID = acctID;
-                ua.ClientOrgID = caa.ClientOrgID;
-                ua.DisplayName = caa.GetEmployeeDisplayName();
-                ua.Email = caa.EmployeeEmail;
+                MatrixUserAccount ua = new MatrixUserAccount
+                {
+                    AccountID = acctID,
+                    ClientOrgID = caa.ClientOrgID,
+                    DisplayName = caa.GetEmployeeDisplayName(),
+                    Email = caa.EmployeeEmail
+                };
+
                 if (caa.IsAssigned())
                 {
                     ua.ClientAccountID = caa.EmployeeClientAccountID;

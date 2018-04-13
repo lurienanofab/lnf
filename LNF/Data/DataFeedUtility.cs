@@ -147,7 +147,7 @@ namespace LNF.Data
             }
             else
             {
-                Result result = Providers.Scripting.Run(feed.FeedQuery, parameters);
+                Result result = ServiceProvider.Current.Resolver.GetInstance<IScriptingService>().Run(feed.FeedQuery, parameters);
                 if (result.Exception != null)
                     throw result.Exception;
                 foreach (var kvp in result.DataSet)
@@ -285,7 +285,7 @@ namespace LNF.Data
             channel.AppendChild(child);
 
             child = xdoc.CreateElement("link");
-            child.InnerText = Providers.Context.Current.GetRequestUrl().GetLeftPart(UriPartial.Authority);
+            child.InnerText = ServiceProvider.Current.Context.GetRequestUrl().GetLeftPart(UriPartial.Authority);
             channel.AppendChild(child);
 
             child = xdoc.CreateElement("lastBuildDate");
@@ -448,7 +448,7 @@ namespace LNF.Data
                 }
             }
 
-            string result = Providers.Serialization.Json.Serialize(obj);
+            string result = ServiceProvider.Current.Serialization.Json.Serialize(obj);
 
             return result;
         }
@@ -461,7 +461,7 @@ namespace LNF.Data
             DataTable dt = GetTables(ds, key).FirstOrDefault();
 
             StringBuilder sb = new StringBuilder();
-            string serverIP = Providers.Context.Current.ServerVariables["LOCAL_ADDR"];
+            string serverIP = ServiceProvider.Current.Context.ServerVariables["LOCAL_ADDR"];
             DateTime buildTime = DateTime.UtcNow;
             sb.AppendLine("BEGIN:VCALENDAR");
             sb.AppendLine("METHOD:PUBLISH");
@@ -503,7 +503,7 @@ namespace LNF.Data
 
         public static string FeedItemURL(DataFeed feed, string format)
         {
-            string result = Providers.Context.Current.GetRequestUrl().GetLeftPart(UriPartial.Authority) + Providers.Context.Current.GetAbsolutePath("~") + "/feed/";
+            string result = ServiceProvider.Current.Context.GetRequestUrl().GetLeftPart(UriPartial.Authority) + ServiceProvider.Current.Context.GetAbsolutePath("~") + "/feed/";
             result += feed.FeedAlias + "/";
             result += (string.IsNullOrEmpty(format) ? "xml" : format);
             return result;

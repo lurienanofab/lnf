@@ -1,26 +1,31 @@
-﻿using LNF.Models.Data;
-using LNF.Repository.Data;
+﻿using LNF.Data;
+using LNF.Models.Data;
+using LNF.Repository;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
 namespace LNF.CommonTools
 {
-    public static class AdministrativeHelper
+    public class AdministrativeHelper : ManagerBase
     {
-        public static void SendEmailToDevelopers(string subject, string body)
+        public AdministrativeHelper(ISession session) : base(session) { }
+
+        public void SendEmailToDevelopers(string subject, string body)
         {
-            if (Providers.Email != null)
+            if (ServiceProvider.Current.Email != null)
             {
                 string from = "system@lnf.umich.edu";
                 IEnumerable<string> to = GetEmailListByPrivilege(ClientPrivilege.Developer);
-                Providers.Email.SendMessage(0, "LNF.CommonTools.AdministrativeHelper.SendEmailToDevelopers(string subject, string body)", subject, body, from, to);
+                ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.AdministrativeHelper.SendEmailToDevelopers(string subject, string body)", subject, body, from, to);
             }
         }
 
-        public static IEnumerable<string> GetEmailListByPrivilege(ClientPrivilege privs)
+        public IEnumerable<string> GetEmailListByPrivilege(ClientPrivilege privs)
         {
-            IEnumerable<string> result = Client.FindByPrivilege(privs).Select(c => c.PrimaryEmail());
+            var mgr = Session.ClientManager();
+            var clients = mgr.FindByPrivilege(privs);
+            IEnumerable<string> result = clients.Select(c => mgr.PrimaryEmail(c));
             return result;
         }
     }

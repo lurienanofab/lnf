@@ -1,30 +1,27 @@
 ﻿using LNF.Cache;
-using LNF.CommonTools;
-using LNF.Data;
 using LNF.Models.Data;
 using LNF.Models.Scheduler;
 using LNF.Repository;
-using LNF.Repository.Data;
 using LNF.Repository.Scheduler;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace LNF.Scheduler
 {
     public static class CacheManagerExtensions
     {
-        public static IList<ResourceTree> ResourceTree(this CacheManager cm)
+        public static ResourceTreeItemCollection ResourceTree(this CacheManager cm)
         {
             // always for the current user
 
-            IList<ResourceTree> result = cm.GetContextItem<IList<ResourceTree>>("ResourceTree");
+            var result = cm.GetContextItem<ResourceTreeItemCollection>("ResourceTree");
 
             if (result == null || result.Count == 0)
             {
-                result = DA.Current.Query<ResourceTree>().Where(x => x.ClientID == cm.ClientID).ToList();
+                var items = cm.ServiceProvider.DataAccess.Session.Query<ResourceTreeItem>().Where(x => x.ClientID == cm.ClientID).ToList();
+                result = new ResourceTreeItemCollection(items);
                 cm.SetContextItem("ResourceTree", result);
             }
 
@@ -40,7 +37,7 @@ namespace LNF.Scheduler
 
             if (result == null || result.Count == 0)
             {
-                result = DA.Current.Query<Activity>().Model<ActivityModel>();
+                result = cm.ServiceProvider.DataAccess.Session.Query<Activity>().Model<ActivityModel>();
                 cm.SetContextItem("Activities", result);
             }
 
@@ -82,145 +79,6 @@ namespace LNF.Scheduler
             return result;
         }
 
-        /// <summary>
-        /// Gets all buildings from cache. Cached for one request.
-        /// </summary>
-        public static IList<BuildingModel> Buildings(this CacheManager cm)
-        {
-            IList<BuildingModel> result = cm.GetContextItem<IList<BuildingModel>>("Buildings");
-
-            if (result == null || result.Count == 0)
-            {
-                result = cm.ResourceTree().GetBuildings();
-                cm.SetContextItem("Buildings", result);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets the buildings specified by filter from cache. Cached for one request.
-        /// </summary>
-        public static IList<BuildingModel> Buildings(this CacheManager cm, Func<BuildingModel, bool> filter)
-        {
-            var result = cm.Buildings().Where(filter).ToList();
-            return result;
-        }
-
-        public static BuildingModel GetBuilding(this CacheManager cm, int buildingId)
-        {
-            var result = cm.Buildings(x => x.BuildingID == buildingId).FirstOrDefault();
-
-            if (result == null)
-                throw new CacheItemNotFoundException<Building>(x => x.BuildingID, buildingId);
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets all labs from cache. Cached for one request.
-        /// </summary>
-        public static IList<LabModel> Labs(this CacheManager cm)
-        {
-            IList<LabModel> result = cm.GetContextItem<IList<LabModel>>("Labs");
-
-            if (result == null || result.Count == 0)
-            {
-                result = cm.ResourceTree().GetLabs();
-                cm.SetContextItem("Labs", result);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets the labs specified by filter from cache. Cached for one request.
-        /// </summary>
-        public static IList<LabModel> Labs(this CacheManager cm, Func<LabModel, bool> filter)
-        {
-            var result = cm.Labs().Where(filter).ToList();
-            return result;
-        }
-
-        public static LabModel GetLab(this CacheManager cm, int labId)
-        {
-            var result = cm.Labs(x => x.LabID == labId).FirstOrDefault();
-
-            if (result == null)
-                throw new CacheItemNotFoundException<Lab>(x => x.LabID, labId);
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets all process techs from cache. Cached for one request.
-        /// </summary>
-        public static IList<ProcessTechModel> ProcessTechs(this CacheManager cm)
-        {
-            IList<ProcessTechModel> result = cm.GetContextItem<IList<ProcessTechModel>>("ProcessTechs");
-
-            if (result == null || result.Count == 0)
-            {
-                result = cm.ResourceTree().GetProcessTechs();
-                cm.SetContextItem("ProcessTechs", result);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets process techs specified by filter from cache. Cached for one request.
-        /// </summary>
-        public static IList<ProcessTechModel> ProcessTechs(this CacheManager cm, Func<ProcessTechModel, bool> filter)
-        {
-            var result = cm.ProcessTechs().Where(filter).ToList();
-            return result;
-        }
-
-        public static ProcessTechModel GetProcessTech(this CacheManager cm, int processTechId)
-        {
-            var result = cm.ProcessTechs(x => x.ProcessTechID == processTechId).FirstOrDefault();
-
-            if (result == null)
-                throw new CacheItemNotFoundException<ProcessTech>(x => x.ProcessTechID, processTechId);
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets all resources from cache. Cached for one request.
-        /// </summary>
-        public static IList<ResourceModel> Resources(this CacheManager cm)
-        {
-            IList<ResourceModel> result = cm.GetContextItem<IList<ResourceModel>>("Resources");
-
-            if (result == null || result.Count == 0)
-            {
-                result = cm.ResourceTree().GetResources();
-                cm.SetContextItem("Resources", result);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets the resources specified by filter from cache. Cached for one request.
-        /// </summary>
-        public static IList<ResourceModel> Resources(this CacheManager cm, Func<ResourceModel, bool> filter)
-        {
-            return cm.Resources().Where(filter).ToList();
-        }
-
-        public static ResourceModel GetResource(this CacheManager cm, int resourceId)
-        {
-            var result = cm.Resources(x => x.ResourceID == resourceId).FirstOrDefault();
-
-            if (result == null)
-                throw new CacheItemNotFoundException<Resource>(x => x.ResourceID, resourceId);
-
-            return result;
-        }
-
         public static ClientSetting GetClientSetting(this CacheManager cm)
         {
             return cm.GetSessionValue(SessionKeys.ClientSetting, () => ClientSetting.GetClientSettingOrDefault(cm.ClientID));
@@ -231,7 +89,7 @@ namespace LNF.Scheduler
             IList<ResourceClientModel> result = cm.GetSessionValue(SessionKeys.CurrentResourceClients, () =>
             {
                 int clientId = cm.ClientID;
-                var query = DA.Current.Query<ResourceClientInfo>().Where(x => x.ClientID == clientId || x.ClientID == -1);
+                var query = cm.ServiceProvider.DataAccess.Session.Query<ResourceClientInfo>().Where(x => x.ClientID == clientId || x.ClientID == -1);
                 var models = query.Model<ResourceClientModel>();
                 return models;
             });
@@ -252,7 +110,7 @@ namespace LNF.Scheduler
 
             if (result == null || result.Count > 0)
             {
-                result = DA.Current.Query<ResourceClientInfo>().Where(x => x.ResourceID == resourceId).Model<ResourceClientModel>();
+                result = cm.ServiceProvider.DataAccess.Session.Query<ResourceClientInfo>().Where(x => x.ResourceID == resourceId).Model<ResourceClientModel>();
                 cm.SetContextItem(key, result);
             }
 
@@ -273,7 +131,7 @@ namespace LNF.Scheduler
         {
             var client = cm.GetClient(clientId);
             var resourceClients = cm.ResourceClients(resourceId);
-            return ReservationUtility.GetAuthLevel(resourceClients, client, resourceId);
+            return DA.Current.ReservationManager().GetAuthLevel(resourceClients, client, resourceId);
         }
 
         public static void ClearResourceClients(this CacheManager cm, int resourceId)
@@ -300,31 +158,11 @@ namespace LNF.Scheduler
             cm.SetSessionValue(SessionKeys.WeekStartDate, value);
         }
 
-        public static IList<ResourceCostModel> ToolCosts(this CacheManager cm, DateTime cutoff, int resourceId)
-        {
-            string key = "ResourceCosts#" + resourceId.ToString();
-
-            IList<ResourceCostModel> result = cm.GetContextItem<IList<ResourceCostModel>>(key);
-
-            if (result == null || result.Count == 0)
-            {
-                result = CostUtility.FindCosts("ToolCost", cutoff, null, resourceId).Model<ResourceCostModel>();
-                cm.SetContextItem(key, result);
-            }
-
-            return result;
-        }
-
-        public static IList<ResourceCostModel> ToolCosts(this CacheManager cm, DateTime cutoff, int resourceId, int chargeTypeId)
-        {
-            return cm.ToolCosts(cutoff, resourceId).Where(x => x.ChargeTypeID == chargeTypeId).ToList();
-        }
-
         public static bool IsOnKiosk(this CacheManager cm)
         {
             return cm.GetSessionValue(SessionKeys.IsOnKiosk, () =>
             {
-                string kioskIp = Providers.Context.Current.UserHostAddress;
+                string kioskIp = cm.ServiceProvider.Context.UserHostAddress;
                 return KioskUtility.IsOnKiosk(cm.GetClientLabs(), kioskIp);
             });
         }
@@ -338,7 +176,7 @@ namespace LNF.Scheduler
         {
             return cm.GetSessionValue(SessionKeys.ClientLabs, () =>
             {
-                string kioskIp = Providers.Context.Current.UserHostAddress;
+                string kioskIp = cm.ServiceProvider.Context.UserHostAddress;
                 return KioskUtility.IpCheck(cm.ClientID, kioskIp);
             });
         }
@@ -361,7 +199,7 @@ namespace LNF.Scheduler
 
             if (result == null || result.Count == 0)
             {
-                result = DA.Current.Query<ProcessInfo>().Where(x => x.Resource.ResourceID == resourceId).Model<ProcessInfoModel>();
+                result = cm.ServiceProvider.DataAccess.Session.Query<ProcessInfo>().Where(x => x.Resource.ResourceID == resourceId).Model<ProcessInfoModel>();
                 cm.SetContextItem(key, result);
             }
 
@@ -376,7 +214,7 @@ namespace LNF.Scheduler
 
             if (result == null || result.Count == 0)
             {
-                result = DA.Current.Query<ProcessInfoLine>().Where(x => x.ProcessInfoID == processInfoId).Model<ProcessInfoLineModel>();
+                result = cm.ServiceProvider.DataAccess.Session.Query<ProcessInfoLine>().Where(x => x.ProcessInfoID == processInfoId).Model<ProcessInfoLineModel>();
                 cm.SetContextItem(key, result);
             }
 
@@ -432,287 +270,33 @@ namespace LNF.Scheduler
         {
             cm.SetSessionValue("CurrentViewType", value);
         }
-    }
 
-    public static class ResourceModelExtensions
-    {
-        public static Resource GetResource(this ResourceModel item)
+        public static ClientAuthLevel SelectAuthLevel(this CacheManager cm, ResourceModel item, IPrivileged client)
         {
-            var result = DA.Scheduler.Resource.Single(item.ResourceID);
-
-            if (result == null)
-                throw new InvalidOperationException(string.Format("No Resource found for ResourceID = {0}", item.ResourceID));
-
-            return result;
-        }
-
-        public static IQueryable<ResourceClientInfo> GetResourceClients(this ResourceModel item)
-        {
-            return ResourceClientInfoUtility.GetResourceClients(item.ResourceID);
-        }
-
-        public static IQueryable<ResourceClientInfo> GetToolEngineers(this ResourceModel item)
-        {
-            return ResourceClientInfoUtility.GetToolEngineers(item.ResourceID);
-        }
-
-        public static IQueryable<ResourceClientInfo> SelectNotifyOnCancelClients(this ResourceModel item)
-        {
-            return ResourceClientInfoUtility.SelectNotifyOnCancelClients(item.ResourceID);
-        }
-
-        public static IQueryable<ResourceClientInfo> SelectNotifyOnOpeningClients(this ResourceModel item)
-        {
-            return ResourceClientInfoUtility.SelectNotifyOnOpeningClients(item.ResourceID);
-        }
-
-        public static IQueryable<ResourceClientInfo> SelectNotifyOnPracticeRes(this ResourceModel item)
-        {
-            return ResourceClientInfoUtility.SelectNotifyOnPracticeRes(item.ResourceID);
-        }
-
-        public static IQueryable<ReservationRecurrence> GetReservationRecurrences(this ResourceModel item)
-        {
-            return DA.Current.Query<ReservationRecurrence>().Where(x => x.Resource.ResourceID == item.ResourceID);
-        }
-
-        public static IQueryable<ResourceActivityAuth> GetResourceActivityAuths(this ResourceModel item)
-        {
-            return DA.Current.Query<ResourceActivityAuth>().Where(x => x.Resource.ResourceID == item.ResourceID);
-        }
-
-        public static IList<ResourceCost> GetResourceCosts(this ResourceModel item)
-        {
-            IEnumerable<Cost> costs = DA.Current.Query<Cost>().Where(x => (x.RecordID == item.ResourceID && x.TableNameOrDescription == "ToolCost") || x.TableNameOrDescription == "ToolOvertimeCost");
-            return ResourceCost.GetAll(costs, item.ResourceID);
-        }
-
-        public static double SelectReservableMinutes(this ResourceModel item, int clientId, DateTime now)
-        {
-            return ReservationUtility.SelectReservableMinutes(item.ResourceID, clientId, item.ReservFence, item.MaxAlloc, now);
-        }
-
-        public static async Task<string> GetInterlockStatus(this ResourceModel item)
-        {
-            DataTable dt = new DataTable();
-            dt.Columns.Add("ResourceID", typeof(int));
-            dt.Columns.Add("InterlockStatus", typeof(string));
-            dt.Rows.Add(item.ResourceID, string.Empty);
-            await WagoInterlock.AllToolStatus(dt);
-            DataRow dr = dt.Select(string.Format("ResourceID = {0}", item.ResourceID)).FirstOrDefault();
-            string result = dr["InterlockStatus"].ToString();
-            return result;
-        }
-
-        public static DateTime? OpenResSlot(this ResourceModel item, DateTime now, DateTime sd)
-        {
-            return ReservationUtility.OpenResSlot(item.ResourceID, item.ReservFence, item.MinReservTime, now, sd);
-        }
-
-        public static ClientAuthLevel SelectAuthLevel(this ResourceModel item, IPrivileged client)
-        {
-            return CacheManager.Current.GetAuthLevel(item.ResourceID, client.ClientID);
-        }
-
-        /// <summary>
-        /// Returns the next grain boundary in the past or future
-        /// </summary>
-        /// <param name="actualTime">The point in time to determine the next or previous granularity</param>
-        /// <param name="granDir">The direction (next or pervious) to search in</param>
-        /// <returns>The DateTime value of the next or previous granularity</returns>
-        public static DateTime GetNextGranularity(this ResourceModel item, DateTime actualTime, NextGranDir granDir)
-        {
-            return ResourceUtility.GetNextGranularity(item.Granularity, item.Offset, actualTime, granDir);
-        }
-
-        /// <summary>
-        /// Sets the start and end time slot boundaries
-        /// </summary>
-        /// <param name="startTime">The start time</param>
-        /// <param name="endTime">The end time</param>
-        public static void GetTimeSlotBoundary(this ResourceModel item, ref DateTime startTime, ref DateTime endTime)
-        {
-            ResourceUtility.GetTimeSlotBoundary(item.Granularity, item.Offset, ref startTime, ref endTime);
+            return cm.GetAuthLevel(item.ResourceID, client.ClientID);
         }
     }
 
-    public static class ResourceTreeExtensions
+    public static class SessionExtensions
     {
-        public static IList<BuildingModel> GetBuildings(this IEnumerable<ResourceTree> tree)
+        public static ResourceManager ResourceManager(this ISession session)
         {
-            var distinct = tree.Select(x => new { x.BuildingID, x.BuildingName, x.BuildingDescription, x.BuildingIsActive }).Distinct();
-
-            var result = distinct.OrderBy(x => x.BuildingID).Select(x => new BuildingModel()
-            {
-                BuildingID = x.BuildingID,
-                BuildingName = x.BuildingName,
-                BuildingDescription = x.BuildingDescription,
-                BuildingIsActive = x.BuildingIsActive
-            }).ToList();
-
-            return result;
+            return new ResourceManager(session);
         }
 
-        public static IList<LabModel> GetLabs(this IEnumerable<ResourceTree> tree)
+        public static ReservationManager ReservationManager(this ISession session)
         {
-            var distinct = tree.Select(x => new { x.LabID, x.LabName, x.LabDisplayName, x.LabDescription, x.LabIsActive, x.RoomID, x.RoomName, x.BuildingID, x.BuildingName, x.BuildingIsActive }).Distinct();
-
-            var result = distinct.OrderBy(x => x.LabID).Select(x => new LabModel()
-            {
-                LabID = x.LabID,
-                LabName = x.LabName,
-                LabDisplayName = x.LabDisplayName,
-                LabDescription = x.LabDescription,
-                LabIsActive = x.LabIsActive,
-                RoomID = x.RoomID,
-                RoomName = x.RoomName,
-                BuildingID = x.BuildingID,
-                BuildingName = x.BuildingName,
-                BuildingIsActive = x.BuildingIsActive
-            }).ToList();
-
-            return result;
+            return new ReservationManager(session);
         }
 
-        public static IList<ProcessTechModel> GetProcessTechs(this IEnumerable<ResourceTree> tree)
+        public static ReservationInviteeManager ReservationInviteeManager(this ISession session)
         {
-            var distinct = tree.Select(x => new { x.ProcessTechID, x.ProcessTechName, x.ProcessTechDescription, x.ProcessTechIsActive, x.ProcessTechGroupID, x.ProcessTechGroupName, x.LabID, x.LabName, x.LabDisplayName, x.LabDescription, x.LabIsActive, x.RoomID, x.RoomName, x.BuildingID, x.BuildingName, x.BuildingIsActive }).Distinct();
-
-            var result = distinct.OrderBy(x => x.LabID).Select(x => new ProcessTechModel()
-            {
-                ProcessTechID = x.ProcessTechID,
-                ProcessTechName = x.ProcessTechName,
-                ProcessTechDescription = x.ProcessTechDescription,
-                ProcessTechIsActive = x.ProcessTechIsActive,
-                GroupID = x.ProcessTechGroupID,
-                GroupName = x.ProcessTechGroupName,
-                LabID = x.LabID,
-                LabName = x.LabName,
-                LabDisplayName = x.LabDisplayName,
-                LabIsActive = x.LabIsActive,
-                BuildingID = x.BuildingID,
-                BuildingName = x.BuildingName,
-                BuildingIsActive = x.BuildingIsActive
-            }).ToList();
-
-            return result;
+            return new ReservationInviteeManager(session);
         }
 
-        public static IList<ResourceModel> GetResources(this IEnumerable<ResourceTree> tree)
+        public static EmailManager EmailManager(this ISession session)
         {
-            var distinct = tree.Distinct();
-
-            var result = distinct.OrderBy(x => x.LabID).Select(x => new ResourceModel()
-            {
-                AuthDuration = x.AuthDuration,
-                AuthState = x.AuthState,
-                AutoEnd = TimeSpan.FromMinutes(x.AutoEnd),
-                GracePeriod = TimeSpan.FromMinutes(x.GracePeriod),
-                Granularity = TimeSpan.FromMinutes(x.Granularity),
-                HelpdeskEmail = x.HelpdeskEmail,
-                IsReady = x.IsReady,
-                IsSchedulable = x.IsSchedulable,
-                MaxAlloc = TimeSpan.FromMinutes(x.MaxAlloc),
-                MaxReservTime = TimeSpan.FromMinutes(x.MaxReservTime),
-                MinCancelTime = TimeSpan.FromMinutes(x.MinCancelTime),
-                MinReservTime = TimeSpan.FromMinutes(x.MinReservTime),
-                Offset = TimeSpan.FromHours(x.Offset),
-                ReservFence = TimeSpan.FromMinutes(x.ReservFence),
-                ResourceID = x.ResourceID,
-                ResourceIsActive = x.ResourceIsActive,
-                ResourceName = x.ResourceName,
-                ResourceDescription = x.ResourceDescription,
-                State = x.State,
-                StateNotes = x.StateNotes,
-                UnloadTime = TimeSpan.FromMinutes(x.UnloadTime),
-                WikiPageUrl = x.WikiPageUrl,
-                ProcessTechID = x.ProcessTechID,
-                ProcessTechName = x.ProcessTechName,
-                LabID = x.LabID,
-                LabName = x.LabName,
-                LabDisplayName = x.LabDisplayName,
-                BuildingID = x.BuildingID,
-                BuildingName = x.BuildingName
-            }).ToList();
-
-            return result;
-        }
-
-        public static ActivityModel GetCurrentActivity(this IEnumerable<ResourceTree> tree, int resourceId)
-        {
-            ResourceTree item = tree.Where(x => x.ResourceID == resourceId).FirstOrDefault();
-
-            if (item == null) return null;
-
-            if (item.CurrentActivityID == 0) return null;
-
-            var result = CacheManager.Current.GetActivity(item.CurrentActivityID);
-
-            return result;
-        }
-
-        public static ClientItem GetCurrentClient(this IEnumerable<ResourceTree> tree, int resourceId)
-        {
-            ResourceTree item = tree.Where(x => x.ResourceID == resourceId).FirstOrDefault();
-
-            if (item == null) return null;
-
-            if (item.CurrentClientID == 0) return null;
-
-            var result = CacheManager.Current.GetClient(item.CurrentClientID);
-
-            return result;
-        }
-
-        public static ClientItem GetClient(this IEnumerable<ResourceTree> tree)
-        {
-            var item = tree.Select(x => new { x.ClientID }).FirstOrDefault();
-
-            if (item == null) return null;
-
-            if (item.ClientID == 0) return null;
-
-            var result = CacheManager.Current.GetClient(item.ClientID);
-
-            return result;
-        }
-    }
-
-    public static class DataTableExtensions
-    {
-        public static IList<ReservationInvitee> ToReservationInviteeList(this DataTable dt, int reservationId)
-        {
-            if (dt == null) return null;
-
-            if (dt.Columns.Contains("ReservationID") && dt.Columns.Contains("InviteeID"))
-            {
-                var result = new List<ReservationInvitee>();
-                foreach (DataRow dr in dt.Rows)
-                {
-                    if (dr.RowState != DataRowState.Deleted)
-                    {
-                        int rsvId = Utility.ConvertTo(dr["ReservationID"], 0);
-
-                        if (rsvId <= 0) rsvId = reservationId;
-
-                        int inviteeId = Utility.ConvertTo(dr["InviteeID"], 0);
-
-                        if (rsvId != 0 && inviteeId != 0)
-                        {
-                            var reservation = DA.Current.Single<Reservation>(rsvId);
-                            var invitee = DA.Current.Single<Client>(inviteeId);
-
-                            var ri = ReservationInviteeUtility.Select(reservation, invitee);
-
-                            if (ri != null)
-                                result.Add(ri);
-                        }
-                    }
-                }
-                return result;
-            }
-            else
-                throw new Exception("ReservationID and InviteeID columns are required.");
+            return new EmailManager(session);
         }
     }
 }

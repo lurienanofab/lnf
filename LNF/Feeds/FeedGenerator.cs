@@ -1,18 +1,12 @@
-﻿using LNF.Models.Data;
-using LNF.CommonTools;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Web;
-using System.Data;
+﻿using LNF.Data;
 using LNF.Help;
-using LNF.Data;
-using LNF.Scheduler;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
-using LNF.Repository.Scheduler;
-using LNF.Cache;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 
 namespace LNF.Feeds
 {
@@ -30,8 +24,8 @@ namespace LNF.Feeds
                 public static string GetUrl(FeedFormats format, string UserName)
                 {
                     string result = string.Empty;
-                    result = Providers.Context.Current.GetRequestUrl().GetLeftPart(UriPartial.Authority);
-                    result += "/feeds/help/staffhours/" + FeedGenerator.FeedFormatToString(format) + "/" + UserName;
+                    result = ServiceProvider.Current.Context.GetRequestUrl().GetLeftPart(UriPartial.Authority);
+                    result += "/feeds/help/staffhours/" + FeedFormatToString(format) + "/" + UserName;
                     return result;
                 }
 
@@ -97,17 +91,20 @@ namespace LNF.Feeds
                             {
                                 DateTime[] week = WeekArray(sd.LastUpdate);
                                 StaffTimeInfoCollection staffTime = new StaffTimeInfoCollection(sd.HoursXML);
+                                var clientMgr = ServiceProvider.Current.DataAccess.Session.ClientManager();
+
                                 StaffDirectoryItem sdi = new StaffDirectoryItem()
                                 {
                                     StaffDirectoryID = sd.StaffDirectoryID,
                                     Name = sd.Client.DisplayName,
                                     Hours = staffTime.ToString(),
-                                    Email = sd.Client.PrimaryEmail(),
-                                    Phone = sd.Client.PrimaryPhone(),
+                                    Email = clientMgr.PrimaryEmail(sd.Client),
+                                    Phone = clientMgr.PrimaryPhone(sd.Client),
                                     Office = sd.Office,
                                     Deleted = sd.Deleted,
                                     ReadOnly = true
                                 };
+
                                 foreach (KeyValuePair<DayOfWeek, StaffTimeInfo> kvp in staffTime)
                                 {
                                     if (kvp.Value.Checked)
@@ -170,7 +167,7 @@ namespace LNF.Feeds
                 public static string GetUrl(FeedFormats format, string UserName, string ResourceID, string FileName)
                 {
                     string result = string.Empty;
-                    result = Providers.Context.Current.GetRequestUrl().GetLeftPart(UriPartial.Authority);
+                    result = ServiceProvider.Current.Context.GetRequestUrl().GetLeftPart(UriPartial.Authority);
                     result += "/feeds/scheduler/reservations/" + FeedGenerator.FeedFormatToString(format) + "/" + UserName + "/" + ResourceID + "/" + FileName;
                     return result;
                 }
@@ -208,8 +205,7 @@ namespace LNF.Feeds
                     if (resourceId == "all")
                         return 0;
 
-                    int result;
-                    if (int.TryParse(resourceId, out result))
+                    if (int.TryParse(resourceId, out int result))
                         return result;
                     else
                         return 0;

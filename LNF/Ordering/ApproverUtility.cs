@@ -77,14 +77,14 @@ namespace LNF.Ordering
             }
         }
 
-        public static ApproverModel Select(int clientId, int approverId)
+        public static ApproverItem Select(int clientId, int approverId)
         {
-            return DA.Current.Single<Approver>(new Approver() { ClientID = clientId, ApproverID = approverId }).Model<ApproverModel>();
+            return DA.Current.Single<Approver>(new Approver() { ClientID = clientId, ApproverID = approverId }).Model<ApproverItem>();
         }
 
-        public static IList<ApproverModel> SelectApprovers(int clientId)
+        public static IList<ApproverItem> SelectApprovers(int clientId)
         {
-            return DA.Current.Query<Approver>().Where(x => x.ClientID == clientId && x.Active).Model<ApproverModel>();
+            return DA.Current.Query<Approver>().Where(x => x.ClientID == clientId && x.Active).Model<ApproverItem>();
         }
     }
 }

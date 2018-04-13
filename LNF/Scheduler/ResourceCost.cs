@@ -97,6 +97,11 @@ namespace LNF.Scheduler
             return result;
         }
 
+        public override string ToString()
+        {
+            return string.Format("{0:C}/use + {1:C}/hr", PerUseRate(), HourlyRate());
+        }
+
         public static IList<ResourceCost> GetAll(IEnumerable<Cost> costs, int resourceId)
         {
             return DA.Current.Query<ChargeType>().Select(x => new ResourceCost(costs, resourceId, x.ChargeTypeID)).ToList();

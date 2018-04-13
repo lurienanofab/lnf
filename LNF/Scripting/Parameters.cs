@@ -11,14 +11,14 @@ namespace LNF.Scripting
         {
             Parameters result = new Parameters();
 
-            foreach (string key in Providers.Context.Current.QueryString.AllKeys)
-                result.Set(new KeyValuePair<string, string>(key, Providers.Context.Current.QueryString[key]));
+            foreach (string key in ServiceProvider.Current.Context.QueryString.AllKeys)
+                result.Set(new KeyValuePair<string, string>(key, ServiceProvider.Current.Context.QueryString[key]));
 
-            string parameters = Providers.Context.Current.PostData["params"];
+            string parameters = ServiceProvider.Current.Context.PostData["params"];
 
             if (!string.IsNullOrEmpty(parameters))
             {
-                Dictionary<string, object> dict = Providers.Serialization.Json.Deserialize<Dictionary<string, object>>(parameters);
+                Dictionary<string, object> dict = ServiceProvider.Current.Serialization.Json.Deserialize<Dictionary<string, object>>(parameters);
                 foreach (KeyValuePair<string, object> kvp in dict)
                     result.Set(kvp);
             }

@@ -12,7 +12,7 @@ namespace LNF.Data
         {
             var query = DA.Current.Query<Cost>().Where(x => x.TableNameOrDescription == tableNameOrDescription && x.EffDate < cutoff).ToArray();
 
-            var result = query.Join(
+            var join = query.Join(
                     query.Where(x => x.TableNameOrDescription == tableNameOrDescription && x.EffDate < cutoff)
                         .GroupBy(x => new { x.ChargeTypeID, x.TableNameOrDescription, x.RecordID })
                         .Select(x => new { x.Key.ChargeTypeID, x.Key.TableNameOrDescription, x.Key.RecordID, EffDate = x.Max(g => g.EffDate) }).ToArray(),
@@ -24,7 +24,9 @@ namespace LNF.Data
                 .ThenBy(x => x.RecordID)
                 .ThenBy(x => x.EffDate);
 
-            return result.ToArray();
+            var result =  join.ToList();
+
+            return result;
         }
 
         public static IList<Cost> FindCosts(string tableNameOrDescription, DateTime chargeDate, int? chargeTypeId = null, int? recordId = null)

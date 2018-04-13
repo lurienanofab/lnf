@@ -71,11 +71,6 @@ namespace LNF.Web.Content
             }
         }
 
-        public string GetStaticUrl(string path)
-        {
-            return Utility.GetStaticUrl(path);
-        }
-
         protected bool HasPriv(ClientPrivilege privs)
         {
             return CacheManager.Current.CurrentUser.HasPriv(privs);

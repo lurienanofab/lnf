@@ -45,32 +45,6 @@ namespace LNF.Ordering
             return item;
         }
 
-        public static int CopyData(Vendor toVendor, Vendor fromVendor)
-        {
-            IList<PurchaseOrderItem> items = fromVendor.GetItems().Select(x => new PurchaseOrderItem()
-            {
-                Active = true,
-                Description = x.Description,
-                InventoryItemID = x.InventoryItemID,
-                PartNum = x.PartNum,
-                UnitPrice = x.UnitPrice,
-                Vendor = toVendor
-            }).ToList();
-
-            DA.Current.Insert(items);
-
-            //returns number of items added
-            return items.Count;
-        }
-
-        public static int GetInventoryItemID(this PurchaseOrderItem item)
-        {
-            if (item.InventoryItemID.HasValue)
-                return item.InventoryItemID.Value;
-            else
-                return 0;
-        }
-
         public static Item GetInventoryItem(this PurchaseOrderItem item)
         {
             if (item == null) return null;

@@ -1,24 +1,25 @@
-﻿using LNF.Data;
-using LNF.Models.Data;
+﻿using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Repository.Ordering;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace LNF.Ordering
 {
+    public static class SessionExtensions
+    {
+        public static PurchaseOrderAccountManager PurchaseOrderAccountManager(this ISession session)
+        {
+            return new PurchaseOrderAccountManager(session);
+        }
+    }
+
     public static class PurchaseOrderItemExtensions
     {
-        public static IQueryable<PurchaseOrderDetail> GetDetails(this PurchaseOrderItem item)
-        {
-            return DA.Current.Query<PurchaseOrderDetail>().Where(x => x.Item == item);
-        }
-
         public static PurchaseOrderDetail GetMostRecentlyOrderedDetail(this PurchaseOrderItem item)
         {
-            return item.GetDetails()
+            return item.Details
                     .Where(x => x.PurchaseOrder.Status != Status.Cancelled)
                     .OrderByDescending(x => x.PurchaseOrder.CreatedDate)
                     .FirstOrDefault();
@@ -32,7 +33,7 @@ namespace LNF.Ordering
             string cleanPartNum = PurchaseOrderItem.CleanString(partNum);
             string cleanDescription = PurchaseOrderItem.CleanString(description);
 
-            IQueryable<PurchaseOrderItem> items = po.Vendor.GetItems().Where(x => x.Active);
+            var items = po.Vendor.Items.Where(x => x.Active);
 
             // check if PartNum is empty
             if (!string.IsNullOrEmpty(cleanPartNum))
@@ -87,44 +88,21 @@ namespace LNF.Ordering
         public static string GetShortCode(this PurchaseOrder item)
         {
             //may be null if no account is specified yet
-            Account acct = item.GetAccount();
+            var acct = item.GetAccount();
             return (acct == null) ? string.Empty : acct.ShortCode;
-        }
-
-        public static string GetDisplayPOID(this PurchaseOrder item)
-        {
-            return Providers.Email.CompanyName + item.POID.ToString();
-        }
-
-        public static IQueryable<PurchaseOrderDetail> GetDetails(this PurchaseOrder item)
-        {
-            if (item == null) return null;
-            return DA.Current.Query<PurchaseOrderDetail>().Where(x => x.PurchaseOrder == item);
-        }
-
-        public static decimal GetTotalPrice(this PurchaseOrder item)
-        {
-            IQueryable<PurchaseOrderDetail> details = item.GetDetails();
-            return Convert.ToDecimal(details.Sum(x => x.UnitPrice * x.Quantity));
         }
 
         public static bool IsInventoryControlled(this PurchaseOrder item)
         {
-            IQueryable<PurchaseOrderDetail> details = item.GetDetails();
-            return details.Any(x => x.Item.InventoryItemID.HasValue);
+            return item.Details.Any(x => x.Item.InventoryItemID.HasValue);
         }
     }
 
     public static class VendorExtensions
     {
-        public static IQueryable<PurchaseOrderItem> GetItems(this Vendor item)
+        public static IList<PurchaseOrderDetail> GetMostRecentlyOrderedDetails(this Vendor vendor)
         {
-            return DA.Current.Query<PurchaseOrderItem>().Where(x => x.Vendor == item);
-        }
-
-        public static IList<PurchaseOrderDetail> GetMostRecentlyOrderedDetails(this Vendor item)
-        {
-            return item.GetItems().ToList().Select(x => x.GetMostRecentlyOrderedDetail()).Where(x => x != null).ToList();
+            return vendor.Items.Select(x => x.GetMostRecentlyOrderedDetail()).Where(x => x != null).ToList();
         }
 
         public static Client GetClient(this Vendor item)
@@ -167,19 +145,6 @@ namespace LNF.Ordering
             IList<Approver> approvers = item.GetApprovers().ToList();
             IList<Client> admins = DA.Current.Query<Client>().Where(x => x.Active && (x.Privs & ClientPrivilege.Administrator) > 0).ToList();
             IList<Client> result = admins.Where(acct => !approvers.Any(x => x.ApproverID == acct.ClientID)).ToList();
-            return result;
-        }
-
-        public static IQueryable<PurchaseOrderAccount> GetAccounts(this Client item)
-        {
-            return DA.Current.Query<PurchaseOrderAccount>().Where(x => x.ClientID == item.ClientID && x.Active);
-        }
-
-        public static IList<Account> GetAvailabeAccounts(this Client item)
-        {
-            IQueryable<PurchaseOrderAccount> accounts = item.GetAccounts();
-            IList<Account> activeAccounts = item.ActiveAccounts();
-            IList<Account> result = activeAccounts.ToList().Where(acct => !accounts.Any(x => x.AccountID == acct.AccountID)).ToList();
             return result;
         }
     }

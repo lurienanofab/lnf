@@ -1,4 +1,5 @@
-﻿using LNF.Models.Data;
+﻿using LNF.Models;
+using LNF.Models.Data;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -137,6 +138,16 @@ namespace OnlineServices.Api.Data
                 throw new ArgumentOutOfRangeException("reservationId");
 
             var result = await Get<int>(string.Format("data/utility/billing-checks/auto-end-problems/fix?period={0:yyyy-MM-dd}&reservationId={1}", period, reservationId));
+
+            return result;
+        }
+
+        public async Task<string> GetSiteMenu(int clientId)
+        {
+            if (clientId <= 0)
+                throw new ArgumentOutOfRangeException("clientId");
+
+            var result = await Get<string>(string.Format("data/ajax/menu?clientId={0}", clientId));
 
             return result;
         }

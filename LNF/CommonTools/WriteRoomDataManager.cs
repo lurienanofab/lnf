@@ -401,9 +401,8 @@ namespace LNF.CommonTools
                 rowsDeletedFromRoomData = RoomDataPreClean(StartDate, ClientID, RoomID);
 
                 //get all access data for period - does agg by day
-                DataSet ds;
                 ReadRoomDataManager mgr = new ReadRoomDataManager();
-                DataTable dtAggRoomDataClean = mgr.AggRoomDataClean(StartDate, EndDate, out ds, ClientID, RoomID);
+                DataTable dtAggRoomDataClean = mgr.AggRoomDataClean(StartDate, EndDate, out DataSet ds, ClientID, RoomID);
                 DataTable dtClient = ds.Tables[1];
                 DataTable dtRoom = ds.Tables[2];
 
@@ -526,8 +525,9 @@ namespace LNF.CommonTools
 
                 rowsAdjustedInRoomData = RoomDataAdjust(StartDate, ClientID, RoomID);
 
+                var helper = new AdministrativeHelper(DA.Current);
                 if (!string.IsNullOrEmpty(err))
-                    AdministrativeHelper.SendEmailToDevelopers(string.Format("Error when creating Room Usage Data on {0:yyy-MM-dd HH:mm:ss}", DateTime.Now), err);
+                    helper.SendEmailToDevelopers(string.Format("Error when creating Room Usage Data on {0:yyy-MM-dd HH:mm:ss}", DateTime.Now), err);
             }
         }
 

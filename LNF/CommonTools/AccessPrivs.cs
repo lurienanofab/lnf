@@ -34,7 +34,7 @@ namespace LNF.CommonTools
 
             foreach (string priv in privTypes)
             {
-                if (Providers.Context.Current.User.IsInRole(priv))
+                if (ServiceProvider.Current.Context.User.IsInRole(priv))
                     return true;
             }
 

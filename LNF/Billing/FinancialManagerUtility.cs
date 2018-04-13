@@ -15,7 +15,7 @@ namespace LNF.Billing
         {
             DateTime lastMonth = DateTime.Now.Date.AddMonths(-1); //last month of today
             DateTime period = lastMonth.FirstOfMonth();
-            
+
             return SendMonthlyUserUsageEmails(period, options);
         }
 
@@ -34,7 +34,7 @@ namespace LNF.Billing
 
                 //Get managers list and associated clients info
                 string sql = "EXEC sselData.dbo.Report_MonthlyFinacialManager @Period=:period";
-                var query = DA.Current.SqlQuery(sql, new { period }).List();
+                var query = DA.Current.SqlQuery(sql).SetParameters(new { period }).List();
 
                 queryCount = query.Count;
 
@@ -61,13 +61,13 @@ namespace LNF.Billing
                     if (!string.IsNullOrEmpty(options.Message))
                         emailBodyHTML.AppendLine("<p>" + options.Message + "</p>");
 
-                    emailBodyHTML.AppendLine("<p>Below are a list of " + Providers.Email.CompanyName + " lab users who have incurred charges during " + period.Month.ToString() + "/" + period.Year.ToString() + " and the active accounts for that user (shortcode / P/G). You are receiving this email because our records indicate that you are associated with these accounts.</p>");
+                    emailBodyHTML.AppendLine("<p>Below are a list of " + ServiceProvider.Current.Email.CompanyName + " lab users who have incurred charges during " + period.Month.ToString() + "/" + period.Year.ToString() + " and the active accounts for that user (shortcode / P/G). You are receiving this email because our records indicate that you are associated with these accounts.</p>");
                     emailBodyHTML.AppendLine("<p>Exact charges are still pending and may depend on data entries from the lab users themselves.</p>");
                     emailBodyHTML.AppendLine("<ol>");
                     emailBodyHTML.AppendLine("<li>If the person in charge of, or reconciling the account is not copied to this email, please send me his/her contact information.</li>");
                     emailBodyHTML.AppendLine("<li>Please review users and accounts and let me know if any change is needed.</li>");
                     emailBodyHTML.AppendLine("<li>If a user has access to multiple accounts, please let me know how charges should be distributed between these accounts.</li>");
-                    emailBodyHTML.AppendLine("<li>As a reminder, there is more detailed information about the charging system in " + Providers.Email.CompanyName + " Online Services (<a href=\"http://ssel-sched.eecs.umich.edu/sselonline\">http://ssel-sched.eecs.umich.edu/sselonline</a>).</li>");
+                    emailBodyHTML.AppendLine("<li>As a reminder, there is more detailed information about the charging system in " + ServiceProvider.Current.Email.CompanyName + " Online Services (<a href=\"http://ssel-sched.eecs.umich.edu/sselonline\">http://ssel-sched.eecs.umich.edu/sselonline</a>).</li>");
                     emailBodyHTML.AppendLine("</ol>");
 
                     StringBuilder table = new StringBuilder();
@@ -83,7 +83,7 @@ namespace LNF.Billing
                     emailBodyHTML.AppendLine(table.ToString());
                     emailBodyHTML.AppendLine("</body>");
                     emailBodyHTML.AppendLine("</html>");
-                    string subject = Providers.Email.CompanyName + " Charges - " + period.Month.ToString() + "/" + period.Year.ToString() + " [Manager: " + managerName + "]";
+                    string subject = ServiceProvider.Current.Email.CompanyName + " Charges - " + period.Month.ToString() + "/" + period.Year.ToString() + " [Manager: " + managerName + "]";
 
                     string statusMessage = string.Empty;
 
@@ -98,11 +98,15 @@ namespace LNF.Billing
 
                     if (recip.Count + cc.Count > 0)
                     {
-                        var result = Providers.Email.SendMessage(0, "LNF.Billing.FinancialManagerUtility.SendMonthlyUserUsageEmails(DateTime period, MonthlyEmailOptions options)", subject, emailBodyHTML.ToString(), "lnf-billing@umich.edu", recip, cc, isHtml: true);
-                        if (result.Success)
-                            statusMessage = string.Format("Email to {0} sent OK", toAddr);
-                        else
-                            statusMessage = result.Exception.Message;
+                        try
+                        {
+                            ServiceProvider.Current.Email.SendMessage(0, "LNF.Billing.FinancialManagerUtility.SendMonthlyUserUsageEmails(DateTime period, MonthlyEmailOptions options)", subject, emailBodyHTML.ToString(), "lnf-billing@umich.edu", recip, cc, isHtml: true);
+                            statusMessage = $"Email to {toAddr} sent OK";
+                        }
+                        catch (Exception ex)
+                        {
+                            statusMessage = ex.Message;
+                        }
                     }
                     else
                         statusMessage = string.Format("Email to {0} not sent, NoEmail = True", toAddr);

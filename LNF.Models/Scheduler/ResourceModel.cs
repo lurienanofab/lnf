@@ -53,5 +53,10 @@ namespace LNF.Models.Scheduler
         {
             return State == state;
         }
+
+        public static string GetDisplayName(string resourceName, int resourceId)
+        {
+            return string.Format("{0} [{1}]", resourceName, resourceId);
+        }
     }
 }

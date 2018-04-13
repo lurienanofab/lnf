@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Data;
-using LNF.Repository.Data;
+﻿using LNF.Models.Data;
 
 namespace LNF.Hooks
 {
@@ -29,7 +24,7 @@ namespace LNF.Hooks
 
     public class BeforeLogInHookResult : HookResult
     {
-        public Client Client { get; set; }
+        public ClientItem Client { get; set; }
         public bool IsLoggedIn { get; set; }
     }
 }

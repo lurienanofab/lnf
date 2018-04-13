@@ -33,7 +33,7 @@ namespace LNF.Data
             if (accounts == null)
             {
                 Client client = DA.Current.Single<Client>(clientId);
-                accounts = client.ActiveAccounts();
+                accounts = DA.Current.ClientManager().ActiveAccounts(client);
             }
 
             if (accounts == null) return null;

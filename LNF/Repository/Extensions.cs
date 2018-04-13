@@ -11,7 +11,7 @@ namespace LNF.Repository
     {
         public static string ToJson(this IDataItem item)
         {
-            return Providers.Serialization.Json.SerializeObject(item);
+            return ServiceProvider.Current.Serialization.Json.SerializeObject(item);
         }
     }
 

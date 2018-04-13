@@ -250,7 +250,7 @@ namespace LNF.Email
                     }
                     catch (Exception ex)
                     {
-                        returnMessage += "<div>The email address '" + recip.Email + "' doesn't have correct format, please contact the administrator: " + ex.Message + "</div>";
+                        returnMessage += $"<div>The email address {recip.Email} doesn't have correct format, please contact the administrator: {ex.Message}</div>";
                     }
                 }
 
@@ -265,7 +265,7 @@ namespace LNF.Email
                     }
                     catch (Exception ex)
                     {
-                        return "The CC email addresses string has wrong format, please make sure addresses are separated by comma: " + ex.Message;
+                        return $"The CC email addresses string has wrong format, please make sure addresses are separated by comma: {ex.Message}";
                     }
                 }
 
@@ -294,10 +294,7 @@ namespace LNF.Email
                 args.Cc = cc;
                 args.Bcc = bcc;
 
-                var result = Providers.Email.SendMessage(args);
-
-                if (!result.Success)
-                    returnMessage = result.Exception.Message;
+                ServiceProvider.Current.Email.SendMessage(args);
 
                 return returnMessage;
             }
@@ -320,7 +317,7 @@ namespace LNF.Email
                     result = DA.Current.Single<Client>(email.GetCriteria<ByManager>().SelectedManagerClientID).DisplayName;
                     break;
                 case "tools":
-                    result = string.Join(", ", CacheManager.Current.Resources().Where(x => email.GetCriteria<ByTool>().SelectedResourceIDs.Contains(x.ResourceID)).ToList().Select(x => x.ResourceName));
+                    result = string.Join(", ", CacheManager.Current.ResourceTree().Resources().Where(x => email.GetCriteria<ByTool>().SelectedResourceIDs.Contains(x.ResourceID)).ToList().Select(x => x.ResourceName));
                     break;
                 case "lab":
                     result = string.Join(", ", DA.Current.Query<Area>().Where(x => email.GetCriteria<ByLab>().SelectedLabs.Contains(x.AreaID)).ToList().Select(x => x.AreaName));

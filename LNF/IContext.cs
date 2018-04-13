@@ -1,5 +1,4 @@
-﻿using LNF.Cache;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.IO;
@@ -12,6 +11,7 @@ namespace LNF
     /// </summary>
     public interface IContext
     {
+        string LoginUrl { get; }
         object GetSessionValue(string key);
         void SetSessionValue(string key, object obj);
         void RemoveSessionValue(string key);

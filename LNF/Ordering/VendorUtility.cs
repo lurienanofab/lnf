@@ -24,10 +24,12 @@ namespace LNF.Ordering
         public static IEnumerable<Vendor> SelectVendorList(int clientId, bool? active = true)
         {
             IList<Vendor> query = null;
+
             if (active == null)
                 query = DA.Current.Query<Vendor>().Where(x => x.ClientID == clientId).ToList();
             else
                 query = DA.Current.Query<Vendor>().Where(x => x.ClientID == clientId && x.Active == active.Value).ToList();
+
             return query.OrderBy(x => x.VendorName);
         }
 

@@ -71,5 +71,10 @@ namespace LNF.Repository.Scheduler
         {
             return string.Format("//ssel-sched.eecs.umich.edu/sselscheduler/images/Resource/Resource{0:000000}.png", ResourceID);
         }
+
+        public override string ToString()
+        {
+            return ResourceModel.GetDisplayName(ResourceName, ResourceID);
+        }
     }
 }

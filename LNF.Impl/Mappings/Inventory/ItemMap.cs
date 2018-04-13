@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Inventory;
-using FluentNHibernate.Mapping;
 
 namespace LNF.Impl.Mappings.Inventory
 {
-    public class ItemMap : ClassMap<Item>
+    internal class ItemMap : ClassMap<Item>
     {
-        public ItemMap()
+        internal ItemMap()
         {
             Schema("sselMAS.dbo");
             Id(x => x.ItemID);

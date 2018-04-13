@@ -16,7 +16,7 @@ namespace LNF.Billing
             OrgRecharge or = DA.Current.Query<OrgRecharge>().FirstOrDefault(x => x.Org == org && x.EnableDate < endDate && (x.DisableDate == null || x.DisableDate.Value > startDate));
 
             if (or == null)
-                result = org.OrgType.ChargeType.GetAccount(); //no recharge account specified for this org so use the default from ChargeType
+                result = DA.Current.ChargeTypeManager().GetAccount(org.OrgType.ChargeType); //no recharge account specified for this org so use the default from ChargeType
             else
                 result = or.Account;
 

@@ -7,7 +7,7 @@ namespace LNF.Web
     {
         public static string JSEncode(string message)
         {
-            //*** Please Note ******************************************************************************************************************************************************************************
+            //*** Please Note xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx****
             //      The compiler interprets:
             //          \n is Line Feed (LF)
             //          \r is Carriage Return (CR)
@@ -29,7 +29,7 @@ namespace LNF.Web
             //      Also, in C# Environment.NewLine is \r\n (aka CRLF).
             //
             //      Also see LNF.Web.Tests.ServerJScriptTests.CanJSEncode for unit tests
-            //**********************************************************************************************************************************************************************************************
+            //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
             //1) convert all \r\n to just \n, (CRLF to LF)
             message = message.Replace("\r", string.Empty);

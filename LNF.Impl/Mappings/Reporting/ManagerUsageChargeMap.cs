@@ -29,6 +29,7 @@ namespace LNF.Impl.Mappings.Reporting
             Map(x => x.AccountName);
             Map(x => x.OrgID);
             Map(x => x.OrgName);
+            Map(x => x.ChargeTypeID);
             Map(x => x.TotalCharge);
             Map(x => x.SubsidyDiscount);
             Map(x => x.IsRemote);

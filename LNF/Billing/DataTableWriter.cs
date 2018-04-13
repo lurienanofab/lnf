@@ -122,7 +122,7 @@ namespace LNF.Billing
 
                                 string subject = string.Format("Call from DataTableWriter.Update [{0}] [{1:yyyy-MM-dd HH:mm:ss}]", tableName, DateTime.Now);
 
-                                Providers.Email.SendMessage(0, "LNF.Billing.DataTableWriter.Update()", subject, body, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                                ServiceProvider.Current.Email.SendMessage(0, "LNF.Billing.DataTableWriter.Update()", subject, body, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
 
                                 lDate = lDate.AddMonths(1);
                             }

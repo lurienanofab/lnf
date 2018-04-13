@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml.Linq;
 
 namespace LNF.Logging
@@ -13,8 +11,8 @@ namespace LNF.Logging
         ///</summary>
         public static void Write(LogMessageLevel level, string subject, string body, XElement data)
         {
-            if (Providers.Log != null)
-                Providers.Log.Current.Write(new LogMessage(level, subject, body, data));
+            if (ServiceProvider.Current.Log != null)
+                ServiceProvider.Current.Log.Current.Write(new LogMessage(level, subject, body, data));
         }
 
         /// <summary>
@@ -25,8 +23,8 @@ namespace LNF.Logging
             if (separator == null)
                 separator = Environment.NewLine;
 
-            if (Providers.Log != null)
-                return string.Join(separator, Providers.Log.Current.Select(x => x.Body));
+            if (ServiceProvider.Current.Log != null)
+                return string.Join(separator, ServiceProvider.Current.Log.Current.Select(x => x.Body));
             else
                 return string.Empty;
         }

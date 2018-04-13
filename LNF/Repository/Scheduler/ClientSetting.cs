@@ -86,9 +86,9 @@ namespace LNF.Repository.Scheduler
             int buildingId = BuildingID.GetValueOrDefault(DefaultBuildingID);
 
             if (buildingId == -1)
-                return CacheManager.Current.GetBuilding(DefaultBuildingID);
+                return CacheManager.Current.ResourceTree().GetBuilding(DefaultBuildingID);
             else
-                return CacheManager.Current.GetBuilding(buildingId);
+                return CacheManager.Current.ResourceTree().GetBuilding(buildingId);
         }
 
         public virtual LabModel GetLabOrDefault()
@@ -96,9 +96,9 @@ namespace LNF.Repository.Scheduler
             int labId = LabID.GetValueOrDefault(DefaultLabID);
 
             if (labId == -1)
-                return CacheManager.Current.GetLab(DefaultLabID);
+                return CacheManager.Current.ResourceTree().GetLab(DefaultLabID);
             else
-                return CacheManager.Current.GetLab(labId);
+                return CacheManager.Current.ResourceTree().GetLab(labId);
         }
 
         public static ClientSetting GetClientSettingOrDefault(int clientId)

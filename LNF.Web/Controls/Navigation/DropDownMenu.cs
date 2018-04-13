@@ -14,7 +14,7 @@ namespace LNF.Web.Controls.Navigation
     {
         private List<DropDownMenuItem> _Items = new List<DropDownMenuItem>();
 
-        public SiteMenu DataSource { get; set; }
+        public LNF.SiteMenu DataSource { get; set; }
 
         public bool UseJavascriptNavigation { get; set; }
 
@@ -100,7 +100,7 @@ namespace LNF.Web.Controls.Navigation
                         if (i.Visible)
                         {
                             i.UseJavascriptNavigation = UseJavascriptNavigation;
-                            i.Render(output);
+                            i.Render(output, ServiceProvider.Current.Context.GetRequestIsSecureConnection());
                         }
                     }
                 }

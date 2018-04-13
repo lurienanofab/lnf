@@ -55,7 +55,7 @@ namespace LNF.Scheduler
 
             var client = CacheManager.Current.CurrentUser;
 
-            var primary = ClientOrgUtility.GetPrimary(client.ClientID);
+            var primary = DA.Current.ClientOrgManager().GetPrimary(client.ClientID);
 
             if (primary != null)
             { 
@@ -89,7 +89,7 @@ namespace LNF.Scheduler
             }
         }
 
-        public static SendMessageResult SendHardwareIssueEmail(ResourceModel res, int clientId, string subject, string body)
+        public static void SendHardwareIssueEmail(ResourceModel res, int clientId, string subject, string body)
         {
             body += Environment.NewLine + Environment.NewLine + "This email has been sent by the system to notify you that a hardware issue exists on this resource and availability may be affected. Do not respond to this email. Please log into the Scheduler to view or respond to this ticket.";
 
@@ -104,9 +104,7 @@ namespace LNF.Scheduler
                 To = recipients
             };
 
-            SendMessageResult result = Providers.Email.SendMessage(args);
-
-            return result;
+            ServiceProvider.Current.Email.SendMessage(args);
         }
 
         public static string[] GetCcEmailsForHardwareIssue(ResourceModel resource, int clientId)
@@ -139,7 +137,7 @@ namespace LNF.Scheduler
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(GetMessageHeader(res, clientId, reservationText, ticketType));
             if (rsv != null)
-                sb.AppendLine(string.Format("Reservation History: {0}/sselonline/?view=/sselscheduler/ReservationHistory.aspx?ReservationID={1}", Providers.Context.Current.GetRequestUrl().GetLeftPart(UriPartial.Authority), rsv.ReservationID));
+                sb.AppendLine(string.Format("Reservation History: {0}/sselonline/?view=/sselscheduler/ReservationHistory.aspx?ReservationID={1}", ServiceProvider.Current.Context.GetRequestUrl().GetLeftPart(UriPartial.Authority), rsv.ReservationID));
             sb.AppendLine(Environment.NewLine + "--------------------------------------------------" + Environment.NewLine);
             sb.AppendLine(messageText);
             return sb.ToString();

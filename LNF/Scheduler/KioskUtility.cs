@@ -12,8 +12,7 @@ namespace LNF.Scheduler
         {
             get
             {
-                bool result = false;
-                bool.TryParse(ConfigurationManager.AppSettings["OverrideIsOnKiosk"], out result);
+                bool.TryParse(ConfigurationManager.AppSettings["OverrideIsOnKiosk"], out bool result);
                 return result;
             }
         }
@@ -23,7 +22,7 @@ namespace LNF.Scheduler
         /// </summary>
         public static bool IsKiosk()
         {
-            return IsKiosk(Providers.Context.Current.UserHostAddress);
+            return IsKiosk(ServiceProvider.Current.Context.UserHostAddress);
         }
 
         /// <summary>
@@ -60,10 +59,12 @@ namespace LNF.Scheduler
 
         public static string KioskRedirectUrl()
         {
-            Dictionary<string, string> table = new Dictionary<string, string>();
-            table.Add("192.168.1.14", "inventory");
+            Dictionary<string, string> table = new Dictionary<string, string>
+            {
+                { "192.168.1.14", "inventory" }
+            };
 
-            string ip = Providers.Context.Current.UserHostAddress;
+            string ip = ServiceProvider.Current.Context.UserHostAddress;
 
             if (table.ContainsKey(ip))
                 return table[ip];

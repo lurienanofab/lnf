@@ -10,25 +10,32 @@ namespace LNF.Data
 {
     public class AccessCheck
     {
+        public ISession Session { get; }
         public Client Client { get; private set; }
         public bool IsActive { get { return Client.Active; } }
         public bool HasPhysicalAccessPriv { get { return Client.HasPriv(ClientPrivilege.PhysicalAccess); } }
         public bool HasLabUserPriv { get { return Client.HasPriv(ClientPrivilege.LabUser); } }
         public bool HasStoreUserPriv { get { return Client.HasPriv(ClientPrivilege.StoreUser); } }
-        public bool HasActiveAccounts { get { return ClientUtility.GetActiveAccountCount(Client.ClientID) > 0; } }
+        public bool HasActiveAccounts { get { return DA.Current.ClientManager().GetActiveAccountCount(Client.ClientID) > 0; } }
 
         /// <summary>
         /// The reason why access can or cannot be enabled. Set by calling CanEnableAccess()
         /// </summary>
         public string Reason { get; private set; }
 
-        private AccessCheck() { }
-
-        public static AccessCheck Create(Client c)
+        private AccessCheck(ISession session)
         {
-            AccessCheck result = new AccessCheck();
-            result.Client = c;
-            result.Reason = null;
+            Session = session;
+        }
+
+        public static AccessCheck Create(Client c, ISession session)
+        {
+            AccessCheck result = new AccessCheck(session)
+            {
+                Client = c,
+                Reason = null
+            };
+
             return result;
         }
 
@@ -66,7 +73,7 @@ namespace LNF.Data
 
         public IEnumerable<Badge> GetBadges()
         {
-            return Providers.PhysicalAccess.GetBadge(Client);
+            return ServiceProvider.Current.PhysicalAccess.GetBadge(Client);
         }
 
         /// <summary>
@@ -82,8 +89,8 @@ namespace LNF.Data
         /// </summary>
         public bool AllowReenable()
         {
-            GlobalCost gc = DA.Current.Query<GlobalCost>().FirstOrDefault();
-            bool result = Providers.PhysicalAccess.AllowReenable(Client.ClientID, gc.AccessToOld);
+            GlobalCost gc = Session.Query<GlobalCost>().FirstOrDefault();
+            bool result = ServiceProvider.Current.PhysicalAccess.AllowReenable(Client.ClientID, gc.AccessToOld);
             return result;
         }
 
@@ -99,12 +106,12 @@ namespace LNF.Data
 
         public void EnablePhysicalAccess()
         {
-            Providers.PhysicalAccess.EnableAccess(Client);
+            ServiceProvider.Current.PhysicalAccess.EnableAccess(Client);
         }
 
         public void DisablePhysicalAccess()
         {
-            Providers.PhysicalAccess.DisableAccess(Client, DateTime.Now);
+            ServiceProvider.Current.PhysicalAccess.DisableAccess(Client, DateTime.Now);
         }
     }
 }

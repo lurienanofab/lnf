@@ -11,12 +11,12 @@ namespace LNF.Inventory
         {
             get
             {
-                if (Providers.Context.Current.GetSessionValue("LNF.Inventory.SessionUtility.MasterList") == null)
+                if (ServiceProvider.Current.Context.GetSessionValue("LNF.Inventory.SessionUtility.MasterList") == null)
                 {
                     IList<Item> query = ItemUtility.MasterList();
-                    Providers.Context.Current.SetSessionValue("LNF.Inventory.SessionUtility.MasterList", query);
+                    ServiceProvider.Current.Context.SetSessionValue("LNF.Inventory.SessionUtility.MasterList", query);
                 }
-                return (IList<Item>)Providers.Context.Current.GetSessionValue("LNF.Inventory.SessionUtility.MasterList");
+                return (IList<Item>)ServiceProvider.Current.Context.GetSessionValue("LNF.Inventory.SessionUtility.MasterList");
             }
         }
 
@@ -24,12 +24,12 @@ namespace LNF.Inventory
         {
             get
             {
-                if (Providers.Context.Current.GetSessionValue("LNF.Inventory.SessionUtility.Items") == null)
+                if (ServiceProvider.Current.Context.GetSessionValue("LNF.Inventory.SessionUtility.Items") == null)
                 {
                     IList<Item> query = DA.Current.Query<Item>().ToList();
-                    Providers.Context.Current.SetSessionValue("LNF.Inventory.SessionUtility.Items", query);
+                    ServiceProvider.Current.Context.SetSessionValue("LNF.Inventory.SessionUtility.Items", query);
                 }
-                return (IList<Item>)Providers.Context.Current.GetSessionValue("LNF.Inventory.SessionUtility.Items");
+                return (IList<Item>)ServiceProvider.Current.Context.GetSessionValue("LNF.Inventory.SessionUtility.Items");
             }
         }
 
@@ -37,12 +37,12 @@ namespace LNF.Inventory
         {
             get
             {
-                if (Providers.Context.Current.GetSessionValue("LNF.Inventory.SessionUtility.InventoryTypes") == null)
+                if (ServiceProvider.Current.Context.GetSessionValue("LNF.Inventory.SessionUtility.InventoryTypes") == null)
                 {
                     IList<InventoryType> query = DA.Current.Query<InventoryType>().ToList();
-                    Providers.Context.Current.SetSessionValue("LNF.Inventory.SessionUtility.InventoryTypes", query);
+                    ServiceProvider.Current.Context.SetSessionValue("LNF.Inventory.SessionUtility.InventoryTypes", query);
                 }
-                return (IList<InventoryType>)Providers.Context.Current.GetSessionValue("LNF.Inventory.SessionUtility.InventoryTypes");
+                return (IList<InventoryType>)ServiceProvider.Current.Context.GetSessionValue("LNF.Inventory.SessionUtility.InventoryTypes");
             }
         }
 
@@ -50,35 +50,35 @@ namespace LNF.Inventory
         {
             get
             {
-                if (Providers.Context.Current.GetSessionValue("LNF.Inventory.SessionUtility.ItemInventoryTypes") == null)
+                if (ServiceProvider.Current.Context.GetSessionValue("LNF.Inventory.SessionUtility.ItemInventoryTypes") == null)
                 {
                     IList<ItemInventoryType> query = DA.Current.Query<ItemInventoryType>().ToList();
-                    Providers.Context.Current.SetSessionValue("LNF.Inventory.SessionUtility.ItemInventoryTypes", query);
+                    ServiceProvider.Current.Context.SetSessionValue("LNF.Inventory.SessionUtility.ItemInventoryTypes", query);
                 }
-                return (IList<ItemInventoryType>)Providers.Context.Current.GetSessionValue("LNF.Inventory.SessionUtility.ItemInventoryTypes");
+                return (IList<ItemInventoryType>)ServiceProvider.Current.Context.GetSessionValue("LNF.Inventory.SessionUtility.ItemInventoryTypes");
             }
         }
 
         public static void ClearAll()
         {
-            SessionUtility.ClearItems();
-            SessionUtility.ClearInventoryTypes();
-            SessionUtility.ClearItemInventoryTypes();
+            ClearItems();
+            ClearInventoryTypes();
+            ClearItemInventoryTypes();
         }
 
         public static void ClearItems()
         {
-            Providers.Context.Current.SetSessionValue("LNF.Inventory.SessionUtility.Items", null);
+            ServiceProvider.Current.Context.SetSessionValue("LNF.Inventory.SessionUtility.Items", null);
         }
 
         public static void ClearInventoryTypes()
         {
-            Providers.Context.Current.SetSessionValue("LNF.Inventory.SessionUtility.InventoryTypes", null);
+            ServiceProvider.Current.Context.SetSessionValue("LNF.Inventory.SessionUtility.InventoryTypes", null);
         }
 
         public static void ClearItemInventoryTypes()
         {
-            Providers.Context.Current.SetSessionValue("LNF.Inventory.SessionUtility.ItemInventoryTypes", null);
+            ServiceProvider.Current.Context.SetSessionValue("LNF.Inventory.SessionUtility.ItemInventoryTypes", null);
         }
     }
 }

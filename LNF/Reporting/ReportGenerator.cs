@@ -286,16 +286,19 @@ namespace LNF.Reporting
             new
             {
                 x.Period,
-                BillingCategory = x.BillingCategory.ToString(),
+                BillingCategory = Enum.GetName(typeof(BillingCategory), x.BillingCategory),
+                x.ResourceID,
+                x.ResourceName,
                 x.UserName,
                 x.DisplayName,
                 x.Account,
+                x.ChargeTypeID,
                 x.TotalCharge,
                 x.SubsidyDiscount,
                 x.SubsidyOrg
             });
 
-            return Providers.Serialization.Json.SerializeObject(result);
+            return ServiceProvider.Current.Serialization.Json.SerializeObject(result);
         }
 
         public static XElement GetManagerUsageDetailXml(IEnumerable<ManagerUsageDetailItem> items)
@@ -303,10 +306,13 @@ namespace LNF.Reporting
             var xdoc = new XElement("table",
                 items.Select(x => new XElement("row",
                     new XElement("Period", x.Period),
-                    new XElement("BillingCategory", x.BillingCategory.ToString()),
+                    new XElement("BillingCategory", Enum.GetName(typeof(BillingCategory), x.BillingCategory)),
+                    new XElement("ResourceID", x.ResourceID),
+                    new XElement("ResourceName", x.ResourceName),
                     new XElement("UserName", x.UserName),
                     new XElement("DisplayName", x.DisplayName),
                     new XElement("Account", x.Account),
+                    new XElement("ChargeTypeID", x.ChargeTypeID),
                     new XElement("TotalCharge", x.TotalCharge.ToString("#,##0.00")),
                     new XElement("SubsidyDiscount", x.SubsidyDiscount.ToString("#,##0.00")),
                     new XElement("SubsidyOrg", x.SubsidyOrg)
@@ -318,31 +324,98 @@ namespace LNF.Reporting
 
         public static IEnumerable<ManagerUsageDetailItem> GetManagerUsageDetailItems(DateTime sd, DateTime ed, Client mgr, bool remote = false)
         {
-            IEnumerable<ManagerUsageCharge> charges;
+            IQueryable<ManagerUsageCharge> charges;
 
             if (mgr == null)
                 charges = DA.Current.Query<ManagerUsageCharge>().Where(x => x.Period >= sd && x.Period < ed && (!x.IsRemote || remote));
             else
                 charges = DA.Current.Query<ManagerUsageCharge>().Where(x => x.Period >= sd && x.Period < ed && x.ManagerClientID == mgr.ClientID && (!x.IsRemote || remote));
 
-            var result = charges
-                .GroupBy(x => new { x.Period, x.BillingCategory, x.ManagerUserName, x.UserLName, x.UserFName, x.ShortCode, x.AccountNumber, x.AccountName, x.OrgName, x.IsSubsidyOrg })
-                .ToList()
-                .Select(x => new ManagerUsageDetailItem()
-                {
-                    Period = x.Key.Period,
-                    BillingCategory = x.Key.BillingCategory,
-                    UserName = x.Key.ManagerUserName,
-                    DisplayName = Models.Data.ClientItem.GetDisplayName(x.Key.UserLName, x.Key.UserFName),
-                    Account = GetAccountName(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
-                    Sort = x.Key.BillingCategory + ":" + GetAccountSort(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
-                    TotalCharge = x.Sum(g => g.TotalCharge),
-                    SubsidyDiscount = x.Sum(g => g.SubsidyDiscount),
-                    SubsidyOrg = x.Key.IsSubsidyOrg
-                })
-                .OrderBy(x => x.DisplayName)
-                .ThenBy(x => x.Sort)
-                .ToList();
+            List<ManagerUsageDetailItem> result = new List<ManagerUsageDetailItem>();
+
+            result.AddRange(GetManagerUsageDetailItemsByCategory(charges, BillingCategory.Room, false));
+            result.AddRange(GetManagerUsageDetailItemsByCategory(charges, BillingCategory.Tool, false));
+            result.AddRange(GetManagerUsageDetailItemsByCategory(charges, BillingCategory.Store, true));
+
+            return result;
+        }
+
+        private static IEnumerable<ManagerUsageDetailItem> GetManagerUsageDetailItemsByCategory(IQueryable<ManagerUsageCharge> charges, BillingCategory billingCategory, bool aggregate)
+        {
+            IEnumerable<ManagerUsageDetailItem> result;
+
+            if (aggregate)
+            {
+                result = charges
+                    .Where(x => x.BillingCategory == billingCategory)
+                    .GroupBy(x => new
+                    {
+                        x.Period,
+                        x.BillingCategory,
+                        x.ManagerUserName,
+                        x.UserLName,
+                        x.UserFName,
+                        x.ShortCode,
+                        x.AccountNumber,
+                        x.AccountName,
+                        x.OrgName,
+                        x.ChargeTypeID,
+                        x.IsSubsidyOrg
+                    })
+                    .ToList()
+                    .Select(x => new ManagerUsageDetailItem()
+                    {
+                        Period = x.Key.Period,
+                        BillingCategory = x.Key.BillingCategory,
+                        ResourceID = 0,
+                        ResourceName = $"{Enum.GetName(typeof(BillingCategory), x.Key.BillingCategory)} Charge",
+                        UserName = x.Key.ManagerUserName,
+                        DisplayName = Models.Data.ClientItem.GetDisplayName(x.Key.UserLName, x.Key.UserFName),
+                        Account = GetAccountName(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
+                        ChargeTypeID = x.Key.ChargeTypeID,
+                        Sort = x.Key.BillingCategory + ":" + GetAccountSort(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
+                        TotalCharge = x.Sum(g => g.TotalCharge),
+                        SubsidyDiscount = x.Sum(g => g.SubsidyDiscount),
+                        SubsidyOrg = x.Key.IsSubsidyOrg
+                    }).ToList();
+            }
+            else
+            {
+                result = charges
+                    .Where(x => x.BillingCategory == billingCategory)
+                    .GroupBy(x => new
+                    {
+                        x.Period,
+                        x.BillingCategory,
+                        x.ResourceID,
+                        x.ResourceName,
+                        x.ManagerUserName,
+                        x.UserLName,
+                        x.UserFName,
+                        x.ShortCode,
+                        x.AccountNumber,
+                        x.AccountName,
+                        x.OrgName,
+                        x.ChargeTypeID,
+                        x.IsSubsidyOrg
+                    })
+                    .ToList()
+                    .Select(x => new ManagerUsageDetailItem()
+                    {
+                        Period = x.Key.Period,
+                        BillingCategory = x.Key.BillingCategory,
+                        ResourceID = x.Key.ResourceID,
+                        ResourceName = x.Key.ResourceName,
+                        UserName = x.Key.ManagerUserName,
+                        DisplayName = Models.Data.ClientItem.GetDisplayName(x.Key.UserLName, x.Key.UserFName),
+                        Account = GetAccountName(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
+                        ChargeTypeID = x.Key.ChargeTypeID,
+                        Sort = x.Key.BillingCategory + ":" + GetAccountSort(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
+                        TotalCharge = x.Sum(g => g.TotalCharge),
+                        SubsidyDiscount = x.Sum(g => g.SubsidyDiscount),
+                        SubsidyOrg = x.Key.IsSubsidyOrg
+                    }).ToList();
+            }
 
             return result;
         }
@@ -352,9 +425,12 @@ namespace LNF.Reporting
     {
         public DateTime Period { get; set; }
         public BillingCategory BillingCategory { get; set; }
+        public int ResourceID { get; set; }
+        public string ResourceName { get; set; }
         public string UserName { get; set; }
         public string DisplayName { get; set; }
         public string Account { get; set; }
+        public int ChargeTypeID { get; set; }
         public string Sort { get; set; }
         public double TotalCharge { get; set; }
         public double SubsidyDiscount { get; set; }

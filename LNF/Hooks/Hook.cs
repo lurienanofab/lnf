@@ -6,19 +6,19 @@ using System.Text;
 namespace LNF.Hooks
 {
 
-    public abstract class Hook<Tcontext, Tresult> : IHook<Tcontext, Tresult>
-        where Tcontext : HookContext
-        where Tresult : HookResult
+    public abstract class Hook<TContext, TResult> : IHook<TContext, TResult>
+        where TContext : HookContext
+        where TResult : HookResult
     {
-        private Tcontext _Context;
-        private Tresult _Result;
+        private TContext _Context;
+        private TResult _Result;
 
-        public Tcontext Context
+        public TContext Context
         {
             get { return _Context; }
         }
 
-        public Tresult Result
+        public TResult Result
         {
             get { return _Result; }
         }
@@ -30,17 +30,17 @@ namespace LNF.Hooks
 
         public Type GetContextType()
         {
-            return typeof(Tcontext);
+            return typeof(TContext);
         }
 
         public Type GetResultType()
         {
-            return typeof(Tresult);
+            return typeof(TResult);
         }
 
         internal Hook() { }
 
-        public void Execute(Tcontext context, Tresult result)
+        public void Execute(TContext context, TResult result)
         {
             _Context = context;
             _Result = result;

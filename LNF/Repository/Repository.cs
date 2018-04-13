@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace LNF.Repository
 {
-    public class Repository<T> : IRepository<T> where T : IDataItem
+    public class Repository<T> : ISession<T> where T : IDataItem
     {
         public IQueryable<T> Query()
         {

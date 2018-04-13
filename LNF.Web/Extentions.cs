@@ -3,11 +3,13 @@ using LNF.CommonTools;
 using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
-using LNF.Scheduler;
 using LNF.Web.Mvc.UI;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Security.Principal;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.UI.WebControls;
@@ -56,14 +58,62 @@ namespace LNF.Web
         }
     }
 
+    public static class HttpRequestExtensions
+    {
+        public static ClientItem GetCurrentUser(this HttpRequest request)
+        {
+            var wrapper = new HttpRequestWrapper(request);
+            return wrapper.GetCurrentUser();
+        }
+
+        public static ClientItem GetCurrentUser(this HttpRequestBase request)
+        {
+            ClientItem client;
+
+            if (request.RequestContext.HttpContext.Items["CurrentUser"] == null)
+            {
+                var username = request.RequestContext.HttpContext.User.Identity.Name;
+                client = ClientInfo.Find(username).GetClientItem();
+                request.RequestContext.HttpContext.Items["CurrentUser"] = client;
+            }
+            else
+            {
+                client = (ClientItem)request.RequestContext.HttpContext.Items["CurrentUser"];
+            }
+
+            return client;
+        }
+
+        public static string GetDocumentContents(this HttpRequest request)
+        {
+            string documentContents;
+            using (Stream receiveStream = request.InputStream)
+            {
+                using (StreamReader readStream = new StreamReader(receiveStream, Encoding.UTF8))
+                {
+                    documentContents = readStream.ReadToEnd();
+                }
+            }
+            return documentContents;
+        }
+
+        public static T GetDocumentContents<T>(this HttpRequest request)
+        {
+            var json = request.GetDocumentContents();
+            return JsonConvert.DeserializeObject<T>(json);
+        }
+    }
+
     public static class HtmlHelperExtensions
     {
+        [Obsolete]
         public static IHtmlString CreateSiteMenu(this HtmlHelper helper)
         {
             var currentUser = CacheManager.Current.CurrentUser;
 
-            List<DropDownMenuItem> items = SiteMenu
-                .Create(currentUser)
+            var siteMenu = new SiteMenu(currentUser, null);
+
+            List<DropDownMenuItem> items = siteMenu
                 .Select(x => new DropDownMenuItem()
                 {
                     ID = x.MenuID,
@@ -86,7 +136,7 @@ namespace LNF.Web
                 SortOrder = 9999
             });
 
-            DropDownMenu menu = new DropDownMenu(items, Utility.GetStaticUrl("images/lnfbanner.jpg"), new { @class = "site-menu" });
+            DropDownMenu menu = new DropDownMenu(items, "/static/images/lnfbanner.jpg", new { @class = "site-menu" });
 
             string html = menu.Render();
 

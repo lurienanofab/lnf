@@ -27,8 +27,16 @@ namespace LNF.CommonTools
 
     //This is the main class to process the billing information since 2009-07-01
     //This class will popuate the RoomBilling, ToolBilling, StoreBilling and all associated temporary tables
-    public static class BillingDataProcessStep1
+    public class BillingDataProcessStep1
     {
+        public ToolBillingManager ToolBillingManager { get; }
+        public ISession Session { get { return ToolBillingManager.Session; } }
+
+        public BillingDataProcessStep1(ToolBillingManager toolBillingMgr)
+        {
+            ToolBillingManager = toolBillingMgr;
+        }
+
         #region Room Billing
         private const string FOR_PARENT_ROOMS = "ForParentRooms";
 
@@ -36,7 +44,7 @@ namespace LNF.CommonTools
         ///The main process that loads data into the RoomBilling table.
         ///Note: This table is called RoomApportionmentInDaysMonthly.
         ///</summary>
-        public static void PopulateRoomBilling(DateTime period, int clientId, bool isTemp)
+        public void PopulateRoomBilling(DateTime period, int clientId, bool isTemp)
         {
             bool useParentRooms = bool.Parse(ConfigurationManager.AppSettings["UseParentRooms"]);
 
@@ -61,7 +69,7 @@ namespace LNF.CommonTools
             }
         }
 
-        public static DataTable LoadRoomBilling(DataSet dsSource, DateTime period, int clientId, bool isTemp)
+        public DataTable LoadRoomBilling(DataSet dsSource, DateTime period, int clientId, bool isTemp)
         {
             int count = 0;
 
@@ -494,13 +502,13 @@ namespace LNF.CommonTools
         /// <summary>
         /// Creates parent room records in the RoomBilling data (the RoomApportionmentInDaysMonthly table)
         /// </summary>
-        private static void PopulateRoomBillingParentRooms(DateTime period, bool isTemp, int clientId = 0, bool delete = true)
+        private void PopulateRoomBillingParentRooms(DateTime period, bool isTemp, int clientId = 0, bool delete = true)
         {
             int count = 0;
 
             using (LogTaskTimer.Start("BillingDataProcessStep1.PopulateRoomBillingParentRooms", "period = '{0:yyyy-MM-dd}', isTemp = {1}, clientId = {2}, delete = {3}, count = {4}", () => new object[] { period, isTemp, clientId, delete, count }))
             {
-                Room[] parents = DA.Current.Query<Room>().Where(x => x.ParentID == 0 && x.Billable && x.Active).ToArray();
+                Room[] parents = Session.Query<Room>().Where(x => x.ParentID == 0 && x.Billable && x.Active).ToArray();
 
                 List<IRoomBilling> parentRoomBilling = new List<IRoomBilling>();
 
@@ -508,7 +516,7 @@ namespace LNF.CommonTools
 
                 foreach (Room p in parents)
                 {
-                    int[] children = DA.Current.Query<Room>().Where(x => x.ParentID == p.RoomID).Select(x => x.RoomID).ToArray();
+                    int[] children = Session.Query<Room>().Where(x => x.ParentID == p.RoomID).Select(x => x.RoomID).ToArray();
 
                     if (children.Length > 0)
                     {
@@ -516,7 +524,7 @@ namespace LNF.CommonTools
                         {
                             //delete existing rows
                             IRoomBilling[] existing = GetExistingRoomBilling(period, isTemp, p.RoomID);
-                            DA.Current.Delete(existing);
+                            Session.Delete(existing);
                         }
 
                         IRoomBilling[] roomBilling;
@@ -524,16 +532,16 @@ namespace LNF.CommonTools
                         if (isTemp)
                         {
                             if (clientId == 0)
-                                roomBilling = DA.Current.Query<RoomBillingTemp>().Where(x => x.Period == period && children.Contains(x.RoomID)).ToArray();
+                                roomBilling = Session.Query<RoomBillingTemp>().Where(x => x.Period == period && children.Contains(x.RoomID)).ToArray();
                             else
-                                roomBilling = DA.Current.Query<RoomBillingTemp>().Where(x => x.Period == period && x.ClientID == clientId && children.Contains(x.RoomID)).ToArray();
+                                roomBilling = Session.Query<RoomBillingTemp>().Where(x => x.Period == period && x.ClientID == clientId && children.Contains(x.RoomID)).ToArray();
                         }
                         else
                         {
                             if (clientId == 0)
-                                roomBilling = DA.Current.Query<RoomBilling>().Where(x => x.Period == period && children.Contains(x.RoomID)).ToArray();
+                                roomBilling = Session.Query<RoomBilling>().Where(x => x.Period == period && children.Contains(x.RoomID)).ToArray();
                             else
-                                roomBilling = DA.Current.Query<RoomBilling>().Where(x => x.Period == period && x.ClientID == clientId && children.Contains(x.RoomID)).ToArray();
+                                roomBilling = Session.Query<RoomBilling>().Where(x => x.Period == period && x.ClientID == clientId && children.Contains(x.RoomID)).ToArray();
                         }
 
                         int[] clients = roomBilling.Select(x => x.ClientID).Distinct().ToArray();
@@ -541,13 +549,13 @@ namespace LNF.CommonTools
                         foreach (int c in clients)
                         {
                             temp = new List<IRoomBilling>();
-                            Client client = DA.Current.Single<Client>(c);
+                            Client client = Session.Single<Client>(c);
                             int[] accounts = roomBilling.Where(x => x.ClientID == client.ClientID).Select(x => x.AccountID).Distinct().ToArray();
 
                             foreach (int a in accounts)
                             {
-                                BillingType bt = DA.Current.Single<BillingType>(roomBilling.First(x => x.ClientID == c && x.AccountID == a).BillingTypeID);
-                                temp.Add(GetRoomBilling(p, client, DA.Current.Single<Account>(a), bt, period, isTemp));
+                                BillingType bt = Session.Single<BillingType>(roomBilling.First(x => x.ClientID == c && x.AccountID == a).BillingTypeID);
+                                temp.Add(GetRoomBilling(p, client, Session.Single<Account>(a), bt, period, isTemp));
                             }
 
                             if (temp.Count > 0)
@@ -560,21 +568,21 @@ namespace LNF.CommonTools
                     }
                 }
 
-                DA.Current.Insert(parentRoomBilling);
+                Session.Insert(parentRoomBilling);
 
                 count = parentRoomBilling.Count;
             }
         }
 
-        private static IRoomBilling[] GetExistingRoomBilling(DateTime period, bool isTemp, int roomId)
+        private IRoomBilling[] GetExistingRoomBilling(DateTime period, bool isTemp, int roomId)
         {
             if (isTemp)
-                return DA.Current.Query<RoomBilling>().Where(x => x.Period == period && x.RoomID == roomId).ToArray();
+                return Session.Query<RoomBilling>().Where(x => x.Period == period && x.RoomID == roomId).ToArray();
             else
-                return DA.Current.Query<RoomBillingTemp>().Where(x => x.Period == period && x.RoomID == roomId).ToArray();
+                return Session.Query<RoomBillingTemp>().Where(x => x.Period == period && x.RoomID == roomId).ToArray();
         }
 
-        private static void DistributeRoomBillingAmounts(IEnumerable<IRoomBilling> roomBilling, Room room, Client client, DateTime period, bool isTemp)
+        private void DistributeRoomBillingAmounts(IEnumerable<IRoomBilling> roomBilling, Room room, Client client, DateTime period, bool isTemp)
         {
             RoomBillingAmounts amounts = GetRoomBillingAmounts(room, client, period);
             IRoomBilling[] items = roomBilling.Where(x => x.RoomID == room.RoomID && x.ClientID == client.ClientID && x.Period == period).ToArray();
@@ -588,7 +596,7 @@ namespace LNF.CommonTools
             }
 
             //2nd look at user default settings
-            ApportionmentDefault[] defs = DA.Current.Query<ApportionmentDefault>().Where(x => x.Client == client && x.Room == room).ToArray();
+            ApportionmentDefault[] defs = Session.Query<ApportionmentDefault>().Where(x => x.Client == client && x.Room == room).ToArray();
             if (defs.Length > 0)
             {
                 foreach (var i in items)
@@ -611,7 +619,7 @@ namespace LNF.CommonTools
             }
 
             //3rd look at perviously apportioned data
-            RoomBillingUserApportionData[] apps = DA.Current.Query<RoomBillingUserApportionData>().Where(x => x.Client == client && x.Room == room).ToArray();
+            RoomBillingUserApportionData[] apps = Session.Query<RoomBillingUserApportionData>().Where(x => x.Client == client && x.Room == room).ToArray();
             if (apps.Length > 0)
             {
                 foreach (var i in items)
@@ -626,11 +634,11 @@ namespace LNF.CommonTools
             }
         }
 
-        private static RoomBillingAmounts GetRoomBillingAmounts(Room room, Client client, DateTime period)
+        private RoomBillingAmounts GetRoomBillingAmounts(Room room, Client client, DateTime period)
         {
             //note: these amounts are all independent of Account
 
-            RoomData[] roomData = DA.Current.Query<RoomData>()
+            RoomData[] roomData = Session.Query<RoomData>()
                 .Where(x => x.Period == period && x.Client == client && x.Room.ParentID == room.RoomID || x.Room.RoomID == room.RoomID).ToArray();
 
             int physicalDays = roomData.Select(x => x.EvtDate).Distinct().Count();
@@ -640,14 +648,14 @@ namespace LNF.CommonTools
             return new RoomBillingAmounts(physicalDays, entries, hours);
         }
 
-        private static IRoomBilling GetRoomBilling(Room room, Client client, Account account, BillingType billingType, DateTime period, bool isTemp)
+        private IRoomBilling GetRoomBilling(Room room, Client client, Account account, BillingType billingType, DateTime period, bool isTemp)
         {
             //leave PhysicalDays, Entries, and Hours all zero, at this point we only want to populate Account dependent data
 
-            ToolData[] toolData = DA.Current.Query<ToolData>()
+            ToolData[] toolData = Session.Query<ToolData>()
                 .Where(x => x.Period == period && x.ClientID == client.ClientID && x.AccountID == account.AccountID).ToArray();
 
-            Cost[] roomCost = DA.Current.Query<Cost>()
+            Cost[] roomCost = Session.Query<Cost>()
                 .Where(x => x.TableNameOrDescription == "RoomCost"
                     && x.RecordID == room.RoomID
                     && x.EffDate < period.AddMonths(1)
@@ -693,13 +701,13 @@ namespace LNF.CommonTools
         /// <summary>
         /// Get all the necessary tables to do the monthly apportionment processing
         /// </summary>
-        public static DataSet GetDataForRoomBilling(DateTime period, string option = null)
+        public DataSet GetDataForRoomBilling(DateTime period, string option = null)
         {
             //Don't pass clientId here, always return everything even if we are only running this for one client.
             //This is better than modifying the stored procedure.
 
             using (var timer = LogTaskTimer.Start("BillingDataProcessStep1.GetDataForRoomBilling", "period = '{0:yyyy-MM-dd}', option = {1}", () => new object[] { period, option }))
-            using (var dba = DA.Current.GetAdapter())
+            using (var dba = Session.GetAdapter())
             {
                 return dba.ApplyParameters(new { Period = period, Option = option }).FillDataSet("RoomApportionmentInDaysMonthly_Populate");
             }
@@ -708,15 +716,15 @@ namespace LNF.CommonTools
         /// <summary>
         /// Get the schema of Apportionment table, we don't want any data
         /// </summary>
-        private static DataTable GetApportionmentTableSchema()
+        private DataTable GetApportionmentTableSchema()
         {
-            using (var dba = DA.Current.GetAdapter())
+            using (var dba = Session.GetAdapter())
                 return dba.ApplyParameters(new { Action = "ForApportion", Period = DateTime.Now, ClientID = -1, RoomID = -1 }).FillDataTable("RoomApportionmentInDaysMonthly_Select");
         }
 
-        public static int DeleteRoomBillingData(DateTime period, int clientId, bool temp)
+        public int DeleteRoomBillingData(DateTime period, int clientId, bool temp)
         {
-            using (var dba = DA.Current.GetAdapter())
+            using (var dba = Session.GetAdapter())
             {
                 string sp = (temp) ? "RoomBillingTemp_Delete" : "RoomApportionmentInDaysMonthly_Delete";
 
@@ -733,14 +741,14 @@ namespace LNF.CommonTools
             }
         }
 
-        public static int SaveRoomBillingData(DataTable dtIn, bool temp)
+        public int SaveRoomBillingData(DataTable dtIn, bool temp)
         {
             int result = 0;
 
             //Store data back to DB
             if (dtIn.Rows.Count > 0)
             {
-                using (var dba = DA.Current.GetAdapter())
+                using (var dba = Session.GetAdapter())
                 {
                     //Insert prepration - it's necessary because we may have to add new account that is a remote account
                     dba.InsertCommand
@@ -770,12 +778,12 @@ namespace LNF.CommonTools
                     if (result >= 0)
                     {
                         if (debug)
-                            Providers.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveRoomBillingData(DataTable dtIn, bool temp)", string.Format("Processing Apportionment Successful - saving to database - {0} [{1}]", sp, DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                            ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveRoomBillingData(DataTable dtIn, bool temp)", string.Format("Processing Apportionment Successful - saving to database - {0} [{1}]", sp, DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
                     }
                     else
                     {
                         if (debug)
-                            Providers.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveRoomBillingData(DataTable dtIn, bool temp)", string.Format("Error in Processing Apportionment - saving to database - {0} [{1}]", sp, DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                            ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveRoomBillingData(DataTable dtIn, bool temp)", string.Format("Error in Processing Apportionment - saving to database - {0} [{1}]", sp, DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
                     }
                 }
             }
@@ -785,7 +793,7 @@ namespace LNF.CommonTools
         #endregion
 
         #region ToolBilling
-        public static void PopulateToolBilling(DateTime period, int clientId, bool isTemp)
+        public void PopulateToolBilling(DateTime period, int clientId, bool isTemp)
         {
             int rowsSelectedFromToolData = 0;
             int rowsDeletedFromToolBilling = 0;
@@ -796,7 +804,7 @@ namespace LNF.CommonTools
                 IToolBilling[] source;
 
                 // Must use a DataTable here because the stored proc returns new ToolBilling rows, without ToolBillingID, which causes problems
-                using (var dba = DA.Current.GetAdapter())
+                using (var dba = Session.GetAdapter())
                 {
                     dba.AddParameter("@Action", "ForToolBilling");
                     dba.AddParameter("@Period", period);
@@ -818,23 +826,23 @@ namespace LNF.CommonTools
             }
         }
 
-        private static void CalculateToolBillingCharges(IToolBilling tb, bool isTemp)
+        private void CalculateToolBillingCharges(IToolBilling tb, bool isTemp)
         {
-            tb.CalculateReservationFee();
-            tb.CalculateUsageFeeCharged();
-            tb.CalculateBookingFee();
+            ToolBillingManager.CalculateReservationFee(tb);
+            ToolBillingManager.CalculateUsageFeeCharged(tb);
+            ToolBillingManager.CalculateBookingFee(tb);
         }
 
         //Get source data from ToolData
-        private static DataSet GetNecessaryDataTablesForToolUsage(DateTime period)
+        private DataSet GetNecessaryDataTablesForToolUsage(DateTime period)
         {
-            using (var dba = DA.Current.GetAdapter())
+            using (var dba = Session.GetAdapter())
                 return dba.ApplyParameters(new { Action = "ForToolBillingGeneration", Period = period }).FillDataSet("ToolData_Select");
         }
 
-        private static int DeleteToolBillingData(DateTime period, bool temp, int clientId = 0)
+        private int DeleteToolBillingData(DateTime period, bool temp, int clientId = 0)
         {
-            using (var dba = DA.Current.GetAdapter())
+            using (var dba = Session.GetAdapter())
             {
                 string sp = (temp) ? "ToolBillingTemp_Delete" : "ToolBilling_Delete";
                 return dba.SelectCommand
@@ -845,7 +853,7 @@ namespace LNF.CommonTools
             }
         }
 
-        private static int InsertToolBillingData(IEnumerable<IToolBilling> items, bool isTemp)
+        private int InsertToolBillingData(IEnumerable<IToolBilling> items, bool isTemp)
         {
             DataTable dt = CreateToolBillingTable();
             FillToolBillingDataTable(dt, items);
@@ -858,7 +866,7 @@ namespace LNF.CommonTools
         #endregion
 
         #region StoreBilling
-        public static void PopulateStoreBilling(DateTime period, bool temp)
+        public void PopulateStoreBilling(DateTime period, bool temp)
         {
             int rowsSelectedFromSource = 0;
             int rowsDeletedFromStoreBilling = 0;
@@ -909,24 +917,24 @@ namespace LNF.CommonTools
             }
         }
 
-        private static DataSet GetNecessaryDataTablesForStoreUsage(DateTime period)
+        private DataSet GetNecessaryDataTablesForStoreUsage(DateTime period)
         {
-            using (var dba = DA.Current.GetAdapter())
+            using (var dba = Session.GetAdapter())
                 return dba.ApplyParameters(new { Action = "ForStoreBillingGeneration", Period = period }).FillDataSet("StoreData_Select");
         }
 
-        private static int DeleteStoreBillingData(DateTime period, bool temp)
+        private int DeleteStoreBillingData(DateTime period, bool temp)
         {
-            using (var dba = DA.Current.GetAdapter())
+            using (var dba = Session.GetAdapter())
             {
                 string sp = (temp) ? "StoreBillingTemp_Delete" : "StoreBilling_Delete";
                 return dba.SelectCommand.ApplyParameters(new { Period = period }).ExecuteNonQuery(sp);
             }
         }
 
-        private static int SaveStoreBillingData(DataTable dtIn, bool temp)
+        private int SaveStoreBillingData(DataTable dtIn, bool temp)
         {
-            using (var dba = DA.Current.GetAdapter())
+            using (var dba = Session.GetAdapter())
             {
                 //Insert prepration - it's necessary because we may have to add new account that is a remote account
                 dba.InsertCommand
@@ -950,12 +958,12 @@ namespace LNF.CommonTools
                 if (count >= 0)
                 {
                     if (debug)
-                        Providers.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveStoreBillingData(DataTable dtIn, bool temp)", string.Format("Processing StoreBilling Successful - saving to database - {0} [{1}]", sp, DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                        ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveStoreBillingData(DataTable dtIn, bool temp)", string.Format("Processing StoreBilling Successful - saving to database - {0} [{1}]", sp, DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
                 }
                 else
                 {
                     if (debug)
-                        Providers.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveStoreBillingData(DataTable dtIn, bool temp)", string.Format("Error in Processing StoreBilling - saving to database portion failed - {0} [{1}]", sp, DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                        ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveStoreBillingData(DataTable dtIn, bool temp)", string.Format("Error in Processing StoreBilling - saving to database portion failed - {0} [{1}]", sp, DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
                 }
 
                 return count;
@@ -1039,9 +1047,9 @@ namespace LNF.CommonTools
             }
         }
 
-        private static IBulkCopy CreateToolBillingBulkCopy(bool isTemp)
+        private IBulkCopy CreateToolBillingBulkCopy(bool isTemp)
         {
-            IBulkCopy bcp = DA.Current.GetBulkCopy(isTemp ? "dbo.ToolBillingTemp" : "dbo.ToolBilling");
+            IBulkCopy bcp = Session.GetBulkCopy(isTemp ? "dbo.ToolBillingTemp" : "dbo.ToolBilling");
             bcp.AddColumnMapping("Period");
             bcp.AddColumnMapping("ReservationID");
             bcp.AddColumnMapping("ClientID");

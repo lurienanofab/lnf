@@ -12,7 +12,7 @@ namespace LNF.WebApi
             // Data Access setup
             app.Use(async (ctx, next) =>
             {
-                using (Providers.DataAccess.StartUnitOfWork())
+                using (ServiceProvider.Current.DataAccess.StartUnitOfWork())
                     await next.Invoke();
             });
 

@@ -13,16 +13,23 @@ namespace LNF.Cache
 {
     public class CacheManager
     {
+        public ServiceProvider ServiceProvider { get; }
+
         public static CacheManager Current { get; }
 
         static CacheManager()
         {
-            Current = new CacheManager();
+            Current = new CacheManager(ServiceProvider.Current);
+        }
+
+        public CacheManager(ServiceProvider serviceProvider)
+        {
+            ServiceProvider = serviceProvider;
         }
 
         public string GetCurrentUserName()
         {
-            var user = Providers.Context.Current.User;
+            var user = ServiceProvider.Context.User;
             if (user == null || user.Identity == null) return null;
             return user.Identity.Name;
         }
@@ -41,7 +48,7 @@ namespace LNF.Cache
 
             if (result == null)
             {
-                result = DA.Current.Query<ClientInfo>().FirstOrDefault(x => x.UserName == username).Model<ClientItem>();
+                result = ServiceProvider.DataAccess.Session.Query<ClientInfo>().FirstOrDefault(x => x.UserName == username).Model<ClientItem>();
                 list.Add(result);
             }
 
@@ -62,7 +69,7 @@ namespace LNF.Cache
 
             if (result == null)
             {
-                result = DA.Current.Query<ClientInfo>().FirstOrDefault(x => x.ClientID == clientId).Model<ClientItem>();
+                result = ServiceProvider.DataAccess.Session.Query<ClientInfo>().FirstOrDefault(x => x.ClientID == clientId).Model<ClientItem>();
                 if (result != null)
                     list.Add(result);
             }
@@ -96,7 +103,7 @@ namespace LNF.Cache
         {
             ClientItem model = null;
 
-            if (Providers.Context.Current.User.Identity.IsAuthenticated)
+            if (ServiceProvider.Context.User.Identity.IsAuthenticated)
             {
                 model = CurrentUser;
             }
@@ -107,7 +114,7 @@ namespace LNF.Cache
                 // this was a debugging thing that wasn't removed? added IsProduction check to be safe
                 if (!IsProduction())
                 {
-                    var qs = Providers.Context.Current.QueryString;
+                    var qs = ServiceProvider.Context.QueryString;
                     if (qs.AllKeys.Contains("cid"))
                     {
                         int cid;
@@ -117,8 +124,8 @@ namespace LNF.Cache
                             if (model != null)
                             {
                                 var user = new GenericPrincipal(new GenericIdentity(model.UserName), model.Roles());
-                                Providers.Context.Current.User = user;
-                                Providers.Context.Current.SetSessionValue("UserName", model.UserName);
+                                ServiceProvider.Context.User = user;
+                                ServiceProvider.Context.SetSessionValue("UserName", model.UserName);
                             }
                         }
                     }
@@ -171,23 +178,23 @@ namespace LNF.Cache
             if (setValues)
             {
                 foreach (string key in SessionKeys.AllKeys())
-                    Providers.Context.Current.RemoveSessionValue(key);
+                    ServiceProvider.Context.RemoveSessionValue(key);
 
                 RemoveCacheData();
 
-                Providers.Context.Current.SetSessionValue(SessionKeys.Logout, GetLoginUrl());
-                Providers.Context.Current.SetSessionValue(SessionKeys.UserName, username);
-                Providers.Context.Current.SetSessionValue(SessionKeys.ClientID, clientId);
-                Providers.Context.Current.SetSessionValue(SessionKeys.Active, active);
-                Providers.Context.Current.SetSessionValue(SessionKeys.Communities, communities);
-                Providers.Context.Current.SetSessionValue(SessionKeys.DisplayName, displayName);
-                Providers.Context.Current.SetSessionValue(SessionKeys.Email, email);
-                Providers.Context.Current.SetSessionValue(SessionKeys.MaxChargeTypeID, maxChargeTypeId);
-                Providers.Context.Current.SetSessionValue(SessionKeys.Phone, phone);
-                Providers.Context.Current.SetSessionValue(SessionKeys.Privs, privs);
-                Providers.Context.Current.SetSessionValue(SessionKeys.OrgID, orgId);
-                Providers.Context.Current.SetSessionValue(SessionKeys.Cache, Guid.NewGuid().ToString("n"));
-                Providers.Context.Current.SetSessionValue(SessionKeys.IsKiosk, KioskUtility.IsKiosk());
+                ServiceProvider.Context.SetSessionValue(SessionKeys.Logout, GetLoginUrl());
+                ServiceProvider.Context.SetSessionValue(SessionKeys.UserName, username);
+                ServiceProvider.Context.SetSessionValue(SessionKeys.ClientID, clientId);
+                ServiceProvider.Context.SetSessionValue(SessionKeys.Active, active);
+                ServiceProvider.Context.SetSessionValue(SessionKeys.Communities, communities);
+                ServiceProvider.Context.SetSessionValue(SessionKeys.DisplayName, displayName);
+                ServiceProvider.Context.SetSessionValue(SessionKeys.Email, email);
+                ServiceProvider.Context.SetSessionValue(SessionKeys.MaxChargeTypeID, maxChargeTypeId);
+                ServiceProvider.Context.SetSessionValue(SessionKeys.Phone, phone);
+                ServiceProvider.Context.SetSessionValue(SessionKeys.Privs, privs);
+                ServiceProvider.Context.SetSessionValue(SessionKeys.OrgID, orgId);
+                ServiceProvider.Context.SetSessionValue(SessionKeys.Cache, Guid.NewGuid().ToString("n"));
+                ServiceProvider.Context.SetSessionValue(SessionKeys.IsKiosk, KioskUtility.IsKiosk());
             }
 
             // now we either have an authenticated user with matching session variables
@@ -217,27 +224,27 @@ namespace LNF.Cache
 
         public bool IsProduction()
         {
-            return Providers.IsProduction();
+            return ServiceProvider.IsProduction();
         }
 
         public string GetLoginUrl()
         {
-            return Providers.Context.LoginUrl;
+            return ServiceProvider.Context.LoginUrl;
         }
 
         public bool WagoEnabled
         {
-            get { return Utility.ConvertTo(Providers.Context.Current.GetAppSetting("WagoEnabled"), false); }
+            get { return Utility.ConvertTo(ServiceProvider.Context.GetAppSetting("WagoEnabled"), false); }
         }
 
         public bool UseStartReservationPage
         {
-            get { return Utility.ConvertTo(Providers.Context.Current.GetAppSetting("UseStartReservationPage"), false); }
+            get { return Utility.ConvertTo(ServiceProvider.Context.GetAppSetting("UseStartReservationPage"), false); }
         }
 
         public bool ShowCanceledForModification
         {
-            get { return Utility.ConvertTo(Providers.Context.Current.GetAppSetting("ShowCanceledForModification"), false); }
+            get { return Utility.ConvertTo(ServiceProvider.Context.GetAppSetting("ShowCanceledForModification"), false); }
         }
 
         public string ErrorID
@@ -271,17 +278,17 @@ namespace LNF.Cache
 
         public void AbandonSession()
         {
-            Providers.Context.Current.AbandonSession();
+            ServiceProvider.Context.AbandonSession();
         }
 
         public void RemoveSessionValue(string key)
         {
-            Providers.Context.Current.RemoveSessionValue(key);
+            ServiceProvider.Context.RemoveSessionValue(key);
         }
 
         public T GetSessionValue<T>(string key, Func<T> defval)
         {
-            object value = Providers.Context.Current.GetSessionValue(key);
+            object value = ServiceProvider.Context.GetSessionValue(key);
 
             T result;
 
@@ -300,22 +307,22 @@ namespace LNF.Cache
 
         public void SetSessionValue(string key, object value)
         {
-            Providers.Context.Current.SetSessionValue(key, value);
+            ServiceProvider.Context.SetSessionValue(key, value);
         }
 
         public void RemoveContextItem(string key)
         {
-            Providers.Context.Current.Items.Remove(key);
+            ServiceProvider.Context.Items.Remove(key);
         }
 
         public T GetContextItem<T>(string key)
         {
-            return Providers.Context.Current.GetItem<T>(key);
+            return ServiceProvider.Context.GetItem<T>(key);
         }
 
         public void SetContextItem<T>(string key, T item)
         {
-            Providers.Context.Current.SetItem(key, item);
+            ServiceProvider.Context.SetItem(key, item);
         }
     }
 }

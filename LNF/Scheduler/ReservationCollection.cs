@@ -46,7 +46,7 @@ namespace LNF.Scheduler
             if (ed > Reservation.MaxReservationEndDate)
                 throw new ArgumentOutOfRangeException("ed");
 
-            _items = DA.Scheduler.Reservation.SelectByResource(resourceId, sd, ed, true);
+            _items = DA.Current.ReservationManager().SelectByResource(resourceId, sd, ed, true);
         }
 
         public void SelectByProcessTech(int processTechId, DateTime sd, DateTime ed)
@@ -57,7 +57,7 @@ namespace LNF.Scheduler
             if (ed > Reservation.MaxReservationEndDate)
                 throw new ArgumentOutOfRangeException("ed");
 
-            _items = DA.Scheduler.Reservation.SelectByProcessTech(processTechId, sd, ed, true);
+            _items = DA.Current.ReservationManager().SelectByProcessTech(processTechId, sd, ed, true);
         }
 
         public void SelectByClient(int clientId, DateTime sd, DateTime ed)
@@ -68,7 +68,7 @@ namespace LNF.Scheduler
             if (ed > Reservation.MaxReservationEndDate)
                 throw new ArgumentOutOfRangeException("ed");
 
-            _items = DA.Scheduler.Reservation.SelectByClient(clientId, sd, ed, true);
+            _items = DA.Current.ReservationManager().SelectByClient(clientId, sd, ed, true);
         }
 
         private IList<Reservation> GetItems()

@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Ordering;
-using FluentNHibernate.Mapping;
 
 namespace LNF.Impl.Mappings.Ordering
 {
-    public class PurchaseOrderItemMap : ClassMap<PurchaseOrderItem>
+    internal class PurchaseOrderItemMap : ClassMap<PurchaseOrderItem>
     {
-        public PurchaseOrderItemMap()
+        internal PurchaseOrderItemMap()
         {
             Schema("IOF.dbo");
             Table("Item");
@@ -20,6 +16,7 @@ namespace LNF.Impl.Mappings.Ordering
             Map(x => x.UnitPrice);
             Map(x => x.Active);
             Map(x => x.InventoryItemID, "StoreItemID");
+            HasMany(x => x.Details).KeyColumn("ItemID").NotFound.Ignore();
         }
     }
 }

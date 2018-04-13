@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using System.Web.UI.HtmlControls;
-using System.Configuration;
-using System.Web;
-using System.Net.Http;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using RestSharp;
+using System.Configuration;
+using System.Threading.Tasks;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 namespace LNF.Web.Controls.Tools
 {
@@ -61,23 +57,13 @@ namespace LNF.Web.Controls.Tools
         //https://developers.google.com/recaptcha/docs/verify
         public async Task<VerificationResponse> Verify()
         {
-            using (var hc = new HttpClient())
-            {
-                var postData = new Dictionary<string, string>();
-                postData.Add("secret", GetSecretKey());
-                postData.Add("response", GetResponse());
-                postData.Add("remoteip", GetRemoteIP());
-
-                hc.BaseAddress = new Uri("https://www.google.com/");
-
-                var msg = await hc.PostAsync("recaptcha/api/siteverify", new FormUrlEncodedContent(postData));
-
-                var json = await msg.Content.ReadAsStringAsync();
-
-                var result = JsonConvert.DeserializeObject<VerificationResponse>(json);
-
-                return result;
-            }
+            var client = new RestClient("https://www.google.com");
+            var request = new RestRequest("recaptcha/api/siteverify");
+            request.AddParameter("secret", GetSecretKey());
+            request.AddParameter("response", GetResponse());
+            request.AddParameter("remoteip", GetRemoteIP());
+            var response = await client.ExecutePostTaskAsync<VerificationResponse>(request);
+            return response.Data;
         }
     }
 

@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Data;
+﻿using LNF.Models.Data;
 using LNF.Repository.Data;
+using LNF.Repository;
 
 namespace LNF.Hooks
 {
@@ -14,10 +11,11 @@ namespace LNF.Hooks
 
     public class AfterLogInHookContext : HookContext
     {
-        private Client _LoggedInClient;
+        private Client _client;
+        private ClientItem _LoggedInClient;
         private bool _IsKiosk;
 
-        public Client LoggedInClient
+        public ClientItem LoggedInClient
         {
             get { return _LoggedInClient; }
         }
@@ -27,10 +25,21 @@ namespace LNF.Hooks
             get { return _IsKiosk; }
         }
 
-        public AfterLogInHookContext(Client loggedInClient, bool isKiosk)
+        public AfterLogInHookContext(ClientItem loggedInClient, bool isKiosk)
         {
+            _client = DA.Current.Single<Client>(loggedInClient.ClientID);
             _LoggedInClient = loggedInClient;
             _IsKiosk = isKiosk;
+        }
+
+        public bool HasTakenSafetyTest()
+        {
+            return _client.HasTakenSafetyTest();
+        }
+
+        public bool HasWatchedEthicalVideo()
+        {
+            return _client.HasWatchedEthicalVideo();
         }
     }
 

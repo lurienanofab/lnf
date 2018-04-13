@@ -33,7 +33,7 @@ namespace LNF.Repository.Data
         /// <returns>True if the Org and Client are both active and DisableDate is null, otherwise false</returns>
         public override bool IsActive()
         {
-            return OrgActive && ClientActive && DisableDate == null;
+            return ClientActive && DisableDate == null;
         }
     }
 }

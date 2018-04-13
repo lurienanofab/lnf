@@ -88,7 +88,7 @@ namespace LNF.Billing
         public static int UpdateBillingType(Client client, Account acct, BillingType billingType, DateTime period)
         {
             string queryName = "UpdateBillingTypeRoomBilling" + (RepositoryUtility.IsCurrentPeriod(period) ? "Temp" : string.Empty);
-            return DA.Current.NamedQuery(queryName, new
+            return DA.Current.NamedQuery(queryName).SetParameters(new
             {
                 client.ClientID,
                 acct.AccountID,

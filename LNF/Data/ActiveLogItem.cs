@@ -22,39 +22,41 @@ namespace LNF.Data
         private T _Item;
         private ActiveLog _ActiveLog;
 
+        public ISession Session { get; }
         public T Item { get { return _Item; } }
         public ActiveLog ActiveLog { get { return _ActiveLog; } }
 
-        private ActiveLogItem(T item, ActiveLog alog)
+        private ActiveLogItem(T item, ActiveLog alog, ISession session)
         {
             _Item = item;
             _ActiveLog = alog;
+            Session = session;
         }
 
-        public static ActiveLogItem<T> Create(string tableName, int record, DateTime sdate, DateTime edate)
+        public static ActiveLogItem<T> Create(string tableName, int record, DateTime sdate, DateTime edate, ISession session)
         {
-            return Create(ActiveLogItem<T>.GetActiveLogType(tableName), record, sdate, edate);
+            return Create(GetActiveLogType(tableName), record, sdate, edate, session);
         }
 
-        public static ActiveLogItem<T> Create(ActiveLogType type, int record, DateTime sdate, DateTime edate)
+        public static ActiveLogItem<T> Create(ActiveLogType type, int record, DateTime sdate, DateTime edate, ISession session)
         {
-            T item = (T)GetItem(type, record);
-            return Create(item, sdate, edate);
+            T item = (T)GetItem(type, record, session);
+            return Create(item, sdate, edate, session);
         }
 
-        public static ActiveLogItem<T> Create(T item, DateTime sdate, DateTime edate)
+        public static ActiveLogItem<T> Create(T item, DateTime sdate, DateTime edate, ISession session)
         {
             if (item == null) return null;
-            IList<ActiveLog> alogs = DA.Current.Query<ActiveLog>().Where(x => x.TableName == item.TableName() &&  x.Record == item.Record() && x.EnableDate < edate && (x.DisableDate == null || x.DisableDate.Value > sdate)).ToList();
-            return Create(item, alogs);
+            IList<ActiveLog> alogs = session.Query<ActiveLog>().Where(x => x.TableName == item.TableName() && x.Record == item.Record() && x.EnableDate < edate && (x.DisableDate == null || x.DisableDate.Value > sdate)).ToList();
+            return Create(item, alogs, session);
         }
 
-        public static ActiveLogItem<T> Create(T item, IList<ActiveLog> alogs)
+        public static ActiveLogItem<T> Create(T item, IList<ActiveLog> alogs, ISession session)
         {
             if (item == null) return null;
             ActiveLog alog = alogs.FirstOrDefault(x => x.Record == item.Record());
             if (alog == null) return null;
-            ActiveLogItem<T> result = new ActiveLogItem<T>(item, alog);
+            ActiveLogItem<T> result = new ActiveLogItem<T>(item, alog, session);
             return result;
         }
 
@@ -64,27 +66,27 @@ namespace LNF.Data
             return result;
         }
 
-        public static T GetItem(string tableName, int record)
+        public T GetItem(string tableName, int record, ISession session)
         {
-            return (T)GetItem(GetActiveLogType(tableName), record);
+            return (T)GetItem(GetActiveLogType(tableName), record, session);
         }
 
-        public static object GetItem(ActiveLogType type, int record)
+        public static object GetItem(ActiveLogType type, int record, ISession session)
         {
             switch (type)
             {
                 case ActiveLogType.Client:
-                    return DA.Current.Single<Client>(record);
+                    return session.Single<Client>(record);
                 case ActiveLogType.ClientAccount:
-                    return DA.Current.Single<ClientAccount>(record);
+                    return session.Single<ClientAccount>(record);
                 case ActiveLogType.ClientManager:
-                    return DA.Current.Single<ClientManager>(record);
+                    return session.Single<Repository.Data.ClientManager>(record);
                 case ActiveLogType.ClientOrg:
-                    return DA.Current.Single<ClientOrg>(record);
+                    return session.Single<ClientOrg>(record);
                 case ActiveLogType.ClientRemote:
-                    return DA.Current.Single<ClientRemote>(record);
+                    return session.Single<ClientRemote>(record);
                 case ActiveLogType.Org:
-                    return DA.Current.Single<Org>(record);
+                    return session.Single<Org>(record);
                 default:
                     throw new ArgumentException("type");
             }

@@ -44,22 +44,31 @@ namespace LNF.Printing
 
         private static Paragraph GetError(int soid)
         {
-            Paragraph p = new Paragraph(string.Format("Error: Could not find Order # {0}", soid), new Font(Font.FontFamily.HELVETICA, 18, Font.NORMAL, BaseColor.RED));
-            p.Alignment = Element.ALIGN_CENTER;
+            Paragraph p = new Paragraph(string.Format("Error: Could not find Order # {0}", soid), new Font(Font.FontFamily.HELVETICA, 18, Font.NORMAL, BaseColor.RED))
+            {
+                Alignment = Element.ALIGN_CENTER
+            };
+
             return p;
         }
 
         private static Paragraph GetTitle()
         {
-            Paragraph p = new Paragraph("LNF Online Store Order", new Font(Font.FontFamily.HELVETICA, 18));
-            p.Alignment = Element.ALIGN_CENTER;
+            Paragraph p = new Paragraph("LNF Online Store Order", new Font(Font.FontFamily.HELVETICA, 18))
+            {
+                Alignment = Element.ALIGN_CENTER
+            };
+
             return p;
         }
 
         private static PdfPTable GetHeader(StoreOrder order)
         {
-            PdfPTable container = new PdfPTable(1);
-            container.SpacingBefore = 20;
+            PdfPTable container = new PdfPTable(1)
+            {
+                SpacingBefore = 20
+            };
+
             container.SetTotalWidth(new float[] { 420 });
             container.LockedWidth = true;
 
@@ -67,9 +76,12 @@ namespace LNF.Printing
             info.AddCell(GetOrderInfo(order));
             info.AddCell(GetCustomerInfo(order));
 
-            PdfPCell containerCell = new PdfPCell(info);
-            containerCell.Border = AllBorders();
-            containerCell.Padding = 1;
+            PdfPCell containerCell = new PdfPCell(info)
+            {
+                Border = AllBorders(),
+                Padding = 1
+            };
+
             container.AddCell(containerCell);
 
             return container;
@@ -98,14 +110,19 @@ namespace LNF.Printing
             innerTable.AddCell(new PdfPCell(BoldPhrase("Pickup:")) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
             innerTable.AddCell(new PdfPCell(NormalPhrase(order.GetPickupLocation())) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
 
-            PdfPCell innerCell = new PdfPCell(innerTable);
-            innerCell.Border = AllBorders();
-            innerCell.Padding = 1;
+            PdfPCell innerCell = new PdfPCell(innerTable)
+            {
+                Border = AllBorders(),
+                Padding = 1
+            };
+
             table.AddCell(innerCell);
 
-            PdfPCell outerCell = new PdfPCell(table);
-            outerCell.Border = Rectangle.NO_BORDER;
-            outerCell.Padding = 1;
+            PdfPCell outerCell = new PdfPCell(table)
+            {
+                Border = Rectangle.NO_BORDER,
+                Padding = 1
+            };
 
             return outerCell;
         }
@@ -116,6 +133,8 @@ namespace LNF.Printing
 
             PdfPTable innerTable = new PdfPTable(new float[] { 0.3F, 0.7F });
 
+            var mgr = DA.Current.ClientManager();
+
             //header row
             innerTable.AddCell(HeaderCell("CUSTOMER INFO"));
 
@@ -125,32 +144,39 @@ namespace LNF.Printing
 
             //second row
             innerTable.AddCell(new PdfPCell(BoldPhrase("Contact:")) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
-            innerTable.AddCell(new PdfPCell(NormalPhrase(order.Client.PrimaryEmail())) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
+            innerTable.AddCell(new PdfPCell(NormalPhrase(mgr.PrimaryEmail(order.Client))) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
 
             //third row
             innerTable.AddCell(new PdfPCell(BoldPhrase("")) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
-            innerTable.AddCell(new PdfPCell(NormalPhrase(order.Client.PrimaryPhone())) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
+            innerTable.AddCell(new PdfPCell(NormalPhrase(mgr.PrimaryPhone(order.Client))) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
 
             //fourth row
             innerTable.AddCell(new PdfPCell(BoldPhrase("Account:")) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
             innerTable.AddCell(new PdfPCell(NormalPhrase(order.Account.Name)) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
 
-            PdfPCell innerCell = new PdfPCell(innerTable);
-            innerCell.Border = AllBorders();
-            innerCell.Padding = 1;
+            PdfPCell innerCell = new PdfPCell(innerTable)
+            {
+                Border = AllBorders(),
+                Padding = 1
+            };
+
             outerTable.AddCell(innerCell);
 
-            PdfPCell outerCell = new PdfPCell(outerTable);
-            outerCell.Border = Rectangle.NO_BORDER;
-            outerCell.Padding = 1;
+            PdfPCell outerCell = new PdfPCell(outerTable)
+            {
+                Border = Rectangle.NO_BORDER,
+                Padding = 1
+            };
 
             return outerCell;
         }
 
         private static PdfPTable GetPageFooter(StoreOrder order, int pageNumber, int totalPages, float width)
         {
-            PdfPTable tbl = new PdfPTable(3);
-            tbl.TotalWidth = width;
+            PdfPTable tbl = new PdfPTable(3)
+            {
+                TotalWidth = width
+            };
 
             Phrase p;
             PdfPCell cell;
@@ -189,12 +215,16 @@ namespace LNF.Printing
 
                 Action<PdfPTable, int, bool> appendOuterTable = (tbl, pageNum, isLast) =>
                 {
-                    PdfPTable outerTable = new PdfPTable(1);
-                    outerTable.SpacingBefore = (pageNum == 0) ? 10 : 0;
+                    PdfPTable outerTable = new PdfPTable(1)
+                    {
+                        SpacingBefore = (pageNum == 0) ? 10 : 0
+                    };
 
-                    PdfPCell outerCell = new PdfPCell(tbl);
-                    outerCell.Border = AllBorders();
-                    outerCell.Padding = 2;
+                    PdfPCell outerCell = new PdfPCell(tbl)
+                    {
+                        Border = AllBorders(),
+                        Padding = 2
+                    };
 
                     if (isLast)
                     {
@@ -283,8 +313,10 @@ namespace LNF.Printing
 
         private static PdfPTable GetFooter(StoreOrder order, bool empty = false)
         {
-            PdfPTable table = new PdfPTable(1);
-            table.SpacingBefore = 10;
+            PdfPTable table = new PdfPTable(1)
+            {
+                SpacingBefore = 10
+            };
 
             Phrase phrase = new Phrase();
             if (!empty)

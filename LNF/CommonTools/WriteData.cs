@@ -214,7 +214,7 @@ namespace LNF.CommonTools
 
                                 body += Environment.NewLine + Environment.NewLine + ex.ToString();
 
-                                Providers.Email.SendMessage(0,
+                                ServiceProvider.Current.Email.SendMessage(0,
                                     "LNF.CommonTools.WriteData.UpdateTables(string[] types, int clientId, int recordId, DateTime eDate, UpdateDataType updateTypes, bool delete, bool isDailyImport)",
                                     string.Format("Call from CommonTools.WriteData.UpdateTable [{0}] [{1}]", t + dType, DateTime.Now),
                                     body,

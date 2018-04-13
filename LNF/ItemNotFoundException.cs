@@ -3,22 +3,29 @@ using System.Linq.Expressions;
 
 namespace LNF
 {
-    public class ItemNotFoundException<TSource, TProperty> : Exception
+    public class ItemNotFoundException : Exception
     {
         public string TypeName { get; }
-        public string PropertyName { get; }
-        public TProperty Value { get; }
+        public string PropertyMessage { get; }
 
-        public override string Message { get { return string.Format("Unable to find {0} with {1} = {2}.", TypeName, PropertyName, Value); } }
+        public override string Message => $"Unable to find {TypeName} with {PropertyMessage}.";
 
-        public ItemNotFoundException(Expression<Func<TSource, TProperty>> expression, TProperty value)
+        public ItemNotFoundException(string typeName, string propertyMessage)
         {
-            TypeName = typeof(TSource).Name;
+            TypeName = typeName;
+            PropertyMessage = propertyMessage;
+        }
+    }
 
+    public class ItemNotFoundException<TSource, TProperty> : ItemNotFoundException
+    {
+        public ItemNotFoundException(Expression<Func<TSource, TProperty>> expression, TProperty value)
+            : base(typeof(TSource).Name, $"{GetPropertyName(expression)} = {value}") { }
+
+        private static string GetPropertyName(Expression<Func<TSource, TProperty>> expression)
+        {
             var body = (MemberExpression)expression.Body;
-            PropertyName = body.Member.Name;
-
-            Value = value;
+            return body.Member.Name;
         }
     }
 

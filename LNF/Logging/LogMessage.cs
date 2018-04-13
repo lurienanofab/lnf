@@ -24,7 +24,7 @@ namespace LNF.Logging
         {
             get
             {
-                Guid result = Providers.Context.Current.GetItem<Guid>("LogMessageID");
+                Guid result = ServiceProvider.Current.Context.GetItem<Guid>("LogMessageID");
                 if (result == null)
                     result = Guid.NewGuid();
                 return result;

@@ -1,5 +1,4 @@
-﻿using LNF.Cache;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -13,6 +12,8 @@ namespace LNF
 {
     public abstract class ContextBase : IContext
     {
+        public string LoginUrl => ServiceProvider.GetConfigurationSection().Context.LoginUrl;
+
         public abstract IPrincipal User { get; set; }
 
         public abstract string UserHostAddress { get; }
@@ -205,7 +206,6 @@ namespace LNF
         public string AuthCookieDomain { get; set; }
         public string RequestUserAgent { get; set; }
         public string CurrentUserHostAddress { get; set; }
-        public string CurrentLoginUrl { get; set; }
         public int ScriptTimeout { get; set; }
 
         public DefaultContext()
@@ -216,7 +216,6 @@ namespace LNF
             AuthCookieName = string.Empty;
             RequestUserAgent = string.Empty;
             CurrentUserHostAddress = string.Empty;
-            CurrentLoginUrl = string.Empty;
             ScriptTimeout = 30;
             session = new Dictionary<string, object>();
             server = new NameValueCollection();
@@ -446,12 +445,6 @@ namespace LNF
         public override string UserHostAddress
         {
             get { return CurrentUserHostAddress; }
-        }
-
-        public string LoginUrl
-        {
-            get { return CurrentLoginUrl; }
-            set { CurrentLoginUrl = value; }
         }
 
         public override void SignOut()

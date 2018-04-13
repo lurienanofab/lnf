@@ -51,7 +51,7 @@ namespace LNF.Web.Mvc.UI
 
             TagBuilder tbody = new TagBuilder("tbody");
 
-            //***** set the month
+            //xxxxx set the month
 
             //make sure the date is really the first of the month
             var fom = Calendar.GetFirstOfMonth(selectedMonth);

@@ -33,7 +33,7 @@ namespace LNF.Billing
             {
                 range.Clear();
 
-                /*********************
+                /**********
                     * each priority group much be mutually exclusive, i.e. no single reservation should
                       be in two groups, and all reservation must be included across all groups
 
@@ -43,7 +43,7 @@ namespace LNF.Billing
 
                     * the lowest priority group is written to the array first, then the next highest 
                       priorty group is written over that and then the next until all groups have been written
-                *********************/
+                ***********/
 
                 IEnumerable<ReservationDateRange.Reservation> query = range.Reservations.Where(x => x.ResourceID == resourceId);
 

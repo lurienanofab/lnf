@@ -9,7 +9,6 @@ namespace LNF.Impl.Mappings.Ordering
         {
             Schema("IOF.dbo");
             Table("v_PurchaserSearch");
-            ReadOnly();
             Id(x => x.POID);
             Map(x => x.StatusID);
             Map(x => x.CreatedDate);

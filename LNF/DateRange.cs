@@ -33,7 +33,7 @@ namespace LNF
         {
             T temp = Activator.CreateInstance<T>();
             ActiveLog[] query = DA.Current.Query<ActiveLog>().Where(x => x.TableName == temp.TableName() && x.EnableDate < EndDate && (x.DisableDate == null || x.DisableDate > StartDate)).ToArray();
-            IEnumerable<ActiveLogItem<T>> result = query.Select(x => ActiveLogItem<T>.Create(DA.Current.Single<T>(x.Record), StartDate, EndDate));
+            IEnumerable<ActiveLogItem<T>> result = query.Select(x => ActiveLogItem<T>.Create(DA.Current.Single<T>(x.Record), StartDate, EndDate, DA.Current));
             return result;
         }
 
@@ -46,21 +46,21 @@ namespace LNF
 
         public IEnumerable<ActiveLogItem<IActiveDataItem>> Items(IEnumerable<IActiveDataItem> items)
         {
-            IEnumerable<ActiveLogItem<IActiveDataItem>> result = items.Select(x => ActiveLogItem<IActiveDataItem>.Create(x, StartDate, EndDate));
+            IEnumerable<ActiveLogItem<IActiveDataItem>> result = items.Select(x => ActiveLogItem<IActiveDataItem>.Create(x, StartDate, EndDate, DA.Current));
             return result;
         }
 
         public IEnumerable<ActiveLogItem<IActiveDataItem>> Items(string tableName)
         {
-            IEnumerable<ActiveLog> query = ActiveLogUtility.Range(tableName, StartDate, EndDate);
-            IEnumerable<ActiveLogItem<IActiveDataItem>> result = query.Select(x => ActiveLogItem<IActiveDataItem>.Create(tableName, x.Record, StartDate, EndDate));
+            IEnumerable<ActiveLog> query = DA.Current.ActiveLogManager().Range(tableName, StartDate, EndDate);
+            IEnumerable<ActiveLogItem<IActiveDataItem>> result = query.Select(x => ActiveLogItem<IActiveDataItem>.Create(tableName, x.Record, StartDate, EndDate, DA.Current));
             return result;
         }
 
         public IEnumerable<ActiveLogItem<IActiveDataItem>> Items(string tableName, IEnumerable<int> records)
         {
-            IEnumerable<ActiveLog> query = ActiveLogUtility.Range(tableName, StartDate, EndDate);
-            IEnumerable<ActiveLogItem<IActiveDataItem>> result = query.Where(x => records.Contains(x.Record)).Select(x => ActiveLogItem<IActiveDataItem>.Create(tableName, x.Record, StartDate, EndDate));
+            IEnumerable<ActiveLog> query = DA.Current.ActiveLogManager().Range(tableName, StartDate, EndDate);
+            IEnumerable<ActiveLogItem<IActiveDataItem>> result = query.Where(x => records.Contains(x.Record)).Select(x => ActiveLogItem<IActiveDataItem>.Create(tableName, x.Record, StartDate, EndDate, DA.Current));
             return result;
         }
     }

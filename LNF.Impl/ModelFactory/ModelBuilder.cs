@@ -3,6 +3,7 @@ using LNF.Data;
 using LNF.Models.Data;
 using LNF.Models.Ordering;
 using LNF.Models.Scheduler;
+using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Repository.Ordering;
 using LNF.Repository.Scheduler;
@@ -18,6 +19,8 @@ namespace LNF.Impl.ModelFactory
             public static ClientAccountModel CreateClientAccountModel(ClientAccount source)
             {
                 var result = new ClientAccountModel();
+
+                var accountMgr = DA.Current.AccountManager();
 
                 result.InjectFrom(source);
                 result.IsDefault = source.IsDefault.GetValueOrDefault();
@@ -36,11 +39,11 @@ namespace LNF.Impl.ModelFactory
                 result.PoRemainingFunds = source.Account.PoRemainingFunds;
                 result.AccountActive = source.Account.Active;
                 result.FundingSourceID = source.Account.FundingSourceID;
-                result.FundingSourceName = source.Account.FundingSourceName();
+                result.FundingSourceName = accountMgr.FundingSourceName(source.Account);
                 result.TechnicalFieldID = source.Account.TechnicalFieldID;
-                result.TechnicalFieldName = source.Account.TechnicalFieldName();
+                result.TechnicalFieldName = accountMgr.TechnicalFieldName(source.Account);
                 result.SpecialTopicID = source.Account.SpecialTopicID;
-                result.SpecialTopicName = source.Account.SpecialTopicName();
+                result.SpecialTopicName = accountMgr.SpecialTopicName(source.Account);
                 result.AccountTypeID = source.Account.AccountType.AccountTypeID;
                 result.AccountTypeName = source.Account.AccountType.AccountTypeName;
                 result.ClientOrgID = source.ClientOrg.ClientOrgID;
@@ -262,7 +265,7 @@ namespace LNF.Impl.ModelFactory
                     userName = c.UserName;
                     displayName = c.DisplayName;
 
-                    var primary = ClientOrgUtility.GetPrimary(source.ClientID);
+                    var primary = DA.Current.ClientOrgManager().GetPrimary(source.ClientID);
 
                     if (primary != null)
                         email = primary.Email;
@@ -297,9 +300,9 @@ namespace LNF.Impl.ModelFactory
 
         public static class Ordering
         {
-            public static ApproverModel CreateApproverModel(Approver source)
+            public static ApproverItem CreateApproverModel(Approver source)
             {
-                var result = new ApproverModel();
+                var result = new ApproverItem();
 
                 result.InjectFrom(source);
 

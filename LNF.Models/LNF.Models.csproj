@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>LNF.Models</RootNamespace>
     <AssemblyName>LNF.Models</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -75,6 +76,8 @@
     <Compile Include="Billing\RoomBillingModel.cs" />
     <Compile Include="Billing\ToolBillingModel.cs" />
     <Compile Include="Billing\UpdateBillingArgs.cs" />
+    <Compile Include="Data\CostModel.cs" />
+    <Compile Include="Data\MenuItem.cs" />
     <Compile Include="Data\OrgModel.cs" />
     <Compile Include="Data\Utility\BillingChecks\AutoEndProblem.cs" />
     <Compile Include="Control\ActionInstanceModel.cs" />
@@ -96,7 +99,8 @@
     <Compile Include="Inventory\CategoryModel.cs" />
     <Compile Include="Inventory\InventoryTypeModel.cs" />
     <Compile Include="Inventory\ItemModel.cs" />
-    <Compile Include="Ordering\ApproverModel.cs" />
+    <Compile Include="Ordering\ApproverItem.cs" />
+    <Compile Include="Ordering\OrderStatus.cs" />
     <Compile Include="Ordering\PurchaseOrderSearchModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reporting\AccountItem.cs" />
@@ -135,6 +139,7 @@
     <Compile Include="Scheduler\ResourceClientModel.cs" />
     <Compile Include="Scheduler\ResourceCostModel.cs" />
     <Compile Include="Scheduler\ResourceModel.cs" />
+    <Compile Include="SiteMenuBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

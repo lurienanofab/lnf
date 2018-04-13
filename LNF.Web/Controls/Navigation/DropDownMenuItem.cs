@@ -1,41 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace LNF.Web.Controls.Navigation
 {
     [ParseChildren(true)]
     public class DropDownMenuItem
     {
-        public DropDownMenuItem()
-        {
-            Text = string.Empty;
-            NavigateURL = string.Empty;
-        }
+        public DropDownMenuItem() : this(string.Empty, string.Empty, true) { }
 
-        public DropDownMenuItem(string text)
-        {
-            Text = text;
-            NavigateURL = string.Empty;
-        }
+        public DropDownMenuItem(string text) : this(text, string.Empty, true) { }
 
-        public DropDownMenuItem(string text, bool visible)
-        {
-            Text = text;
-            NavigateURL = string.Empty;
-            Visible = visible;
-        }
+        public DropDownMenuItem(string text, bool visible) : this(text, string.Empty, visible) { }
 
-        public DropDownMenuItem(string text, string navURL)
-        {
-            Text = text;
-            NavigateURL = navURL;
-        }
+        public DropDownMenuItem(string text, string navURL) : this(text, navURL, true) { }
 
         public DropDownMenuItem(string text, string navURL, bool visible)
         {
@@ -101,13 +81,13 @@ namespace LNF.Web.Controls.Navigation
             get { return _ChildrenContainer; }
         }
 
-        public void Render(HtmlTextWriter writer)
+        public void Render(HtmlTextWriter writer, bool isSecureConnection)
         {
             if (!_Visible) return;
 
             string children_class = string.Empty;
 
-            if (this.Parent == null)
+            if (Parent == null)
             {
                 //writer.WriteLine("<div class=\"menu-parent" + (_Enabled ? string.Empty : "-disabled" ) + " menu-parent-off menu-item-level-" + this.Level.ToString() + this.GetClass() + "\"" + this.GetWidthStyle(this.Width) + ">");
                 //writer.WriteLine("<div class=\"menu-parent-group\">");
@@ -116,7 +96,7 @@ namespace LNF.Web.Controls.Navigation
 
                 writer.WriteLine("<li class=\"menu-parent" + (_Enabled ? string.Empty : "-disabled") + " menu-parent-off menu-item-level-" + this.Level.ToString() + this.GetClass() + "\"" + this.GetWidthStyle(this.Width) + ">");
                 //writer.WriteLine("<div class=\"menu-parent-group\">");
-                writer.WriteLine("<div class=\"menu-parent-text\">" + this.GetNavLink() + "</div>");
+                writer.WriteLine("<div class=\"menu-parent-text\">" + GetNavLink(isSecureConnection) + "</div>");
                 children_class = "menu-parent-children ";
             }
             else
@@ -128,7 +108,7 @@ namespace LNF.Web.Controls.Navigation
 
                 writer.WriteLine("<li class=\"menu-item" + (_Enabled ? string.Empty : "-disabled") + " menu-item-off menu-item-level-" + this.Level.ToString() + this.GetClass() + "\"" + this.GetWidthStyle(this.Width) + ">");
                 // writer.WriteLine("<div class=\"menu-item-group\">");
-                writer.WriteLine("<div class=\"menu-item-text\">" + this.GetNavLink() + "</div>");
+                writer.WriteLine("<div class=\"menu-item-text\">" + GetNavLink(isSecureConnection) + "</div>");
                 children_class = "menu-item-children ";
             }
 
@@ -140,7 +120,7 @@ namespace LNF.Web.Controls.Navigation
                     c._Parent = this;
                     c._Level = this.Level + 1;
                     c.UseJavascriptNavigation = this.UseJavascriptNavigation;
-                    c.Render(writer);
+                    c.Render(writer, isSecureConnection);
                 }
                 writer.WriteLine("</ul>");
             }
@@ -173,7 +153,7 @@ namespace LNF.Web.Controls.Navigation
             }
         }
 
-        private string GetNavLink()
+        private string GetNavLink(bool isSecureConnection)
         {
             if (string.IsNullOrEmpty(NavigateURL))
                 return string.Format("<div class=\"text-container\">{0}</div>", Text);
@@ -181,13 +161,13 @@ namespace LNF.Web.Controls.Navigation
             string appServer = string.Empty;
             string schedServer = string.Empty;
 
-            if (Providers.Context.Current.GetRequestIsSecureConnection())
-            { 
+            if (isSecureConnection)
+            {
                 appServer = "https://" + ConfigurationManager.AppSettings["AppServer"];
                 schedServer = "https://" + ConfigurationManager.AppSettings["SchedServer"];
             }
             else
-            { 
+            {
                 appServer = "http://" + ConfigurationManager.AppSettings["AppServer"];
                 schedServer = "http://" + ConfigurationManager.AppSettings["SchedServer"];
             }

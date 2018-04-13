@@ -9,9 +9,9 @@ namespace LNF.Impl.Email
 {
     public class GroupUtility : IEmailGroupUtility
     {
-        private IEmailProvider _provider;
+        private IEmailService _provider;
 
-        public GroupUtility(IEmailProvider provider)
+        public GroupUtility(IEmailService provider)
         {
             _provider = provider;
         }

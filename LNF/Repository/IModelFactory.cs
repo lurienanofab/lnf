@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace LNF.Repository
 {
-    public interface IModelFactory : ITypeProvider
+    public interface IModelFactory
     {
         T Create<T>(object source);
     }
@@ -15,7 +15,7 @@ namespace LNF.Repository
         {
             // need to unproxy otherwise the ModelFactory won't recognize the type
             object unproxy = DA.Current.Unproxy(item);
-            return Providers.ModelFactory.Create<T>(unproxy);
+            return ServiceProvider.Current.ModelFactory.Create<T>(unproxy);
         }
 
         public static IList<T> Model<T>(this IEnumerable<IDataItem> items)

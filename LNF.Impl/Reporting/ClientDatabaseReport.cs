@@ -28,10 +28,14 @@ namespace LNF.Reporting
 
         public override GenericResult Execute(ResultType resultType)
         {
-            GenericResult result = new GenericResult();
-            result.Success = true;
-            result.Message = string.Empty;
+            GenericResult result = new GenericResult
+            {
+                Success = true,
+                Message = string.Empty
+            };
+
             GetReportData(ref result);
+
             return result;
         }
 
@@ -45,7 +49,7 @@ namespace LNF.Reporting
 
         public IList<Client> GetClientsInPeriod()
         {
-            IList<ActiveLog> logs = ActiveLogUtility.Range("Client", Criteria.Period, Criteria.Period.AddMonths(1));
+            IList<ActiveLog> logs = DA.Current.ActiveLogManager().Range("Client", Criteria.Period, Criteria.Period.AddMonths(1));
             int[] records = logs.Select(x => x.Record).ToArray();
             IList<Client> result = DA.Current.Query<Client>().Where(x => records.Contains(x.ClientID)).ToList();
             return result;
@@ -81,7 +85,7 @@ namespace LNF.Reporting
                 {
                     Error = "",
                     Client = GetDetailClientInfo(c),
-                    Orgs = GetDetailOrgInfo(c.ClientOrgs().ToList())
+                    Orgs = GetDetailOrgInfo(DA.Current.ClientManager().ClientOrgs(c).ToList())
                 };
                 result.Data = data;
             }
@@ -100,7 +104,7 @@ namespace LNF.Reporting
             ArrayList list = new ArrayList();
             foreach (ClientOrg co in corgs)
             {
-                if (ActiveLogUtility.IsActive(co, Criteria.Period, Criteria.Period.AddMonths(1)))
+                if (DA.Current.ActiveLogManager().IsActive(co, Criteria.Period, Criteria.Period.AddMonths(1)))
                 {
                     var item = new
                     {
@@ -111,7 +115,7 @@ namespace LNF.Reporting
                         Email = co.Email,
                         Managers = GetDetailManagerInfo(ClientManagerUtility.FindManagers(co.ClientOrgID)),
                         BillingType = GetDetailBillingType(co),
-                        Accounts = GetDetailAccounts(ClientAccountUtility.FindClientAccounts(co.ClientOrgID))
+                        Accounts = GetDetailAccounts(DA.Current.ClientAccountManager().FindClientAccounts(co.ClientOrgID))
                     };
                     list.Add(item);
                 }
@@ -119,12 +123,12 @@ namespace LNF.Reporting
             return list;
         }
 
-        public string[] GetDetailManagerInfo(IEnumerable<ClientManager> mgrs)
+        public string[] GetDetailManagerInfo(IEnumerable<Repository.Data.ClientManager> mgrs)
         {
             List<string> list = new List<string>();
-            foreach (ClientManager cm in mgrs)
+            foreach (var cm in mgrs)
             {
-                if (ActiveLogUtility.IsActive(cm, Criteria.Period, Criteria.Period.AddMonths(1)))
+                if (DA.Current.ActiveLogManager().IsActive(cm, Criteria.Period, Criteria.Period.AddMonths(1)))
                 {
                     list.Add(cm.ManagerOrg.Client.DisplayName);
                 }
@@ -143,7 +147,7 @@ namespace LNF.Reporting
             List<string> list = new List<string>();
             foreach (ClientAccount ca in caccts)
             {
-                if (ActiveLogUtility.IsActive(ca, Criteria.Period, Criteria.Period.AddMonths(1)))
+                if (DA.Current.ActiveLogManager().IsActive(ca, Criteria.Period, Criteria.Period.AddMonths(1)))
                     list.Add(ca.Account.Name);
             }
             return list.ToArray();

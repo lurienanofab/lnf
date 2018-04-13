@@ -13,16 +13,17 @@ namespace LNF.Impl.Hooks
     {
         protected override void Execute()
         {
-            if (!string.IsNullOrEmpty(Providers.DataAccess.UniversalPassword) && Context.Password == Providers.DataAccess.UniversalPassword)
+            if (!string.IsNullOrEmpty(ServiceProvider.Current.DataAccess.UniversalPassword) && Context.Password == ServiceProvider.Current.DataAccess.UniversalPassword)
             {
-                Client c = DA.Current.Query<Client>().FirstOrDefault(x => x.UserName == Context.Username);
+                var c = DA.Current.Query<ClientInfo>().FirstOrDefault(x => x.UserName == Context.Username);
                 if (c != null)
                 {
-                    Result.Client = c;
+                    Result.Client = c.GetClientItem();
                     Result.IsLoggedIn = true;
                     return;
                 }
             }
+
             Result.Client = null;
             Result.IsLoggedIn = false;
         }

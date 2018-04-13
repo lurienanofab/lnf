@@ -50,7 +50,7 @@ namespace LNF.Feeds
             {
                 case FeedFormats.Calendar:
 
-                    string serverIp = Providers.Context.Current.ServerVariables["LOCAL_ADDR"];
+                    string serverIp = ServiceProvider.Current.Context.ServerVariables["LOCAL_ADDR"];
                     DateTime utc_build_time = DateTime.UtcNow;
 
                     sb.AppendLine("BEGIN:VCALENDAR");
@@ -124,11 +124,14 @@ namespace LNF.Feeds
 
         public void WriteLogEntry(IContext context)
         {
-            FeedsLog log = new FeedsLog();
-            log.EntryDateTime = DateTime.Now;
-            log.RequestIP = GetIP(context);
-            log.RequestURL = context.GetRequestUrl().ToString();
-            log.RequestUserAgent = context.GetRequestUserAgent() ?? "unknown";
+            FeedsLog log = new FeedsLog
+            {
+                EntryDateTime = DateTime.Now,
+                RequestIP = GetIP(context),
+                RequestURL = context.GetRequestUrl().ToString(),
+                RequestUserAgent = context.GetRequestUserAgent() ?? "unknown"
+            };
+
             DA.Current.Insert(log);
         }
 

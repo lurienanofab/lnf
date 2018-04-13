@@ -135,7 +135,7 @@ namespace LNF.Scheduler
                             if (!noEmail)
                             {
                                 if (recipient.Count() > 0)
-                                    Providers.Email.SendMessage(0, "LNF.Scheduler.ResourceClientUtility.CheckExpiringClients(IEnumerable<ResourceClientInfo> expiringClients, IEnumerable<ResourceClientInfo> expiringEveryone, bool noEmail = false)", subject, body, SendEmail.SystemEmail, new[] { recipient }, isHtml: true);
+                                    ServiceProvider.Current.Email.SendMessage(0, "LNF.Scheduler.ResourceClientUtility.CheckExpiringClients(IEnumerable<ResourceClientInfo> expiringClients, IEnumerable<ResourceClientInfo> expiringEveryone, bool noEmail = false)", subject, body, SendEmail.SystemEmail, new[] { recipient }, isHtml: true);
                             }
 
                             timer.AddData("Expiring authorization: {0}, Resource: {1}", string.Join(",", recipient), item.ResourceName);
@@ -173,7 +173,7 @@ namespace LNF.Scheduler
                             if (!noEmail)
                             {
                                 if (recipient.Count > 0)
-                                    Providers.Email.SendMessage(0, "LNF.Scheduler.ResourceClientUtility.CheckExpiringClients(IEnumerable<ResourceClientInfo> expiringClients, IEnumerable<ResourceClientInfo> expiringEveryone, bool noEmail = false)", subject, body, SendEmail.SystemEmail, recipient);
+                                    ServiceProvider.Current.Email.SendMessage(0, "LNF.Scheduler.ResourceClientUtility.CheckExpiringClients(IEnumerable<ResourceClientInfo> expiringClients, IEnumerable<ResourceClientInfo> expiringEveryone, bool noEmail = false)", subject, body, SendEmail.SystemEmail, recipient);
                             }
 
                             timer.AddData("Expiring Everyone authorization: {0}, Resource: {1}", string.Join(",", recipient), item.ResourceName);
@@ -211,7 +211,7 @@ namespace LNF.Scheduler
                         if (!noEmail)
                         {
                             if (recipient.Count() > 0)
-                                Providers.Email.SendMessage(0, "LNF.Scheduler.ResourceClientUtility.CheckExpiredClients(IEnumerable<ResourceClientInfo> expiredClients, IEnumerable<ResourceClientInfo> expiredEveryone, bool noEmail = false)", subject, body, SendEmail.SystemEmail, new[] { recipient }, isHtml: true);
+                                ServiceProvider.Current.Email.SendMessage(0, "LNF.Scheduler.ResourceClientUtility.CheckExpiredClients(IEnumerable<ResourceClientInfo> expiredClients, IEnumerable<ResourceClientInfo> expiredEveryone, bool noEmail = false)", subject, body, SendEmail.SystemEmail, new[] { recipient }, isHtml: true);
                         }
 
                         timer.AddData("Expired authorization: {0}, Resource: {1}", string.Join(",", recipient), item.ResourceName);
@@ -238,7 +238,7 @@ namespace LNF.Scheduler
                         if (!noEmail)
                         {
                             if (recipient.Count > 0)
-                                Providers.Email.SendMessage(0, "LNF.Scheduler.ResourceClientUtility.CheckExpiredClients(IEnumerable<ResourceClientInfo> expiredClients, IEnumerable<ResourceClientInfo> expiredEveryone, bool noEmail = false)", subject, body, SendEmail.SystemEmail, recipient, isHtml: true);
+                                ServiceProvider.Current.Email.SendMessage(0, "LNF.Scheduler.ResourceClientUtility.CheckExpiredClients(IEnumerable<ResourceClientInfo> expiredClients, IEnumerable<ResourceClientInfo> expiredEveryone, bool noEmail = false)", subject, body, SendEmail.SystemEmail, recipient, isHtml: true);
                         }
 
                         timer.AddData("Expired Everyone authorization: Resource: {1}", item.ResourceName);

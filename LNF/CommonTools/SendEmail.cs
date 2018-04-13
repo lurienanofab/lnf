@@ -6,7 +6,7 @@
         {
             string[] to = new string[] { toAddr };
             string[] cc = (ccSelf) ? new string[] { fromAddr } : null;
-            Providers.Email.SendMessage(0, "LNF.CommonTools.SendEmail.Email(string fromAddr, string toAddr, bool ccSelf, string subject, string body, bool isHtml = true)", subject, body, fromAddr, to, cc, isHtml: isHtml);
+            ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.SendEmail.Email(string fromAddr, string toAddr, bool ccSelf, string subject, string body, bool isHtml = true)", subject, body, fromAddr, to, cc, isHtml: isHtml);
         }
 
         public static string SystemEmail
