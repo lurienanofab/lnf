@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <configSections>
+        <sectionGroup name="lnf">
+            <section name="provider" type="LNF.ServiceProviderSection, LNF" />
+        </sectionGroup>
+    </configSections>
+
+    <lnf>
+        <provider production="false">
+            <context loginUrl="/login" />
+            <dataAccess showSql="true" universalPassword="xxxxx" />
+            <email host="xxxxx" />
+            <control host="xxxxx" />
+            <log name="LNF.Tests" enabled="true" />
+        </provider>
+    </lnf>
+
+    <connectionStrings>
+        <add name="cnSselData" connectionString="xxxxx" />
+    </connectionStrings>
+</configuration>
