@@ -91,7 +91,7 @@ namespace LNF.Reporting
                 SubsidyDiscount = x.Sum(g => g.SubsidyDiscount)
             }).ToList();
 
-            var managerUsageSummaryAccounts = accountItems.Select(x => CreateManagerUsageSummaryAccount(x, items)).ToList();
+            var managerUsageSummaryAccounts = accountItems.Select(x => CreateManagerUsageSummaryAccount(x, items)).OrderBy(x => x.Sort).ToList();
 
             result.Accounts = managerUsageSummaryAccounts;
 
@@ -116,7 +116,7 @@ namespace LNF.Reporting
 
             var clientItemsFiltered = clientItems.Where(x => x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv)).ToList();
 
-            var managerUsageSummaryClients = clientItemsFiltered.Select(x => CreateManagerUsageSummaryClient(x, items)).ToList();
+            var managerUsageSummaryClients = clientItemsFiltered.Select(x => CreateManagerUsageSummaryClient(x, items)).OrderBy(x => x.Sort).ToList();
 
             result.Clients = managerUsageSummaryClients;
 
