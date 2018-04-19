@@ -11,6 +11,8 @@ namespace LNF.Data
 {
     public static class StoreDataCleanUtility
     {
+        public static IDryBoxManager DryBoxManager => DA.Use<IDryBoxManager>();
+
         public static int LoadDryBoxBilling(DateTime startDate, DateTime endDate)
         {
             int result = 0;
@@ -31,15 +33,13 @@ namespace LNF.Data
 
                 double daysInPeriod = (ed - sd).TotalDays;
 
-                var session = ServiceProvider.Current.DataAccess.Session;
-                var mgr = session.DryBoxManager();
+                IList<DryBoxAssignment> activeAssignments = DryBoxManager.ActiveAssignments(sd, ed);
 
-                IList<DryBoxAssignment> activeAssignments = mgr.ActiveAssignments(sd, ed);
                 if (activeAssignments.Count > 0)
                 {
                     int dryboxCategoryId = 33;
-                    Category dryboxCategory = session.Single<Category>(dryboxCategoryId);
-                    IList<Item> dryboxItems = session.Query<Item>().Where(x => x.Category == dryboxCategory).ToList();
+                    Category dryboxCategory = DA.Current.Single<Category>(dryboxCategoryId);
+                    IList<Item> dryboxItems = DA.Current.Query<Item>().Where(x => x.Category == dryboxCategory).ToList();
 
                     DeleteStoreDataClean(sd, ed, category: dryboxCategory);
 
@@ -60,7 +60,7 @@ namespace LNF.Data
                         }
                     }
 
-                    IList<DryBoxAssignmentLog> logItems = session.Query<DryBoxAssignmentLog>().Where(x => activeAssignments.Contains(x.DryBoxAssignment)).ToList();
+                    IList<DryBoxAssignmentLog> logItems = DA.Current.Query<DryBoxAssignmentLog>().Where(x => activeAssignments.Contains(x.DryBoxAssignment)).ToList();
 
                     foreach (DryBoxAssignmentLog logItem in logItems)
                     {
@@ -74,17 +74,17 @@ namespace LNF.Data
                         //may be zero if approved and removed on the same day
                         if (daysUsed > 0)
                         {
-                            var clientAcctInfo = mgr.GetClientAccountInfo(logItem);
-                            sdc.Account = session.Single<Account>(clientAcctInfo.AccountID);
+                            var clientAcctInfo = DryBoxManager.GetClientAccountInfo(logItem);
+                            sdc.Account = DA.Current.Single<Account>(clientAcctInfo.AccountID);
                             sdc.Category = dryboxCategory;
-                            sdc.Client = session.Single<Client>(clientAcctInfo.ClientID);
+                            sdc.Client = DA.Current.Single<Client>(clientAcctInfo.ClientID);
                             sdc.Item = map[clientAcctInfo.ChargeTypeID];
                             sdc.OrderDate = sdate;
                             sdc.Quantity = Convert.ToDecimal(Math.Round(daysUsed / daysInPeriod, 4));
                             sdc.RechargeItem = true;
                             sdc.StatusChangeDate = sdate;
                             sdc.UnitCost = PriceUtility.GetHistoricalPrice(prices[sdc.Item], edate).PackagePrice;
-                            session.Insert(sdc);
+                            DA.Current.Insert(sdc);
                             result += 1;
                         }
                     }

@@ -10,9 +10,14 @@ using System.Linq;
 
 namespace LNF.Billing
 {
-    public class BillingTypeManager : ManagerBase
+    public class BillingTypeManager : ManagerBase, IBillingTypeManager
     {
-        public BillingTypeManager(ISession session) : base(session){}
+        protected IActiveDataItemManager ActiveDataItemManager { get; }
+
+        public BillingTypeManager(ISession session, IActiveDataItemManager activeDataItemManager) : base(session)
+        {
+            ActiveDataItemManager = activeDataItemManager;
+        }
 
         public string GetBillingTypeName(BillingType billingType)
         {
@@ -119,23 +124,21 @@ namespace LNF.Billing
             DateTime sd = period;
             DateTime ed = sd.AddMonths(1);
 
-            var mgr = Session.ActiveDataItemManager();
-
             return GetBillingType(
                 client,
                 account,
-                mgr.FindActive(Session.Query<ClientOrg>().Where(x => x.Client == client && x.Org == account.Org), x => x.ClientOrgID, sd, ed),
-                mgr.FindActive(Session.Query<ClientAccount>().Where(x => x.ClientOrg.Client == client && x.Account == account), x => x.ClientAccountID, sd, ed),
-                mgr.FindActive(Session.Query<ClientRemote>().Where(x => x.Client == client && x.Account == account), x => x.ClientRemoteID, sd, ed),
+                ActiveDataItemManager.FindActive(Session.Query<ClientOrg>().Where(x => x.Client == client && x.Org == account.Org), x => x.ClientOrgID, sd, ed),
+                ActiveDataItemManager.FindActive(Session.Query<ClientAccount>().Where(x => x.ClientOrg.Client == client && x.Account == account), x => x.ClientAccountID, sd, ed),
+                ActiveDataItemManager.FindActive(Session.Query<ClientRemote>().Where(x => x.Client == client && x.Account == account), x => x.ClientRemoteID, sd, ed),
                 ClientOrgBillingTypeLogUtility.GetActive(sd, ed).Where(x => x.ClientOrg.Client == client && x.ClientOrg.Org == account.Org).ToArray()
             );
         }
 
-        public void Update(Client client, DateTime period, BillingDataProcessStep1 step1)
+        public void Update(Client client, DateTime period)
         {
             bool isTemp = RepositoryUtility.IsCurrentPeriod(period);
-            step1.PopulateToolBilling(period, client.ClientID, isTemp);
-            step1.PopulateRoomBilling(period, client.ClientID, isTemp);
+            BillingDataProcessStep1.PopulateToolBilling(period, client.ClientID, isTemp);
+            BillingDataProcessStep1.PopulateRoomBilling(period, client.ClientID, isTemp);
         }
 
         public IList<IToolBilling> SelectToolBillingData<T>(Client client, DateTime period) where T : IToolBilling

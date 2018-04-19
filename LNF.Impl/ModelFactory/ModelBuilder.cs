@@ -16,11 +16,11 @@ namespace LNF.Impl.ModelFactory
     {
         public static class Data
         {
+            public static IAccountManager AccountManager => DA.Use<IAccountManager>();
+
             public static ClientAccountModel CreateClientAccountModel(ClientAccount source)
             {
                 var result = new ClientAccountModel();
-
-                var accountMgr = DA.Current.AccountManager();
 
                 result.InjectFrom(source);
                 result.IsDefault = source.IsDefault.GetValueOrDefault();
@@ -39,11 +39,11 @@ namespace LNF.Impl.ModelFactory
                 result.PoRemainingFunds = source.Account.PoRemainingFunds;
                 result.AccountActive = source.Account.Active;
                 result.FundingSourceID = source.Account.FundingSourceID;
-                result.FundingSourceName = accountMgr.FundingSourceName(source.Account);
+                result.FundingSourceName = AccountManager.FundingSourceName(source.Account);
                 result.TechnicalFieldID = source.Account.TechnicalFieldID;
-                result.TechnicalFieldName = accountMgr.TechnicalFieldName(source.Account);
+                result.TechnicalFieldName = AccountManager.TechnicalFieldName(source.Account);
                 result.SpecialTopicID = source.Account.SpecialTopicID;
-                result.SpecialTopicName = accountMgr.SpecialTopicName(source.Account);
+                result.SpecialTopicName = AccountManager.SpecialTopicName(source.Account);
                 result.AccountTypeID = source.Account.AccountType.AccountTypeID;
                 result.AccountTypeName = source.Account.AccountType.AccountTypeName;
                 result.ClientOrgID = source.ClientOrg.ClientOrgID;
@@ -98,6 +98,8 @@ namespace LNF.Impl.ModelFactory
 
         public static class Scheduler
         {
+            public static IClientOrgManager ClientOrgManager => DA.Use<IClientOrgManager>();
+
             public static ReservationItem CreateReservationModel(Reservation source)
             {
                 var result = new ReservationItem();
@@ -265,7 +267,7 @@ namespace LNF.Impl.ModelFactory
                     userName = c.UserName;
                     displayName = c.DisplayName;
 
-                    var primary = DA.Current.ClientOrgManager().GetPrimary(source.ClientID);
+                    var primary = ClientOrgManager.GetPrimary(source.ClientID);
 
                     if (primary != null)
                         email = primary.Email;

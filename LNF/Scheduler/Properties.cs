@@ -1,10 +1,14 @@
-﻿using LNF.Repository;
+﻿using LNF.Cache;
+using LNF.Models.Data;
+using LNF.Models.Scheduler;
+using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Repository.Scheduler;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Collections;
+using LNF.Data;
 
 namespace LNF.Scheduler
 {
@@ -13,42 +17,59 @@ namespace LNF.Scheduler
         private static Properties _current;
         private IEnumerable<SchedulerProperty> _props;
         private DateTime _timestamp;
+        private ActivityCollection _activities;
 
-        public double LateChargePenaltyMultiplier { get; set; }
-        public double AuthExpWarning { get; set; }
-        public Client Admin { get; set; }
-        public string ResourceIPPrefix { get; set; }
-        public bool AlwaysOnKiosk { get; set; }
-        public string SchedulerEmail { get; set; }
-        public Account LabAccount { get; set; }
-        public ActivityCollection Activities { get; set; }
-        public int[] ManualEntryDurationActivities { get; set; }
+        public double LateChargePenaltyMultiplier
+        {
+            get { return double.Parse(GetValue("LateChargePenaltyMultiplier")); }
+            set { SetValue("LateChargePenaltyMultiplier", value); }
+        }
+
+        public double AuthExpWarning
+        {
+            get{ return double.Parse(GetValue("AuthExpWarning")); }
+            set{ SetValue("AuthExpWarning", value); }
+        }
+
+        public ClientItem Admin
+        {
+            get { return CacheManager.Current.GetClient(int.Parse(GetValue("AdminID"))); }
+            set { SetValue("AdminID", value.ClientID); }
+        }
+        public string ResourceIPPrefix
+        {
+            get { return GetValue("ResourceIPPrefix"); }
+            set { SetValue("ResourceIPPrefix", value); }
+        }
+
+        public bool AlwaysOnKiosk
+        {
+            get { return bool.Parse(GetValue("AlwaysOnKiosk")); }
+            set { SetValue("AlwaysOnKiosk", value); }
+        }
+
+        public string SchedulerEmail
+        {
+            get { return GetValue("SchedulerEmail"); }
+            set { SetValue("SchedulerEmail", value); }
+        }
+        public AccountModel LabAccount
+        {
+            get { return CacheManager.Current.GetAccount(int.Parse(GetValue("LabAccountID"))); }
+            set { SetValue("LabAccountID", value.AccountID); }
+        }
+        public ActivityCollection Activities => GetActivityCollection();
+
+        public int[] ManualEntryDurationActivities
+        {
+            get { return GetValue("ManualEntryDurationActivities").Split(',').Select(int.Parse).ToArray(); }
+            set { SetValue("ManualEntryDurationActivities", string.Join(",", value)); }
+        }
 
         private Properties(IList<SchedulerProperty> props)
         {
-            IList<Activity> activities = DA.Current.Query<Activity>().ToList();
-
             _props = props;
             _timestamp = DateTime.Now;
-            LateChargePenaltyMultiplier = double.Parse(GetValue("LateChargePenaltyMultiplier"));
-            AuthExpWarning = double.Parse(GetValue("AuthExpWarning"));
-            Admin = DA.Current.Single<Client>(int.Parse(GetValue("AdminID")));
-            ResourceIPPrefix = GetValue("ResourceIPPrefix");
-            AlwaysOnKiosk = bool.Parse(GetValue("AlwaysOnKiosk"));
-            SchedulerEmail = GetValue("SchedulerEmail");
-            LabAccount = DA.Current.Single<Account>(int.Parse(GetValue("LabAccountID")));
-            Activities = new ActivityCollection(
-                processing: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.Processing"))),
-                practice: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.Practice"))),
-                repair: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.Repair"))),
-                characterization: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.Characterization"))),
-                staffSupport: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.StaffSupport"))),
-                schedMaintenance: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.ScheduledMaintenance"))),
-                demonstration: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.Demonstration"))),
-                futurePractice: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.FuturePractice"))),
-                remoteProcessing: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.RemoteProcessing"))),
-                fdt: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.FacilityDownTime"))));
-            ManualEntryDurationActivities = GetValue("ManualEntryDurationActivities").Split(',').Select(int.Parse).ToArray();
         }
 
         public DateTime Timestamp()
@@ -111,15 +132,37 @@ namespace LNF.Scheduler
 
             sp.PropertyValue = value.ToString();
         }
+
+        private ActivityCollection GetActivityCollection()
+        {
+            var activities = CacheManager.Current.Activities();
+
+            if (_activities == null)
+            {
+                _activities = new ActivityCollection(
+                   processing: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.Processing"))),
+                   practice: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.Practice"))),
+                   repair: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.Repair"))),
+                   characterization: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.Characterization"))),
+                   staffSupport: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.StaffSupport"))),
+                   schedMaintenance: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.ScheduledMaintenance"))),
+                   demonstration: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.Demonstration"))),
+                   futurePractice: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.FuturePractice"))),
+                   remoteProcessing: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.RemoteProcessing"))),
+                   fdt: activities.First(x => x.ActivityID == int.Parse(GetValue("Activities.FacilityDownTime"))));
+            }
+
+            return _activities;
+        }
     }
 
-    public class ActivityCollection : IEnumerable<Activity>
+    public class ActivityCollection : IEnumerable<ActivityModel>
     {
-        private Dictionary<string, Activity> _items;
+        private Dictionary<string, ActivityModel> _items;
 
-        public ActivityCollection(Activity processing, Activity practice, Activity repair, Activity characterization, Activity staffSupport, Activity schedMaintenance, Activity demonstration, Activity futurePractice, Activity remoteProcessing, Activity fdt)
+        public ActivityCollection(ActivityModel processing, ActivityModel practice, ActivityModel repair, ActivityModel characterization, ActivityModel staffSupport, ActivityModel schedMaintenance, ActivityModel demonstration, ActivityModel futurePractice, ActivityModel remoteProcessing, ActivityModel fdt)
         {
-            _items = new Dictionary<string, Activity>();
+            _items = new Dictionary<string, ActivityModel>();
 
             _items.Add("processing", processing);
             _items.Add("practice", practice);
@@ -133,27 +176,67 @@ namespace LNF.Scheduler
             _items.Add("fdt", fdt);
         }
 
-        public Activity Processing { get { return _items["processing"]; } }
+        public ActivityModel Processing
+        {
+            get { return _items["processing"]; }
+            set { _items["processing"] = value; }
+        }
 
-        public Activity Practice { get { return _items["practice"]; } }
+        public ActivityModel Practice
+        {
+            get { return _items["practice"]; }
+            set { _items["practice"] = value; }
+        }
 
-        public Activity Repair { get { return _items["repair"]; } }
+        public ActivityModel Repair
+        {
+            get { return _items["repair"]; }
+            set { _items["repair"] = value; }
+        }
 
-        public Activity Characterization { get { return _items["characterization"]; } }
+        public ActivityModel Characterization
+        {
+            get { return _items["characterization"]; }
+            set { _items["characterization"] = value; }
+        }
 
-        public Activity StaffSupport { get { return _items["staffSupport"]; } }
+        public ActivityModel StaffSupport
+        {
+            get { return _items["staffSupport"]; }
+            set { _items["staffSupport"] = value; }
+        }
 
-        public Activity ScheduledMaintenance { get { return _items["schedMaintenance"]; } }
+        public ActivityModel ScheduledMaintenance
+        {
+            get { return _items["schedMaintenance"]; }
+            set { _items["schedMaintenance"] = value; }
+        }
 
-        public Activity Demonstration { get { return _items["demonstration"]; } }
+        public ActivityModel Demonstration
+        {
+            get { return _items["demonstration"]; }
+            set { _items["demonstration"] = value; }
+        }
 
-        public Activity FuturePractice { get { return _items["futurePractice"]; } }
+        public ActivityModel FuturePractice
+        {
+            get { return _items["futurePractice"]; }
+            set { _items["futurePractice"] = value; }
+        }
 
-        public Activity RemoteProcessing { get { return _items["remoteProcessing"]; } }
+        public ActivityModel RemoteProcessing
+        {
+            get { return _items["remoteProcessing"]; }
+            set { _items["remoteProcessing"] = value; }
+        }
 
-        public Activity FacilityDownTime { get { return _items["fdt"]; } }
+        public ActivityModel FacilityDownTime
+        {
+            get { return _items["fdt"]; }
+            set { _items["fdt"] = value; }
+        }
 
-        public IEnumerator<Activity> GetEnumerator()
+        public IEnumerator<ActivityModel> GetEnumerator()
         {
             return _items.Select(x => x.Value).GetEnumerator();
         }

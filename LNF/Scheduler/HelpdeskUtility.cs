@@ -17,6 +17,8 @@ namespace LNF.Scheduler
 {
     public static class HelpdeskUtility
     {
+        public static IClientOrgManager ClientOrgManager => DA.Use<IClientOrgManager>();
+
         public static string Url
         {
             get { return ConfigurationManager.AppSettings["HelpdeskUrl"]; }
@@ -55,7 +57,7 @@ namespace LNF.Scheduler
 
             var client = CacheManager.Current.CurrentUser;
 
-            var primary = DA.Current.ClientOrgManager().GetPrimary(client.ClientID);
+            var primary = ClientOrgManager.GetPrimary(client.ClientID);
 
             if (primary != null)
             { 

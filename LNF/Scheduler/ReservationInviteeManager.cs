@@ -8,7 +8,7 @@ using System.Data;
 
 namespace LNF.Scheduler
 {
-    public class ReservationInviteeManager : ManagerBase
+    public class ReservationInviteeManager : ManagerBase, IReservationInviteeManager
     {
         public ReservationInviteeManager(ISession session) : base(session) { }
 
@@ -66,6 +66,11 @@ namespace LNF.Scheduler
             return Session.Single<ReservationInvitee>(key);
         }
 
+        public bool Exists(int reservationId, int inviteeId)
+        {
+            return Find(reservationId, inviteeId) != null;
+        }
+
         public bool Exists(ReservationInvitee key)
         {
             return Find(key) != null;
@@ -84,6 +89,15 @@ namespace LNF.Scheduler
 
             if (!Exists(ri))
                 Session.Insert(ri);
+        }
+
+
+        public void Delete(int reservationId, int inviteeId)
+        {
+            var ri = Find(reservationId, inviteeId);
+
+            if (ri != null)
+                Session.Delete(ri);
         }
 
         /// <summary>

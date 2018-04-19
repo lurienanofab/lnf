@@ -144,7 +144,7 @@ namespace LNF.Repository.Data
         /// <returns>True if the password is correct, otherwise false.</returns>
         public virtual bool CheckPassword(string password)
         {
-            return DA.Current.ClientManager().CheckPassword(ClientID, password);
+            return DA.Use<IClientManager>().CheckPassword(ClientID, password);
         }
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace LNF.Repository.Data
         /// <returns>The number of rows updated.</returns>
         public virtual int SetPassword(string password)
         {
-            return DA.Current.ClientManager().SetPassword(ClientID, password);
+            return DA.Use<IClientManager>().SetPassword(ClientID, password);
         }
 
         /// <summary>

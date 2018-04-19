@@ -16,6 +16,7 @@ namespace LNF.Impl.DataAccess
         void OpenSession();
         void CloseSession();
         ISession Session { get; }
+        ISessionFactory GetSessionFactory();
         IEnumerable<string> GetLogMessages();
     }
 
@@ -142,6 +143,8 @@ namespace LNF.Impl.DataAccess
         }
 
         public ISession Session => _sessionFactory.GetCurrentSession();
+
+        public ISessionFactory GetSessionFactory() => _sessionFactory;
 
         public IEnumerable<string> GetLogMessages()
         {

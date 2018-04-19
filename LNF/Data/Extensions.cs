@@ -25,7 +25,7 @@ namespace LNF.Data
 
             if (result == null)
             {
-                result = cm.ServiceProvider.DataAccess.Session.Query<AccountInfo>().FirstOrDefault(x => x.AccountID == accountId).Model<AccountModel>();
+                result = DA.Current.Query<AccountInfo>().FirstOrDefault(x => x.AccountID == accountId).Model<AccountModel>();
                 list.Add(result);
             }
 
@@ -40,7 +40,7 @@ namespace LNF.Data
 
             if (result == null || result.Count == 0)
             {
-                result = cm.ServiceProvider.DataAccess.Session.Query<ClientAccountInfo>().Where(x => x.ClientID == clientId).Model<ClientAccountModel>();
+                result = DA.Current.Query<ClientAccountInfo>().Where(x => x.ClientID == clientId).Model<ClientAccountModel>();
                 cm.SetContextItem(key, result);
             }
 
@@ -80,7 +80,7 @@ namespace LNF.Data
 
             if (result == null || result.Count == 0)
             {
-                result = cm.ServiceProvider.DataAccess.Session.Query<ClientOrgInfo>().Where(x => x.ClientID == clientId).Model<ClientItem>();
+                result = DA.Current.Query<ClientOrgInfo>().Where(x => x.ClientID == clientId).Model<ClientItem>();
                 cm.SetContextItem(key, result);
             }
 
@@ -118,7 +118,7 @@ namespace LNF.Data
 
             if (result == null)
             {
-                result = cm.ServiceProvider.DataAccess.Session.Query<GlobalCost>().FirstOrDefault().Model<GlobalCostModel>();
+                result = DA.Current.Query<GlobalCost>().FirstOrDefault().Model<GlobalCostModel>();
                 cm.SetContextItem("GlobalCost", result);
             }
 
@@ -139,7 +139,7 @@ namespace LNF.Data
 
             if (result == null || result.Count == 0)
             {
-                result = cm.ServiceProvider.DataAccess.Session.Query<Room>().Model<RoomModel>();
+                result = DA.Current.Query<Room>().Model<RoomModel>();
                 cm.SetContextItem("Rooms", result);
             }
 
@@ -159,35 +159,6 @@ namespace LNF.Data
         {
             return cm.Rooms(x => x.RoomID == roomId).FirstOrDefault();
         }
-    }
-
-    public static class SessionExtensions
-    {
-        public static IActiveDataItemManager ActiveDataItemManager(this ISession session) => DA.Use<IActiveDataItemManager>();
-
-        public static IAccountManager AccountManager(this ISession session) => DA.Use<IAccountManager>();
-
-        public static IOrgManager OrgManager(this ISession session) => DA.Use<IOrgManager>();
-
-        public static IClientInfoManager ClientInfoManager(this ISession session) => DA.Use<IClientInfoManager>();
-
-        public static IClientOrgManager ClientOrgManager(this ISession session) => DA.Use<IClientOrgManager>();
-
-        public static IClientAccountManager ClientAccountManager(this ISession session) => DA.Use<IClientAccountManager>();
-
-        public static IClientRemoteManager ClientRemoteManager(this ISession session) => DA.Use<IClientRemoteManager>();
-
-        public static IChargeTypeManager ChargeTypeManager(this ISession session) => DA.Use<IChargeTypeManager>();
-
-        public static IActiveLogManager ActiveLogManager(this ISession session) => DA.Use<IActiveLogManager>();
-
-        public static IDryBoxManager DryBoxManager(this ISession session) => DA.Use<IDryBoxManager>();
-
-        public static INewsManager NewsManager(this ISession session) => DA.Use<INewsManager>();
-
-        public static IRoomDataManager RoomDataManager(this ISession session) => DA.Use<IRoomDataManager>();
-
-        public static IClientManager ClientManager(this ISession session) => DA.Use<IClientManager>();
     }
 
     public static class ClientPrivilegeExtenstions

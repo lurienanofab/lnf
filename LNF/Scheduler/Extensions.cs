@@ -20,7 +20,7 @@ namespace LNF.Scheduler
 
             if (result == null || result.Count == 0)
             {
-                var items = cm.ServiceProvider.DataAccess.Session.Query<ResourceTreeItem>().Where(x => x.ClientID == cm.ClientID).ToList();
+                var items = DA.Current.Query<ResourceTreeItem>().Where(x => x.ClientID == cm.ClientID).ToList();
                 result = new ResourceTreeItemCollection(items);
                 cm.SetContextItem("ResourceTree", result);
             }
@@ -31,30 +31,22 @@ namespace LNF.Scheduler
         /// <summary>
         /// Gets all reservation activities from cache. Cached for one request.
         /// </summary>
-        public static IList<ActivityModel> Activities(this CacheManager cm)
+        public static IEnumerable<ActivityModel> Activities(this CacheManager cm)
         {
-            IList<ActivityModel> result = cm.GetContextItem<IList<ActivityModel>>("Activities");
+            var result = cm.GetContextItem<IEnumerable<ActivityModel>>("Activities");
 
-            if (result == null || result.Count == 0)
+            if (result == null || result.Count() == 0)
             {
-                result = cm.ServiceProvider.DataAccess.Session.Query<Activity>().Model<ActivityModel>();
+                result = DA.Current.Query<Activity>().Model<ActivityModel>();
                 cm.SetContextItem("Activities", result);
             }
 
             return result;
         }
 
-        /// <summary>
-        /// Gets the reservation activities specified by filter from cache. Cached for one request.
-        /// </summary>
-        public static IList<ActivityModel> Activities(this CacheManager cm, Func<ActivityModel, bool> filter)
-        {
-            return cm.Activities().Where(filter).ToList();
-        }
-
         public static ActivityModel GetActivity(this CacheManager cm, int activityId)
         {
-            var result = cm.Activities(x => x.ActivityID == activityId).FirstOrDefault();
+            var result = cm.Activities().FirstOrDefault(x => x.ActivityID == activityId);
 
             if (result == null)
                 throw new CacheItemNotFoundException<Activity>(x => x.ActivityID, activityId);
@@ -62,7 +54,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public static IList<ActivityModel> AuthorizedActivities(this CacheManager cm, ClientAuthLevel authLevel)
+        public static IEnumerable<ActivityModel> AuthorizedActivities(this CacheManager cm, ClientAuthLevel authLevel)
         {
             //procActivitySelect @Action = 'SelectAuthorizedActivities'
 
@@ -74,7 +66,7 @@ namespace LNF.Scheduler
             //    AND IsFacilityDownTime = 0--This keeps the Facility Down Time activity out of the select when making reservations. Staff should use the link at the top of the page instead.
             //ORDER BY ListOrder
 
-            IList<ActivityModel> result = cm.Activities().Where(x => x.IsActive && (x.UserAuth & (int)authLevel) > 0 && x.Editable && !x.IsFacilityDownTime).OrderBy(x => x.ListOrder).ToList();
+            var result = cm.Activities().Where(x => x.IsActive && (x.UserAuth & (int)authLevel) > 0 && x.Editable && !x.IsFacilityDownTime).OrderBy(x => x.ListOrder).ToList();
 
             return result;
         }
@@ -84,12 +76,12 @@ namespace LNF.Scheduler
             return cm.GetSessionValue(SessionKeys.ClientSetting, () => ClientSetting.GetClientSettingOrDefault(cm.ClientID));
         }
 
-        public static IList<ResourceClientModel> CurrentResourceClients(this CacheManager cm)
+        public static IEnumerable<ResourceClientModel> CurrentResourceClients(this CacheManager cm)
         {
-            IList<ResourceClientModel> result = cm.GetSessionValue(SessionKeys.CurrentResourceClients, () =>
+            var result = cm.GetSessionValue(SessionKeys.CurrentResourceClients, () =>
             {
                 int clientId = cm.ClientID;
-                var query = cm.ServiceProvider.DataAccess.Session.Query<ResourceClientInfo>().Where(x => x.ClientID == clientId || x.ClientID == -1);
+                var query = DA.Current.Query<ResourceClientInfo>().Where(x => x.ClientID == clientId || x.ClientID == -1);
                 var models = query.Model<ResourceClientModel>();
                 return models;
             });
@@ -102,22 +94,22 @@ namespace LNF.Scheduler
             return cm.CurrentResourceClients().FirstOrDefault(x => x.ResourceID == resourceId);
         }
 
-        public static IList<ResourceClientModel> ResourceClients(this CacheManager cm, int resourceId)
+        public static IEnumerable<ResourceClientModel> ResourceClients(this CacheManager cm, int resourceId)
         {
             string key = "ResourceClients#" + resourceId;
 
-            var result = cm.GetContextItem<IList<ResourceClientModel>>(key);
+            var result = cm.GetContextItem<IEnumerable<ResourceClientModel>>(key);
 
-            if (result == null || result.Count > 0)
+            if (result == null || result.Count() <= 0)
             {
-                result = cm.ServiceProvider.DataAccess.Session.Query<ResourceClientInfo>().Where(x => x.ResourceID == resourceId).Model<ResourceClientModel>();
+                result = DA.Current.Query<ResourceClientInfo>().Where(x => x.ResourceID == resourceId).Model<ResourceClientModel>();
                 cm.SetContextItem(key, result);
             }
 
             return result;
         }
 
-        public static IList<ResourceClientModel> ToolEngineers(this CacheManager cm, int resourceId)
+        public static IEnumerable<ResourceClientModel> ToolEngineers(this CacheManager cm, int resourceId)
         {
             return cm.ResourceClients(resourceId).Where(x => (x.AuthLevel & ClientAuthLevel.ToolEngineer) > 0).ToList();
         }
@@ -131,7 +123,7 @@ namespace LNF.Scheduler
         {
             var client = cm.GetClient(clientId);
             var resourceClients = cm.ResourceClients(resourceId);
-            return DA.Current.ReservationManager().GetAuthLevel(resourceClients, client, resourceId);
+            return DA.Use<IReservationManager>().GetAuthLevel(resourceClients, client, resourceId);
         }
 
         public static void ClearResourceClients(this CacheManager cm, int resourceId)
@@ -162,7 +154,7 @@ namespace LNF.Scheduler
         {
             return cm.GetSessionValue(SessionKeys.IsOnKiosk, () =>
             {
-                string kioskIp = cm.ServiceProvider.Context.UserHostAddress;
+                string kioskIp = ServiceProvider.Current.Context.UserHostAddress;
                 return KioskUtility.IsOnKiosk(cm.GetClientLabs(), kioskIp);
             });
         }
@@ -176,7 +168,7 @@ namespace LNF.Scheduler
         {
             return cm.GetSessionValue(SessionKeys.ClientLabs, () =>
             {
-                string kioskIp = cm.ServiceProvider.Context.UserHostAddress;
+                string kioskIp = ServiceProvider.Current.Context.UserHostAddress;
                 return KioskUtility.IpCheck(cm.ClientID, kioskIp);
             });
         }
@@ -191,72 +183,72 @@ namespace LNF.Scheduler
             cm.SetSessionValue(SessionKeys.DisplayDefaultHours, value);
         }
 
-        public static IList<ProcessInfoModel> ProcessInfos(this CacheManager cm, int resourceId)
+        public static IEnumerable<ProcessInfoModel> ProcessInfos(this CacheManager cm, int resourceId)
         {
             string key = "ProcessInfos#" + resourceId.ToString();
 
-            IList<ProcessInfoModel> result = cm.GetContextItem<IList<ProcessInfoModel>>(key);
+            var result = cm.GetContextItem<IEnumerable<ProcessInfoModel>>(key);
 
-            if (result == null || result.Count == 0)
+            if (result == null || result.Count() == 0)
             {
-                result = cm.ServiceProvider.DataAccess.Session.Query<ProcessInfo>().Where(x => x.Resource.ResourceID == resourceId).Model<ProcessInfoModel>();
+                result = DA.Current.Query<ProcessInfo>().Where(x => x.Resource.ResourceID == resourceId).Model<ProcessInfoModel>();
                 cm.SetContextItem(key, result);
             }
 
             return result;
         }
 
-        public static IList<ProcessInfoLineModel> ProcessInfoLines(this CacheManager cm, int processInfoId)
+        public static IEnumerable<ProcessInfoLineModel> ProcessInfoLines(this CacheManager cm, int processInfoId)
         {
             string key = "ProcessInfoLines#" + processInfoId.ToString();
 
-            IList<ProcessInfoLineModel> result = cm.GetContextItem<IList<ProcessInfoLineModel>>(key);
+            var result = cm.GetContextItem<IEnumerable<ProcessInfoLineModel>>(key);
 
-            if (result == null || result.Count == 0)
+            if (result == null || result.Count() == 0)
             {
-                result = cm.ServiceProvider.DataAccess.Session.Query<ProcessInfoLine>().Where(x => x.ProcessInfoID == processInfoId).Model<ProcessInfoLineModel>();
+                result = DA.Current.Query<ProcessInfoLine>().Where(x => x.ProcessInfoID == processInfoId).Model<ProcessInfoLineModel>();
                 cm.SetContextItem(key, result);
             }
 
             return result;
         }
 
-        public static IList<ReservationProcessInfoItem> ReservationProcessInfos(this CacheManager cm)
+        public static IEnumerable<ReservationProcessInfoItem> ReservationProcessInfos(this CacheManager cm)
         {
             return cm.GetSessionValue(SessionKeys.ReservationProcessInfos, () => new List<ReservationProcessInfoItem>());
         }
 
-        public static void ReservationProcessInfos(this CacheManager cm, IList<ReservationProcessInfoItem> value)
+        public static void ReservationProcessInfos(this CacheManager cm, IEnumerable<ReservationProcessInfoItem> value)
         {
             cm.SetSessionValue(SessionKeys.ReservationProcessInfos, value);
         }
 
-        public static IList<ReservationInviteeItem> ReservationInvitees(this CacheManager cm)
+        public static IEnumerable<ReservationInviteeItem> ReservationInvitees(this CacheManager cm)
         {
-            return cm.GetSessionValue<IList<ReservationInviteeItem>>(SessionKeys.ReservationInvitees, () => null);
+            return cm.GetSessionValue<IEnumerable<ReservationInviteeItem>>(SessionKeys.ReservationInvitees, () => null);
         }
 
-        public static void ReservationInvitees(this CacheManager cm, IList<ReservationInviteeItem> value)
+        public static void ReservationInvitees(this CacheManager cm, IEnumerable<ReservationInviteeItem> value)
         {
             cm.SetSessionValue(SessionKeys.ReservationInvitees, value);
         }
 
-        public static IList<ReservationInviteeItem> RemovedInvitees(this CacheManager cm)
+        public static IEnumerable<ReservationInviteeItem> RemovedInvitees(this CacheManager cm)
         {
-            return cm.GetSessionValue<IList<ReservationInviteeItem>>(SessionKeys.RemovedInvitees, () => null);
+            return cm.GetSessionValue<IEnumerable<ReservationInviteeItem>>(SessionKeys.RemovedInvitees, () => null);
         }
 
-        public static void RemovedInvitees(this CacheManager cm, IList<ReservationInviteeItem> value)
+        public static void RemovedInvitees(this CacheManager cm, IEnumerable<ReservationInviteeItem> value)
         {
             cm.SetSessionValue(SessionKeys.RemovedInvitees, value);
         }
 
-        public static IList<AvailableInviteeItem> AvailableInvitees(this CacheManager cm)
+        public static IEnumerable<AvailableInviteeItem> AvailableInvitees(this CacheManager cm)
         {
-            return cm.GetSessionValue<IList<AvailableInviteeItem>>(SessionKeys.AvailableInvitees, () => null);
+            return cm.GetSessionValue<IEnumerable<AvailableInviteeItem>>(SessionKeys.AvailableInvitees, () => null);
         }
 
-        public static void AvailableInvitees(this CacheManager cm, IList<AvailableInviteeItem> value)
+        public static void AvailableInvitees(this CacheManager cm, IEnumerable<AvailableInviteeItem> value)
         {
             cm.SetSessionValue(SessionKeys.AvailableInvitees, value);
         }
@@ -274,29 +266,6 @@ namespace LNF.Scheduler
         public static ClientAuthLevel SelectAuthLevel(this CacheManager cm, ResourceModel item, IPrivileged client)
         {
             return cm.GetAuthLevel(item.ResourceID, client.ClientID);
-        }
-    }
-
-    public static class SessionExtensions
-    {
-        public static ResourceManager ResourceManager(this ISession session)
-        {
-            return new ResourceManager(session);
-        }
-
-        public static ReservationManager ReservationManager(this ISession session)
-        {
-            return new ReservationManager(session);
-        }
-
-        public static ReservationInviteeManager ReservationInviteeManager(this ISession session)
-        {
-            return new ReservationInviteeManager(session);
-        }
-
-        public static EmailManager EmailManager(this ISession session)
-        {
-            return new EmailManager(session);
         }
     }
 }

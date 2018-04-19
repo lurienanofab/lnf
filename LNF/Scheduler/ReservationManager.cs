@@ -16,13 +16,15 @@ using System.Threading.Tasks;
 
 namespace LNF.Scheduler
 {
-    public class ReservationManager : ManagerBase
+    public class ReservationManager : ManagerBase, IReservationManager
     {
-        public EmailManager EmailManager { get; }
+        protected IEmailManager EmailManager { get; }
+        protected IClientManager ClientManager { get; }
 
-        public ReservationManager(ISession session) : base(session)
+        public ReservationManager(ISession session, IEmailManager emailManager, IClientManager clientManager) : base(session)
         {
-            EmailManager = new EmailManager(session);
+            EmailManager = emailManager;
+            ClientManager = clientManager;
         }
 
         public readonly ReservationState[] TruthTable = new[]
@@ -133,11 +135,13 @@ namespace LNF.Scheduler
 
             double duration = (endDateTime - beginDateTime).TotalMinutes;
 
+            int accountId = Properties.Current.LabAccount.AccountID;
+
             Reservation result = new Reservation()
             {
                 Resource = Session.Single<Resource>(resourceId),
                 Client = Session.Single<Client>(clientId),
-                Account = Properties.Current.LabAccount,
+                Account = Session.Single<Account>(accountId),
                 Activity = repairActivity,
                 BeginDateTime = beginDateTime,
                 EndDateTime = endDateTime,
@@ -175,7 +179,7 @@ namespace LNF.Scheduler
             if (!rsv.RecurrenceID.HasValue)
             {
                 // These two activites allow for creating a reservation in the past
-                if (rsv.Activity != Properties.Current.Activities.FacilityDownTime && rsv.Activity != Properties.Current.Activities.Repair)
+                if (rsv.Activity.ActivityID != Properties.Current.Activities.FacilityDownTime.ActivityID && rsv.Activity.ActivityID != Properties.Current.Activities.Repair.ActivityID)
                 {
                     // Granularity			: stored in minutes and entered in minutes
                     // Offset				: stored in hours and entered in hours 
@@ -630,6 +634,52 @@ namespace LNF.Scheduler
                 EmailManager.EmailOnOpenSlot(res.ResourceID, rsv.BeginDateTime, nextBeginDateTime.Value, EmailNotify.OnOpening, reservationId);
         }
 
+        public int DeleteByGroup(int groupId, int? modifiedByClientId)
+        {
+            // procReservationDelete @Action = 'ByGroupID'
+
+            //UPDATE dbo.Reservation
+            //SET IsActive = 0
+            //WHERE GroupID = @GroupID
+
+            IList<Reservation> query = Session.Query<Reservation>().Where(x => x.GroupID == groupId).ToList();
+
+            foreach (Reservation rsv in query)
+            {
+                rsv.IsActive = false;
+
+                // [2016-04-08 jg] This is not in the original sp but why would we not set this? Also it is set in DeleteByRecurrence so I'm adding it for consistency.
+                rsv.LastModifiedOn = DateTime.Now;
+
+                // also an entry into history is made for each reservation
+                InsertReservationHistory("ByGroupID", "procReservationDelete", rsv, modifiedByClientId);
+            }
+
+            return query.Count;
+        }
+
+        public int DeleteByRecurrence(int recurrenceId, int? modifiedByClientId)
+        {
+            // procReservationDelete @Action = 'ByRecurrenceID'
+
+            //UPDATE dbo.Reservation
+            //SET IsActive = 0, LastModifiedOn = GETDATE()
+            //WHERE RecurrenceID = @RecurrenceID AND BeginDateTime > GETDATE()
+
+            IList<Reservation> query = Session.Query<Reservation>().Where(x => x.RecurrenceID == recurrenceId && x.BeginDateTime > DateTime.Now).ToList();
+
+            foreach (Reservation rsv in query)
+            {
+                rsv.IsActive = false;
+                rsv.LastModifiedOn = DateTime.Now;
+
+                // also an entry into history is made for each reservation
+                InsertReservationHistory("ByRecurrenceID", "procReservationDelete", rsv, modifiedByClientId);
+            }
+
+            return query.Count;
+        }
+
         public IQueryable<ReservationInvitee> GetInvitees(Reservation rsv)
         {
             return Session.Query<ReservationInvitee>().Where(x => x.Reservation.ReservationID == rsv.ReservationID);
@@ -826,7 +876,7 @@ namespace LNF.Scheduler
             ReservationInviteeData.Update(CopyReservationProcessInfoTable(), result.ReservationID);
 
             EmailManager.EmailOnUserUpdate(result);
-            EmailManager.EmailOnInvited(result, CacheManager.Current.ReservationInvitees(), EmailManager.ReservationModificationType.Modified);
+            EmailManager.EmailOnInvited(result, CacheManager.Current.ReservationInvitees(), ReservationModificationType.Modified);
             EmailManager.EmailOnUninvited(rsv, CacheManager.Current.RemovedInvitees());
 
             return result;
@@ -850,16 +900,6 @@ namespace LNF.Scheduler
         {
             rsv.Account = Session.Single<Account>(accountId);
             AddReservationHistory("ReservationUtility", "UpdateAccount", rsv);
-        }
-
-        public DateTime GetBeginDateTime(Reservation rsv)
-        {
-            return (rsv.ActualBeginDateTime == null) ? rsv.BeginDateTime : rsv.ActualBeginDateTime.Value;
-        }
-
-        public DateTime GetEndDateTime(Reservation rsv)
-        {
-            return (rsv.ActualEndDateTime == null) ? rsv.EndDateTime : rsv.ActualEndDateTime.Value;
         }
 
         public ReservationInProgress GetRepairReservationInProgress(int resourceId)
@@ -1457,7 +1497,7 @@ namespace LNF.Scheduler
             if (rsv.Activity.AccountType == ActivityAccountType.Reserver || rsv.Activity.AccountType == ActivityAccountType.Both)
             {
                 //Load reserver's accounts
-                result = Session.ClientManager().ActiveClientAccounts(rsv.Client, sd, ed).ToList();
+                result = ClientManager.ActiveClientAccounts(rsv.Client, sd, ed).ToList();
             }
 
             if (rsv.Activity.AccountType == ActivityAccountType.Invitee || rsv.Activity.AccountType == ActivityAccountType.Both)
@@ -1465,7 +1505,7 @@ namespace LNF.Scheduler
                 //Loads each of the invitee's accounts
                 foreach (ReservationInvitee ri in GetInvitees(rsv))
                 {
-                    IQueryable<ClientAccount> temp = Session.ClientManager().ActiveClientAccounts(ri.Invitee, sd, ed);
+                    IQueryable<ClientAccount> temp = ClientManager.ActiveClientAccounts(ri.Invitee, sd, ed);
 
                     if (result == null)
                         result = temp.ToList();
@@ -1678,6 +1718,109 @@ namespace LNF.Scheduler
 
             // also an entry into history is made
             InsertReservationHistory("UpdateFacilityDownTime", "procReservationUpdate", rsv, modifiedByClientId);
+        }
+
+        public TimeSpan GetTimeUntilNextReservation(int resourceId, int reservationId, int clientId, DateTime beginDateTime)
+        {
+            // procReservationSelect @Action = 'TimeTillNextReservation'
+
+            //DECLARE @NextBeginTime datetime
+            //DECLARE @TimeTillNext int
+            //SET @NextBeginTime = NULL
+            //SET @TimeTillNext = 9999999 -- arbitrarily large number
+
+            ResourceModel res = CacheManager.Current.ResourceTree().GetResource(resourceId);
+
+            DateTime? nextBeginTime = null;
+            double timeUntilNext = 9999999;
+
+            //SELECT TOP 1 @NextBeginTime = Rv.BeginDateTime
+            //FROM dbo.Reservation Rv
+            //WHERE Rv.ResourceID = @ResourceID
+            //    AND Rv.BeginDateTime >= @BeginDateTime
+            //    AND Rv.IsActive = 1
+            //    AND Rv.ReservationID <> @ReservationID
+            //    AND Rv.ActualEndDateTime IS NULL
+            //ORDER BY BeginDateTime
+
+            nextBeginTime = Session.Query<Reservation>()
+                .Where(x =>
+                    x.Resource.ResourceID == resourceId
+                    && x.IsActive
+                    && x.BeginDateTime >= beginDateTime
+                    && x.ReservationID != reservationId
+                    && x.ActualEndDateTime == null)
+                .OrderBy(x => x.BeginDateTime)
+                .Select(x => x.BeginDateTime)
+                .FirstOrDefault();
+
+            //IF NOT @NextBeginTime IS NULL
+            //    SET @TimeTillNext = DATEDIFF(minute, @BeginDateTime, @NextBeginTime)
+
+            if (nextBeginTime != null)
+                timeUntilNext = nextBeginTime.Value.Subtract(beginDateTime).TotalMinutes;
+
+            //DECLARE @ReservableMinutes int
+            //SET @ReservableMinutes = dbo.udf_SelectReservableMinutes (@ResourceID, @ClientID, GETDATE())
+
+            double reservableMinutes = SelectReservableMinutes(res.ResourceID, clientId, res.ReservFence, res.MaxAlloc, DateTime.Now);
+
+            //IF @ReservableMinutes < 0 
+            //BEGIN
+            //    SELECT TimeTillNextReservation = 0
+            //    RETURN
+            //END
+
+            if (reservableMinutes <= 0)
+                return TimeSpan.FromMinutes(0);
+
+            //SET @ReservedMinutes = 0
+
+            //SELECT @ReservedMinutes = Duration 
+            //FROM dbo.Reservation Rv
+            //WHERE Rv.ReservationID = @ReservationID
+
+            double reservedMinutes = 0;
+
+            if (reservationId > 0)
+            {
+                Reservation rsv = Session.Single<Reservation>(reservationId);
+
+                if (rsv != null)
+                    reservedMinutes = rsv.Duration;
+            }
+
+            //-- A reservation can be increased in duration by any available time
+            //SET @ReservableMinutes = @ReservableMinutes + @ReservedMinutes
+
+            reservableMinutes = reservableMinutes + reservedMinutes;
+
+            //-- return the min of reservable minutes or time till next
+            //IF @ReservableMinutes > @TimeTillNext
+            //    SELECT TimeTillNextReservation = @TimeTillNext
+            //ELSE
+            //BEGIN
+            //    DECLARE @MaxReservTime integer
+            //    SELECT @MaxReservTime = MaxReservTime
+            //    FROM dbo.[Resource]
+            //    WHERE ResourceID = @ResourceID
+
+            //    IF @ReservableMinutes >= @MaxReservTime
+            //        SELECT TimeTillNextReservation = @ReservableMinutes
+            //    ELSE
+            //        SELECT TimeTillNextReservation = -1 * @ReservableMinutes
+            //END
+
+            if (reservableMinutes > timeUntilNext)
+                return TimeSpan.FromMinutes(timeUntilNext);
+            else
+            {
+                double maxReservTime = res.MaxReservTime.TotalMinutes;
+                if (reservableMinutes >= maxReservTime)
+                    return TimeSpan.FromMinutes(reservableMinutes);
+                else
+                    return TimeSpan.FromMinutes(-1 * reservableMinutes);
+            }
         }
     }
 }

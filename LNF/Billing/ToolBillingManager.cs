@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace LNF.Billing
 {
-    public class ToolBillingManager : ManagerBase
+    public class ToolBillingManager : ManagerBase, IToolBillingManager
     {
         public ToolBillingManager(ISession session) : base(session) { }
 

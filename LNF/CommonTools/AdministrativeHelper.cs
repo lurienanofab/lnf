@@ -7,9 +7,14 @@ using System.Linq;
 
 namespace LNF.CommonTools
 {
-    public class AdministrativeHelper : ManagerBase
+    public class AdministrativeHelper : ManagerBase, IAdministrativeHelper
     {
-        public AdministrativeHelper(ISession session) : base(session) { }
+        protected IClientManager ClientManager { get; }
+
+        public AdministrativeHelper(ISession session, IClientManager clientManager) : base(session)
+        {
+            ClientManager = clientManager;
+        }
 
         public void SendEmailToDevelopers(string subject, string body)
         {
@@ -23,9 +28,8 @@ namespace LNF.CommonTools
 
         public IEnumerable<string> GetEmailListByPrivilege(ClientPrivilege privs)
         {
-            var mgr = Session.ClientManager();
-            var clients = mgr.FindByPrivilege(privs);
-            IEnumerable<string> result = clients.Select(c => mgr.PrimaryEmail(c));
+            var clients = ClientManager.FindByPrivilege(privs);
+            IEnumerable<string> result = clients.Select(c => ClientManager.PrimaryEmail(c));
             return result;
         }
     }

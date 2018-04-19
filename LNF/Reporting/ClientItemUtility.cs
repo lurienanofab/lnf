@@ -10,6 +10,8 @@ namespace LNF.Reporting
 {
     public static class ClientItemUtility
     {
+        public static IActiveDataItemManager ActiveDataItemManager => DA.Use<IActiveDataItemManager>();
+
         public static IEnumerable<ClientItem> SelectCurrentActiveClients()
         {
             var result = CreateClientItems(DA.Current.Query<ClientInfo>()
@@ -21,14 +23,14 @@ namespace LNF.Reporting
 
         public static IEnumerable<ClientItem> SelectActiveClients(DateTime period)
         {
-            var query = DA.Current.ActiveDataItemManager().FindActive(DA.Current.Query<ClientInfo>(), x => x.ClientID, period, period.AddMonths(1)).AsQueryable();
+            var query = ActiveDataItemManager.FindActive(DA.Current.Query<ClientInfo>(), x => x.ClientID, period, period.AddMonths(1)).AsQueryable();
             var result = CreateClientItems(query.OrderBy(x => x.DisplayName));
             return result;
         }
 
         public static IEnumerable<ClientItem> SelectActiveManagers(DateTime period)
         {
-            var managers = DA.Current.ActiveDataItemManager().FindActive(DA.Current.Query<ClientAccountInfo>().Where(x => x.Manager), x => x.ClientAccountID, period, period.AddMonths(1));
+            var managers = ActiveDataItemManager.FindActive(DA.Current.Query<ClientAccountInfo>().Where(x => x.Manager), x => x.ClientAccountID, period, period.AddMonths(1));
 
             var items = CreateClientItems(managers.Where(x => x.EmailRank == 1).AsQueryable());
 
@@ -39,7 +41,7 @@ namespace LNF.Reporting
 
         public static ClientItem GetManagerFor(int clientId, DateTime period)
         {
-            var managers = DA.Current.ActiveDataItemManager().FindActive(DA.Current.Query<ClientAccountInfo>().Where(x => x.Manager), x => x.ClientAccountID, period, period.AddMonths(1));
+            var managers = ActiveDataItemManager.FindActive(DA.Current.Query<ClientAccountInfo>().Where(x => x.Manager), x => x.ClientAccountID, period, period.AddMonths(1));
             throw new NotImplementedException();
         }
 

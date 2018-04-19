@@ -133,7 +133,7 @@ namespace LNF.Printing
 
             PdfPTable innerTable = new PdfPTable(new float[] { 0.3F, 0.7F });
 
-            var mgr = DA.Current.ClientManager();
+            var mgr = DA.Use<IClientManager>();
 
             //header row
             innerTable.AddCell(HeaderCell("CUSTOMER INFO"));

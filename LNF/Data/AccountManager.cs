@@ -11,7 +11,14 @@ namespace LNF.Data
 {
     public class AccountManager : ManagerBase, IAccountManager
     {
-        public AccountManager(ISession session) : base(session) { }
+        protected IActiveDataItemManager ActiveDataItemManager { get; }
+        protected IChargeTypeManager ChargeTypeManager { get; }
+
+        public AccountManager(ISession session, IActiveDataItemManager activeDataItemManager, IChargeTypeManager chargeTypeManager) : base(session)
+        {
+            ActiveDataItemManager = activeDataItemManager;
+            ChargeTypeManager = chargeTypeManager;
+        }
 
         public IQueryable<ClientAccount> ClientAccounts(Account item)
         {
@@ -74,20 +81,12 @@ namespace LNF.Data
             if (orgRecharge != null)
                 return orgRecharge.Account.GetChartFields().Project;
             else
-                return Session.ChargeTypeManager().GetAccount(item.Org.OrgType.ChargeType).GetChartFields().Project;
+                return ChargeTypeManager.GetAccount(item.Org.OrgType.ChargeType).GetChartFields().Project;
         }
 
         public IQueryable<Account> ActiveAccounts()
         {
             return Session.Query<Account>().Where(x => x.Active);
-        }
-
-        public IQueryable<Account> FindActiveInDateRange(int clientId, DateTime sd, DateTime ed)
-        {
-            var query = Session.Query<ActiveLog>().Where(x => x.TableName == "ClientAccount" && (x.EnableDate < ed && (x.DisableDate == null || x.DisableDate > sd)));
-            var join = query.Join(Session.Query<ClientAccount>(), o => o.Record, i => i.ClientAccountID, (outer, inner) => inner);
-            var result = join.Where(x => x.ClientOrg.Client.ClientID == clientId).Select(x => x.Account);
-            return result;
         }
 
         public IQueryable<Account> FindByShortCode(string shortCode)
@@ -108,7 +107,7 @@ namespace LNF.Data
             Account acct = Session.Single<Account>(accountId);
             if (acct != null && !acct.Active)
             {
-                Session.ActiveDataItemManager().Enable(acct);
+                ActiveDataItemManager.Enable(acct);
             }
         }
 
@@ -117,7 +116,7 @@ namespace LNF.Data
             Account acct = Session.Single<Account>(accountId);
             if (acct != null && acct.Active)
             {
-                Session.ActiveDataItemManager().Disable(acct);
+                ActiveDataItemManager.Disable(acct);
             }
         }
 

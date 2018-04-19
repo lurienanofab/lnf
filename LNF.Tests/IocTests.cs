@@ -1,4 +1,4 @@
-﻿using LNF.Impl.DependencyInjection;
+﻿using LNF.Data;
 using LNF.Impl.DependencyInjection.Default;
 using LNF.Repository;
 using LNF.Repository.Data;
@@ -53,8 +53,8 @@ namespace LNF.Tests
         {
             using (IOC.Resolver.GetInstance<IUnitOfWork>())
             {
-                var repo = IOC.Resolver.GetInstance<ISchedulerRepository>();
-                var toolCosts = repo.GetToolCosts(DateTime.Now, 10020);
+                var mgr = IOC.Resolver.GetInstance<IResourceManager>();
+                var toolCosts = mgr.GetToolCosts(DateTime.Now, 10020);
                 Assert.AreEqual(40, toolCosts.First().MulVal);
             }
         }
@@ -67,6 +67,21 @@ namespace LNF.Tests
                 var repo = IOC.Resolver.GetInstance<Billing.ToolBillingManager>();
                 var results = repo.SelectToolBilling(DateTime.Parse("2017-02-01"));
                 Assert.IsTrue(results.Count() > 0);
+            }
+        }
+
+        [TestMethod]
+        public void CanGetRange()
+        {
+            ServiceProvider.Current = IOC.Resolver.GetInstance<ServiceProvider>();
+
+            using (ServiceProvider.Current.DataAccess.StartUnitOfWork())
+            {
+                var mgr = DA.Use<IActiveDataItemManager>();
+                var range = mgr.Range(DA.Current.Query<Client>().Where(x => x.ClientID == 1301),
+                    k => new ActiveLogKey("Client", k.ClientID),
+                    DateTime.Parse("2018-01-01"), DateTime.Parse("2018-02-01"));
+                Assert.IsTrue(range.Count() > 0);
             }
         }
     }

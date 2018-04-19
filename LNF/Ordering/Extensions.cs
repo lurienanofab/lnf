@@ -7,14 +7,6 @@ using System.Linq;
 
 namespace LNF.Ordering
 {
-    public static class SessionExtensions
-    {
-        public static PurchaseOrderAccountManager PurchaseOrderAccountManager(this ISession session)
-        {
-            return new PurchaseOrderAccountManager(session);
-        }
-    }
-
     public static class PurchaseOrderItemExtensions
     {
         public static PurchaseOrderDetail GetMostRecentlyOrderedDetail(this PurchaseOrderItem item)

@@ -1,4 +1,6 @@
-﻿using LNF.PhysicalAccess;
+﻿using LNF.Models.Data;
+using LNF.PhysicalAccess;
+using LNF.Repository;
 using LNF.Repository.Data;
 using System;
 using System.Collections.Generic;
@@ -9,14 +11,15 @@ namespace LNF.Data
     public class RoomDataCleanGenerator
     {
         private const double MAX_TIME = 8.0;
+        private IEnumerable<CostModel> _costs;
 
-        private IList<Cost> _costs;
+        protected ICostManager CostManager => DA.Use<ICostManager>();
 
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public Client Client { get; set; }
         public Room Room { get; set; }
-
+        
         public RoomDataCleanGenerator(DateTime startDate, DateTime endDate, Client client = null, Room room = null)
         {
             StartDate = startDate;
@@ -34,10 +37,10 @@ namespace LNF.Data
             return result;
         }
 
-        private IList<Cost> GetCurrentCosts()
+        private IEnumerable<CostModel> GetCurrentCosts()
         {
             if (_costs == null)
-                _costs = CostUtility.FindCosts("RoomCost", EndDate);
+                _costs = CostManager.FindCosts("RoomCost", EndDate);
             return _costs;
         }
 

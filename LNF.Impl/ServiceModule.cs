@@ -9,6 +9,7 @@ namespace LNF.Impl
         {
             ServiceProvider.Current = IOC.Resolver.GetInstance<ServiceProvider>();
         }
+
         public void Dispose()
         {
             // nothing to do here...

@@ -14,9 +14,16 @@ using System.Text;
 
 namespace LNF.Scheduler
 {
-    public class EmailManager : ManagerBase
+    public class EmailManager : ManagerBase, IEmailManager
     {
-        public EmailManager(ISession session) : base(session) { }
+        protected IClientManager ClientManager { get; }
+        protected IClientOrgManager ClientOrgManager { get; }
+
+        public EmailManager(ISession session, IClientManager clientManager, IClientOrgManager clientOrgManager) : base(session)
+        {
+            ClientManager = clientManager;
+            ClientOrgManager = clientOrgManager;
+        }
 
         //Email users who want to be notified of open reservation slots
         public int EmailOnOpenReservations(int resourceId, DateTime startDate, DateTime endDate)
@@ -39,7 +46,7 @@ namespace LNF.Scheduler
                     if (startDate < today.AddHours(Convert.ToDouble(cs.EndHour)) && endDate > today.AddHours(Convert.ToDouble(cs.BeginHour)) && workDays[(int)today.DayOfWeek] == "1")
                     {
                         var client = Session.Single<Client>(clientId);
-                        IEnumerable<string> recipient = Session.ClientManager().ActiveEmails(client);
+                        IEnumerable<string> recipient = ClientManager.ActiveEmails(client);
                         string subject = "Open reservation slot for " + res.ResourceName;
                         string body = res.ResourceName + " just became available for reservation from "
                             + startDate + " to " + endDate + ".<br /><br />"
@@ -57,16 +64,13 @@ namespace LNF.Scheduler
         {
             if (updateCharges || updateAccount || updateNotes)
             {
-                var reservationMgr = Session.ReservationManager();
-                var clientMgr = Session.ClientManager();
-
                 string subject;
                 List<string> toAddr = new List<string>();
                 string emailForgivenCharge = ConfigurationManager.AppSettings["EmailForgivenCharge"];
                 StringBuilder body = new StringBuilder();
-                TimeSpan ts = reservationMgr.GetEndDateTime(rsv) - reservationMgr.GetBeginDateTime(rsv);
+                TimeSpan ts = rsv.GetEndDateTime() - rsv.GetBeginDateTime();
                 string fromAddr = Properties.Current.SchedulerEmail;
-                if (sendToUser) toAddr.AddRange(clientMgr.ActiveEmails(rsv.Client));
+                if (sendToUser) toAddr.AddRange(ClientManager.ActiveEmails(rsv.Client));
                 if (!string.IsNullOrEmpty(emailForgivenCharge))
                     toAddr.Add(emailForgivenCharge);
                 if (toAddr.Count == 0) return;
@@ -84,7 +88,7 @@ namespace LNF.Scheduler
                 body.AppendLine("<div style=\"margin-left: 10px;\">");
                 body.AppendLine(string.Format("Run number: {0}<br />", rsv.ReservationID));
                 body.AppendLine(string.Format("Tool: {0}<br />", rsv.Resource.ResourceName));
-                body.AppendLine(string.Format("Time: from {0} to {1}<br />", reservationMgr.GetBeginDateTime(rsv), reservationMgr.GetEndDateTime(rsv)));
+                body.AppendLine(string.Format("Time: from {0} to {1}<br />", rsv.GetBeginDateTime(), rsv.GetEndDateTime()));
                 body.AppendLine(string.Format("Total minutes: {0}<br />", ts.TotalMinutes.ToString("0.##")));
                 body.AppendLine("</div>");
 
@@ -101,7 +105,7 @@ namespace LNF.Scheduler
                 string fromAddr, subject, body;
                 IEnumerable<string> toAddr;
                 fromAddr = Properties.Current.SchedulerEmail;
-                toAddr = Session.ClientManager().ActiveEmails(rsv.Client);
+                toAddr = ClientManager.ActiveEmails(rsv.Client);
                 subject = string.Format("{0} - Reservation Created", ServiceProvider.Current.Email.CompanyName);
                 body = string.Format("{0}{4}{4}Your reservation beginning at {1} and ending at {2} for resource {3} has been created.",
                     rsv.Client.DisplayName,
@@ -122,7 +126,7 @@ namespace LNF.Scheduler
             {
                 string fromAddr, subject, body;
                 fromAddr = Properties.Current.SchedulerEmail;
-                IEnumerable<string> toAddr = Session.ClientManager().ActiveEmails(rsv.Client);
+                IEnumerable<string> toAddr = ClientManager.ActiveEmails(rsv.Client);
                 subject = string.Format("{0} - Reservation Updated", ServiceProvider.Current.Email.CompanyName);
                 body = string.Format("{0}{4}{4}Your reservation beginning at {1} and ending at {2} for resource {3} has been updated.",
                     rsv.Client.DisplayName,
@@ -143,7 +147,7 @@ namespace LNF.Scheduler
             {
                 string fromAddr, subject, body;
                 fromAddr = Properties.Current.SchedulerEmail;
-                IEnumerable<string> toAddr = Session.ClientManager().ActiveEmails(rsv.Client);
+                IEnumerable<string> toAddr = ClientManager.ActiveEmails(rsv.Client);
                 subject = string.Format("{0} - Reservation Deleted", ServiceProvider.Current.Email.CompanyName);
                 body = string.Format("{0}{4}{4}Your reservation beginning at {1} and ending at {2} for resource {3} has been deleted.",
                     rsv.Client.DisplayName,
@@ -159,13 +163,11 @@ namespace LNF.Scheduler
         //Send email to reserver when reservation is overrode by TE
         public void EmailOnToolEngDelete(Reservation rsv, int toolEngClientId)
         {
-            var clientMgr = Session.ClientManager();
-
             Client toolEng = Session.Single<Client>(toolEngClientId);
             
             string fromAddr, subject, body;
-            fromAddr = clientMgr.PrimaryEmail(toolEng);
-            IEnumerable<string> toAddr = clientMgr.ActiveEmails(rsv.Client);
+            fromAddr = ClientManager.PrimaryEmail(toolEng);
+            IEnumerable<string> toAddr = ClientManager.ActiveEmails(rsv.Client);
             subject = string.Format("{0} - Reservation for {1} has been removed", ServiceProvider.Current.Email.CompanyName, rsv.Client.DisplayName);
             body = string.Format("{0}{7}{7}Your reservation beginning at {1} and ending at {2} for resource {3} has been removed because {4}, who has administrator or tool engineer access, has made a reservation that overrides yours.{7}{7}If you have any questions please contact {4} at {5}.{7}{7}Notes from reserver:{7}{6}",
                 rsv.Client.DisplayName,
@@ -178,12 +180,6 @@ namespace LNF.Scheduler
                 Environment.NewLine);
 
             ServiceProvider.Current.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailOnToolEngDelete(Reservation rsv, int toolEngClientId)", subject, body, fromAddr, toAddr);
-        }
-
-        public enum ReservationModificationType
-        {
-            Created = 1,
-            Modified = 2
         }
 
         //Send email to invitees when they are invited to a reservation
@@ -215,7 +211,7 @@ namespace LNF.Scheduler
                 {
                     if (inviteeSetting.EmailInvited.Value)
                     {
-                        var primary = Session.ClientOrgManager().GetPrimary(ri.InviteeID);
+                        var primary = ClientOrgManager.GetPrimary(ri.InviteeID);
                         if (primary != null)
                             toAddr.Add(primary.Email);
                     }
@@ -249,7 +245,7 @@ namespace LNF.Scheduler
                 {
                     if (inviteeSetting.EmailInvited.Value)
                     {
-                        var primary = Session.ClientOrgManager().GetPrimary(ri.InviteeID);
+                        var primary = ClientOrgManager.GetPrimary(ri.InviteeID);
                         if (primary != null)
                             toAddr.Add(primary.Email);
                     }
@@ -328,7 +324,7 @@ namespace LNF.Scheduler
         {
             string fromAddr, subject, body;
             fromAddr = Properties.Current.SchedulerEmail;
-            IEnumerable<string> toAddr = Session.ClientManager().ActiveEmails(rsv.Client);
+            IEnumerable<string> toAddr = ClientManager.ActiveEmails(rsv.Client);
 
             subject = string.Format("{0} - Reservation Canceled", ServiceProvider.Current.Email.CompanyName);
             body = string.Format("{0}{4}{4}Your reservation beginning at {1} and ending at {2} for resource {3} has been canceled due to an update in the resource configuration.{4}{4}If you have any questions please contact the tool engineer.",
@@ -346,7 +342,7 @@ namespace LNF.Scheduler
         {
             string fromAddr, subject, body;
             fromAddr = Properties.Current.SchedulerEmail;
-            IEnumerable<string> toAddr = Session.ClientManager().ActiveEmails(rsv.Client);
+            IEnumerable<string> toAddr = ClientManager.ActiveEmails(rsv.Client);
 
             subject = string.Format("{0} - Reservation Canceled", ServiceProvider.Current.Email.CompanyName);
             body = string.Format("{0}{8}{8}Your reservation beginning at {1} and ending at {2} for resource {3} has been {4} because this resource has been marked '{5}' until {6}.{8}{8}The reason for the change:{8}{7}{8}{8}If you have any questions, please contact the tool engineer.",
@@ -376,7 +372,7 @@ namespace LNF.Scheduler
             TimeSpan ts = rsv.ChargeEndDateTime() - rsv.ChargeBeginDateTime();
             fromAddr = Properties.Current.SchedulerEmail;
 
-            if (sendToUser) toAddr.AddRange(Session.ClientManager().ActiveEmails(rsv.Client));
+            if (sendToUser) toAddr.AddRange(ClientManager.ActiveEmails(rsv.Client));
 
             if (!string.IsNullOrEmpty(emailForgivenCharge))
                 toAddr.Add(emailForgivenCharge);

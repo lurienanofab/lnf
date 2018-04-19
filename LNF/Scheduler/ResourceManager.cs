@@ -1,19 +1,75 @@
 ﻿using LNF.CommonTools;
+using LNF.Data;
+using LNF.Models.Data;
 using LNF.Models.Scheduler;
 using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Repository.Scheduler;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace LNF.Scheduler
 {
-    public class ResourceManager : ManagerBase
+    public class ResourceManager : ManagerBase, IResourceManager
     {
-        public ResourceManager(ISession session) : base(session) { }
+        protected IContext Context { get; }
+        protected ICostManager CostManager { get; }
+
+        public ResourceManager(ISession session, IContext context, ICostManager costManager) : base(session)
+        {
+            Context = context;
+            CostManager = costManager;
+        }
+
+        public IQueryable<Resource> SelectActive()
+        {
+            return Session.Query<Resource>()
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.ResourceName);
+        }
+
+        public IQueryable<Resource> SelectByLab(int? labId)
+        {
+            //procResourceSelect @Action='SelectByLabID'
+
+            /*if @LabID is null
+                Select ResourceName, ResourceID
+                from Resource
+                where IsActive = 1
+                and LabID in (1, 9)	
+			    order by ResourceName
+		    else
+			    Select ResourceName, ResourceID
+                from Resource
+                where IsActive = 1
+                and LabID = case when @LabID = 0 then LabID else @LabID end
+                order by ResourceName*/
+
+            int[] defaultLabs = { 1, 9 };
+
+            if (ConfigurationManager.AppSettings["DefaultLabs"] != null)
+                defaultLabs = ConfigurationManager.AppSettings["DefaultLabs"].Split(',').Select(int.Parse).ToArray();
+
+            IQueryable<Resource> query;
+
+            if (labId == null)
+                query = Session.Query<Resource>().Where(x => x.IsActive && defaultLabs.Contains(x.ProcessTech.Lab.LabID));
+            else
+            {
+                if (labId.Value == 0)
+                    query = Session.Query<Resource>().Where(x => x.IsActive);
+                else
+                    query = Session.Query<Resource>().Where(x => x.IsActive && x.ProcessTech.Lab.LabID == labId.Value);
+            }
+
+            var result = query.OrderBy(x => x.ProcessTech.Lab.Building.BuildingName).ThenBy(x => x.ProcessTech.Lab.LabName).ThenBy(x => x.ProcessTech.ProcessTechName).ThenBy(x => x.ResourceName);
+
+            return result;
+        }
 
         public Resource GetResource(ResourceModel item)
         {
@@ -66,11 +122,6 @@ namespace LNF.Scheduler
             return ResourceCost.GetAll(costs, item.ResourceID);
         }
 
-        public double SelectReservableMinutes(ResourceModel item, int clientId, DateTime now)
-        {
-            return DA.Current.ReservationManager().SelectReservableMinutes(item.ResourceID, clientId, item.ReservFence, item.MaxAlloc, now);
-        }
-
         public async Task<string> GetInterlockStatus(ResourceModel item)
         {
             DataTable dt = new DataTable();
@@ -81,11 +132,6 @@ namespace LNF.Scheduler
             DataRow dr = dt.Select(string.Format("ResourceID = {0}", item.ResourceID)).FirstOrDefault();
             string result = dr["InterlockStatus"].ToString();
             return result;
-        }
-
-        public DateTime? OpenResSlot(ResourceModel item, DateTime now, DateTime sd)
-        {
-            return DA.Current.ReservationManager().OpenResSlot(item.ResourceID, item.ReservFence, item.MinReservTime, now, sd);
         }
 
         /// <summary>
@@ -107,6 +153,39 @@ namespace LNF.Scheduler
         public void GetTimeSlotBoundary(ResourceModel item, ref DateTime startTime, ref DateTime endTime)
         {
             ResourceUtility.GetTimeSlotBoundary(item.Granularity, item.Offset, ref startTime, ref endTime);
+        }
+
+        public IEnumerable<ResourceCostModel> GetToolCosts(DateTime cutoff, int resourceId)
+        {
+            string key = "ResourceCosts#" + resourceId.ToString();
+
+            IList<ResourceCostModel> result = Context.GetItem<IList<ResourceCostModel>>(key);
+
+            if (result == null || result.Count == 0)
+            {
+                var costs = CostManager.FindCosts("ToolCost", cutoff, null, resourceId);
+                result = CreateResourceCostModels(costs).ToList();
+                Context.SetItem(key, result);
+            }
+
+            return result;
+        }
+
+        public IEnumerable<ResourceCostModel> GetToolCosts(DateTime cutoff, int resourceId, int chargeTypeId)
+        {
+            return GetToolCosts(cutoff, resourceId).Where(x => x.ChargeTypeID == chargeTypeId).ToList();
+        }
+
+        private IEnumerable<ResourceCostModel> CreateResourceCostModels(IEnumerable<CostModel> source)
+        {
+            return source.Select(x => new ResourceCostModel()
+            {
+                ResourceID = x.RecordID,
+                ChargeTypeID = x.ChargeTypeID,
+                ChargeTypeName = x.ChargeTypeName,
+                AddVal = x.AddVal,
+                MulVal = x.MulVal
+            }).ToList();
         }
     }
 }

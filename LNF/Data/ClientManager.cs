@@ -10,7 +10,12 @@ namespace LNF.Data
 {
     public class ClientManager : ManagerBase, IClientManager
     {
-        public ClientManager(ISession session) : base(session) { }
+        protected IActiveDataItemManager ActiveDataItemManager { get; }
+
+        public ClientManager(ISession session, IActiveDataItemManager activeDataItemManager) : base(session)
+        {
+            ActiveDataItemManager = activeDataItemManager;
+        }
 
         public void Update(Client client, ClientItem item, ActiveDataItemManager activeDataItemMgr)
         {
@@ -379,9 +384,9 @@ namespace LNF.Data
             SetPassword(result.ClientID, password);
 
             if (active)
-                Session.ActiveDataItemManager().Enable(result);
+                ActiveDataItemManager.Enable(result);
             else
-                Session.ActiveDataItemManager().Disable(result);
+                ActiveDataItemManager.Disable(result);
 
             return result;
         }
@@ -459,7 +464,7 @@ namespace LNF.Data
             co.SubsidyStartDate = subsidyStart;
             co.NewFacultyStartDate = newFacultyStart;
 
-            Session.ActiveDataItemManager().Enable(co);
+            ActiveDataItemManager.Enable(co);
 
             //find any address that need to be dealt with
             if (addedAddress != null && addedAddress.Count() > 0)

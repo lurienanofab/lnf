@@ -12,19 +12,13 @@ using System.Text;
 
 namespace LNF.Billing
 {
-    public class ApportionmentManager
+    public class ApportionmentManager : ManagerBase, IApportionmentManager
     {
-        private ServiceProvider _provider;
+        protected IClientManager ClientManager { get; }
 
-        public CacheManager CacheManager { get; }
-        public ISession Session { get { return _provider.DataAccess.Session; } }
-        public IEmailService EmailService { get { return _provider.Email; } }
-        public IPhysicalAccessService PhysicalAccessService { get { return _provider.PhysicalAccess; } }
-
-        public ApportionmentManager(ServiceProvider serviceProvider)
+        public ApportionmentManager(ISession session, IClientManager clientManager) : base(session)
         {
-            _provider = serviceProvider;
-            CacheManager = new CacheManager(_provider);
+            ClientManager = clientManager;
         }
 
         public void CheckClientIssues()
@@ -68,12 +62,12 @@ namespace LNF.Billing
 
                 foreach (ApportionmentClient ac in query)
                 {
-                    string Subject = string.Format("Please apportion your {0} lab usage time", EmailService.CompanyName);
+                    string Subject = string.Format("Please apportion your {0} lab usage time", ServiceProvider.Current.Email.CompanyName);
                     bodyHtml = new StringBuilder();
                     bodyHtml.AppendLine(ac.DisplayName + ":<br /><br />");
                     if (!string.IsNullOrEmpty(message))
                         bodyHtml.AppendLine("<p>" + message + "</p>");
-                    bodyHtml.AppendLine("As can best be determined, you need to apportion your " + EmailService.CompanyName + " lab time. This is necessary because you had access to multiple accounts and have entered one or more " + EmailService.CompanyName + " rooms this billing period.<br /><br />");
+                    bodyHtml.AppendLine("As can best be determined, you need to apportion your " + ServiceProvider.Current.Email.CompanyName + " lab time. This is necessary because you had access to multiple accounts and have entered one or more " + ServiceProvider.Current.Email.CompanyName + " rooms this billing period.<br /><br />");
                     bodyHtml.AppendLine("This matter must be resolved by the close of the third business day of this month.");
                     bodyHtml.AppendLine("For more information about how to apportion your time, please check the “Apportionment Instructions” file in the LNF Online Services > Help > User Fees section.");
                     string[] emails = ac.Emails.Split(',');
@@ -85,7 +79,7 @@ namespace LNF.Billing
                             if (recipients != null)
                                 emails = emails.Concat(recipients).ToArray();
 
-                            EmailService.SendMessage(0, "LNF.Billing.ApportionmentUtility.SendMonthlyApportionmentEmails(DateTime period, string message = null, string[] recipients = null, bool noEmail = false)", Subject, bodyHtml.ToString(), "lnf-billing@umich.edu", emails, isHtml: true);
+                            ServiceProvider.Current.Email.SendMessage(0, "LNF.Billing.ApportionmentUtility.SendMonthlyApportionmentEmails(DateTime period, string message = null, string[] recipients = null, bool noEmail = false)", Subject, bodyHtml.ToString(), "lnf-billing@umich.edu", emails, isHtml: true);
                         }
 
                         // Always increment result even if noEmail == true so we can at least return how many emails would be sent.
@@ -110,13 +104,13 @@ namespace LNF.Billing
 
             using (var timer = LogTaskTimer.Start("ApportionmentUtility.CheckPassbackViolations", "startDate = '{0:yyyy-MM-dd}', endDate = '{1:yyyy-MM-dd}', count = {2}", () => new object[] { startDate, endDate, count }))
             {
-                int[] clientIds = PhysicalAccessService.CheckPassbackViolations(startDate, endDate);
+                int[] clientIds = ServiceProvider.Current.PhysicalAccess.CheckPassbackViolations(startDate, endDate);
                 count = clientIds.Length;
 
                 foreach (int id in clientIds)
                 {
                     Client client = Session.Single<Client>(id);
-                    string recip = DA.Current.ClientManager().PrimaryEmail(client);
+                    string recip = ClientManager.PrimaryEmail(client);
                     string subj = "Lab access data anomaly - please check!";
                     string body = client.DisplayName + ":<br /><br />"
                      + "There appears to have been an error with your record of entrances/exists from "
@@ -125,7 +119,7 @@ namespace LNF.Billing
                      + "This matter must be resolved by the close of the third business day of this month.";
 
                     if (recip.Trim().Length > 0)
-                        EmailService.SendMessage(0, "LNF.Billing.ApportionmentUtility.CheckPassbackViolations()", subj, body, SendEmail.SystemEmail, new string[] { recip }, isHtml: true);
+                        ServiceProvider.Current.Email.SendMessage(0, "LNF.Billing.ApportionmentUtility.CheckPassbackViolations()", subj, body, SendEmail.SystemEmail, new string[] { recip }, isHtml: true);
 
                     timer.AddData("Has passback violation: ", recip);
                 }
@@ -177,11 +171,11 @@ namespace LNF.Billing
 
             // Sometimes there is a room (e.g. Conference Room) with a non-null RoomID that does not 
             // have an entry in the Room table. In this case td.RoomID != roomId.
-            if (!CacheManager.Rooms().Any(x => x.RoomID == td.RoomID.Value))
+            if (!CacheManager.Current.Rooms().Any(x => x.RoomID == td.RoomID.Value))
                 return false;
 
             // get the room for this td
-            var r = CacheManager.GetRoom(td.RoomID.Value);
+            var r = CacheManager.Current.GetRoom(td.RoomID.Value);
 
             // check if roomId is either r.RoomID or r.ParentID
             return roomId == r.RoomID || roomId == r.ParentID;

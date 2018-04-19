@@ -1,8 +1,4 @@
-﻿using LNF.Data;
-using LNF.Impl.DependencyInjection;
-using LNF.Repository;
-using LNF.Scheduler;
-using System;
+﻿using LNF.Repository;
 
 namespace LNF.Impl.DataAccess
 {
@@ -24,10 +20,6 @@ namespace LNF.Impl.DataAccess
         }
 
         public ISession Session => DependencyResolver.GetInstance<ISession>();
-
-        public IDataRepository DataRepository => DependencyResolver.GetInstance<IDataRepository>();
-
-        public ISchedulerRepository SchedulerRepository => DependencyResolver.GetInstance<ISchedulerRepository>();
 
         public string UniversalPassword => _config.UniversalPassword;
 

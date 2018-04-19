@@ -19,6 +19,8 @@ namespace LNF.Reporting
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
+        protected IActiveDataItemManager ActiveDataItemManager => DA.Use<IActiveDataItemManager>();
+
         public DefaultCriteria()
         {
             parameters = new Dictionary<string, string>();
@@ -50,7 +52,7 @@ namespace LNF.Reporting
 
         public IEnumerable<Client> ActiveClients()
         {
-            return DA.Current.ActiveDataItemManager().FindActive(DA.Current.Query<Client>(), x => x.ClientID, StartDate, EndDate);
+            return ActiveDataItemManager.FindActive(DA.Current.Query<Client>(), x => x.ClientID, StartDate, EndDate);
         }
 
         public CriteriaWriter CreateWriter(StringBuilder sb)

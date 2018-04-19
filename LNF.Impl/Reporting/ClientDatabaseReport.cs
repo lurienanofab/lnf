@@ -13,6 +13,10 @@ namespace LNF.Reporting
 {
     public class ClientDatabaseReport : DefaultReport<UserCriteria>
     {
+        protected IClientManager ClientManager => DA.Use<IClientManager>();
+        protected IClientAccountManager ClientAccountManager => DA.Use<IClientAccountManager>();
+        protected IActiveLogManager ActiveLogManager => DA.Use<IActiveLogManager>();
+
         public override string Key { get { return "client-database-report"; } }
         public override string Title { get { return "Client Database Report"; } }
         public override string CategoryName { get { return "Database Reports"; } }
@@ -49,7 +53,7 @@ namespace LNF.Reporting
 
         public IList<Client> GetClientsInPeriod()
         {
-            IList<ActiveLog> logs = DA.Current.ActiveLogManager().Range("Client", Criteria.Period, Criteria.Period.AddMonths(1));
+            IList<ActiveLog> logs = ActiveLogManager.Range("Client", Criteria.Period, Criteria.Period.AddMonths(1));
             int[] records = logs.Select(x => x.Record).ToArray();
             IList<Client> result = DA.Current.Query<Client>().Where(x => records.Contains(x.ClientID)).ToList();
             return result;
@@ -59,7 +63,7 @@ namespace LNF.Reporting
         {
             ArrayList list = new ArrayList();
             IEnumerable<Client> query = GetClientsInPeriod();
-            IEnumerable<ActiveLogItem<ClientOrg>> activeClientOrgs = new DateRange(Criteria.Period).Items<ClientOrg>();
+            IEnumerable<ActiveLogItem<ClientOrg>> activeClientOrgs = new DateRange(Criteria.Period).Items<ClientOrg>(x => new ActiveLogKey("ClientOrg", x.ClientOrgID));
             IEnumerable<Priv> privs = DA.Current.Query<Priv>();
             foreach (Client c in query)
             {
@@ -85,7 +89,7 @@ namespace LNF.Reporting
                 {
                     Error = "",
                     Client = GetDetailClientInfo(c),
-                    Orgs = GetDetailOrgInfo(DA.Current.ClientManager().ClientOrgs(c).ToList())
+                    Orgs = GetDetailOrgInfo(ClientManager.ClientOrgs(c).ToList())
                 };
                 result.Data = data;
             }
@@ -104,7 +108,7 @@ namespace LNF.Reporting
             ArrayList list = new ArrayList();
             foreach (ClientOrg co in corgs)
             {
-                if (DA.Current.ActiveLogManager().IsActive(co, Criteria.Period, Criteria.Period.AddMonths(1)))
+                if (ActiveLogManager.IsActive(co, Criteria.Period, Criteria.Period.AddMonths(1)))
                 {
                     var item = new
                     {
@@ -115,7 +119,7 @@ namespace LNF.Reporting
                         Email = co.Email,
                         Managers = GetDetailManagerInfo(ClientManagerUtility.FindManagers(co.ClientOrgID)),
                         BillingType = GetDetailBillingType(co),
-                        Accounts = GetDetailAccounts(DA.Current.ClientAccountManager().FindClientAccounts(co.ClientOrgID))
+                        Accounts = GetDetailAccounts(ClientAccountManager.FindClientAccounts(co.ClientOrgID))
                     };
                     list.Add(item);
                 }
@@ -128,7 +132,7 @@ namespace LNF.Reporting
             List<string> list = new List<string>();
             foreach (var cm in mgrs)
             {
-                if (DA.Current.ActiveLogManager().IsActive(cm, Criteria.Period, Criteria.Period.AddMonths(1)))
+                if (ActiveLogManager.IsActive(cm, Criteria.Period, Criteria.Period.AddMonths(1)))
                 {
                     list.Add(cm.ManagerOrg.Client.DisplayName);
                 }
@@ -147,7 +151,7 @@ namespace LNF.Reporting
             List<string> list = new List<string>();
             foreach (ClientAccount ca in caccts)
             {
-                if (DA.Current.ActiveLogManager().IsActive(ca, Criteria.Period, Criteria.Period.AddMonths(1)))
+                if (ActiveLogManager.IsActive(ca, Criteria.Period, Criteria.Period.AddMonths(1)))
                     list.Add(ca.Account.Name);
             }
             return list.ToArray();

@@ -1,5 +1,4 @@
-﻿using LNF.Models.Scheduler;
-using System;
+﻿using LNF.Repository.Scheduler;
 using System.Collections.Generic;
 
 namespace LNF.Scheduler
@@ -9,7 +8,6 @@ namespace LNF.Scheduler
     /// </summary>
     public interface ISchedulerRepository
     {
-        IEnumerable<ResourceCostModel> GetToolCosts(DateTime cutoff, int resourceId);
-        IEnumerable<ResourceCostModel> GetToolCosts(DateTime cutoff, int resourceId, int chargeTypeId);
+        IEnumerable<Reservation> SelectRecentReservations(int resourceId, int? take = null);
     }
 }

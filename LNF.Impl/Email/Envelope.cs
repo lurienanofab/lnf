@@ -14,9 +14,12 @@ namespace LNF.Impl.Email
     {
         private int _ClientID;
         private string _Caller;
-
         private MailMessage _mailMessage;
         private Message _message;
+
+        protected IClientManager ClientManager => DA.Use<IClientManager>();
+
+        public static IClientOrgManager ClientOrgManager => DA.Use<IClientOrgManager>();
 
         public int ClientID { get { return _ClientID; } }
 
@@ -59,7 +62,7 @@ namespace LNF.Impl.Email
         {
             Envelope result = new Envelope();
 
-            var primary = DA.Current.ClientOrgManager().GetPrimary(clientId);
+            var primary = ClientOrgManager.GetPrimary(clientId);
 
             if (primary == null)
                 throw new Exception(string.Format("Cannot find primary ClientOrg for ClientID {0}", clientId));
@@ -85,7 +88,7 @@ namespace LNF.Impl.Email
         {
             Envelope result = new Envelope();
 
-            var primary = DA.Current.ClientOrgManager().GetPrimary(clientId);
+            var primary = ClientOrgManager.GetPrimary(clientId);
 
             if (primary == null)
                 throw new Exception(string.Format("Cannot find primary ClientOrg for ClientID {0}", clientId));
@@ -141,20 +144,18 @@ namespace LNF.Impl.Email
         {
             if (addresses == null) return this;
 
-            var mgr = DA.Current.ClientManager();
-
             foreach (Client addr in addresses)
             {
                 switch (addrType)
                 {
                     case AddressType.To:
-                        _mailMessage.To.Add(mgr.PrimaryEmail(addr));
+                        _mailMessage.To.Add(ClientManager.PrimaryEmail(addr));
                         break;
                     case AddressType.Cc:
-                        _mailMessage.CC.Add(mgr.PrimaryEmail(addr));
+                        _mailMessage.CC.Add(ClientManager.PrimaryEmail(addr));
                         break;
                     case AddressType.Bcc:
-                        _mailMessage.Bcc.Add(mgr.PrimaryEmail(addr));
+                        _mailMessage.Bcc.Add(ClientManager.PrimaryEmail(addr));
                         break;
                     default:
                         throw new ArgumentException("Invalid argument", "addrType");
@@ -226,7 +227,7 @@ namespace LNF.Impl.Email
                     Message = msg,
                     ClientID = recipient.ClientID,
                     AddressType = addrType,
-                    AddressText = DA.Current.ClientManager().PrimaryEmail(recipient),
+                    AddressText = ClientManager.PrimaryEmail(recipient),
                     AddressTimestamp = DateTime.Now
                 };
 

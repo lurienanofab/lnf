@@ -91,15 +91,11 @@ namespace LNF.Data
             return Session.Query<ActiveLog>().Where(x => x.TableName == item.TableName() && x.Record == item.Record());
         }
 
-        /// <summary>
-        /// Gets a collection of ActiveLogItems that were active during the date range and have a matching record in the collection of IActiveDataItems.
-        /// </summary>
-        public IEnumerable<ActiveLogItem<IActiveDataItem>> Range(IEnumerable<IActiveDataItem> list, DateTime startDate, DateTime endDate)
+        public IEnumerable<ActiveLogItem<T>> Range<T>(IQueryable<T> list, Expression<Func<T, ActiveLogKey>> key, DateTime startDate, DateTime endDate) where T : class, IActiveDataItem
         {
-            DateRange range = new DateRange(startDate, endDate);
-            IEnumerable<int> records = list.Select(x => x.Record());
-            IEnumerable<ActiveLogItem<IActiveDataItem>> result = range.Items(list);
-            return result;
+            var range = new DateRange(startDate, endDate);
+            var items = range.Items(list, key);
+            return items;
         }
     }
 

@@ -14,8 +14,6 @@ namespace LNF.Repository
 
         public static T Use<T>() where T : IManager => ServiceProvider.Current.Resolver.GetInstance<T>();
 
-        public static IDataRepository DataRepository => ServiceProvider.Current.Resolver.GetInstance<IDataRepository>();
-
         public static ISchedulerRepository SchedulerRepository => ServiceProvider.Current.Resolver.GetInstance<ISchedulerRepository>();
 
         //The methods that were previously defined here have been moved to LNF.Repository.ISession

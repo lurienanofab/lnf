@@ -6,9 +6,14 @@ using LNF.Repository.Scheduler;
 
 namespace LNF.Data
 {
-    public class ToolDataManager : ManagerBase
+    public class ToolDataManager : ManagerBase, IToolDataManager
     {
-        public ToolDataManager(ISession session) : base(session) { }
+        protected IBillingTypeManager BillingTypeManager { get; }
+
+        public ToolDataManager(ISession session, IBillingTypeManager billingTypeManager) : base(session)
+        {
+            BillingTypeManager = billingTypeManager;
+        }
 
         //RoomID might be null
         public Room GetRoom(ToolData item)
@@ -32,7 +37,7 @@ namespace LNF.Data
         {
             var client = Session.Single<Client>(item.ClientID);
             var account = Session.Single<Account>(item.AccountID);
-            return Session.BillingTypeManager().GetBillingType(client, account, item.Period);
+            return BillingTypeManager.GetBillingType(client, account, item.Period);
         }
     }
 }

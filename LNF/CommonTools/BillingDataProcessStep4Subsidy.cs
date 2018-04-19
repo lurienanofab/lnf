@@ -10,18 +10,9 @@ using System.Linq;
 namespace LNF.CommonTools
 {
     //2010-03-23 Subsidy billing data process - run after the 3rd day of business every month
-    public class BillingDataProcessStep4Subsidy
+    public static class BillingDataProcessStep4Subsidy
     {
-        public ISession Session { get; }
-        public IEmailService EmailService { get; set; }
-
-        public BillingDataProcessStep4Subsidy(ISession session, IEmailService emailSvc)
-        {
-            Session = session;
-            EmailService = emailSvc;
-        }
-
-        public void PopulateSubsidyBilling(DateTime period, int clientId = 0)
+        public static void PopulateSubsidyBilling(DateTime period, int clientId = 0)
         {
             int rowsSelectedFromSource = 0;
             int rowsDeletedFromTieredSubsidyBilling = 0;
@@ -96,7 +87,7 @@ namespace LNF.CommonTools
                     else
                     {
                         //error, it's impossible to have more than 1 data
-                        EmailService.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.PopulateSubsidyBilling(DateTime period, int clientId = 0)", "Error in populating TieredSubsidyBilling", string.Format("There is more than one row for client {0}", drs[0]["ClientID"]), SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                        ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.PopulateSubsidyBilling(DateTime period, int clientId = 0)", "Error in populating TieredSubsidyBilling", string.Format("There is more than one row for client {0}", drs[0]["ClientID"]), SendEmail.SystemEmail, SendEmail.DeveloperEmails);
                     }
                 }
 
@@ -149,13 +140,13 @@ namespace LNF.CommonTools
             }
         }
 
-        private void ApplyAccountSubsidy(DateTime period)
+        private static void ApplyAccountSubsidy(DateTime period)
         {
             DateTime sd = period;
             DateTime ed = period.AddMonths(1);
 
             //base query
-            var baseQuery = Session.Query<AccountSubsidy>()
+            var baseQuery = DA.Current.Query<AccountSubsidy>()
                 .Where(x => x.EnableDate < ed && (x.DisableDate == null || x.DisableDate > sd))
                 .ToList();
 
@@ -173,12 +164,12 @@ namespace LNF.CommonTools
                 item.ApplyToBilling(period);
         }
 
-        public decimal GetSubsidyDiscountPercentage(DateTime period, int clientId)
+        public static decimal GetSubsidyDiscountPercentage(DateTime period, int clientId)
         {
             decimal result = 0;
 
             //the the subsidy header data
-            TieredSubsidyBilling tsb = Session.Query<TieredSubsidyBilling>().FirstOrDefault(x => x.Client.ClientID == clientId && x.Period == period);
+            TieredSubsidyBilling tsb = DA.Current.Query<TieredSubsidyBilling>().FirstOrDefault(x => x.Client.ClientID == clientId && x.Period == period);
             if (tsb == null) return 0;
 
             if (tsb.UserTotalSum != 0)
@@ -200,7 +191,7 @@ namespace LNF.CommonTools
             return result;
         }
 
-        public void DistributeSubsidyMoneyEvenly(DateTime period, int clientId)
+        public static void DistributeSubsidyMoneyEvenly(DateTime period, int clientId)
         {
             //Get all the subsidy discount per person in UM
             //Get all RoomBilling and ToolBilling tables with UM
@@ -301,17 +292,15 @@ namespace LNF.CommonTools
             CleanUpAfterSubsidy();
         }
 
-        private void CleanUpAfterSubsidy()
+        private static void CleanUpAfterSubsidy()
         {
-            using (var dba = Session.GetAdapter())
-            {
+            using (var dba = DA.Current.GetAdapter())
                 dba.SelectCommand.ApplyParameters(new { Action = "CleanUpAfterSubsidy" }).ExecuteNonQuery("RoomApportionmentInDaysMonthly_Update");
-            }
         }
 
-        private void SaveSubsidyDiscountRoomToolMisc(DataTable dtIn)
+        private static void SaveSubsidyDiscountRoomToolMisc(DataTable dtIn)
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
             {
                 // Update the data using dateset's batch update feature.
                 dba.UpdateCommand
@@ -320,13 +309,13 @@ namespace LNF.CommonTools
 
                 // Only send email on failure.
                 if (dba.UpdateDataTable(dtIn, updateSql: "MiscBillingCharge_Update_SubsidyDiscount") < 0)
-                    EmailService.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountRoomToolMisc(DataTable dtIn)", string.Format("Update MiscBilling SubsidyDiscount Failed - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountRoomToolMisc(DataTable dtIn)", string.Format("Update MiscBilling SubsidyDiscount Failed - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
             }
         }
 
-        private void SaveSubsidyDiscountRoom(DataTable dtIn)
+        private static void SaveSubsidyDiscountRoom(DataTable dtIn)
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
             {
                 // Update the data using dateset's batch update feature.
                 dba.UpdateCommand
@@ -335,13 +324,13 @@ namespace LNF.CommonTools
 
                 // Only send email on failure.
                 if (dba.UpdateDataTable(dtIn, null, "RoomApportionmentInDaysMonthly_Update_SubsidyDiscount", null) < 0)
-                    EmailService.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountRoom(DataTable dtIn)", string.Format("Update RoomBilling SubsidyDiscount Failed - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountRoom(DataTable dtIn)", string.Format("Update RoomBilling SubsidyDiscount Failed - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
             }
         }
 
-        private void SaveSubsidyDiscountTool(DataTable dtIn)
+        private static void SaveSubsidyDiscountTool(DataTable dtIn)
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
             {
                 // Update the data using dateset's batch update feature.
                 dba.UpdateCommand
@@ -350,13 +339,13 @@ namespace LNF.CommonTools
 
                 // Only send email on failure.
                 if (dba.UpdateDataTable(dtIn, null, "ToolBilling_Update_SubsidyDiscount", null) < 0)
-                    EmailService.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountTool(DataTable dtIn)", string.Format("Update ToolBilling SubsidyDiscount Failed - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountTool(DataTable dtIn)", string.Format("Update ToolBilling SubsidyDiscount Failed - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
             }
         }
 
-        private DataSet GetTablesForSubsidyDiscountDistribution(DateTime period, int clientId = 0)
+        private static DataSet GetTablesForSubsidyDiscountDistribution(DateTime period, int clientId = 0)
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
             {
                 dba.SelectCommand
                     .AddParameter("@Action", "ForSubsidyDiscountDistribution")
@@ -366,7 +355,7 @@ namespace LNF.CommonTools
             }
         }
 
-        private void CalculateSubsidyFee(DateTime period, int clientId = 0)
+        private static void CalculateSubsidyFee(DateTime period, int clientId = 0)
         {
             //Get Tieres table
             DataSet ds = GetTieredSubsidyBillingRelatedTables(period, clientId);
@@ -517,7 +506,7 @@ namespace LNF.CommonTools
             UpdateUserPaymentSum(period, clientId);
         }
 
-        private void UpdateUserPaymentSum(DateTime period, int clientId = 0)
+        private static void UpdateUserPaymentSum(DateTime period, int clientId = 0)
         {
             DataSet ds = GetNecessaryTablesForUpdatingUserPayment(period, clientId);
             DataTable dtTierBilling = ds.Tables[0];
@@ -530,7 +519,7 @@ namespace LNF.CommonTools
                 dr.SetField("UserPaymentSum", userPaymentSum);
             }
 
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
             {
                 // Update the data using dateset's batch update feature.
                 dba.UpdateCommand
@@ -539,13 +528,13 @@ namespace LNF.CommonTools
 
                 // Only send email on failure.
                 if (dba.UpdateDataTable(dtTierBilling, updateSql: "TieredSubsidyBilling_Update") < 0)
-                    EmailService.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.UpdateUserPaymentSum(DateTime period, int clientId = 0)", string.Format("Update UserPaymentSum Failed - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.UpdateUserPaymentSum(DateTime period, int clientId = 0)", string.Format("Update UserPaymentSum Failed - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
             }
         }
 
-        private DataSet GetNecessaryTablesForUpdatingUserPayment(DateTime period, int clientId = 0)
+        private static DataSet GetNecessaryTablesForUpdatingUserPayment(DateTime period, int clientId = 0)
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
             {
                 dba.SelectCommand
                     .AddParameter("@Action", "ForUpdatingUserPaymentSum")
@@ -555,9 +544,9 @@ namespace LNF.CommonTools
             }
         }
 
-        private void DeleteTieredSubsidyBillingDetail(DateTime period, int clientId = 0)
+        private static void DeleteTieredSubsidyBillingDetail(DateTime period, int clientId = 0)
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
             {
                 dba.SelectCommand
                     .AddParameter("@Action", "DeleteCurrentRange")
@@ -567,9 +556,9 @@ namespace LNF.CommonTools
             }
         }
 
-        private void SaveNewTieredSubsidyBillingDetail(DataTable dtIn)
+        private static void SaveNewTieredSubsidyBillingDetail(DataTable dtIn)
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
             {
                 dba.InsertCommand
                     .AddParameter("@Period", SqlDbType.DateTime)
@@ -580,13 +569,13 @@ namespace LNF.CommonTools
 
                 // Only send email on failure.
                 if (dba.UpdateDataTable(dtIn, "TieredSubsidyBillingDetail_Insert") < 0)
-                    EmailService.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveNewTieredSubsidyBillingDetail(DataTable dtIn)", string.Format("Error in Processing TieredSubsidyBillingDetail - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveNewTieredSubsidyBillingDetail(DataTable dtIn)", string.Format("Error in Processing TieredSubsidyBillingDetail - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
             }
         }
 
-        private DataSet GetTieredSubsidyBillingRelatedTables(DateTime period, int clientId = 0)
+        private static DataSet GetTieredSubsidyBillingRelatedTables(DateTime period, int clientId = 0)
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
             {
                 dba.SelectCommand
                     .AddParameter("@Action", "SelectAllByPeriod")
@@ -596,15 +585,15 @@ namespace LNF.CommonTools
             }
         }
 
-        private DataTable GetTieredSubsidyBillingDetailSchema()
+        private static DataTable GetTieredSubsidyBillingDetailSchema()
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
                 return dba.ApplyParameters(new { Action = "SelectSchema" }).FillDataTable("TieredSubsidyBillingDetail_Select");
         }
 
-        private DataTable GetSubsidyTiers(DateTime period)
+        private static DataTable GetSubsidyTiers(DateTime period)
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
                 return dba.ApplyParameters(new { Period = period }).FillDataTable("TieredSubsidyTiers_Select");
         }
 
@@ -640,9 +629,9 @@ namespace LNF.CommonTools
             }
         }
 
-        private int DeleteTieredSubsidyBilling(DateTime period, int clientId = 0)
+        private static int DeleteTieredSubsidyBilling(DateTime period, int clientId = 0)
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
             {
                 return dba.SelectCommand
                     .AddParameter("@Action", "DeleteCurrentRange")
@@ -652,9 +641,9 @@ namespace LNF.CommonTools
             }
         }
 
-        private int SaveNewTieredSubsidyBilling(DataTable dtIn)
+        private static int SaveNewTieredSubsidyBilling(DataTable dtIn)
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
             {
 
                 dba.InsertCommand
@@ -675,7 +664,7 @@ namespace LNF.CommonTools
 
                 // Only send email on failure.
                 if (count < 0)
-                    EmailService.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveNewTieredSubsidyBilling(DataTable dtIn)", string.Format("Error in Processing TieredSubsidyBilling - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveNewTieredSubsidyBilling(DataTable dtIn)", string.Format("Error in Processing TieredSubsidyBilling - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
 
                 return count;
             }
@@ -683,7 +672,7 @@ namespace LNF.CommonTools
 
         //This will populate necessary data fields for calculating the new subsidy amount
         //key fields: Accumulated original amount and Starting Period
-        private void PopulateFieldsFromHistory(DateTime period, DataTable dtIn, int clientId)
+        private static void PopulateFieldsFromHistory(DateTime period, DataTable dtIn, int clientId)
         {
             //Get everone's original starting date and current fiscal year
             DataTable dtLastBillingData = GetLastUsedDateFromTieredSubsidyBilling(period, clientId);
@@ -763,9 +752,9 @@ namespace LNF.CommonTools
             }
         }
 
-        private bool GetIsNewFacultyUser(DateTime period, int clientId)
+        private static bool GetIsNewFacultyUser(DateTime period, int clientId)
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
             {
                 var args = new
                 {
@@ -831,9 +820,9 @@ namespace LNF.CommonTools
             return false;
         }
 
-        private DataTable GetFirstSubsidyDateTable(int clientId = 0)
+        private static DataTable GetFirstSubsidyDateTable(int clientId = 0)
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
             {
                 dba.SelectCommand
                     .AddParameter("@Action", "GetAllActiveStartDate")
@@ -843,9 +832,9 @@ namespace LNF.CommonTools
             }
         }
 
-        private DataTable GetLastUsedDateFromTieredSubsidyBilling(DateTime period, int clientId = 0)
+        private static DataTable GetLastUsedDateFromTieredSubsidyBilling(DateTime period, int clientId = 0)
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
             {
                 dba.SelectCommand
                     .AddParameter("@Action", "GetLastUsedStartingDate")
@@ -866,9 +855,9 @@ namespace LNF.CommonTools
                 return 0.0;
         }
 
-        private DataSet GetNecessaryTables(DateTime period, int clientId = 0)
+        private static DataSet GetNecessaryTables(DateTime period, int clientId = 0)
         {
-            using (var dba = Session.GetAdapter())
+            using (var dba = DA.Current.GetAdapter())
             {
                 dba.SelectCommand
                     .AddParameter("@Action", "PopulateTieredSubsidyBilling")

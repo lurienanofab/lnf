@@ -82,6 +82,8 @@ namespace LNF.CommonTools
 
         private List<int> accounts;
 
+        protected IAdministrativeHelper AdministrativeHelper => DA.Use<IAdministrativeHelper>();
+
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public int ClientID { get; set; }
@@ -118,7 +120,7 @@ namespace LNF.CommonTools
 
             using (LogTaskTimer.Start("WriteRoomDataManager.WriteRoomDataClean", "ClientID = {0}, RoomID = {1}, StartDate= '{2}', EndDate = '{3}', RowsSelectedFromProwatch = {4}, RowsDeletedFromRoomDataClean = {5}, RowsInsertedIntoRoomDataClean = {6}", () => new object[] { ClientID, RoomID, StartDate, EndDate, rowsSelectedFromProwatch, rowsDeletedFromRoomDataClean, rowsInsertedIntoRoomDataClean }))
             {
-                ReadRoomDataManager roomData = new ReadRoomDataManager();
+                IReadRoomDataManager roomData = DA.Use<IReadRoomDataManager>();
 
                 DataTable dtSource = roomData.ReadRoomDataFiltered(StartDate, EndDate, ClientID, RoomID);
 
@@ -401,7 +403,7 @@ namespace LNF.CommonTools
                 rowsDeletedFromRoomData = RoomDataPreClean(StartDate, ClientID, RoomID);
 
                 //get all access data for period - does agg by day
-                ReadRoomDataManager mgr = new ReadRoomDataManager();
+                IReadRoomDataManager mgr = DA.Use<IReadRoomDataManager>();
                 DataTable dtAggRoomDataClean = mgr.AggRoomDataClean(StartDate, EndDate, out DataSet ds, ClientID, RoomID);
                 DataTable dtClient = ds.Tables[1];
                 DataTable dtRoom = ds.Tables[2];
@@ -429,7 +431,7 @@ namespace LNF.CommonTools
                 string err = string.Empty;
                 string errClient = string.Empty;
                 string date = string.Empty;
-                string room = string.Empty;                
+                string room = string.Empty;
                 DataRow[] aggRoomDataCleanRows, clientAccountRows;
 
                 ClientPrivilege privsToCheck = ClientPrivilege.LabUser | ClientPrivilege.Staff;
@@ -525,9 +527,8 @@ namespace LNF.CommonTools
 
                 rowsAdjustedInRoomData = RoomDataAdjust(StartDate, ClientID, RoomID);
 
-                var helper = new AdministrativeHelper(DA.Current);
                 if (!string.IsNullOrEmpty(err))
-                    helper.SendEmailToDevelopers(string.Format("Error when creating Room Usage Data on {0:yyy-MM-dd HH:mm:ss}", DateTime.Now), err);
+                    AdministrativeHelper.SendEmailToDevelopers(string.Format("Error when creating Room Usage Data on {0:yyy-MM-dd HH:mm:ss}", DateTime.Now), err);
             }
         }
 

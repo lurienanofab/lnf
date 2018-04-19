@@ -21,6 +21,8 @@ namespace LNF.Feeds
         {
             public static class StaffHours
             {
+                public static IClientManager ClientManager => DA.Use<IClientManager>();
+
                 public static string GetUrl(FeedFormats format, string UserName)
                 {
                     string result = string.Empty;
@@ -91,15 +93,14 @@ namespace LNF.Feeds
                             {
                                 DateTime[] week = WeekArray(sd.LastUpdate);
                                 StaffTimeInfoCollection staffTime = new StaffTimeInfoCollection(sd.HoursXML);
-                                var clientMgr = ServiceProvider.Current.DataAccess.Session.ClientManager();
 
                                 StaffDirectoryItem sdi = new StaffDirectoryItem()
                                 {
                                     StaffDirectoryID = sd.StaffDirectoryID,
                                     Name = sd.Client.DisplayName,
                                     Hours = staffTime.ToString(),
-                                    Email = clientMgr.PrimaryEmail(sd.Client),
-                                    Phone = clientMgr.PrimaryPhone(sd.Client),
+                                    Email = ClientManager.PrimaryEmail(sd.Client),
+                                    Phone = ClientManager.PrimaryPhone(sd.Client),
                                     Office = sd.Office,
                                     Deleted = sd.Deleted,
                                     ReadOnly = true

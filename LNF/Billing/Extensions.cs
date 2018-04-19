@@ -72,19 +72,6 @@ namespace LNF.Billing
         }
     }
 
-    public static class SessionExtensions
-    {
-        public static BillingTypeManager BillingTypeManager(this ISession session)
-        {
-            return new BillingTypeManager(session);
-        }
-
-        public static ToolBillingManager ToolBillingManager(this ISession session)
-        {
-            return new ToolBillingManager(session);
-        }
-    }
-
     public static class AccountSubsidyExtensions
     {
         public static void ApplyToBilling(this AccountSubsidy item, DateTime period)

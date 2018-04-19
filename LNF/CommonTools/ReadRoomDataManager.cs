@@ -13,16 +13,21 @@ namespace LNF.CommonTools
     //raw means straight from the DB
     //filtered means that extraneous data have been removed - this is stored in RoomData
     //clean means read from clean table
-    public class ReadRoomDataManager
+    public class ReadRoomDataManager : ManagerBase, IReadRoomDataManager
     {
         //private DataSet ds = new DataSet();
         private const double MaxTime = 8.0;
 
-        internal ReadRoomDataManager() { }
+        protected ICostManager CostManager { get; }
+
+        public ReadRoomDataManager(ISession session, ICostManager costManager) : base(session)
+        {
+            CostManager = costManager;
+        }
 
         public DataTable ReadRoomData(DateTime period, int clientId = 0, int roomId = 0)
         {
-            using (var dba = DA.Current.GetAdapter())
+            using (var dba = Session.GetAdapter())
             {
                 dba.SelectCommand
                     .AddParameter("@Action", "AggByMonthRoom")
@@ -137,7 +142,7 @@ namespace LNF.CommonTools
 
         public DataTable ReadRoomDataForUpdate(DateTime TargetDate, out DataSet ds, int clientId = 0, int roomId = 0)
         {
-            using (var dba = DA.Current.GetAdapter())
+            using (var dba = Session.GetAdapter())
             {
                 dba.SelectCommand
                     .AddParameter("@Action", "TargetDate")
@@ -173,7 +178,7 @@ namespace LNF.CommonTools
             dtRoom.Columns.Add("Room", typeof(string));
             dtRoom.Columns.Add("PassbackRoom", typeof(bool));
 
-            IList<RoomDataClean> baseQuery = DA.Current.Query<RoomDataClean>().Where(x => x.EntryDT < eDate && x.ExitDT > sDate).ToList();
+            IList<RoomDataClean> baseQuery = Session.Query<RoomDataClean>().Where(x => x.EntryDT < eDate && x.ExitDT > sDate).ToList();
             IList<RoomDataClean> query;
 
             // Clients
@@ -184,7 +189,7 @@ namespace LNF.CommonTools
 
             int[] cIds = query.Select(x => x.Client.ClientID).Distinct().ToArray();
 
-            IList<Client> clients = DA.Current.Query<Client>().Where(x => cIds.Contains(x.ClientID)).ToList();
+            IList<Client> clients = Session.Query<Client>().Where(x => cIds.Contains(x.ClientID)).ToList();
 
             // Rooms
             if (roomId > 0)
@@ -194,7 +199,7 @@ namespace LNF.CommonTools
 
             int[] rIds = query.Select(x => x.Room.RoomID).Distinct().ToArray();
 
-            IList<Room> rooms = DA.Current.Query<Room>().Where(x => rIds.Contains(x.RoomID)).ToList();
+            IList<Room> rooms = Session.Query<Room>().Where(x => rIds.Contains(x.RoomID)).ToList();
 
             // RoomDataClean
             query = baseQuery.Where(x => cIds.Contains(x.Client.ClientID) && rIds.Contains(x.Room.RoomID)).ToList();
@@ -255,8 +260,8 @@ namespace LNF.CommonTools
             dt.Columns.Add("ExitDT", typeof(DateTime));
             dt.Columns.Add("Duration", typeof(double));
 
-            DataSet ds;
-            DataTable dtRaw = ReadRoomDataRaw(sDate, eDate, out ds, clientId, roomId);
+            DataTable dtRaw = ReadRoomDataRaw(sDate, eDate, out DataSet ds, clientId, roomId);
+
             if (dtRaw.Rows.Count == 0)
                 return dt;
 
@@ -395,7 +400,7 @@ namespace LNF.CommonTools
                                 if ((dateTime2 - dateTimeTest).Seconds > 300)
                                 {
                                     dateTime1 = Convert.ToDateTime(dt.Rows[i]["evtDate"]).AddHours(MaxTime);
-                                    dr = newCleanRow(dt, clientId, roomId);
+                                    dr = NewCleanRow(dt, clientId, roomId);
                                     dr["evtType"] = "Local Grant - OUT";
                                     if (DateTime.Compare(dateTime1, dateTime2) >= 0) //t1 > t2
                                         dr["evtDate"] = dateTime2;
@@ -416,7 +421,7 @@ namespace LNF.CommonTools
                                 dateTime2 = Convert.ToDateTime(dt.Rows[i + 1]["evtDate"]);
                                 if (dateTime2.Subtract(dateTime1).TotalHours > MaxTime)
                                 {
-                                    dr = newCleanRow(dt, clientId, roomId);
+                                    dr = NewCleanRow(dt, clientId, roomId);
                                     dr["evtType"] = "Local Grant - OUT";
                                     dr["evtDate"] = dateTime1.AddHours(MaxTime);
                                     dt.Rows.InsertAt(dr, i + 1); //i not incremented, will become normal case
@@ -425,7 +430,7 @@ namespace LNF.CommonTools
                                         dateTime2 = dateTime2.AddHours(-MaxTime);
                                     else
                                         dateTime2 = dateTime1.AddHours(MaxTime).AddSeconds(1);
-                                    dr = newCleanRow(dt, clientId, roomId);
+                                    dr = NewCleanRow(dt, clientId, roomId);
                                     dr["evtType"] = "Local Grant - IN";
                                     dr["evtDate"] = dateTime2;
                                     dt.Rows.InsertAt(dr, i + 2); //i not incremented, will become normal case
@@ -443,7 +448,7 @@ namespace LNF.CommonTools
                                 }
                                 if (dt.Rows[i + 1]["evtType"].ToString() == "Local Grant - IN")
                                 {
-                                    dr = newCleanRow(dt, clientId, roomId);
+                                    dr = NewCleanRow(dt, clientId, roomId);
                                     dr["evtType"] = "Local Grant - OUT";
                                     dateTime1 = dtAP1.AddSeconds(-1);
                                     dateTime2 = Convert.ToDateTime(dt.Rows[i]["evtDate"]).AddHours(MaxTime);
@@ -460,7 +465,7 @@ namespace LNF.CommonTools
                                     TimeSpan timeDiff = dateTime2.Subtract(dateTime1);
                                     if (timeDiff.TotalSeconds > 300.0)
                                     {
-                                        dr = newCleanRow(dt, clientId, roomId);
+                                        dr = NewCleanRow(dt, clientId, roomId);
                                         dr["evtType"] = "Local Grant - OUT";
                                         dateTime1 = Convert.ToDateTime(dt.Rows[i]["evtDate"]).AddHours(MaxTime);
                                         dateTime2 = dtAP1.AddSeconds(-1);
@@ -470,7 +475,7 @@ namespace LNF.CommonTools
                                             dr["evtDate"] = dateTime1;
                                         dt.Rows.InsertAt(dr, i + 1); //i not incremented, will become normal case
 
-                                        dr = newCleanRow(dt, clientId, roomId);
+                                        dr = NewCleanRow(dt, clientId, roomId);
                                         dr["evtType"] = "Local Grant - IN";
                                         dateTime1 = dtAPn.AddSeconds(1);
                                         dateTime2 = Convert.ToDateTime(dt.Rows[i + 1]["evtDate"]).AddHours(-MaxTime);
@@ -492,7 +497,7 @@ namespace LNF.CommonTools
                                 }
                                 if (dt.Rows[i + 1]["evtType"].ToString() == "Local Grant - IN")
                                 {
-                                    dr = newCleanRow(dt, clientId, roomId);
+                                    dr = NewCleanRow(dt, clientId, roomId);
                                     dr["evtType"] = "Local Grant - OUT";
 
                                     dateTime1 = dtAPn.AddSeconds(-1);
@@ -512,7 +517,7 @@ namespace LNF.CommonTools
                     case "Local Grant - OUT":
                         dateTime1 = Convert.ToDateTime(dt.Rows[i - 1]["evtDate"]).AddSeconds(1);
                         dateTime2 = Convert.ToDateTime(dt.Rows[i]["evtDate"]).AddHours(-MaxTime);
-                        dr = newCleanRow(dt, clientId, roomId);
+                        dr = NewCleanRow(dt, clientId, roomId);
                         dr["evtType"] = "Local Grant - IN";
                         if (DateTime.Compare(dateTime1, dateTime2) >= 0) //t1 > t2
                             dr["evtDate"] = dateTime1;
@@ -528,7 +533,7 @@ namespace LNF.CommonTools
                         }
                         if (dt.Rows[i]["evtType"].ToString() == "Local Grant - OUT") //what about ap-out?
                         {
-                            dr = newCleanRow(dt, clientId, roomId);
+                            dr = NewCleanRow(dt, clientId, roomId);
                             dr["evtType"] = "Local Grant - IN";
                             dateTime1 = dtAP1;
                             dateTime2 = Convert.ToDateTime(dt.Rows[i]["evtDate"]).AddHours(-MaxTime);
@@ -551,7 +556,7 @@ namespace LNF.CommonTools
                             TimeSpan timeDiff = dtAPn.Subtract(dtAP1);
                             if (timeDiff.TotalSeconds > 300.0)
                             {
-                                dr = newCleanRow(dt, clientId, roomId);
+                                dr = NewCleanRow(dt, clientId, roomId);
                                 dr["evtType"] = "Local Grant - IN";
                                 dateTime1 = Convert.ToDateTime(dt.Rows[i - 1]["evtDate"]).AddSeconds(1); //when I left last
                                 dateTime2 = dtAPn.AddHours(-MaxTime);
@@ -561,7 +566,7 @@ namespace LNF.CommonTools
                                     dr["evtDate"] = dateTime2;
                                 dt.Rows.InsertAt(dr, i); //i not incremented, will become normal case
 
-                                dr = newCleanRow(dt, clientId, roomId);
+                                dr = NewCleanRow(dt, clientId, roomId);
                                 dr["evtType"] = "Local Grant - OUT";
                                 dr["evtDate"] = dtAPn;
                                 dt.Rows.InsertAt(dr, i + 1); //i not incremented, will become normal case
@@ -570,7 +575,7 @@ namespace LNF.CommonTools
                         else
                         {
                             //don't know what this means, but occured due to algorithm with Beach vendor in Jan 04
-                            dr = newCleanRow(dt, clientId, roomId);
+                            dr = NewCleanRow(dt, clientId, roomId);
                             dr["evtType"] = "Local Grant - IN";
                             dateTime1 = dtAP1;
                             dateTime2 = Convert.ToDateTime(dt.Rows[i]["evtDate"]).AddHours(-MaxTime);
@@ -595,7 +600,7 @@ namespace LNF.CommonTools
             return dt;
         }
 
-        private DataRow newCleanRow(DataTable dt, int clientId, int roomId)
+        private DataRow NewCleanRow(DataTable dt, int clientId, int roomId)
         {
             DataRow dr = dt.NewRow();
             dr["ClientID"] = clientId;
@@ -624,10 +629,7 @@ namespace LNF.CommonTools
         //from prowatch, but also room data and client data for this month as well.
         public DataTable ReadRoomDataRaw(DateTime sDate, DateTime eDate, out DataSet ds, int clientId = 0, int roomId = 0)
         {
-            //string roomName = DA.Current.Single<Room>(roomId).RoomName;
-            //IEnumerable<RoomDataRaw> raw = Providers.PhysicalAccess.GetRoomData(sDate, eDate, clientId, roomName);
-
-            using (var dba = DA.Current.GetAdapter())
+            using (var dba = Session.GetAdapter())
             {
                 dba.SelectCommand.CommandTimeout = 600;
                 dba.SelectCommand
@@ -648,7 +650,7 @@ namespace LNF.CommonTools
             ds.Tables.Add("clients");
             ds.Tables.Add("rooms");
 
-            List<Event> result = ServiceProvider.Current.PhysicalAccess.GetEvents(sDate, eDate, DA.Current.Single<Client>(clientId), DA.Current.Single<Room>(roomId)).ToList();
+            List<Event> result = ServiceProvider.Current.PhysicalAccess.GetEvents(sDate, eDate, Session.Single<Client>(clientId), Session.Single<Room>(roomId)).ToList();
 
             DataTable dtRaw = ds.Tables["raw"];
             //public string UserName { get; set; }
@@ -666,7 +668,7 @@ namespace LNF.CommonTools
                 dtRaw.Rows.Add("");
             });
 
-            var client = DA.Current.Single<Client>(clientId);
+            var client = Session.Single<Client>(clientId);
 
             int[] clients = result.Where(x => x.Client == client).Select(x => x.Client.ClientID).Distinct().ToArray();
             DataTable dtClients = ds.Tables["clients"];
@@ -674,8 +676,9 @@ namespace LNF.CommonTools
             foreach (int id in clients)
                 dtClients.Rows.Add(id);
 
-            var rooms = DA.Current.Query<Room>().Where(x => x.Active).ToArray()
-                .Join(CostUtility.FindCosts("RoomCost", eDate), x => x.RoomID, y => y.RecordID, (x, y) => new { RoomID = x.RoomID, RoomName = x.RoomName, PassbackRoom = x.PassbackRoom, IsChargeRoom = (y.AcctPer != "None") });
+            var rooms = Session.Query<Room>().Where(x => x.Active).ToArray()
+                .Join(CostManager.FindCosts("RoomCost", eDate), x => x.RoomID, y => y.RecordID, (x, y) => new { RoomID = x.RoomID, RoomName = x.RoomName, PassbackRoom = x.PassbackRoom, IsChargeRoom = (y.AcctPer != "None") });
+
             DataTable dtRooms = ds.Tables["rooms"];
             dtRooms.Columns.Add("RoomID", typeof(int));
             dtRooms.Columns.Add("RoomName", typeof(string));

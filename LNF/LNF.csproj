@@ -67,6 +67,7 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Billing\AccountSubsidyManager.cs" />
     <Compile Include="Billing\BillingTypeManager.cs" />
     <Compile Include="Billing\Extensions.cs" />
     <Compile Include="Billing\ExternalInvoiceUsage.cs" />
@@ -75,6 +76,10 @@
     <Compile Include="Billing\ExternalInvoiceLineItem.cs" />
     <Compile Include="Billing\ExternalInvoiceHeader.cs" />
     <Compile Include="Billing\ExternalInvoiceSummaryItem.cs" />
+    <Compile Include="Billing\IAccountSubsidyManager.cs" />
+    <Compile Include="Billing\IApportionmentManager.cs" />
+    <Compile Include="Billing\IBillingTypeManager.cs" />
+    <Compile Include="Billing\IToolBillingManager.cs" />
     <Compile Include="Billing\ReservationDateRange.cs" />
     <Compile Include="Billing\ReservationDurationItem.cs" />
     <Compile Include="Billing\ReservationDurations.cs" />
@@ -82,6 +87,8 @@
     <Compile Include="Billing\ToolBillingManager.cs" />
     <Compile Include="Billing\ToolBillingUtility.cs" />
     <Compile Include="Cache\CacheItemNotFoundException.cs" />
+    <Compile Include="CommonTools\IAdministrativeHelper.cs" />
+    <Compile Include="CommonTools\IReadRoomDataManager.cs" />
     <Compile Include="Data\AccountManager.cs" />
     <Compile Include="Data\ActiveDataItemManager.cs" />
     <Compile Include="Data\ActiveLogManager.cs" />
@@ -90,6 +97,7 @@
     <Compile Include="Data\ClientInfoManager.cs" />
     <Compile Include="Data\ClientManager.cs" />
     <Compile Include="Data\ClientOrgManager.cs" />
+    <Compile Include="Data\CostManager.cs" />
     <Compile Include="Data\DryBoxManager.cs" />
     <Compile Include="Data\IAccountManager.cs" />
     <Compile Include="Data\IActiveDataItemManager.cs" />
@@ -100,11 +108,13 @@
     <Compile Include="Data\IClientManager.cs" />
     <Compile Include="Data\IClientOrgManager.cs" />
     <Compile Include="Data\IClientRemoteManager.cs" />
+    <Compile Include="Data\ICostManager.cs" />
     <Compile Include="Data\IDataRepository.cs" />
     <Compile Include="Data\IDryBoxManager.cs" />
     <Compile Include="Data\INewsManager.cs" />
     <Compile Include="Data\IOrgManager.cs" />
     <Compile Include="Data\IRoomDataManager.cs" />
+    <Compile Include="Data\IToolDataManager.cs" />
     <Compile Include="Data\NewsManager.cs" />
     <Compile Include="Data\OrgManager.cs" />
     <Compile Include="Data\RoomDataManager.cs" />
@@ -123,7 +133,6 @@
     <Compile Include="Data\ClientEqualityComparer.cs" />
     <Compile Include="Data\ClientManagerUtility.cs" />
     <Compile Include="Data\ClientOrgInfoUtility.cs" />
-    <Compile Include="Data\CostUtility.cs" />
     <Compile Include="Data\Extensions.cs" />
     <Compile Include="Data\RoomDataCleanGenerator.cs" />
     <Compile Include="Data\RoomUtility.cs" />
@@ -144,6 +153,7 @@
     <Compile Include="Feedback\AggregateItem.cs" />
     <Compile Include="Feedback\NegativeIssueUtility.cs" />
     <Compile Include="Feedback\PositiveIssueUtility.cs" />
+    <Compile Include="Ordering\IPurchaseOrderAccountManager.cs" />
     <Compile Include="Ordering\PurchaseOrderAccountManager.cs" />
     <Compile Include="PhysicalAccess\RoomDataRaw.cs" />
     <Compile Include="Reporting\ClientItemUtility.cs" />
@@ -472,6 +482,10 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Scheduler\AvailableInviteeItem.cs" />
+    <Compile Include="Scheduler\IEmailManager.cs" />
+    <Compile Include="Scheduler\IReservationInviteeManager.cs" />
+    <Compile Include="Scheduler\IReservationManager.cs" />
+    <Compile Include="Scheduler\IResourceManager.cs" />
     <Compile Include="Scheduler\ReservationInviteeManager.cs" />
     <Compile Include="Scheduler\Data\AuthLevelData.cs" />
     <Compile Include="Scheduler\Data\HolidayData.cs" />
@@ -489,6 +503,7 @@
     <Compile Include="Scheduler\ReservationInviteeItem.cs" />
     <Compile Include="Scheduler\ReservationInviteeUtility.cs" />
     <Compile Include="Scheduler\ReservationManager.cs" />
+    <Compile Include="Scheduler\ReservationModificationType.cs" />
     <Compile Include="Scheduler\ReservationProcessInfoItem.cs" />
     <Compile Include="Scheduler\ReservationProcessInfoUtility.cs" />
     <Compile Include="Scheduler\ReservationStateArgs.cs" />

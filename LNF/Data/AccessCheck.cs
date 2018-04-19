@@ -16,7 +16,7 @@ namespace LNF.Data
         public bool HasPhysicalAccessPriv { get { return Client.HasPriv(ClientPrivilege.PhysicalAccess); } }
         public bool HasLabUserPriv { get { return Client.HasPriv(ClientPrivilege.LabUser); } }
         public bool HasStoreUserPriv { get { return Client.HasPriv(ClientPrivilege.StoreUser); } }
-        public bool HasActiveAccounts { get { return DA.Current.ClientManager().GetActiveAccountCount(Client.ClientID) > 0; } }
+        public bool HasActiveAccounts { get { return DA.Use<IClientManager>().GetActiveAccountCount(Client.ClientID) > 0; } }
 
         /// <summary>
         /// The reason why access can or cannot be enabled. Set by calling CanEnableAccess()

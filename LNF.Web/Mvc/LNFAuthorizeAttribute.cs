@@ -13,6 +13,8 @@ namespace LNF.Web.Mvc
 {
     public class LNFAuthorizeAttribute : AuthorizeAttribute
     {
+        protected IClientManager ClientManager => DA.Use<IClientManager>();
+
         public Type ModelType { get; set; }
         public ClientPrivilege RequiredPrivilege { get; set; }
         public int[] AllowedClientIDs { get; set; }
@@ -46,7 +48,7 @@ namespace LNF.Web.Mvc
                     string username = splitter[0];
                     string password = splitter[1];
 
-                    var c = DA.Current.ClientManager().Login(username, password);
+                    var c = ClientManager.Login(username, password);
                     if (c != null && c.ClientActive)
                         httpContext.User = new GenericPrincipal(new GenericIdentity(c.UserName, "Basic"), null);
                 }

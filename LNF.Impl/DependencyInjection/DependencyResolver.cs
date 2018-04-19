@@ -1,7 +1,6 @@
 ﻿using LNF.Data;
 using LNF.Impl.Control.Wago;
 using LNF.Impl.DataAccess;
-using LNF.Impl.DataAccess.Data;
 using LNF.Impl.DataAccess.Scheduler;
 using LNF.Impl.Email;
 using LNF.Impl.Encryption;
@@ -11,7 +10,6 @@ using LNF.Impl.PhysicalAccess;
 using LNF.Impl.Serialization;
 using LNF.Repository;
 using LNF.Scheduler;
-using LNF.Scripting;
 using StructureMap;
 
 namespace LNF.Impl.DependencyInjection
@@ -26,8 +24,10 @@ namespace LNF.Impl.DependencyInjection
             {
                 _.AddRegistry(registry);
 
-                _.For<IDataRepository>().Singleton().Use<DataRepository>();
-                _.For<ISchedulerRepository>().Singleton().Use<SchedulerRepository>();
+                _.For<NHibernate.ISession>().Use(x => x.GetInstance<ISessionManager>().Session);
+
+                _.For<IDataRepository>().Use<DataRepository>(); // not a singleton
+                _.For<ISchedulerRepository>().Use<SchedulerRepository>(); // not a singleton
                 _.For<IUnitOfWork>().Use<NHibernateUnitOfWork>(); // not a singleton
 
                 _.For<ISession>().Singleton().Use<NHibernateSession>();
@@ -40,7 +40,11 @@ namespace LNF.Impl.DependencyInjection
                 _.For<IPhysicalAccessService>().Singleton().Use<ProwatchPhysicalAccessService>();
                 _.For<IModelFactory>().Singleton().Use<ValueInjecterModelFactory>();
 
-                _.For<IClientManager>().Singleton().Use<ClientManager>();
+                _.Scan(s =>
+                {
+                    s.AssemblyContainingType<IManager>();
+                    s.WithDefaultConventions();
+                });
 
                 _.For<IDependencyResolver>().Singleton().Use(this);
             });
@@ -49,6 +53,11 @@ namespace LNF.Impl.DependencyInjection
         public T GetInstance<T>()
         {
             return _container.GetInstance<T>();
+        }
+
+        public void BuildUp(object target)
+        {
+            _container.BuildUp(target);
         }
     }
 }

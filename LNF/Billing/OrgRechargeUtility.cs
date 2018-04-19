@@ -9,6 +9,8 @@ namespace LNF.Billing
 {
     public static class OrgRechargeUtility
     {
+        public static IChargeTypeManager ChargeTypeManager => DA.Use<IChargeTypeManager>();
+
         public static Account GetRechargeAccount(Org org, DateTime startDate, DateTime endDate)
         {
             Account result = null;
@@ -16,7 +18,7 @@ namespace LNF.Billing
             OrgRecharge or = DA.Current.Query<OrgRecharge>().FirstOrDefault(x => x.Org == org && x.EnableDate < endDate && (x.DisableDate == null || x.DisableDate.Value > startDate));
 
             if (or == null)
-                result = DA.Current.ChargeTypeManager().GetAccount(org.OrgType.ChargeType); //no recharge account specified for this org so use the default from ChargeType
+                result = ChargeTypeManager.GetAccount(org.OrgType.ChargeType); //no recharge account specified for this org so use the default from ChargeType
             else
                 result = or.Account;
 

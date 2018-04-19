@@ -11,6 +11,8 @@ namespace LNF.Data
 {
     public static class ClientPreferenceUtility
     {
+        public static IClientManager ClientManager => DA.Use<IClientManager>();
+
         public static ClientPreference Find(int clientId, string app)
         {
             //It's possible to have client.ClientID == 0 if no user is logged in. In this case result will be null.
@@ -33,7 +35,7 @@ namespace LNF.Data
             if (accounts == null)
             {
                 Client client = DA.Current.Single<Client>(clientId);
-                accounts = DA.Current.ClientManager().ActiveAccounts(client);
+                accounts = ClientManager.ActiveAccounts(client);
             }
 
             if (accounts == null) return null;

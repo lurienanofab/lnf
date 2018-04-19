@@ -41,7 +41,7 @@ namespace LNF.Feedback
                 var client = CacheManager.Current.GetClient(issue.ClientID);
                 if (client != null)
                 {
-                    var primary = DA.Current.ClientOrgManager().GetPrimary(client.ClientID);
+                    var primary = DA.Use<IClientOrgManager>().GetPrimary(client.ClientID);
                     if (primary != null)
                         return primary.Email;
                     else

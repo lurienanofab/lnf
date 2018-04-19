@@ -15,7 +15,7 @@ namespace LNF.Billing
         public DateTime EndDate { get; }
         public bool ShowRemote { get; }
         public bool IncludeAccountsWithNoUsage { get; set; }
-        public BillingTypeManager BillingTypeManager { get; }
+        public IBillingTypeManager BillingTypeManager { get; }
         public ISession Session { get { return BillingTypeManager.Session; } }
 
         private IDictionary<string, ExternalInvoiceUsage> _data;
@@ -23,20 +23,20 @@ namespace LNF.Billing
         /// <summary>
         /// Generates invoices for all accounts.
         /// </summary>
-        public ExternalInvoiceManager(DateTime sd, DateTime ed, bool showRemote, ISession session, BillingTypeManager mgr)
-            : this(0, sd, ed, showRemote, session, mgr) { }
+        public ExternalInvoiceManager(DateTime sd, DateTime ed, bool showRemote, IBillingTypeManager billingTypeManager)
+            : this(0, sd, ed, showRemote, billingTypeManager) { }
 
         /// <summary>
         /// Generates invoices for a single account.
         /// </summary>
-        public ExternalInvoiceManager(int accountId, DateTime sd, DateTime ed, bool showRemote, ISession session, BillingTypeManager mgr)
+        public ExternalInvoiceManager(int accountId, DateTime sd, DateTime ed, bool showRemote, IBillingTypeManager billingTypeManager)
         {
             AccountID = accountId;
             StartDate = sd;
             EndDate = ed;
             ShowRemote = showRemote;
             IncludeAccountsWithNoUsage = false;
-            BillingTypeManager = mgr;
+            BillingTypeManager = billingTypeManager;
 
             _data = GetAllUsage();
         }

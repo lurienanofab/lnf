@@ -15,7 +15,6 @@ namespace LNF.Data
         IList<Account> ConvertToAccountList(DataTable dt);
         DataTable ConvertToAccountTable(IList<Account> collection);
         void Delete(int accountId);
-        IQueryable<Account> FindActiveInDateRange(int clientId, DateTime sd, DateTime ed);
         IQueryable<Account> FindByShortCode(string shortCode);
         FundingSource FundingSource(Account item);
         string FundingSourceName(Account item);

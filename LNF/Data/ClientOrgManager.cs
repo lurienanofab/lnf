@@ -14,7 +14,7 @@ namespace LNF.Data
         public ClientAccount GetDryBoxClientAccount(ClientOrg item)
         {
             IList<ClientAccount> query = Session.Query<ClientAccount>().Where(x => x.ClientOrg.ClientOrgID == item.ClientOrgID).ToList();
-            ClientAccount ca = query.FirstOrDefault(x => Session.ClientAccountManager().HasDryBox(x));
+            ClientAccount ca = query.FirstOrDefault(x => DA.Use<IClientAccountManager>().HasDryBox(x));
             return ca;
         }
 
@@ -44,15 +44,13 @@ namespace LNF.Data
         {
             // when we disable a ClientOrg we might have to also disable the Client and/or disable physical access
 
-            var activeDataItemMgr = Session.ActiveDataItemManager();
-
-            activeDataItemMgr.Disable(item); // normal disable of ClientOrg
+            DA.Use<IActiveDataItemManager>().Disable(item); // normal disable of ClientOrg
 
             // first check for other active ClientOrgs, this one won't be included because it was just disabled
-            bool otherActive = Session.ClientManager().ClientOrgs(item.Client).Any(x => x.Active);
+            bool otherActive = DA.Use<IClientManager>().ClientOrgs(item.Client).Any(x => x.Active);
 
             if (!otherActive)
-                activeDataItemMgr.Disable(item.Client);
+                DA.Use<IActiveDataItemManager>().Disable(item.Client);
 
             // be sure to check physical access after this
         }

@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using LNF.Data;
+using LNF.Repository;
 
 namespace LNF.CommonTools
 {
     public static class ReadData
     {
-        public static ReadRoomDataManager Room
+        public static IReadRoomDataManager Room
         {
-            get { return new ReadRoomDataManager(); }
+            get { return DA.Use<IReadRoomDataManager>(); }
         }
 
         public static ReadToolDataManager Tool

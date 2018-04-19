@@ -94,8 +94,8 @@
     <Compile Include="Conventions\BytesUserType.cs" />
     <Compile Include="Conventions\EnumConvention.cs" />
     <Compile Include="Conventions\XmlTypeConvention.cs" />
+    <Compile Include="DataAccess\DataRepository.cs" />
     <Compile Include="DataAccess\DateProjections.cs" />
-    <Compile Include="DataAccess\Data\DataRepository.cs" />
     <Compile Include="DependencyInjection\Default\IOC.cs" />
     <Compile Include="DependencyInjection\DependencyResolver.cs" />
     <Compile Include="DependencyInjection\Web\IOC.cs" />
@@ -347,7 +347,7 @@
     <Compile Include="Reporting\ToolUtilizationDetail.cs" />
     <Compile Include="Reporting\ToolUtilizationReport.cs" />
     <Compile Include="Reporting\UserUsageSummary.cs" />
-    <Compile Include="DataAccess\Scheduler\SchedulerRepository.cs" />
+    <Compile Include="DataAccess\SchedulerRepository.cs" />
     <Compile Include="Serialization\JsonSerializer.cs" />
     <Compile Include="Serialization\SerializationService.cs" />
     <Compile Include="Serialization\SerializationUtility.cs" />

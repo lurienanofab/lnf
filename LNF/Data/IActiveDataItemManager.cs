@@ -1,9 +1,9 @@
-﻿using System;
+﻿using LNF.Repository;
+using LNF.Repository.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using LNF.Repository;
-using LNF.Repository.Data;
 
 namespace LNF.Data
 {
@@ -13,6 +13,6 @@ namespace LNF.Data
         void Disable(IActiveDataItem item);
         void Enable(IActiveDataItem item);
         IEnumerable<T> FindActive<T>(IQueryable<T> query, Expression<Func<T, int>> record, DateTime sd, DateTime ed) where T : IActiveDataItem;
-        IEnumerable<ActiveLogItem<IActiveDataItem>> Range(IEnumerable<IActiveDataItem> list, DateTime startDate, DateTime endDate);
+        IEnumerable<ActiveLogItem<T>> Range<T>(IQueryable<T> list, Expression<Func<T, ActiveLogKey>> key, DateTime startDate, DateTime endDate) where T : class, IActiveDataItem;
     }
 }
