@@ -202,13 +202,21 @@ namespace LNF.Data
             return new AccountChartFields(item);
         }
 
-        public DataTable ConvertToAccountTable(IList<Account> collection)
+        public DataTable ConvertToAccountTable(IList<Account> accounts)
         {
             var dt = new DataTable();
             dt.Columns.Add("AccountID", typeof(int));
             dt.Columns.Add("Name", typeof(string));
-            collection.OrderBy(x => x.Name).Select(x => dt.Rows.Add(x.AccountID, x.Name)).ToList();
+
+            foreach (var a in accounts.OrderBy(x => x.Name))
+                dt.Rows.Add(a.AccountID, a.Name);
+
             return dt;
+        }
+
+        public IQueryable<ClientAccount> FindClientAccounts(int clientOrgId)
+        {
+            return Session.Query<ClientAccount>().Where(x => x.ClientOrg.ClientOrgID == clientOrgId);
         }
     }
 }

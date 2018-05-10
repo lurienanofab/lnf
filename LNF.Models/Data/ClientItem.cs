@@ -38,6 +38,7 @@ namespace LNF.Models.Data
         public int ClientAddressID { get; set; }
         public int DepartmentID { get; set; }
         public string DepartmentName { get; set; }
+
         public int RoleID { get; set; }
         public string RoleName { get; set; }
         public bool ClientOrgActive { get; set; }
@@ -62,6 +63,11 @@ namespace LNF.Models.Data
         public int EmailRank { get; set; }
 
         public string DisplayName { get { return GetDisplayName(LName, FName); } }
+
+        public bool IsStaff()
+        {
+            return this.HasPriv(ClientPrivilege.Staff);
+        }
 
         public static string GetDisplayName(string lname, string fname)
         {

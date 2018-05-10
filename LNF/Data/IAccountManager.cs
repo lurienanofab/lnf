@@ -27,5 +27,6 @@ namespace LNF.Data
         string SpecialTopicName(Account item);
         TechnicalField TechnicalField(Account item);
         string TechnicalFieldName(Account item);
+        IQueryable<ClientAccount> FindClientAccounts(int clientOrgId);
     }
 }

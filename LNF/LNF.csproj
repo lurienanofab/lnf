@@ -93,7 +93,6 @@
     <Compile Include="Data\ActiveDataItemManager.cs" />
     <Compile Include="Data\ActiveLogManager.cs" />
     <Compile Include="Data\ChargeTypeManager.cs" />
-    <Compile Include="Data\ClientAccountManager.cs" />
     <Compile Include="Data\ClientInfoManager.cs" />
     <Compile Include="Data\ClientManager.cs" />
     <Compile Include="Data\ClientOrgManager.cs" />
@@ -103,7 +102,6 @@
     <Compile Include="Data\IActiveDataItemManager.cs" />
     <Compile Include="Data\IActiveLogManager.cs" />
     <Compile Include="Data\IChargeTypeManager.cs" />
-    <Compile Include="Data\IClientAccountManager.cs" />
     <Compile Include="Data\IClientInfoManager.cs" />
     <Compile Include="Data\IClientManager.cs" />
     <Compile Include="Data\IClientOrgManager.cs" />
@@ -422,6 +420,7 @@
     <Compile Include="Repository\Ordering\Receiving.cs" />
     <Compile Include="Repository\Ordering\ShippingMethod.cs" />
     <Compile Include="Repository\Ordering\Status.cs" />
+    <Compile Include="Repository\Ordering\StoreManagerReportItem.cs" />
     <Compile Include="Repository\Ordering\Tracking.cs" />
     <Compile Include="Repository\Ordering\TrackingCheckpoint.cs" />
     <Compile Include="Repository\Ordering\Vendor.cs" />

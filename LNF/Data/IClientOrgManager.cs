@@ -14,10 +14,8 @@ namespace LNF.Data
         void Disable(ClientOrg item);
         BillingType GetBillingType(ClientOrg item);
         ClientOrgInfo GetClientOrgInfo(ClientOrg item);
-        ClientAccount GetDryBoxClientAccount(ClientOrg item);
         int GetMaxChargeTypeID(int clientId);
         ClientOrg GetPrimary(int clientId);
-        bool HasDryBox(ClientOrg item);
         IEnumerable<ClientOrg> SelectActiveClientOrgs(Client client, DateTime period, ActiveLogManager activeLogMgr);
         IEnumerable<ClientOrg> SelectByClientAccount(Client client, Account acct);
         IList<ClientOrg> SelectOrgManagers(int orgId = 0);

@@ -99,6 +99,7 @@
     <Compile Include="DependencyInjection\Default\IOC.cs" />
     <Compile Include="DependencyInjection\DependencyResolver.cs" />
     <Compile Include="DependencyInjection\Web\IOC.cs" />
+    <Compile Include="Mappings\Ordering\StoreManagerReportItemMap.cs" />
     <Compile Include="Serialization\DynamicContractResolver.cs" />
     <Compile Include="Email\EmailService.cs" />
     <Compile Include="Email\Envelope.cs" />
@@ -367,11 +368,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Mappings\Billing\Xml\NamedQueries.hbm.xml" />
-    <Content Include="Mappings\Control\Xml\NamedQueries.hbm.xml" />
-    <Content Include="Mappings\Data\Xml\NamedQueries.hbm.xml" />
-    <Content Include="Mappings\Ordering\Xml\NamedQueries.hbm.xml" />
-    <Content Include="Mappings\Scheduler\Xml\NamedQueries.hbm.xml" />
+    <EmbeddedResource Include="Mappings\Billing\Xml\NamedQueries.hbm.xml" />
+    <EmbeddedResource Include="Mappings\Control\Xml\NamedQueries.hbm.xml" />
+    <EmbeddedResource Include="Mappings\Data\Xml\NamedQueries.hbm.xml" />
+    <EmbeddedResource Include="Mappings\Ordering\Xml\NamedQueries.hbm.xml" />
+    <EmbeddedResource Include="Mappings\Scheduler\Xml\NamedQueries.hbm.xml" />
     <Content Include="Reporting\_reports.js" />
   </ItemGroup>
   <ItemGroup>

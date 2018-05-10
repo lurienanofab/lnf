@@ -15,5 +15,8 @@ namespace LNF.Data
         void Remove(DryBoxAssignment dba, Client modifiedBy);
         DryBoxAssignment Request(DryBox db, ClientAccount ca);
         void Update(DryBoxAssignment dba, ClientAccount ca, Client modifiedBy);
+        bool HasDryBox(ClientAccount item);
+        ClientAccount GetDryBoxClientAccount(ClientOrg item);
+        bool HasDryBox(ClientOrg item);
     }
 }

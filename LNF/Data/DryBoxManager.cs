@@ -1,6 +1,7 @@
 ﻿using LNF.Repository;
 using LNF.Repository.Data;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace LNF.Data
@@ -136,6 +137,25 @@ namespace LNF.Data
                 .ToArray();
 
             return result;
+        }
+
+        public bool HasDryBox(ClientAccount item)
+        {
+            IList<DryBoxAssignment> query = Session.Query<DryBoxAssignment>().Where(x => x.ClientAccount.ClientAccountID == item.ClientAccountID).ToList();
+            DryBoxAssignment dba = query.FirstOrDefault(x => x.GetStatus() == DryBoxAssignmentStatus.Active);
+            return dba != null;
+        }
+
+        public ClientAccount GetDryBoxClientAccount(ClientOrg item)
+        {
+            IList<ClientAccount> query = Session.Query<ClientAccount>().Where(x => x.ClientOrg.ClientOrgID == item.ClientOrgID).ToList();
+            ClientAccount ca = query.FirstOrDefault(x => HasDryBox(x));
+            return ca;
+        }
+
+        public bool HasDryBox(ClientOrg item)
+        {
+            return GetDryBoxClientAccount(item) != null;
         }
     }
 }

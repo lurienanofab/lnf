@@ -14,7 +14,7 @@ namespace LNF.Reporting
     public class ClientDatabaseReport : DefaultReport<UserCriteria>
     {
         protected IClientManager ClientManager => DA.Use<IClientManager>();
-        protected IClientAccountManager ClientAccountManager => DA.Use<IClientAccountManager>();
+        protected IAccountManager AccountManager => DA.Use<IAccountManager>();
         protected IActiveLogManager ActiveLogManager => DA.Use<IActiveLogManager>();
 
         public override string Key { get { return "client-database-report"; } }
@@ -119,7 +119,7 @@ namespace LNF.Reporting
                         Email = co.Email,
                         Managers = GetDetailManagerInfo(ClientManagerUtility.FindManagers(co.ClientOrgID)),
                         BillingType = GetDetailBillingType(co),
-                        Accounts = GetDetailAccounts(ClientAccountManager.FindClientAccounts(co.ClientOrgID))
+                        Accounts = GetDetailAccounts(AccountManager.FindClientAccounts(co.ClientOrgID))
                     };
                     list.Add(item);
                 }
@@ -146,7 +146,7 @@ namespace LNF.Reporting
             return ts.BillingType.BillingTypeName;
         }
 
-        public string[] GetDetailAccounts(IList<ClientAccount> caccts)
+        public string[] GetDetailAccounts(IEnumerable<ClientAccount> caccts)
         {
             List<string> list = new List<string>();
             foreach (ClientAccount ca in caccts)

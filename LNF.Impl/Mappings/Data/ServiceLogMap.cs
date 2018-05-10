@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Data;
-using FluentNHibernate.Mapping;
 
 namespace LNF.Impl.Mappings.Data
 {
@@ -19,7 +15,7 @@ namespace LNF.Impl.Mappings.Data
             Map(x => x.LogLevel);
             Map(x => x.LogMessage);
             Map(x => x.MessageID);
-            Map(x => x.Data);
+            Map(x => x.Data).CustomType("StringClob").CustomSqlType("nvarchar(max)").Length(int.MaxValue);
         }
     }
 };

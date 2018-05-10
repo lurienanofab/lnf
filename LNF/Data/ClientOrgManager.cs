@@ -11,18 +11,6 @@ namespace LNF.Data
     {
         public ClientOrgManager(ISession session) : base(session) { }
 
-        public ClientAccount GetDryBoxClientAccount(ClientOrg item)
-        {
-            IList<ClientAccount> query = Session.Query<ClientAccount>().Where(x => x.ClientOrg.ClientOrgID == item.ClientOrgID).ToList();
-            ClientAccount ca = query.FirstOrDefault(x => DA.Use<IClientAccountManager>().HasDryBox(x));
-            return ca;
-        }
-
-        public bool HasDryBox(ClientOrg item)
-        {
-            return GetDryBoxClientAccount(item) != null;
-        }
-
         public BillingType GetBillingType(ClientOrg item)
         {
             var logs = Session.Query<ClientOrgBillingTypeLog>().Where(x => x.ClientOrg.ClientOrgID == item.ClientOrgID);

@@ -106,7 +106,7 @@ namespace LNF.Impl.DataAccess
 
         private void HandleMappings(MappingConfiguration cfg)
         {
-            cfg.HbmMappings.AddFromAssembly(GetType().Assembly);
+            cfg.HbmMappings.AddFromAssemblyOf<ISessionManager>();
 
             cfg.FluentMappings
                 .AddFromAssembly(GetType().Assembly)
