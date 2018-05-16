@@ -1131,11 +1131,9 @@ namespace LNF.Scheduler
             {
                 if (reader.Read())
                 {
-                    authLevel = Convert.ToInt32(reader["AuthLevel"]);
-                    resourceClientId = Convert.ToInt32(reader["ResourceClientID"]);
+                    authLevel = (int)reader["AuthLevel"];
+                    resourceClientId = (int)reader["ResourceClientID"];
                 }
-
-                reader.Close();
             }
 
             var res = rsv.Resource;
@@ -1382,7 +1380,7 @@ namespace LNF.Scheduler
             return (maxAlloc - reserved).TotalMinutes;
         }
 
-        public ClientAuthLevel GetAuthLevel(IEnumerable<IAuthorized> resourceClients, IPrivileged client, int resourceId)
+        public ClientAuthLevel GetAuthLevel(IEnumerable<IAuthorized> resourceClients, IPrivileged client)
         {
             if (client.HasPriv(ClientPrivilege.Administrator | ClientPrivilege.Developer))
                 return ClientAuthLevel.ToolEngineer;
@@ -1390,9 +1388,6 @@ namespace LNF.Scheduler
             var rc = resourceClients.FirstOrDefault(x => x.ClientID == client.ClientID || x.ClientID == -1);
 
             if (rc == null)
-                return ClientAuthLevel.UnauthorizedUser;
-
-            if (resourceId == 0)
                 return ClientAuthLevel.UnauthorizedUser;
 
             return rc.AuthLevel;

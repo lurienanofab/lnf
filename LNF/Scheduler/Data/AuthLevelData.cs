@@ -1,33 +1,29 @@
-﻿using LNF.CommonTools;
-using LNF.Repository;
+﻿using LNF.Repository;
+using LNF.Repository.Scheduler;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 
 namespace LNF.Scheduler.Data
 {
     /// <summary>
-    /// A class for handling AuthLevel data using the System.Data namespace.
+    /// A class for handling AuthLevel data.
     /// </summary>
     public static class AuthLevelData
     {
         /// <summary>
         /// Returns all auth levels 
         /// </summary>
-        public static DataTable SelectAll()
+        public static IEnumerable<AuthLevel> SelectAll()
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba
-                    .MapSchema()
-                    .ApplyParameters(new { Action = "SelectAll" })
-                    .FillDataTable("sselScheduler.dbo.procAuthLevelSelect");
+            // Replaces sselScheduler.dbo.procAuthLevelSelect @Action = 'SelectAll'
+            return DA.Current.Query<AuthLevel>().OrderBy(x => x.AuthLevelID).ToList();
         }
 
-        public static DataTable SelectAuthorizable()
+        public static IEnumerable<AuthLevel> SelectAuthorizable()
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba
-                    .MapSchema()
-                    .ApplyParameters(new { Action = "SelectAuthorizable" })
-                    .FillDataTable("sselScheduler.dbo.procAuthLevelSelect");
+            // Replaces sselScheduler.dbo.procAuthLevelSelect @Action = 'SelectAuthorizable'
+            return DA.Current.Query<AuthLevel>().Where(x => x.Authorizable == 1).OrderBy(x => x.AuthLevelID).ToList();
         }
     }
 }

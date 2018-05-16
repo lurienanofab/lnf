@@ -33,7 +33,7 @@ namespace LNF.Scheduler
         void EndUnstartedReservations(IEnumerable<Reservation> reservations);
         IList<ReservationHistoryFilterItem> FilterCancelledReservations(IList<Reservation> reservations, bool includeCanceledForModification);
         Reservation FromDataRow(DataRow dr);
-        ClientAuthLevel GetAuthLevel(IEnumerable<IAuthorized> resourceClients, IPrivileged client, int resourceId);
+        ClientAuthLevel GetAuthLevel(IEnumerable<IAuthorized> resourceClients, IPrivileged client);
         int GetAvailableSchedMin(int resourceId, int clientId);
         IList<Reservation> GetConflictingReservations(IEnumerable<Reservation> reservations, DateTime sd, DateTime ed);
         IList<Reservation> GetCurrentReservations();

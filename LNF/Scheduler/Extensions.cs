@@ -71,10 +71,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public static ClientSetting GetClientSetting(this CacheManager cm)
-        {
-            return cm.GetSessionValue(SessionKeys.ClientSetting, () => ClientSetting.GetClientSettingOrDefault(cm.ClientID));
-        }
+        public static ClientSetting GetClientSetting(this CacheManager cm) => cm.GetSessionValue(SessionKeys.ClientSetting, () => ClientSetting.GetClientSettingOrDefault(cm.ClientID));
 
         public static IEnumerable<ResourceClientModel> CurrentResourceClients(this CacheManager cm)
         {
@@ -89,10 +86,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public static ResourceClientModel GetCurrentResourceClient(this CacheManager cm, int resourceId)
-        {
-            return cm.CurrentResourceClients().FirstOrDefault(x => x.ResourceID == resourceId);
-        }
+        public static ResourceClientModel GetCurrentResourceClient(this CacheManager cm, int resourceId) => cm.CurrentResourceClients().FirstOrDefault(x => x.ResourceID == resourceId);
 
         public static IEnumerable<ResourceClientModel> ResourceClients(this CacheManager cm, int resourceId)
         {
@@ -109,21 +103,15 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public static IEnumerable<ResourceClientModel> ToolEngineers(this CacheManager cm, int resourceId)
-        {
-            return cm.ResourceClients(resourceId).Where(x => (x.AuthLevel & ClientAuthLevel.ToolEngineer) > 0).ToList();
-        }
+        public static IEnumerable<ResourceClientModel> ToolEngineers(this CacheManager cm, int resourceId) => cm.ResourceClients(resourceId).Where(x => (x.AuthLevel & ClientAuthLevel.ToolEngineer) > 0).ToList();
 
-        public static ResourceClientModel GetResourceClient(this CacheManager cm, int resourceId, int clientId)
-        {
-            return cm.ResourceClients(resourceId).FirstOrDefault(x => x.ClientID == clientId || x.ClientID == -1);
-        }
+        public static ResourceClientModel GetResourceClient(this CacheManager cm, int resourceId, int clientId) => cm.ResourceClients(resourceId).FirstOrDefault(x => x.ClientID == clientId || x.ClientID == -1);
 
         public static ClientAuthLevel GetAuthLevel(this CacheManager cm, int resourceId, int clientId)
         {
             var client = cm.GetClient(clientId);
             var resourceClients = cm.ResourceClients(resourceId);
-            return DA.Use<IReservationManager>().GetAuthLevel(resourceClients, client, resourceId);
+            return DA.Use<IReservationManager>().GetAuthLevel(resourceClients, client);
         }
 
         public static void ClearResourceClients(this CacheManager cm, int resourceId)
@@ -145,10 +133,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public static void WeekStartDate(this CacheManager cm, DateTime value)
-        {
-            cm.SetSessionValue(SessionKeys.WeekStartDate, value);
-        }
+        public static void WeekStartDate(this CacheManager cm, DateTime value) => cm.SetSessionValue(SessionKeys.WeekStartDate, value);
 
         public static bool IsOnKiosk(this CacheManager cm)
         {
@@ -159,10 +144,7 @@ namespace LNF.Scheduler
             });
         }
 
-        public static bool ClientInLab(this CacheManager cm, int labId)
-        {
-            return KioskUtility.ClientInLab(cm.GetClientLabs(), labId);
-        }
+        public static bool ClientInLab(this CacheManager cm, int labId) => KioskUtility.ClientInLab(cm.GetClientLabs(), labId);
 
         public static int[] GetClientLabs(this CacheManager cm)
         {
@@ -173,15 +155,9 @@ namespace LNF.Scheduler
             });
         }
 
-        public static bool DisplayDefaultHours(this CacheManager cm)
-        {
-            return cm.GetSessionValue(SessionKeys.DisplayDefaultHours, () => true);
-        }
+        public static bool DisplayDefaultHours(this CacheManager cm) => cm.GetSessionValue(SessionKeys.DisplayDefaultHours, () => true);
 
-        public static void DisplayDefaultHours(this CacheManager cm, bool value)
-        {
-            cm.SetSessionValue(SessionKeys.DisplayDefaultHours, value);
-        }
+        public static void DisplayDefaultHours(this CacheManager cm, bool value) => cm.SetSessionValue(SessionKeys.DisplayDefaultHours, value);
 
         public static IEnumerable<ProcessInfoModel> ProcessInfos(this CacheManager cm, int resourceId)
         {
@@ -213,59 +189,26 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public static IEnumerable<ReservationProcessInfoItem> ReservationProcessInfos(this CacheManager cm)
-        {
-            return cm.GetSessionValue(SessionKeys.ReservationProcessInfos, () => new List<ReservationProcessInfoItem>());
-        }
+        public static IEnumerable<ReservationProcessInfoItem> ReservationProcessInfos(this CacheManager cm) => cm.GetSessionValue(SessionKeys.ReservationProcessInfos, () => new List<ReservationProcessInfoItem>());
 
-        public static void ReservationProcessInfos(this CacheManager cm, IEnumerable<ReservationProcessInfoItem> value)
-        {
-            cm.SetSessionValue(SessionKeys.ReservationProcessInfos, value);
-        }
+        public static void ReservationProcessInfos(this CacheManager cm, IEnumerable<ReservationProcessInfoItem> value) => cm.SetSessionValue(SessionKeys.ReservationProcessInfos, value);
 
-        public static IEnumerable<ReservationInviteeItem> ReservationInvitees(this CacheManager cm)
-        {
-            return cm.GetSessionValue<IEnumerable<ReservationInviteeItem>>(SessionKeys.ReservationInvitees, () => null);
-        }
+        public static IEnumerable<ReservationInviteeItem> ReservationInvitees(this CacheManager cm) => cm.GetSessionValue<IEnumerable<ReservationInviteeItem>>(SessionKeys.ReservationInvitees, () => new List<ReservationInviteeItem>());
 
-        public static void ReservationInvitees(this CacheManager cm, IEnumerable<ReservationInviteeItem> value)
-        {
-            cm.SetSessionValue(SessionKeys.ReservationInvitees, value);
-        }
+        public static void ReservationInvitees(this CacheManager cm, IEnumerable<ReservationInviteeItem> value) => cm.SetSessionValue(SessionKeys.ReservationInvitees, value);
 
-        public static IEnumerable<ReservationInviteeItem> RemovedInvitees(this CacheManager cm)
-        {
-            return cm.GetSessionValue<IEnumerable<ReservationInviteeItem>>(SessionKeys.RemovedInvitees, () => null);
-        }
+        public static IEnumerable<ReservationInviteeItem> RemovedInvitees(this CacheManager cm) => cm.GetSessionValue<IEnumerable<ReservationInviteeItem>>(SessionKeys.RemovedInvitees, () => new List<ReservationInviteeItem>());
 
-        public static void RemovedInvitees(this CacheManager cm, IEnumerable<ReservationInviteeItem> value)
-        {
-            cm.SetSessionValue(SessionKeys.RemovedInvitees, value);
-        }
+        public static void RemovedInvitees(this CacheManager cm, IEnumerable<ReservationInviteeItem> value) => cm.SetSessionValue(SessionKeys.RemovedInvitees, value);
 
-        public static IEnumerable<AvailableInviteeItem> AvailableInvitees(this CacheManager cm)
-        {
-            return cm.GetSessionValue<IEnumerable<AvailableInviteeItem>>(SessionKeys.AvailableInvitees, () => null);
-        }
+        public static IEnumerable<AvailableInviteeItem> AvailableInvitees(this CacheManager cm) => cm.GetSessionValue<IEnumerable<AvailableInviteeItem>>(SessionKeys.AvailableInvitees, () => new List<AvailableInviteeItem>());
 
-        public static void AvailableInvitees(this CacheManager cm, IEnumerable<AvailableInviteeItem> value)
-        {
-            cm.SetSessionValue(SessionKeys.AvailableInvitees, value);
-        }
+        public static void AvailableInvitees(this CacheManager cm, IEnumerable<AvailableInviteeItem> value) => cm.SetSessionValue(SessionKeys.AvailableInvitees, value);
 
-        public static ViewType CurrentViewType(this CacheManager cm)
-        {
-            return cm.GetSessionValue("CurrentViewType", () => ViewType.WeekView);
-        }
+        public static ViewType CurrentViewType(this CacheManager cm) => cm.GetSessionValue("CurrentViewType", () => ViewType.WeekView);
 
-        public static void CurrentViewType(this CacheManager cm, ViewType value)
-        {
-            cm.SetSessionValue("CurrentViewType", value);
-        }
+        public static void CurrentViewType(this CacheManager cm, ViewType value) => cm.SetSessionValue("CurrentViewType", value);
 
-        public static ClientAuthLevel SelectAuthLevel(this CacheManager cm, ResourceModel item, IPrivileged client)
-        {
-            return cm.GetAuthLevel(item.ResourceID, client.ClientID);
-        }
+        public static ClientAuthLevel SelectAuthLevel(this CacheManager cm, ResourceModel item, IPrivileged client) => cm.GetAuthLevel(item.ResourceID, client.ClientID);
     }
 }

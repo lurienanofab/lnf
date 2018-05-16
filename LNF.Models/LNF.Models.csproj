@@ -118,6 +118,7 @@
     <Compile Include="Reporting\Individual\ToolByOrgItem.cs" />
     <Compile Include="Reporting\Individual\UserUsageSummary.cs" />
     <Compile Include="Scheduler\ActivityModel.cs" />
+    <Compile Include="Scheduler\AvailableResourceClientItem.cs" />
     <Compile Include="Scheduler\BuildingModel.cs" />
     <Compile Include="Scheduler\Enums.cs" />
     <Compile Include="Scheduler\ExpiringCard.cs" />

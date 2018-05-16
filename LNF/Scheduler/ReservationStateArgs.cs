@@ -42,7 +42,7 @@ namespace LNF.Scheduler
 
             // Determine Authorization
             var resourceClients = mgr.Session.Query<ResourceClient>().Where(x => x.Resource == rsv.Resource).ToList();
-            var userAuth = mgr.GetAuthLevel(resourceClients, client, rsv.Resource.ResourceID);
+            var userAuth = mgr.GetAuthLevel(resourceClients, client);
             bool isAuthorized = (userAuth & (ClientAuthLevel)rsv.Activity.StartEndAuth) > 0;
 
             bool isBeforeMinCancelTime = (DateTime.Now <= rsv.BeginDateTime.AddMinutes(-1 * rsv.Resource.MinCancelTime));
@@ -78,7 +78,7 @@ namespace LNF.Scheduler
             bool isInvited = invitees.Any(x => x.ReservationID == rsv.ReservationID && x.ClientID == client.ClientID);
 
             // Determine Authorization
-            var userAuth = mgr.GetAuthLevel(resourceClients, client, rsv.ResourceID);
+            var userAuth = mgr.GetAuthLevel(resourceClients, client);
             bool isAuthorized = (userAuth & rsv.StartEndAuth) > 0;
 
             bool isBeforeMinCancelTime = (DateTime.Now <= rsv.BeginDateTime.AddMinutes(-1 * rsv.MinCancelTime));

@@ -442,6 +442,7 @@
     <Compile Include="Repository\Scheduler\Building.cs" />
     <Compile Include="Repository\Scheduler\ClientSetting.cs" />
     <Compile Include="Repository\Scheduler\Enums.cs" />
+    <Compile Include="Repository\Scheduler\Extensions.cs" />
     <Compile Include="Repository\Scheduler\GlobalActivityAuth.cs" />
     <Compile Include="Repository\Scheduler\Kiosk.cs" />
     <Compile Include="Repository\Scheduler\Lab.cs" />
