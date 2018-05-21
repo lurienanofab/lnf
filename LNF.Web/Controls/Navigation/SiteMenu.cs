@@ -29,9 +29,8 @@ namespace LNF.Web.Controls.Navigation
             if (Context.Session["SiteMenu"] == null)
             {
                 var client = Context.Request.GetCurrentUser();
-
-                var rc = new RestClient(ConfigurationManager.AppSettings["ApiHost"]);
-                rc.Authenticator = new HttpBasicAuthenticator(ConfigurationManager.AppSettings["BasicAuthUsername"], ConfigurationManager.AppSettings["BasicAuthPassword"]);
+                var basicAuth = new HttpBasicAuthenticator(ConfigurationManager.AppSettings["BasicAuthUsername"], ConfigurationManager.AppSettings["BasicAuthPassword"]);
+                var rc = new RestClient(ConfigurationManager.AppSettings["ApiHost"]) { Authenticator = basicAuth };
 
                 var request = new RestRequest("data/ajax/menu");
                 request.AddParameter("clientId", client.ClientID);
