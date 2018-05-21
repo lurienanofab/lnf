@@ -17,7 +17,7 @@ namespace LNF.Data
             ActiveDataItemManager = activeDataItemManager;
         }
 
-        public void Update(Client client, ClientItem item, ActiveDataItemManager activeDataItemMgr)
+        public void Update(Client client, ClientItem item)
         {
             client.FName = item.FName;
             client.MName = item.MName;
@@ -35,9 +35,9 @@ namespace LNF.Data
             client.IsSafetyTest = item.IsSafetyTest;
 
             if (item.ClientActive)
-                activeDataItemMgr.Enable(client);
+                ActiveDataItemManager.Enable(client);
             else
-                activeDataItemMgr.Disable(client);
+                ActiveDataItemManager.Disable(client);
         }
 
         public string[] ActiveEmails(Client client)
@@ -495,7 +495,7 @@ namespace LNF.Data
 
             // For clients who have Lab User priv only, only allow access if they
             // have an active account. If access is not enabled, show an alert.
-            AccessCheck check = AccessCheck.Create(c, Session);
+            AccessCheck check = AccessCheck.Create(c);
             UpdatePhysicalAccess(check, out alert);
 
             return c;

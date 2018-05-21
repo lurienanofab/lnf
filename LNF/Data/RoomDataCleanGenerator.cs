@@ -11,7 +11,7 @@ namespace LNF.Data
     public class RoomDataCleanGenerator
     {
         private const double MAX_TIME = 8.0;
-        private IEnumerable<CostModel> _costs;
+        private IEnumerable<CostItem> _costs;
 
         protected ICostManager CostManager => DA.Use<ICostManager>();
 
@@ -37,7 +37,7 @@ namespace LNF.Data
             return result;
         }
 
-        private IEnumerable<CostModel> GetCurrentCosts()
+        private IEnumerable<CostItem> GetCurrentCosts()
         {
             if (_costs == null)
                 _costs = CostManager.FindCosts("RoomCost", EndDate);

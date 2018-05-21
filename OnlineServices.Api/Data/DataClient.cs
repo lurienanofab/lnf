@@ -43,29 +43,29 @@ namespace OnlineServices.Api.Data
             return await Put<bool>("data/client", client);
         }
 
-        public async Task<IEnumerable<ClientAccountModel>> GetClientAccounts(int clientId)
+        public async Task<IEnumerable<ClientAccountItem>> GetClientAccounts(int clientId)
         {
-            return await Get<IEnumerable<ClientAccountModel>>(string.Format("data/client/{0}/accounts/active", clientId));
+            return await Get<IEnumerable<ClientAccountItem>>(string.Format("data/client/{0}/accounts/active", clientId));
         }
 
-        public async Task<IEnumerable<ClientAccountModel>> GetActiveClientAccounts(int clientId)
+        public async Task<IEnumerable<ClientAccountItem>> GetActiveClientAccounts(int clientId)
         {
-            return await Get<IEnumerable<ClientAccountModel>>(string.Format("data/client/{0}/accounts/active", clientId));
+            return await Get<IEnumerable<ClientAccountItem>>(string.Format("data/client/{0}/accounts/active", clientId));
         }
 
-        public async Task<IEnumerable<ClientAccountModel>> GetActiveClientAccounts(int clientId, DateTime sd, DateTime ed)
+        public async Task<IEnumerable<ClientAccountItem>> GetActiveClientAccounts(int clientId, DateTime sd, DateTime ed)
         {
-            return await Get<IEnumerable<ClientAccountModel>>(string.Format("data/client/{0}/accounts/active/range?sd={1:yyyy-MM-dd}&ed={2:yyyy-MM-dd}", clientId, sd, ed));
+            return await Get<IEnumerable<ClientAccountItem>>(string.Format("data/client/{0}/accounts/active/range?sd={1:yyyy-MM-dd}&ed={2:yyyy-MM-dd}", clientId, sd, ed));
         }
 
-        public async Task<IEnumerable<ClientRemoteModel>> GetActiveClientRemotes(DateTime sd, DateTime ed)
+        public async Task<IEnumerable<ClientRemoteItem>> GetActiveClientRemotes(DateTime sd, DateTime ed)
         {
-            return await Get<IEnumerable<ClientRemoteModel>>(string.Format("data/client/remote/active?sd={0:yyyy-MM-dd}&ed={1:yyyy-MM-dd}", sd, ed));
+            return await Get<IEnumerable<ClientRemoteItem>>(string.Format("data/client/remote/active?sd={0:yyyy-MM-dd}&ed={1:yyyy-MM-dd}", sd, ed));
         }
 
-        public async Task<ClientRemoteModel> AddClientRemote(ClientRemoteModel model, DateTime period)
+        public async Task<ClientRemoteItem> AddClientRemote(ClientRemoteItem model, DateTime period)
         {
-            return await Post<ClientRemoteModel>(string.Format("data/client/remote?period={0:yyyy-MM-dd}", period), model);
+            return await Post<ClientRemoteItem>(string.Format("data/client/remote?period={0:yyyy-MM-dd}", period), model);
         }
 
         public async Task<bool> DeleteClientRemote(int clientRemoteId)
@@ -73,17 +73,17 @@ namespace OnlineServices.Api.Data
             return await Delete(string.Format("data/client/remote/{0}", clientRemoteId));
         }
 
-        public async Task<IEnumerable<DryBoxModel>> GetDryBoxes()
+        public async Task<IEnumerable<DryBoxItem>> GetDryBoxes()
         {
-            return await Get<IEnumerable<DryBoxModel>>("data/drybox");
+            return await Get<IEnumerable<DryBoxItem>>("data/drybox");
         }
 
-        public async Task<bool> UpdateDryBox(DryBoxModel model)
+        public async Task<bool> UpdateDryBox(DryBoxItem model)
         {
-            return await Put<DryBoxModel>("data/drybox", model);
+            return await Put<DryBoxItem>("data/drybox", model);
         }
 
-        public async Task<IEnumerable<ServiceLogModel>> GetServiceLogs(Guid? id = null, string service = null, string subject = null)
+        public async Task<IEnumerable<ServiceLogItem>> GetServiceLogs(Guid? id = null, string service = null, string subject = null)
         {
             string url = "data/servicelog";
 
@@ -104,18 +104,17 @@ namespace OnlineServices.Api.Data
                 amp = "&";
             }
 
-            return await Get<IEnumerable<ServiceLogModel>>(url);
+            return await Get<IEnumerable<ServiceLogItem>>(url);
         }
 
-        public async Task<ServiceLogModel> AddServiceLog(ServiceLogModel model)
+        public async Task<ServiceLogItem> AddServiceLog(ServiceLogItem model)
         {
-            return await Post<ServiceLogModel>("data/servicelog", model);
+            return await Post<ServiceLogItem>("data/servicelog", model);
         }
 
         public async Task<bool> UpdateServiceLog(Guid id, string data)
         {
-            IDictionary<string, string> postData = new Dictionary<string, string>();
-            postData.Add("", data);
+            IDictionary<string, string> postData = new Dictionary<string, string> { { "", data } };
             HttpContent content = new FormUrlEncodedContent(postData);
             return await Put<bool>(string.Format("data/servicelog/{0}", id), content);
         }

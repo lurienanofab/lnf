@@ -5,7 +5,7 @@ namespace LNF.Models.Reporting.Individual
 {
     public class ManagerUsageSummaryClient : ManagerUsageSummaryItem
     {
-        public IEnumerable<AccountItem> Accounts { get; set; }
+        public IEnumerable<ReportingAccountItem> Accounts { get; set; }
 
         public override string Members
         {
@@ -18,7 +18,7 @@ namespace LNF.Models.Reporting.Individual
             }
         }
 
-        private string GetAccountName(AccountItem acct)
+        private string GetAccountName(ReportingAccountItem acct)
         {
             if (acct.IsExternal)
                 return acct.AccountName;

@@ -1,6 +1,6 @@
 ﻿namespace LNF.Models.Reporting
 {
-    public class AccountItem
+    public class ReportingAccountItem
     {
         public int AccountID { get; set; }
         public string AccountName { get; set; }

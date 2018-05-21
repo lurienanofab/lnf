@@ -1,5 +1,6 @@
 ﻿using LNF.Repository.Billing;
 using System;
+using System.Collections.Generic;
 using System.Data;
 
 namespace LNF.Billing
@@ -24,6 +25,15 @@ namespace LNF.Billing
                 result = new ToolBilling();
 
             return result;
+        }
+
+        public static IEnumerable<IToolBilling> CreateToolBillingFromDataTable(DataTable dt, bool temp)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                var item = CreateToolBillingFromDataRow(dr, temp);
+                yield return item;
+            }
         }
 
         public static IToolBilling CreateToolBillingFromDataRow(DataRow dr, bool temp)

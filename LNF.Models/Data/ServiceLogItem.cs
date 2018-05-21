@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Data
 {
-    public class ServiceLogModel
+    public class ServiceLogItem
     {
         public virtual int ServiceLogID { get; set; }
         public virtual Guid? MessageID { get; set; }

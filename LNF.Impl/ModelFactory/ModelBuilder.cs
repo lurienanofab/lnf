@@ -18,9 +18,9 @@ namespace LNF.Impl.ModelFactory
         {
             public static IAccountManager AccountManager => DA.Use<IAccountManager>();
 
-            public static ClientAccountModel CreateClientAccountModel(ClientAccount source)
+            public static ClientAccountItem CreateClientAccountModel(ClientAccount source)
             {
-                var result = new ClientAccountModel();
+                var result = new ClientAccountItem();
 
                 result.InjectFrom(source);
                 result.IsDefault = source.IsDefault.GetValueOrDefault();
@@ -65,29 +65,22 @@ namespace LNF.Impl.ModelFactory
                 return result;
             }
 
-            public static GlobalCostModel CreateGlobalCostModel(GlobalCost source)
+            public static GlobalCostItem CreateGlobalCostModel(GlobalCost source)
             {
-                var result = new GlobalCostModel();
+                var result = new GlobalCostItem();
 
                 result.InjectFrom(source);
                 result.AdminID = source.Admin.ClientID;
-                result.AdminDisplayName = source.Admin.DisplayName;
                 result.LabAccountID = source.LabAccount.AccountID;
-                result.LabAccountName = source.LabAccount.Name;
-                result.LabAccountShortCode = source.LabAccount.ShortCode;
                 result.LabCreditAccountID = source.LabCreditAccount.AccountID;
-                result.LabCreditAccountName = source.LabCreditAccount.Name;
-                result.LabCreditAccountShortCode = source.LabCreditAccount.ShortCode;
                 result.SubsidyCreditAccountID = source.SubsidyCreditAccount.AccountID;
-                result.SubsidyCreditAccountName = source.SubsidyCreditAccount.Name;
-                result.SubsidyCreditAccountShortCode = source.SubsidyCreditAccount.ShortCode;
 
                 return result;
             }
 
-            public static RoomModel CreateRoomModel(Room source)
+            public static RoomItem CreateRoomModel(Room source)
             {
-                var result = new RoomModel();
+                var result = new RoomItem();
 
                 result.InjectFrom(source);
                 result.RoomDisplayName = source.DisplayName;

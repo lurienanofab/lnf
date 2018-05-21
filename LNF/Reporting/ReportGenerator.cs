@@ -45,7 +45,7 @@ namespace LNF.Reporting
             return result;
         }
 
-        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, Models.Reporting.ClientItem manager, bool includeRemote)
+        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, Models.Reporting.ReportingClientItem manager, bool includeRemote)
         {
             return CreateManagerUsageSummary(period, manager.ClientID, manager.UserName, manager.LName, manager.FName, includeRemote);
         }
@@ -56,7 +56,7 @@ namespace LNF.Reporting
             return CreateManagerUsageSummary(period, clientId, username, lname, fname, items);
         }
 
-        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, Models.Reporting.ClientItem manager, IEnumerable<ManagerUsageSummaryItem> items)
+        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, Models.Reporting.ReportingClientItem manager, IEnumerable<ManagerUsageSummaryItem> items)
         {
             return CreateManagerUsageSummary(period, manager.ClientID, manager.UserName, manager.LName, manager.FName, items);
         }
@@ -132,7 +132,7 @@ namespace LNF.Reporting
             string name = GetClientName(args.LName, args.FName);
             string sort = GetClientSort(args.LName, args.FName);
 
-            var comparer = new AccountItemEqualityComparer();
+            var comparer = new ReportingAccountItemEqualityComparer();
 
             return new ManagerUsageSummaryClient()
             {
@@ -140,7 +140,7 @@ namespace LNF.Reporting
                 Sort = sort,
                 UsageCharge = args.TotalCharge,
                 Subsidy = args.SubsidyDiscount,
-                Accounts = items.Where(x => x.ClientID == clientId && (x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv))).Select(x => new AccountItem()
+                Accounts = items.Where(x => x.ClientID == clientId && (x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv))).Select(x => new ReportingAccountItem()
                 {
                     AccountID = x.AccountID,
                     AccountName = x.AccountName,
@@ -200,7 +200,7 @@ namespace LNF.Reporting
             string name = GetAccountName(item.ShortCode, item.AccountNumber, item.AccountName, item.OrgName);
             string sort = GetAccountSort(item.ShortCode, item.AccountNumber, item.AccountName, item.OrgName);
 
-            var comparer = new ClientItemEqualityComparer();
+            var comparer = new ReportingClientItemEqualityComparer();
 
             return new ManagerUsageSummaryAccount()
             {
@@ -208,7 +208,7 @@ namespace LNF.Reporting
                 Sort = sort,
                 UsageCharge = item.TotalCharge,
                 Subsidy = item.SubsidyDiscount,
-                Clients = items.Where(x => x.AccountID == accountId && (x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv))).Select(x => new Models.Reporting.ClientItem()
+                Clients = items.Where(x => x.AccountID == accountId && (x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv))).Select(x => new Models.Reporting.ReportingClientItem()
                 {
                     ClientID = x.ClientID,
                     UserName = x.UserName,
@@ -252,7 +252,7 @@ namespace LNF.Reporting
             return sort;
         }
 
-        public static UserUsageSummary CreateUserUsageSummary(DateTime period, Models.Reporting.ClientItem client)
+        public static UserUsageSummary CreateUserUsageSummary(DateTime period, Models.Reporting.ReportingClientItem client)
         {
             bool showDisclaimer = false;
 

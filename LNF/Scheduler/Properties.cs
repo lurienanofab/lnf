@@ -53,7 +53,7 @@ namespace LNF.Scheduler
             get { return GetValue("SchedulerEmail"); }
             set { SetValue("SchedulerEmail", value); }
         }
-        public AccountModel LabAccount
+        public AccountItem LabAccount
         {
             get { return CacheManager.Current.GetAccount(int.Parse(GetValue("LabAccountID"))); }
             set { SetValue("LabAccountID", value.AccountID); }

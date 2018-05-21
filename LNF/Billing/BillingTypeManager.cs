@@ -12,6 +12,8 @@ namespace LNF.Billing
 {
     public class BillingTypeManager : ManagerBase, IBillingTypeManager
     {
+        private IList<BillingType> _allBillingTypes;
+
         protected IActiveDataItemManager ActiveDataItemManager { get; }
 
         public BillingTypeManager(ISession session, IActiveDataItemManager activeDataItemManager) : base(session)
@@ -165,12 +167,12 @@ namespace LNF.Billing
 
         public BillingType Find(int billingTypeId)
         {
-            return Session.Single<BillingType>(billingTypeId);
+            return GetAllBillingTypes().FirstOrDefault(x => x.BillingTypeID == billingTypeId);
         }
 
         public BillingType Find(string name)
         {
-            return Session.Query<BillingType>().FirstOrDefault(x => x.BillingTypeName == name);
+            return GetAllBillingTypes().FirstOrDefault(x => x.BillingTypeName == name);
         }
 
         public BillingType GetBillingTypeByClientAndOrg(DateTime period, Client client, Org org)
@@ -369,10 +371,17 @@ namespace LNF.Billing
             //Part I: Get the true cost based on billing types
             foreach (DataRow dr in dt.Rows)
             {
-                IToolBilling item = ToolBillingUtility.CreateToolBillingFromDataRow(dr, false);
+                var item = ToolBillingUtility.CreateToolBillingFromDataRow(dr, false);
                 dr.SetField("Room", RoomUtility.GetRoomDisplayName(item.RoomID));
                 dr.SetField("LineCost", GetLineCost(item));
             }
+        }
+
+        public IList<BillingType> GetAllBillingTypes()
+        {
+            if (_allBillingTypes == null)
+                _allBillingTypes = DA.Current.Query<BillingType>().ToList();
+            return _allBillingTypes;
         }
 
         public BillingType Default

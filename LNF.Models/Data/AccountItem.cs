@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Data
 {
-    public class AccountModel
+    public class AccountItem
     {
         public int AccountID { get; set; }
         public int OrgID { get; set; }

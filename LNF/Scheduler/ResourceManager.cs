@@ -176,7 +176,7 @@ namespace LNF.Scheduler
             return GetToolCosts(cutoff, resourceId).Where(x => x.ChargeTypeID == chargeTypeId).ToList();
         }
 
-        private IEnumerable<ResourceCostModel> CreateResourceCostModels(IEnumerable<CostModel> source)
+        private IEnumerable<ResourceCostModel> CreateResourceCostModels(IEnumerable<CostItem> source)
         {
             return source.Select(x => new ResourceCostModel()
             {

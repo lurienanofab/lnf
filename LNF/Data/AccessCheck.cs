@@ -23,14 +23,11 @@ namespace LNF.Data
         /// </summary>
         public string Reason { get; private set; }
 
-        private AccessCheck(ISession session)
-        {
-            Session = session;
-        }
+        private AccessCheck() { }
 
-        public static AccessCheck Create(Client c, ISession session)
+        public static AccessCheck Create(Client c)
         {
-            AccessCheck result = new AccessCheck(session)
+            AccessCheck result = new AccessCheck()
             {
                 Client = c,
                 Reason = null

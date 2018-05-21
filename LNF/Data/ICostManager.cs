@@ -9,8 +9,8 @@ namespace LNF.Data
     public interface ICostManager : IManager
     {
         IEnumerable<Cost> FindAuxiliaryCosts(string tableNameOrDescription, DateTime chargeDate, int? chargeTypeId);
-        IEnumerable<CostModel> FindCosts(string tableNameOrDescription, DateTime cutoff);
-        IEnumerable<CostModel> FindCosts(string tableNameOrDescription, DateTime chargeDate, int? chargeTypeId = null, int? recordId = null);
+        IEnumerable<CostItem> FindCosts(string tableNameOrDescription, DateTime cutoff);
+        IEnumerable<CostItem> FindCosts(string tableNameOrDescription, DateTime chargeDate, int? chargeTypeId = null, int? recordId = null);
         IEnumerable<Cost> FindCostsForToolBilling(DateTime period);
     }
 }

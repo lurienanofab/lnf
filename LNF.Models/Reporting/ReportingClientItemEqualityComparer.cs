@@ -2,14 +2,14 @@
 
 namespace LNF.Models.Reporting
 {
-    public class ClientItemEqualityComparer : IEqualityComparer<ClientItem>
+    public class ReportingClientItemEqualityComparer : IEqualityComparer<ReportingClientItem>
     {
-        public bool Equals(ClientItem x, ClientItem y)
+        public bool Equals(ReportingClientItem x, ReportingClientItem y)
         {
             return x.ClientID == y.ClientID && x.Email == y.Email;
         }
 
-        public int GetHashCode(ClientItem obj)
+        public int GetHashCode(ReportingClientItem obj)
         {
             return new { obj.ClientID, obj.Email }.GetHashCode();
         }

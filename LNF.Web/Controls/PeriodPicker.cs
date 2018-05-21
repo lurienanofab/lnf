@@ -138,8 +138,7 @@ namespace LNF.Web.Controls
 
         protected virtual void OnSelectedPeriodChanged(PeriodChangedEventArgs e)
         {
-            if (SelectedPeriodChanged != null)
-                SelectedPeriodChanged(this, e);
+            SelectedPeriodChanged?.Invoke(this, e);
         }
     }
 

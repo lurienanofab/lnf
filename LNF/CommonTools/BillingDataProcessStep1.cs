@@ -805,7 +805,7 @@ namespace LNF.CommonTools
                     dba.AddParameter("@Period", period);
                     dba.AddParameterIf("@ClientID", clientId > 0, clientId);
                     DataTable dt = dba.FillDataTable("Billing.dbo.ToolData_Select");
-                    source = dt.AsEnumerable().Select(x => ToolBillingUtility.CreateToolBillingFromDataRow(x, isTemp)).ToArray();
+                    source = ToolBillingUtility.CreateToolBillingFromDataTable(dt, isTemp).ToArray();
                 }
 
                 rowsSelectedFromToolData = source.Count();

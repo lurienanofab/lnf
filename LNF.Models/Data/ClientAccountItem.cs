@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Data
 {
-    public class ClientAccountModel : IPrivileged
+    public class ClientAccountItem : IPrivileged
     {
         public int ClientAccountID { get; set; }
         public bool IsDefault { get; set; }

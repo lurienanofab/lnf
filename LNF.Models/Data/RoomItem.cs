@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Data
 {
-    public class RoomModel
+    public class RoomItem
     {
         public int RoomID { get; set; }
         public int? ParentID { get; set; }

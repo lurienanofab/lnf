@@ -11,7 +11,7 @@ namespace LNF.Data
     {
         public CostManager(ISession session) : base(session) { }
 
-        public IEnumerable<CostModel> FindCosts(string tableNameOrDescription, DateTime cutoff)
+        public IEnumerable<CostItem> FindCosts(string tableNameOrDescription, DateTime cutoff)
         {
             var query = Session.Query<Cost>().Where(x => x.TableNameOrDescription == tableNameOrDescription && x.EffDate < cutoff);
 
@@ -39,7 +39,7 @@ namespace LNF.Data
             return result;
         }
 
-        public IEnumerable<CostModel> FindCosts(string tableNameOrDescription, DateTime chargeDate, int? chargeTypeId = null, int? recordId = null)
+        public IEnumerable<CostItem> FindCosts(string tableNameOrDescription, DateTime chargeDate, int? chargeTypeId = null, int? recordId = null)
         {
             IQueryable<Cost> query;
 
@@ -126,14 +126,14 @@ namespace LNF.Data
             return result.Where(x => x.ChargeTypeID == chargeTypeId.GetValueOrDefault(x.ChargeTypeID)).ToList();
         }
 
-        private IEnumerable<CostModel> CreateCostModels(IQueryable<Cost> query)
+        private IEnumerable<CostItem> CreateCostModels(IQueryable<Cost> query)
         {
             var join = query.Join(Session.Query<ChargeType>(),
                 o => o.ChargeTypeID,
                 i => i.ChargeTypeID,
                 (o, i) => new { Cost = o, ChargeType = i });
 
-            return join.Select(x => new CostModel()
+            return join.Select(x => new CostItem()
             {
                 CostID = x.Cost.CostID,
                 ChargeTypeID = x.ChargeType.ChargeTypeID,

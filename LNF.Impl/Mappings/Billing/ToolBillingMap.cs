@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Billing;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Billing;
-using FluentNHibernate.Mapping;
 
 namespace LNF.Impl.Mappings.Billing
 {
-    public abstract class ToolBillingClassMap<T> : ClassMap<T> where T : IToolBilling
+    internal abstract class ToolBillingClassMap<T> : ClassMap<T> where T : IToolBilling
     {
-        public ToolBillingClassMap()
+        internal ToolBillingClassMap()
         {
             Schema("sselData.dbo");
             Id(x => x.ToolBillingID);
@@ -59,17 +54,17 @@ namespace LNF.Impl.Mappings.Billing
     }
 
 
-    public class ToolBillingMap : ToolBillingClassMap<ToolBilling>
+    internal class ToolBillingMap : ToolBillingClassMap<ToolBilling>
     {
-        public ToolBillingMap()
+        internal ToolBillingMap()
         {
             Table("ToolBilling");
         }
     }
 
-    public class ToolBillingTempMap : ToolBillingClassMap<ToolBillingTemp>
+    internal class ToolBillingTempMap : ToolBillingClassMap<ToolBillingTemp>
     {
-        public ToolBillingTempMap()
+        internal ToolBillingTempMap()
         {
             Table("ToolBillingTemp");
         }

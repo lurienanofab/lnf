@@ -49,7 +49,7 @@ namespace LNF.Data
         TechnicalField TechnicalField(Client client);
         string TechnicalFieldName(Client client);
         int TotalDaysInLab(Client client, Room r, DateTime period);
-        void Update(Client client, ClientItem item, ActiveDataItemManager activeDataItemMgr);
+        void Update(Client client, ClientItem item);
         bool UpdatePhysicalAccess(AccessCheck check, out string alert);
     }
 }

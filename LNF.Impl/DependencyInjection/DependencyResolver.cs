@@ -1,4 +1,5 @@
-﻿using LNF.Data;
+﻿using LNF.Billing;
+using LNF.Data;
 using LNF.Impl.Control.Wago;
 using LNF.Impl.DataAccess;
 using LNF.Impl.DataAccess.Scheduler;
@@ -40,11 +41,14 @@ namespace LNF.Impl.DependencyInjection
                 _.For<IPhysicalAccessService>().Singleton().Use<ProwatchPhysicalAccessService>();
                 _.For<IModelFactory>().Singleton().Use<ValueInjecterModelFactory>();
 
-                _.Scan(s =>
-                {
-                    s.AssemblyContainingType<IManager>();
-                    s.WithDefaultConventions();
-                });
+                _.For<IClientManager>().Singleton().Use<ClientManager>();
+                _.For<IOrgManager>().Singleton().Use<OrgManager>();
+                _.For<IClientOrgManager>().Singleton().Use<ClientOrgManager>();
+                _.For<IActiveDataItemManager>().Singleton().Use<ActiveDataItemManager>();
+                _.For<IBillingTypeManager>().Singleton().Use<BillingTypeManager>();
+                _.For<IToolBillingManager>().Singleton().Use<ToolBillingManager>();
+                _.For<IReservationManager>().Singleton().Use<ReservationManager>();
+                _.For<IEmailManager>().Singleton().Use<EmailManager>();
 
                 _.For<IDependencyResolver>().Singleton().Use(this);
             });

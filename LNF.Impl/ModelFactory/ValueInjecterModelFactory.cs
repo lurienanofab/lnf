@@ -21,9 +21,9 @@ namespace LNF.Impl.ModelFactory
         public ValueInjecterModelFactory()
         {
             //// xxxxx Data Maps
-            Mapper.AddMap<ClientAccount, ClientAccountModel>(ModelBuilder.Data.CreateClientAccountModel);
-            Mapper.AddMap<GlobalCost, GlobalCostModel>(ModelBuilder.Data.CreateGlobalCostModel);
-            Mapper.AddMap<Room, RoomModel>(ModelBuilder.Data.CreateRoomModel);
+            Mapper.AddMap<ClientAccount, ClientAccountItem>(ModelBuilder.Data.CreateClientAccountModel);
+            Mapper.AddMap<GlobalCost, GlobalCostItem>(ModelBuilder.Data.CreateGlobalCostModel);
+            Mapper.AddMap<Room, RoomItem>(ModelBuilder.Data.CreateRoomModel);
 
             //// xxxxx Scheduler Maps
             Mapper.AddMap<Building, BuildingModel>(ModelBuilder.Scheduler.CreateBuildingModel);

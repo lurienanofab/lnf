@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using LNF.CommonTools;
+﻿using LNF.Repository;
 using LNF.Repository.Billing;
 using LNF.Repository.Data;
-using LNF.Repository;
+using System;
+using System.Collections.Generic;
+using System.Data;
 
 namespace LNF.Billing
 {
@@ -27,7 +26,7 @@ namespace LNF.Billing
         BillingType Regular { get; }
         BillingType RegularException { get; }
         BillingType Remote { get; }
-
+        IList<BillingType> GetAllBillingTypes();
         void CalculateRoomLineCost(DataTable dt);
         void CalculateToolLineCost(DataTable dt);
         BillingType Find(int billingTypeId);

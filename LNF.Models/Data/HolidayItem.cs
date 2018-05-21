@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Data
 {
-    public class HolidayModel
+    public class HolidayItem
     {
         public int HolidayID { get; set; }
         public string Description { get; set; }
