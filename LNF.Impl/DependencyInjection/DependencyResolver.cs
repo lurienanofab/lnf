@@ -45,9 +45,13 @@ namespace LNF.Impl.DependencyInjection
                 _.For<IOrgManager>().Singleton().Use<OrgManager>();
                 _.For<IClientOrgManager>().Singleton().Use<ClientOrgManager>();
                 _.For<IActiveDataItemManager>().Singleton().Use<ActiveDataItemManager>();
+                _.For<ICostManager>().Singleton().Use<CostManager>();
+
                 _.For<IBillingTypeManager>().Singleton().Use<BillingTypeManager>();
                 _.For<IToolBillingManager>().Singleton().Use<ToolBillingManager>();
+
                 _.For<IReservationManager>().Singleton().Use<ReservationManager>();
+                _.For<IResourceManager>().Singleton().Use<ResourceManager>();
                 _.For<IEmailManager>().Singleton().Use<EmailManager>();
 
                 _.For<IDependencyResolver>().Singleton().Use(this);
