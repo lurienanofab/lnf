@@ -1,4 +1,5 @@
-﻿using LNF.Models.Data;
+﻿using LNF.Cache;
+using LNF.Models.Data;
 using LNF.Models.Scheduler;
 using LNF.Repository.Data;
 using LNF.Scheduler;
@@ -8,7 +9,7 @@ using System.Linq;
 
 namespace LNF.Repository.Scheduler
 {
-    public class ResourceTreeItem : IDataItem
+    public class ResourceTree : IDataItem
     {
         public virtual int ResourceID { get; set; }
         public virtual string ResourceName { get; set; }
@@ -70,14 +71,16 @@ namespace LNF.Repository.Scheduler
         public virtual string Phone { get; set; }
         public virtual int MaxChargeTypeID { get; set; }
         public virtual int ResourceClientID { get; set; }
-        public virtual int AuthLevel { get; set; }
+        public virtual ClientAuthLevel AuthLevel { get; set; }
+        public virtual ClientAuthLevel EveryoneAuthLevel { get; set; }
+        public virtual ClientAuthLevel EffectiveAuthLevel { get; set; }
         public virtual DateTime? Expiration { get; set; }
         public virtual int? EmailNotify { get; set; }
         public virtual int? PracticeResEmailNotify { get; set; }
 
         public override bool Equals(object obj)
         {
-            var item = obj as ResourceTreeItem;
+            var item = obj as ResourceTree;
             if (item == null) return false;
             return item.ResourceID == ResourceID && item.ClientID == ClientID;
         }
@@ -89,7 +92,7 @@ namespace LNF.Repository.Scheduler
 
         public override string ToString()
         {
-            return ResourceModel.GetDisplayName(ResourceName, ResourceID);
+            return ResourceItem.GetDisplayName(ResourceName, ResourceID);
         }
 
         public virtual IEnumerable<ResourceClientInfo> GetToolEngineers()
@@ -101,13 +104,7 @@ namespace LNF.Repository.Scheduler
 
         public virtual ResourceCost GetCost(ClientItem client)
         {
-            var maxChargeTypeId = client.MaxChargeTypeID;
-            var tables = new[] { "ToolCost", "ToolOvertimeCost" };
-
-            var costs = DA.Current.Query<Cost>().Where(x => x.RecordID == ResourceID && tables.Contains(x.TableNameOrDescription)).ToList();
-            var result = new ResourceCost(costs, ResourceID, maxChargeTypeId);
-
-            return result;
+            return CacheManager.Current.GetResourceCost(ResourceID, client.MaxChargeTypeID);
         }
     }
 }

@@ -30,7 +30,7 @@ namespace LNF.Scheduler
         {
             int count = 0;
 
-            ResourceModel res = CacheManager.Current.ResourceTree().GetResource(resourceId);
+            var res = CacheManager.Current.ResourceTree().GetResource(resourceId);
 
             using (var timer = LogTaskTimer.Start("EmailUtility.EmailOnOpenReservations", "resourceId = {0}, startDate = '{1}', endDate = '{2}'", () => new object[] { res.ResourceID, startDate, endDate }))
             {
@@ -92,7 +92,7 @@ namespace LNF.Scheduler
                 body.AppendLine(string.Format("Total minutes: {0}<br />", ts.TotalMinutes.ToString("0.##")));
                 body.AppendLine("</div>");
 
-                ServiceProvider.Current.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailOnSaveHistory(Reservation rsv, bool updateCharges, bool updateAccount, bool updateNotes, bool sendToUser)", subject, body.ToString(), fromAddr, toAddr, isHtml: true);
+                ServiceProvider.Current.Email.SendMessage(CacheManager.Current.CurrentUser.ClientID, "LNF.Scheduler.EmailUtility.EmailOnSaveHistory(Reservation rsv, bool updateCharges, bool updateAccount, bool updateNotes, bool sendToUser)", subject, body.ToString(), fromAddr, toAddr, isHtml: true);
             }
         }
 
@@ -114,7 +114,7 @@ namespace LNF.Scheduler
                     rsv.Resource.ResourceName,
                     Environment.NewLine);
 
-                ServiceProvider.Current.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailOnUserCreate(Reservation rsv)", subject, body, fromAddr, toAddr);
+                ServiceProvider.Current.Email.SendMessage(CacheManager.Current.CurrentUser.ClientID, "LNF.Scheduler.EmailUtility.EmailOnUserCreate(Reservation rsv)", subject, body, fromAddr, toAddr);
             }
         }
 
@@ -135,7 +135,7 @@ namespace LNF.Scheduler
                     rsv.Resource.ResourceName,
                     Environment.NewLine);
 
-                ServiceProvider.Current.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailOnUserUpdate(Reservation rsv)", subject, body, fromAddr, toAddr);
+                ServiceProvider.Current.Email.SendMessage(CacheManager.Current.CurrentUser.ClientID, "LNF.Scheduler.EmailUtility.EmailOnUserUpdate(Reservation rsv)", subject, body, fromAddr, toAddr);
             }
         }
 
@@ -156,7 +156,7 @@ namespace LNF.Scheduler
                     rsv.Resource.ResourceName,
                     Environment.NewLine);
 
-                ServiceProvider.Current.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailOnUserDelete(Reservation rsv)", subject, body, fromAddr, toAddr);
+                ServiceProvider.Current.Email.SendMessage(CacheManager.Current.CurrentUser.ClientID, "LNF.Scheduler.EmailUtility.EmailOnUserDelete(Reservation rsv)", subject, body, fromAddr, toAddr);
             }
         }
 
@@ -179,7 +179,7 @@ namespace LNF.Scheduler
                 rsv.Notes,
                 Environment.NewLine);
 
-            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailOnToolEngDelete(Reservation rsv, int toolEngClientId)", subject, body, fromAddr, toAddr);
+            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.CurrentUser.ClientID, "LNF.Scheduler.EmailUtility.EmailOnToolEngDelete(Reservation rsv, int toolEngClientId)", subject, body, fromAddr, toAddr);
         }
 
         //Send email to invitees when they are invited to a reservation
@@ -220,7 +220,7 @@ namespace LNF.Scheduler
 
             if (toAddr.Count == 0) return;
 
-            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailOnInvited", subject, body, fromAddr, toAddr);
+            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.CurrentUser.ClientID, "LNF.Scheduler.EmailUtility.EmailOnInvited", subject, body, fromAddr, toAddr);
         }
 
         //Send email to invitees when they are uninvited to a reservation
@@ -252,13 +252,13 @@ namespace LNF.Scheduler
                 }
             }
 
-            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailOnUninvited(Reservation rsv, IEnumerable<ReservationInviteeItem> invitees)", subject, body, fromAddr, toAddr);
+            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.CurrentUser.ClientID, "LNF.Scheduler.EmailUtility.EmailOnUninvited(Reservation rsv, IEnumerable<ReservationInviteeItem> invitees)", subject, body, fromAddr, toAddr);
         }
 
         //Email users who want to be notified of open reservation slots
         public void EmailOnOpenSlot(int resourceId, DateTime beginDateTime, DateTime endDateTime, EmailNotify notifyType, int reservationId)
         {
-            ResourceModel res = CacheManager.Current.ResourceTree().GetResource(resourceId);
+            var res = CacheManager.Current.ResourceTree().GetResource(resourceId);
 
             IList<ResourceClientInfo> clients = null;
             string footer = string.Empty;
@@ -293,7 +293,7 @@ namespace LNF.Scheduler
                     toAddr.Add(rc.Email);
             }
 
-            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailOnOpenSlot(int resourceId, DateTime beginDateTime, DateTime endDateTime, EmailNotify notifyType, int reservationId)", subject, body, fromAddr, toAddr);
+            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.CurrentUser.ClientID, "LNF.Scheduler.EmailUtility.EmailOnOpenSlot(int resourceId, DateTime beginDateTime, DateTime endDateTime, EmailNotify notifyType, int reservationId)", subject, body, fromAddr, toAddr);
         }
 
         public void EmailOnPracticeRes(Reservation rsv, string inviteeName)
@@ -316,7 +316,7 @@ namespace LNF.Scheduler
                     toAddr.Add(rc.Email);
             }
 
-            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailOnPracticeRes(Reservation rsv, string inviteeName)", subject, body, fromAddr, toAddr);
+            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.CurrentUser.ClientID, "LNF.Scheduler.EmailUtility.EmailOnPracticeRes(Reservation rsv, string inviteeName)", subject, body, fromAddr, toAddr);
         }
 
         //Email reservers when their reservations are canceled because TE changed granularity.
@@ -334,7 +334,7 @@ namespace LNF.Scheduler
                 rsv.Resource.ResourceName,
                 Environment.NewLine);
 
-            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailOnCanceledByResource(Reservation rsv)", subject, body, fromAddr, toAddr);
+            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.CurrentUser.ClientID, "LNF.Scheduler.EmailUtility.EmailOnCanceledByResource(Reservation rsv)", subject, body, fromAddr, toAddr);
         }
 
         //Email reservers when their reservations are canceled because TE needs to repair resource.
@@ -356,7 +356,7 @@ namespace LNF.Scheduler
                 notes,
                 Environment.NewLine);
 
-            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailOnCanceledByRepair(Reservation rsv, bool isRemoved, string state, string notes, DateTime repairEndDateTime)", subject, body, fromAddr, toAddr);
+            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.CurrentUser.ClientID, "LNF.Scheduler.EmailUtility.EmailOnCanceledByRepair(Reservation rsv, bool isRemoved, string state, string notes, DateTime repairEndDateTime)", subject, body, fromAddr, toAddr);
         }
 
         /// <summary>
@@ -395,10 +395,10 @@ namespace LNF.Scheduler
 
         public void EmailFromUser(string toAddr, string subject, string body, bool ccself = false, bool isHtml = false)
         {
-            string email = CacheManager.Current.Email;
+            string email = CacheManager.Current.CurrentUser.Email;
             List<string> cc = new List<string>();
             if (ccself) cc.Add(email);
-            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.ClientID, "LNF.Scheduler.EmailUtility.EmailFromUser(string toAddr, string subject, string body, bool ccself = false, bool isHtml = false)", subject, body, email, new string[] { toAddr }, cc: cc, isHtml: isHtml);
+            ServiceProvider.Current.Email.SendMessage(CacheManager.Current.CurrentUser.ClientID, "LNF.Scheduler.EmailUtility.EmailFromUser(string toAddr, string subject, string body, bool ccself = false, bool isHtml = false)", subject, body, email, new string[] { toAddr }, cc: cc, isHtml: isHtml);
         }
     }
 }

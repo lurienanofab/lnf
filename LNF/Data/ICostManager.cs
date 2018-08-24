@@ -1,16 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using LNF.Models.Data;
+﻿using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace LNF.Data
 {
     public interface ICostManager : IManager
     {
-        IEnumerable<Cost> FindAuxiliaryCosts(string tableNameOrDescription, DateTime chargeDate, int? chargeTypeId);
-        IEnumerable<CostItem> FindCosts(string tableNameOrDescription, DateTime cutoff);
-        IEnumerable<CostItem> FindCosts(string tableNameOrDescription, DateTime chargeDate, int? chargeTypeId = null, int? recordId = null);
+        IEnumerable<Cost> FindCosts(string[] tables, DateTime? cutoff = null, int? recordId = null, int? chargeTypeId = null);
         IEnumerable<Cost> FindCostsForToolBilling(DateTime period);
+        IEnumerable<Cost> FindToolCosts(DateTime? cutoff);
+        IEnumerable<Cost> FindToolCosts(int resourceId, DateTime? cutoff);
+        IEnumerable<Cost> FindAuxiliaryCosts(string table, DateTime? cutoff, int? chargeTypeId);
+        IQueryable<ChargeType> GetChargeTypes();
     }
 }

@@ -71,7 +71,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public Resource GetResource(ResourceModel item)
+        public Resource GetResource(ResourceItem item)
         {
             var result = Session.Single<Resource>(item.ResourceID);
 
@@ -81,48 +81,54 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public IQueryable<ResourceClientInfo> GetResourceClients(ResourceModel item)
+        public IQueryable<ResourceClientInfo> GetResourceClients(ResourceItem item)
         {
             return ResourceClientInfoUtility.GetResourceClients(item.ResourceID);
         }
 
-        public IQueryable<ResourceClientInfo> GetToolEngineers(ResourceModel item)
+        public IQueryable<ResourceClientInfo> GetToolEngineers(ResourceItem item)
         {
             return ResourceClientInfoUtility.GetToolEngineers(item.ResourceID);
         }
 
-        public IQueryable<ResourceClientInfo> SelectNotifyOnCancelClients(ResourceModel item)
+        public IQueryable<ResourceClientInfo> SelectNotifyOnCancelClients(ResourceItem item)
         {
             return ResourceClientInfoUtility.SelectNotifyOnCancelClients(item.ResourceID);
         }
 
-        public IQueryable<ResourceClientInfo> SelectNotifyOnOpeningClients(ResourceModel item)
+        public IQueryable<ResourceClientInfo> SelectNotifyOnOpeningClients(ResourceItem item)
         {
             return ResourceClientInfoUtility.SelectNotifyOnOpeningClients(item.ResourceID);
         }
 
-        public IQueryable<ResourceClientInfo> SelectNotifyOnPracticeRes(ResourceModel item)
+        public IQueryable<ResourceClientInfo> SelectNotifyOnPracticeRes(ResourceItem item)
         {
             return ResourceClientInfoUtility.SelectNotifyOnPracticeRes(item.ResourceID);
         }
 
-        public IQueryable<ReservationRecurrence> GetReservationRecurrences(ResourceModel item)
+        public IQueryable<ReservationRecurrence> GetReservationRecurrences(ResourceItem item)
         {
             return Session.Query<ReservationRecurrence>().Where(x => x.Resource.ResourceID == item.ResourceID);
         }
 
-        public IQueryable<ResourceActivityAuth> GetResourceActivityAuths(ResourceModel item)
+        public IQueryable<ResourceActivityAuth> GetResourceActivityAuths(ResourceItem item)
         {
             return Session.Query<ResourceActivityAuth>().Where(x => x.Resource.ResourceID == item.ResourceID);
         }
 
-        public IList<ResourceCost> GetResourceCosts(ResourceModel item)
+        public IEnumerable<ResourceCost> GetResourceCosts(DateTime? cutoff = null)
         {
-            IEnumerable<Cost> costs = Session.Query<Cost>().Where(x => (x.RecordID == item.ResourceID && x.TableNameOrDescription == "ToolCost") || x.TableNameOrDescription == "ToolOvertimeCost");
-            return ResourceCost.GetAll(costs, item.ResourceID);
+            var costs = CostManager.FindToolCosts(cutoff).Model<CostItem>();
+            return ResourceCost.CreateResourceCosts(costs);
         }
 
-        public async Task<string> GetInterlockStatus(ResourceModel item)
+        public IEnumerable<ResourceCost> GetResourceCosts(ResourceItem item, DateTime? cutoff = null)
+        {
+            var costs = CostManager.FindToolCosts(item.ResourceID, cutoff).Model<CostItem>();
+            return ResourceCost.CreateResourceCosts(costs);
+        }
+
+        public async Task<string> GetInterlockStatus(ResourceItem item)
         {
             DataTable dt = new DataTable();
             dt.Columns.Add("ResourceID", typeof(int));
@@ -140,7 +146,7 @@ namespace LNF.Scheduler
         /// <param name="actualTime">The point in time to determine the next or previous granularity</param>
         /// <param name="granDir">The direction (next or pervious) to search in</param>
         /// <returns>The DateTime value of the next or previous granularity</returns>
-        public DateTime GetNextGranularity(ResourceModel item, DateTime actualTime, NextGranDir granDir)
+        public DateTime GetNextGranularity(ResourceItem item, DateTime actualTime, NextGranDir granDir)
         {
             return ResourceUtility.GetNextGranularity(item.Granularity, item.Offset, actualTime, granDir);
         }
@@ -150,42 +156,9 @@ namespace LNF.Scheduler
         /// </summary>
         /// <param name="startTime">The start time</param>
         /// <param name="endTime">The end time</param>
-        public void GetTimeSlotBoundary(ResourceModel item, ref DateTime startTime, ref DateTime endTime)
+        public void GetTimeSlotBoundary(ResourceItem item, ref DateTime startTime, ref DateTime endTime)
         {
             ResourceUtility.GetTimeSlotBoundary(item.Granularity, item.Offset, ref startTime, ref endTime);
-        }
-
-        public IEnumerable<ResourceCostModel> GetToolCosts(DateTime cutoff, int resourceId)
-        {
-            string key = "ResourceCosts#" + resourceId.ToString();
-
-            IList<ResourceCostModel> result = Context.GetItem<IList<ResourceCostModel>>(key);
-
-            if (result == null || result.Count == 0)
-            {
-                var costs = CostManager.FindCosts("ToolCost", cutoff, null, resourceId);
-                result = CreateResourceCostModels(costs).ToList();
-                Context.SetItem(key, result);
-            }
-
-            return result;
-        }
-
-        public IEnumerable<ResourceCostModel> GetToolCosts(DateTime cutoff, int resourceId, int chargeTypeId)
-        {
-            return GetToolCosts(cutoff, resourceId).Where(x => x.ChargeTypeID == chargeTypeId).ToList();
-        }
-
-        private IEnumerable<ResourceCostModel> CreateResourceCostModels(IEnumerable<CostItem> source)
-        {
-            return source.Select(x => new ResourceCostModel()
-            {
-                ResourceID = x.RecordID,
-                ChargeTypeID = x.ChargeTypeID,
-                ChargeTypeName = x.ChargeTypeName,
-                AddVal = x.AddVal,
-                MulVal = x.MulVal
-            }).ToList();
         }
     }
 }

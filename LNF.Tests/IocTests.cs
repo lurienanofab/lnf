@@ -49,17 +49,6 @@ namespace LNF.Tests
         }
 
         [TestMethod]
-        public void CanGetToolCosts()
-        {
-            using (IOC.Resolver.GetInstance<IUnitOfWork>())
-            {
-                var mgr = IOC.Resolver.GetInstance<IResourceManager>();
-                var toolCosts = mgr.GetToolCosts(DateTime.Now, 10020);
-                Assert.AreEqual(40, toolCosts.First().MulVal);
-            }
-        }
-
-        [TestMethod]
         public void CanSelectToolBilling()
         {
             using (IOC.Resolver.GetInstance<IUnitOfWork>())

@@ -1,6 +1,6 @@
 ﻿namespace LNF.Scheduler
 {
-    public class ResourceItem
+    public class ResourceListItem
     {
         public int ResourceID { get; set; }
         public string ResourceName { get; set; }

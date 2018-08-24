@@ -60,30 +60,6 @@ namespace LNF.Web
 
     public static class HttpRequestExtensions
     {
-        public static ClientItem GetCurrentUser(this HttpRequest request)
-        {
-            var wrapper = new HttpRequestWrapper(request);
-            return wrapper.GetCurrentUser();
-        }
-
-        public static ClientItem GetCurrentUser(this HttpRequestBase request)
-        {
-            ClientItem client;
-
-            if (request.RequestContext.HttpContext.Items["CurrentUser"] == null)
-            {
-                var username = request.RequestContext.HttpContext.User.Identity.Name;
-                client = ClientInfo.Find(username).GetClientItem();
-                request.RequestContext.HttpContext.Items["CurrentUser"] = client;
-            }
-            else
-            {
-                client = (ClientItem)request.RequestContext.HttpContext.Items["CurrentUser"];
-            }
-
-            return client;
-        }
-
         public static string GetDocumentContents(this HttpRequest request)
         {
             string documentContents;

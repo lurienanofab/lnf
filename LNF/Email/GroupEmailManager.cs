@@ -216,7 +216,7 @@ namespace LNF.Email
 
                 SendMessageArgs args = new SendMessageArgs()
                 {
-                    ClientID = CacheManager.Current.ClientID,
+                    ClientID = CacheManager.Current.CurrentUser.ClientID,
                     From = email.FromAddress,
                     DisplayName = email.DisplayName,
                     Subject = email.Subject.Trim(),

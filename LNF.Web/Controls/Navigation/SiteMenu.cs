@@ -1,4 +1,5 @@
-﻿using RestSharp;
+﻿using LNF.Cache;
+using RestSharp;
 using RestSharp.Authenticators;
 using System.Configuration;
 using System.Web;
@@ -28,7 +29,7 @@ namespace LNF.Web.Controls.Navigation
 
             if (Context.Session["SiteMenu"] == null)
             {
-                var client = Context.Request.GetCurrentUser();
+                var client = CacheManager.Current.CurrentUser;
                 var basicAuth = new HttpBasicAuthenticator(ConfigurationManager.AppSettings["BasicAuthUsername"], ConfigurationManager.AppSettings["BasicAuthPassword"]);
                 var rc = new RestClient(ConfigurationManager.AppSettings["ApiHost"]) { Authenticator = basicAuth };
 

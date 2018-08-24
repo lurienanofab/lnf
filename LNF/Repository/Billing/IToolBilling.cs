@@ -26,6 +26,9 @@ namespace LNF.Repository.Billing
         decimal TransferredDuration { get; set; }
         decimal ForgivenDuration { get; set; }
         decimal MaxReservedDuration { get; set; }
+        /// <summary>
+        /// Number of overtime minutes.
+        /// </summary>
         decimal OverTime { get; set; }
         string RatePeriod { get; set; }
         decimal PerUseRate { get; set; }

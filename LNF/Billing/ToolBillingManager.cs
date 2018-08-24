@@ -146,7 +146,6 @@ namespace LNF.Billing
                 //we stopped charging a reservation fee as of 2011-04-01
                 item.ReservationFee2 = 0;
             }
-
         }
 
         public void CalculateUsageFeeCharged(IToolBilling item)
@@ -203,20 +202,37 @@ namespace LNF.Billing
                 //next add any charges based on AcctPer and MulVal (item.ResourceRate is the MulVal i.e. per period charge)
                 if (item.IsCancelledBeforeAllowedTime)
                 {
-                    //only charge a booking fee on the PerUseRate when the reservation was canceled
-                    amount += item.Uses * item.PerUseRate;
-                    amount += RatePeriodCharge(item, item.MaxReservedDuration);
+                    // [2018-08-01 jg] Commenting out the line below because we should not charge a booking
+                    //      fee on the per use charge. This is because if someone modifies a reservation
+                    //      they will receive the booking fee on each canceled-for-modification reservation,
+                    //      plus they will be charged the full booking fee on the final reservation. Transferred
+                    //      duration is not a factor here becuase that only affects the hourly charge.
+
+                    // only charge a booking fee on the PerUseRate when the reservation was canceled
+                    //amount += item.Uses * item.PerUseRate;
+
+                    // [2018-08-01 jg] We should subtract the transferred duration. Otherwise we risk
+                    //      charging the booking fee on used time, which is ok unless the time is used
+                    //      by a reservation created for modification. Since we don't know at this point
+                    //      where the transferred duration is coming from (was it from another user's
+                    //      reservation, the same user not for modification, the same user for modification,
+                    //      who knows?) we can't determine what amount of transferred duration should be
+                    //      removed. Therefore it must always be removed to err on the side of caution.
+                    //      Also need to use SchedDuration now because at this time MaxReservedDuration
+                    //      is still determined based on prior modifications. Use SchedDuration instead
+                    //      of ChargeDuration because the reservation was never started if we are here.
+                    amount += RatePeriodCharge(item, item.SchedDuration - item.TransferredDuration);
                 }
                 else
                 {
-                    if (item.MaxReservedDuration > item.ChargeDuration)
-                    {
-                        //User modified the reservation to make it smaller so booking fee gets
-                        //charged on the difference. In this case it doesn't make sense to also
-                        //inlcude the per use charge (if any) because they will be charged for
-                        //that regardless.
-                        amount += RatePeriodCharge(item, item.MaxReservedDuration - item.ChargeDuration - item.TransferredDuration);
-                    }
+                    // [2018-08-01 jg] Skipping this part as of 2018-07-01.
+                    //      Reason: we now handle reservation modification by cancelling the existing
+                    //      reservation and creating a new one. Therefore the booking fee will be applied to
+                    //      the original reservation and we no longer have to track MaxReservedDuration.
+                    //      Otherwise we are double dipping - charging a booking fee on the original
+                    //      "cancelled for modification" reservation and also the unused portion of
+                    //      MaxReservedDuration of the new modification reservation (which is included in the
+                    //      reservation that was canceled for modification by definition).
                 }
 
                 item.BookingFee = amount * bookingFeePercentage * item.ChargeMultiplier;
@@ -225,34 +241,59 @@ namespace LNF.Billing
 
         public decimal RatePeriodCharge(IToolBilling item, decimal duration)
         {
-            decimal factor;
+            double factor;
+            double dur = Convert.ToDouble(duration);
+            double rate = Convert.ToDouble(item.ResourceRate);
 
-            if (duration == 0) return 0;
+            if (dur == 0) return 0;
 
             switch (item.RatePeriod)
             {
                 case "Hourly":
-                    factor = 1M / 60M;
+                    factor = 1D / 60D;
                     break;
                 case "Daily":
-                    factor = 1M / 60M / 24M;
+                    factor = 1D / 60D / 24D;
                     break;
                 //are these the same?
                 case "Monthly":
                 case "Per Month":
-                    factor = 1M / 60M / 24M / ToolBillingUtility.NumberOfDaysInMonth(item.Period);
+                    factor = 1D / 60D / 24D / ToolBillingUtility.NumberOfDaysInMonth(item.Period);
                     break;
                 case "Per Use":
-                    factor = 1M / duration;
+                    factor = 1D / dur;
                     break;
                 case "None":
                 default:
-                    factor = 0M;
+                    factor = 0D;
                     break;
             }
 
             // Rounding to two decmial places because that is what is displayed on the User Usage Summary
-            decimal result = Math.Round(duration * factor, 2) * item.ResourceRate;
+
+            // [2018-08-01 jg] During the July 2018 audit we discovered a problem with this calcuation. The original
+            //      method (#1) produced slightly inaccurate results due to rounding. See below for details.
+
+            var method = item.Period < DateTime.Parse("2018-07-01") ? 1 : 2;
+            double amount;
+            decimal result;
+
+            if (method == 1)
+            {     
+                // Method 1 was used until 2018-07-01
+                amount = Math.Round(dur * factor, 2) * rate;
+                result = Convert.ToDecimal(amount);
+            }
+            else
+            {
+                // Method 2 is used starting 2018-07-01, this way matches the computed column UsageFee20110401 (from ToolBilling)
+                //      The difference between the methods is that in #1 the duration is converted to hours and rounded to two
+                //      decimals before it is multipled by the hourly rate. In #2 the duration is converted to hours and multipled
+                //      by the hourly rate and then the final product is rounded to two decimals. So #2 is more accurate because
+                //      we are not losing minutes due to rounding before multiplying the hourly rate.
+                amount = dur * factor * rate;
+                result = Convert.ToDecimal(Math.Round(amount, 2));
+            }
 
             return result;
         }

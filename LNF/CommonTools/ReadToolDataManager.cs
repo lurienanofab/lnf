@@ -438,7 +438,11 @@ namespace LNF.CommonTools
                 var uses = dr.Field<double>("Uses");
 
                 if (item != null)
-                    dr.SetField("TransferredDuration", item.TransferredDuration.TotalMinutes * uses);
+                {
+                    // [2018-08-01 jg] Occasionally item.TransferredDuration.TotalMinutes is a very small negative
+                    //      number, never greater than -0.0001. I think we can safely assume these should be zero.
+                    dr.SetField("TransferredDuration", Math.Max(item.TransferredDuration.TotalMinutes, 0) * uses);
+                }
                 else
                     dr.SetField("TransferredDuration", 0.0);
             }
@@ -799,7 +803,9 @@ namespace LNF.CommonTools
 
                 ds = dba.FillDataSet("sselScheduler_Select");
 
-                return ds.Tables[0];
+                var dt = ds.Tables[0];
+
+                return dt;
             }
         }
     }

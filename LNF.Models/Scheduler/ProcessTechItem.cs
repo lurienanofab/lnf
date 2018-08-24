@@ -1,6 +1,6 @@
 ﻿namespace LNF.Models.Scheduler
 {
-    public class ProcessTechModel
+    public class ProcessTechItem
     {
         public int ProcessTechID { get; set; }
         public int GroupID { get; set; }

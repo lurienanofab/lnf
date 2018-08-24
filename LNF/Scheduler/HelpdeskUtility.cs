@@ -47,7 +47,7 @@ namespace LNF.Scheduler
             return new Helpdesk.Service(ApiUrl, ApiKey).SelectTicketDetail(ticketId);
         }
 
-        public static CreateTicketResult CreateTicket(ResourceModel res, Reservation rsv, int clientId, string reservationText, string subjectText, string messageText, string ticketType)
+        public static CreateTicketResult CreateTicket(ResourceItem res, Reservation rsv, int clientId, string reservationText, string subjectText, string messageText, string ticketType)
         {
             TicketPriorty pri = TicketPriortyFromString(ticketType);
 
@@ -82,7 +82,7 @@ namespace LNF.Scheduler
             }
         }
 
-        public static void SendHardwareIssueEmail(ResourceModel res, Reservation reservation, int clientId, string reservationText, string subject, string message, TicketPriorty pri)
+        public static void SendHardwareIssueEmail(ResourceItem res, Reservation reservation, int clientId, string reservationText, string subject, string message, TicketPriorty pri)
         {
             if (pri == TicketPriorty.HardwareIssue)
             {
@@ -91,7 +91,7 @@ namespace LNF.Scheduler
             }
         }
 
-        public static void SendHardwareIssueEmail(ResourceModel res, int clientId, string subject, string body)
+        public static void SendHardwareIssueEmail(ResourceItem res, int clientId, string subject, string body)
         {
             body += Environment.NewLine + Environment.NewLine + "This email has been sent by the system to notify you that a hardware issue exists on this resource and availability may be affected. Do not respond to this email. Please log into the Scheduler to view or respond to this ticket.";
 
@@ -99,7 +99,7 @@ namespace LNF.Scheduler
 
             SendMessageArgs args = new SendMessageArgs()
             {
-                ClientID = CacheManager.Current.ClientID,
+                ClientID = CacheManager.Current.CurrentUser.ClientID,
                 Subject = subject,
                 Body = body,
                 From = SendEmail.SystemEmail,
@@ -109,7 +109,7 @@ namespace LNF.Scheduler
             ServiceProvider.Current.Email.SendMessage(args);
         }
 
-        public static string[] GetCcEmailsForHardwareIssue(ResourceModel resource, int clientId)
+        public static string[] GetCcEmailsForHardwareIssue(ResourceItem resource, int clientId)
         {
             //all tool users who are not the Client, no need to send an email to themself
             ResourceClientInfo[] toolUsers = DA.Current.Query<ResourceClientInfo>().Where(x => x.ResourceID == resource.ResourceID && x.ClientID != -1 && x.ClientID != clientId).ToArray();
@@ -123,7 +123,7 @@ namespace LNF.Scheduler
             return recipients;
         }
 
-        public static string GetMessageHeader(ResourceModel res, int clientId, string reservationText, string ticketType)
+        public static string GetMessageHeader(ResourceItem res, int clientId, string reservationText, string ticketType)
         {
             var client = CacheManager.Current.GetClient(clientId);
             string result = "Resource ID: " + res.ResourceID.ToString() + Environment.NewLine
@@ -134,7 +134,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public static string GetMessageBody(ResourceModel res, Reservation rsv, int clientId, string reservationText, string messageText, string ticketType)
+        public static string GetMessageBody(ResourceItem res, Reservation rsv, int clientId, string reservationText, string messageText, string ticketType)
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(GetMessageHeader(res, clientId, reservationText, ticketType));

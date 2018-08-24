@@ -1,6 +1,6 @@
 ﻿namespace LNF.Models.Scheduler
 {
-    public class BuildingModel
+    public class BuildingItem
     {
         public int BuildingID { get; set; }
         public string BuildingName { get; set; }

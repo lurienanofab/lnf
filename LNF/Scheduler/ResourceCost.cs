@@ -1,5 +1,4 @@
-﻿using LNF.Repository;
-using LNF.Repository.Data;
+﻿using LNF.Models.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,64 +7,36 @@ namespace LNF.Scheduler
 {
     public class ResourceCost
     {
-        private IEnumerable<Cost> _costs;
-        private IEnumerable<Cost> _overtime;
+        public int ResourceID => Cost?.RecordID ?? 0;
+        public int ChargeTypeID => Cost?.ChargeTypeID ?? 0;
+        public string AcctPer => Cost?.AcctPer ?? string.Empty;
+        public decimal AddVal => Cost?.AddVal ?? 0;
+        public decimal MulVal => Cost?.MulVal ?? 0;
 
-        public int ResourceID { get; }
-        public int ChargeTypeID { get; }
+        public CostItem Cost { get; }
 
-        public Cost Cost
+        public CostItem OverTimeCost { get; }
+
+        private ResourceCost(CostItem cost, CostItem overTimeCost)
         {
-            get
-            {
-                return _costs.FirstOrDefault(c => c.ChargeTypeID == ChargeTypeID);
-            }
-        }
-
-        public Cost OverTimeCost
-        {
-            get
-            {
-                return _overtime.FirstOrDefault(c => c.ChargeTypeID == ChargeTypeID);
-            }
-        }
-
-        private ResourceCost(int resourceId, int chargeTypeId)
-        {
-            ResourceID = resourceId;
-            ChargeTypeID = chargeTypeId;
-        }
-
-        public ResourceCost(IEnumerable<Cost> costs, int resourceId, int chargeTypeId, DateTime cutoff) : this(resourceId, chargeTypeId)
-        {
-            if (costs == null)
-                throw new ArgumentNullException("costs");
-
-            _costs = costs.Where(x => x.TableNameOrDescription == "ToolCost" && x.RecordID == resourceId && x.EffDate <= cutoff).OrderByDescending(x => x.EffDate).ToList();
-            _overtime = costs.Where(x => x.TableNameOrDescription == "ToolOvertimeCost" && x.EffDate <= cutoff).OrderByDescending(x => x.EffDate).ToList();
-        }
-
-        public ResourceCost(IEnumerable<Cost> costs, int resourceId, int chargeTypeId) : this(resourceId, chargeTypeId)
-        {
-            if (costs == null)
-                throw new ArgumentNullException("costs");
-
-            _costs = costs.Where(x => x.TableNameOrDescription == "ToolCost" && x.RecordID == resourceId).OrderByDescending(x => x.EffDate).ToList();
-            _overtime = costs.Where(x => x.TableNameOrDescription == "ToolOvertimeCost").OrderByDescending(x => x.EffDate).ToList();
+            Cost = cost;
+            OverTimeCost = overTimeCost;
         }
 
         public decimal PerUseRate()
         {
-            decimal result = Cost.AddVal;
-            if (Cost.AcctPer == "Per Use")
-                result += Cost.MulVal;
+            decimal result = AddVal;
+
+            if (AcctPer == "Per Use")
+                result += MulVal;
+
             return result;
         }
 
         public decimal HourlyRate()
         {
-            if (Cost.AcctPer == "Hourly")
-                return Cost.MulVal;
+            if (AcctPer == "Hourly")
+                return MulVal;
             else
                 return 0;
         }
@@ -77,8 +48,8 @@ namespace LNF.Scheduler
 
         public decimal BookingFeeRate()
         {
-            if (Cost.AcctPer == "Hourly")
-                return Cost.MulVal * BookingFeeMultiplier();
+            if (AcctPer == "Hourly")
+                return MulVal * BookingFeeMultiplier();
             else
                 return 0;
         }
@@ -102,9 +73,26 @@ namespace LNF.Scheduler
             return string.Format("{0:C}/use + {1:C}/hr", PerUseRate(), HourlyRate());
         }
 
-        public static IList<ResourceCost> GetAll(IEnumerable<Cost> costs, int resourceId)
+        /// <summary>
+        /// Creates ResourceCost objects for the given CostItem objects.
+        /// </summary>
+        /// <param name="costs">A filtered list of CostItem objects. This should only contain the most recent costs for each Resource/ChargeType combination.</param>
+        public static IEnumerable<ResourceCost> CreateResourceCosts(IEnumerable<CostItem> costs)
         {
-            return DA.Current.Query<ChargeType>().Select(x => new ResourceCost(costs, resourceId, x.ChargeTypeID)).ToList();
+            if (costs == null)
+                throw new ArgumentNullException("costs");
+
+            IList<ResourceCost> result = new List<ResourceCost>();
+
+            var overtime = costs.Where(x => x.TableNameOrDescription == "ToolOvertimeCost");
+
+            foreach(var c in costs)
+            {
+                var otc = overtime.FirstOrDefault(x => x.ChargeTypeID == c.ChargeTypeID);
+                result.Add(new ResourceCost(c, otc));
+            }
+
+            return result;
         }
     }
 }

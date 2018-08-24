@@ -1,8 +1,9 @@
-﻿using LNF.Models.Scheduler;
-using LNF.Repository.Data;
+﻿using LNF.Cache;
+using LNF.Models.Data;
 using LNF.Scheduler;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LNF.Repository.Scheduler
 {
@@ -64,12 +65,6 @@ namespace LNF.Repository.Scheduler
         public virtual DateTime? OriginalBeginDateTime { get; set; }
         public virtual DateTime? OriginalEndDateTime { get; set; }
         public virtual DateTime? OriginalModifiedOn { get; set; }
-
-        public virtual ResourceCost GetResourceCost(IEnumerable<Cost> costs)
-        {
-            ResourceCost result = new ResourceCost(costs, ResourceID, ChargeTypeID, ChargeBeginDateTime);
-            return result;
-        }
 
         public virtual bool IsCurrentlyOutsideGracePeriod()
         {

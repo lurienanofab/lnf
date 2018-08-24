@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository;
+﻿using LNF.Repository;
 using LNF.Repository.Control;
+using System;
+using System.Linq;
 
 namespace LNF.Control
 {
@@ -29,76 +27,85 @@ namespace LNF.Control
 
         public static BlockResponse CreateBlockResponse(this Block block)
         {
-            BlockResponse result = new BlockResponse();
+            BlockResponse result = new BlockResponse
+            {
+                Error = false,
+                Message = string.Empty,
+                BlockState = null,
+                StartTime = DateTime.Now,
+                BlockID = 0
+            };
 
-            result.Error = false;
-            result.Message = string.Empty;
-            result.BlockState = block.CreateBlockState();
-            result.StartTime = DateTime.Now;
+            if (block != null)
+            { 
+                result.BlockID = block.BlockID;
+                result.BlockState = block.CreateBlockState();
+            }
 
             return result;
         }
 
         public static BlockResponse CreateBlockResponse(this Block block, Exception ex)
         {
-            BlockResponse result = new BlockResponse();
-
+            BlockResponse result = block.CreateBlockResponse();
             result.Error = true;
             result.Message = ex.Message;
-            result.BlockState = block.CreateBlockState();
-            result.StartTime = DateTime.Now;
-
             return result;
         }
 
         public static PointResponse CreatePointResponse(this Point point)
         {
-            PointResponse result = new PointResponse();
+            PointResponse result = new PointResponse
+            {
+                Error = false,
+                Message = string.Empty,
+                PointID = 0,
+                BlockID = 0,
+                StartTime = DateTime.Now
+            };
 
-            result.Error = false;
-            result.Message = string.Empty;
-            result.PointID = point.PointID;
-            result.BlockID = point.Block.BlockID;
-            result.PointName = point.Name;
-            result.StartTime = DateTime.Now;
+            if (point != null)
+            {
+                result.BlockID = point.Block.BlockID;
+                result.PointID = point.PointID;
+            }
 
             return result;
         }
 
         public static PointResponse CreatePointResponse(this Point point, Exception ex)
         {
-            PointResponse result = new PointResponse();
-
+            PointResponse result = point.CreatePointResponse();
             result.Error = true;
             result.Message = ex.Message;
-            result.PointID = point.PointID;
-            result.BlockID = point.Block.BlockID;
-            result.PointName = point.Name;
-            result.StartTime = DateTime.Now;
-
             return result;
         }
 
         public static BlockState CreateBlockState(this Block block)
         {
-            BlockState result = new BlockState();
+            if (block == null)
+                throw new ArgumentNullException("block");
 
-            result.BlockID = block.BlockID;
-            result.BlockName = block.BlockName;
-            result.IPAddress = block.IPAddress;
-            result.Points = null;
+            BlockState result = new BlockState
+            {
+                BlockID = block.BlockID,
+                BlockName = block.BlockName,
+                IPAddress = block.IPAddress,
+                Points = null
+            };
 
             return result;
         }
 
         public static PointState CreatePointState(this Point point, bool state)
         {
-            PointState result = new PointState();
-
-            result.PointID = point.PointID;
-            result.BlockID = point.Block.BlockID;
-            result.PointName = point.Name;
-            result.State = state;
+            PointState result = new PointState
+            {
+                PointID = point.PointID,
+                BlockID = point.Block.BlockID,
+                PointName = point.Name,
+                State = state
+            };
 
             return result;
         }

@@ -1,6 +1,6 @@
 ﻿namespace LNF.Models.Scheduler
 {
-    public class LabModel
+    public class LabItem
     {
         public int LabID { get; set; }
         public int BuildingID { get; set; }

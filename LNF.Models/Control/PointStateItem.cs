@@ -1,6 +1,6 @@
 ﻿namespace LNF.Models.Control
 {
-    public class PointStateModel
+    public class PointStateItem
     {
         public int PointID { get; set; }
         public int BlockID { get; set; }

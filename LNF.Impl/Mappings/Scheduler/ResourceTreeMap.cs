@@ -4,9 +4,9 @@ using LNF.Repository.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {
-    internal class ResourceTreeItemMap : ClassMap<ResourceTreeItem>
+    internal class ResourceTreeMap : ClassMap<ResourceTree>
     {
-        internal ResourceTreeItemMap()
+        internal ResourceTreeMap()
         {
             Schema("sselScheduler.dbo");
             Table("v_ResourceTree");
@@ -37,7 +37,7 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.IsSchedulable);
             Map(x => x.HelpdeskEmail);
             Map(x => x.WikiPageUrl);
-            Map(x => x.State).CustomType<ResourceState>();
+            Map(x => x.State);
             Map(x => x.StateNotes);
             Map(x => x.AuthDuration);
             Map(x => x.AuthState);
@@ -73,6 +73,8 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.MaxChargeTypeID);
             Map(x => x.ResourceClientID);
             Map(x => x.AuthLevel);
+            Map(x => x.EveryoneAuthLevel);
+            Map(x => x.EffectiveAuthLevel);
             Map(x => x.Expiration);
             Map(x => x.EmailNotify);
             Map(x => x.PracticeResEmailNotify);

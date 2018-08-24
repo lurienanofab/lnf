@@ -1724,7 +1724,7 @@ namespace LNF.Scheduler
             //SET @NextBeginTime = NULL
             //SET @TimeTillNext = 9999999 -- arbitrarily large number
 
-            ResourceModel res = CacheManager.Current.ResourceTree().GetResource(resourceId);
+            var res = CacheManager.Current.ResourceTree().GetResource(resourceId).GetResourceItem();
 
             DateTime? nextBeginTime = null;
             double timeUntilNext = 9999999;

@@ -3,9 +3,9 @@ using LNF.Repository.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {
-    public class ResourceClientMap : ClassMap<ResourceClient>
+    internal class ResourceClientMap : ClassMap<ResourceClient>
     {
-        public ResourceClientMap()
+        internal ResourceClientMap()
         {
             Schema("sselScheduler.dbo");
             Id(x => x.ResourceClientID);

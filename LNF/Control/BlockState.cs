@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using LNF.Repository.Control;
 
 namespace LNF.Control
 {
@@ -11,7 +9,7 @@ namespace LNF.Control
         public int BlockID {get; set; }
         public string BlockName { get; set; }
         public string IPAddress { get; set; }
-        public PointState[] Points { get; set; }
+        public IEnumerable<PointState> Points { get; set; }
 
         public bool GetPointState(int pointId)
         {

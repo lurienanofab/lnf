@@ -30,10 +30,15 @@ namespace LNF.Scheduler
         /// </summary>
         public static bool IsKiosk(string kioskIp)
         {
+            // Check for local server
+            if (kioskIp == "127.0.0.1") return true;
+
             // Specifically check for being on a kiosk - kiosks, resources, wagos are on the same subnet
             // If the user IP is on the kiosk list OR it starts with the right prefix defined by SchedulerProperty then they are on a kiosk
             string prefix = Properties.Current.ResourceIPPrefix;
-            return kioskIp.StartsWith(prefix);
+            var result =  kioskIp.StartsWith(prefix);
+
+            return result;
         }
 
         /// <summary>

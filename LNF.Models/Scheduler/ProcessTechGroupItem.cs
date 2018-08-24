@@ -1,6 +1,6 @@
 ﻿namespace LNF.Models.Scheduler
 {
-    public class ProcessTechGroupModel
+    public class ProcessTechGroupItem
     {
         public int ProcessTechGroupID { get; set; }
         public string GroupName { get; set; }

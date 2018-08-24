@@ -33,7 +33,7 @@ namespace LNF.Scheduler
             }
         }
 
-        public static void EngineerUpdate(ResourceModel model)
+        public static void EngineerUpdate(ResourceItem model)
         {
             // procResourceUpdate @Action = 'EngineerUpdate'
 

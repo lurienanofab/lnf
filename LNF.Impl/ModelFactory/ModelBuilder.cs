@@ -112,9 +112,9 @@ namespace LNF.Impl.ModelFactory
                 return result;
             }
 
-            public static BuildingModel CreateBuildingModel(Building source)
+            public static BuildingItem CreateBuildingModel(Building source)
             {
-                var result = new BuildingModel();
+                var result = new BuildingItem();
 
                 result.InjectFrom(source);
                 result.BuildingDescription = source.Description;
@@ -123,7 +123,7 @@ namespace LNF.Impl.ModelFactory
                 return result;
             }
 
-            public static LabModel CreateLabModel(Lab source)
+            public static LabItem CreateLabModel(Lab source)
             {
                 int roomId = 0;
                 string roomName = string.Empty;
@@ -136,7 +136,7 @@ namespace LNF.Impl.ModelFactory
                     roomDisplayName = source.Room.DisplayName;
                 }
 
-                var result = new LabModel();
+                var result = new LabItem();
 
                 result.InjectFrom(source);
                 result.BuildingID = source.Building.BuildingID;
@@ -151,9 +151,9 @@ namespace LNF.Impl.ModelFactory
                 return result;
             }
 
-            public static ProcessTechModel CreateProcessTechModel(ProcessTech source)
+            public static ProcessTechItem CreateProcessTechModel(ProcessTech source)
             {
-                var result = new ProcessTechModel();
+                var result = new ProcessTechItem();
 
                 result.InjectFrom(source);
                 result.GroupID = source.Group.ProcessTechGroupID;
@@ -171,9 +171,9 @@ namespace LNF.Impl.ModelFactory
                 return result;
             }
 
-            public static ResourceModel CreateResourceModel(Resource source)
+            public static ResourceItem CreateResourceModel(Resource source)
             {
-                var result = new ResourceModel();
+                var result = new ResourceItem();
 
                 result.InjectFrom(source);
                 result.BuildingID = source.ProcessTech.Lab.Building.BuildingID;
@@ -199,9 +199,9 @@ namespace LNF.Impl.ModelFactory
                 return result;
             }
 
-            public static ResourceModel CreateResourceModel(ResourceInfo source)
+            public static ResourceItem CreateResourceModel(ResourceInfo source)
             {
-                var result = new ResourceModel();
+                var result = new ResourceItem();
 
                 result.InjectFrom(source);
                 result.Granularity = TimeSpan.FromMinutes(source.Granularity);
@@ -220,9 +220,9 @@ namespace LNF.Impl.ModelFactory
                 return result;
             }
 
-            public static ProcessInfoModel CreateProcessInfoModel(ProcessInfo source)
+            public static ProcessInfoItem CreateProcessInfoModel(ProcessInfo source)
             {
-                var result = new ProcessInfoModel();
+                var result = new ProcessInfoItem();
 
                 result.InjectFrom(source);
                 result.ResourceID = source.Resource.ResourceID;
@@ -231,9 +231,9 @@ namespace LNF.Impl.ModelFactory
                 return result;
             }
 
-            public static ProcessInfoLineModel CreateProcessInfoLineModel(ProcessInfoLine source)
+            public static ProcessInfoLineItem CreateProcessInfoLineModel(ProcessInfoLine source)
             {
-                var result = new ProcessInfoLineModel();
+                var result = new ProcessInfoLineItem();
 
                 result.InjectFrom(source);
                 result.ProcessInfoLineParamID = source.ProcessInfoLineParam.ProcessInfoLineParamID;
@@ -245,7 +245,7 @@ namespace LNF.Impl.ModelFactory
                 return result;
             }
 
-            public static ResourceClientModel CreateResourceClientModel(ResourceClient source)
+            public static ResourceClientItem CreateResourceClientModel(ResourceClient source)
             {
                 string userName = string.Empty;
                 string displayName = "Everyone";
@@ -266,7 +266,7 @@ namespace LNF.Impl.ModelFactory
                         email = primary.Email;
                 }
 
-                var result = new ResourceClientModel();
+                var result = new ResourceClientItem();
 
                 result.InjectFrom(source);
                 result.ResourceID = source.Resource.ResourceID;
@@ -276,18 +276,6 @@ namespace LNF.Impl.ModelFactory
                 result.DisplayName = displayName;
                 result.Email = email;
                 result.ClientActive = clientActive;
-
-                return result;
-            }
-
-            public static ResourceCostModel CreateResourceCostModel(Cost source)
-            {
-                var result = new ResourceCostModel();
-
-                result.InjectFrom(source);
-                result.ResourceID = source.RecordID;
-                result.ChargeTypeID = source.ChargeTypeID;
-                result.ChargeTypeName = source.GetChargeType().ChargeTypeName;
 
                 return result;
             }

@@ -156,7 +156,7 @@ namespace LNF.Repository.Scheduler
 
         public override string ToString()
         {
-            return ResourceModel.GetDisplayName(ResourceName, ResourceID);
+            return ResourceItem.GetDisplayName(ResourceName, ResourceID);
         }
     }
 }

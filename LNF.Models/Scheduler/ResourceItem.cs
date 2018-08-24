@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Scheduler
 {
-    public class ResourceModel
+    public class ResourceItem : IResource
     {
         /*
         ReservFence			: stored in minutes and entered in hours (168 hours = 10080 minutes)
@@ -57,6 +57,11 @@ namespace LNF.Models.Scheduler
         public static string GetDisplayName(string resourceName, int resourceId)
         {
             return string.Format("{0} [{1}]", resourceName, resourceId);
+        }
+
+        public override string ToString()
+        {
+            return GetDisplayName(ResourceName, ResourceID);
         }
     }
 }

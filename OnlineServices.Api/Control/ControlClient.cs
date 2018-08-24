@@ -15,13 +15,13 @@ namespace OnlineServices.Api.Control
             throw new NotImplementedException();
         }
 
-        public async Task<BlockStateModel> GetBlockState(int blockId)
+        public async Task<BlockStateItem> GetBlockState(int blockId)
         {
             await Task.FromResult(0);
             throw new NotImplementedException();
         }
 
-        public async Task<ActionInstanceModel> GetAllActionInstances()
+        public async Task<ActionInstanceItem> GetAllActionInstances()
         {
             await Task.FromResult(0);
             throw new NotImplementedException();

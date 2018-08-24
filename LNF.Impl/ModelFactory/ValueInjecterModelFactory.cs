@@ -26,15 +26,14 @@ namespace LNF.Impl.ModelFactory
             Mapper.AddMap<Room, RoomItem>(ModelBuilder.Data.CreateRoomModel);
 
             //// xxxxx Scheduler Maps
-            Mapper.AddMap<Building, BuildingModel>(ModelBuilder.Scheduler.CreateBuildingModel);
-            Mapper.AddMap<Lab, LabModel>(ModelBuilder.Scheduler.CreateLabModel);
-            Mapper.AddMap<ProcessTech, ProcessTechModel>(ModelBuilder.Scheduler.CreateProcessTechModel);
-            Mapper.AddMap<Resource, ResourceModel>(ModelBuilder.Scheduler.CreateResourceModel);
-            Mapper.AddMap<ResourceInfo, ResourceModel>(ModelBuilder.Scheduler.CreateResourceModel);
-            Mapper.AddMap<ProcessInfo, ProcessInfoModel>(ModelBuilder.Scheduler.CreateProcessInfoModel);
-            Mapper.AddMap<ProcessInfoLine, ProcessInfoLineModel>(ModelBuilder.Scheduler.CreateProcessInfoLineModel);
-            Mapper.AddMap<ResourceClient, ResourceClientModel>(ModelBuilder.Scheduler.CreateResourceClientModel);
-            Mapper.AddMap<Cost, ResourceCostModel>(ModelBuilder.Scheduler.CreateResourceCostModel);
+            Mapper.AddMap<Building, BuildingItem>(ModelBuilder.Scheduler.CreateBuildingModel);
+            Mapper.AddMap<Lab, LabItem>(ModelBuilder.Scheduler.CreateLabModel);
+            Mapper.AddMap<ProcessTech, ProcessTechItem>(ModelBuilder.Scheduler.CreateProcessTechModel);
+            Mapper.AddMap<Resource, ResourceItem>(ModelBuilder.Scheduler.CreateResourceModel);
+            Mapper.AddMap<ResourceInfo, ResourceItem>(ModelBuilder.Scheduler.CreateResourceModel);
+            Mapper.AddMap<ProcessInfo, ProcessInfoItem>(ModelBuilder.Scheduler.CreateProcessInfoModel);
+            Mapper.AddMap<ProcessInfoLine, ProcessInfoLineItem>(ModelBuilder.Scheduler.CreateProcessInfoLineModel);
+            Mapper.AddMap<ResourceClient, ResourceClientItem>(ModelBuilder.Scheduler.CreateResourceClientModel);
 
             //// xxxxx Ordering Maps
             Mapper.AddMap<Approver, ApproverItem>(ModelBuilder.Ordering.CreateApproverModel);

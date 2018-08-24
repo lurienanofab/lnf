@@ -1,6 +1,6 @@
 ﻿namespace LNF.Models.Scheduler
 {
-    public class ReservationProcessInfoModel
+    public class ReservationProcessInfoItem
     {
         public virtual int ReservationProcessInfoID { get; set; }
         public virtual int ReservationID { get; set; }

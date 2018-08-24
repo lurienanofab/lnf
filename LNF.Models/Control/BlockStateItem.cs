@@ -3,12 +3,12 @@ using System.Linq;
 
 namespace LNF.Models.Control
 {
-    public class BlockStateModel
+    public class BlockStateItem
     {
         public int BlockID { get; set; }
         public string BlockName { get; set; }
         public string IPAddress { get; set; }
-        public PointStateModel[] Points { get; set; }
+        public PointStateItem[] Points { get; set; }
 
         public bool GetPointState(int pointId)
         {

@@ -20,7 +20,7 @@ namespace LNF.Scheduler
 
             if (result == null || result.Count == 0)
             {
-                var items = DA.Current.Query<ResourceTreeItem>().Where(x => x.ClientID == cm.ClientID).ToList();
+                var items = DA.Current.Query<ResourceTree>().Where(x => x.ClientID == cm.CurrentUser.ClientID).Model<ResourceTreeItem>();
                 result = new ResourceTreeItemCollection(items);
                 cm.SetContextItem("ResourceTree", result);
             }
@@ -29,22 +29,28 @@ namespace LNF.Scheduler
         }
 
         /// <summary>
-        /// Gets all reservation activities from cache. Cached for one request.
+        /// Gets all reservation activities. Activities are cached for 1 week.
         /// </summary>
-        public static IEnumerable<ActivityModel> Activities(this CacheManager cm)
+        public static IEnumerable<ActivityItem> Activities(this CacheManager cm)
         {
-            var result = cm.GetContextItem<IEnumerable<ActivityModel>>("Activities");
+            IList<ActivityItem> result;
 
-            if (result == null || result.Count() == 0)
+            var value = cm.GetMemoryCacheValue("Activities");
+
+            if (value == null)
             {
-                result = DA.Current.Query<Activity>().Model<ActivityModel>();
-                cm.SetContextItem("Activities", result);
+                result = DA.Current.Query<Activity>().Model<ActivityItem>();
+                cm.SetMemoryCacheValue("Activities", result, DateTimeOffset.Now.Add(TimeSpan.FromDays(7)));
+            }
+            else
+            {
+                result = (IList<ActivityItem>)value;
             }
 
             return result;
         }
 
-        public static ActivityModel GetActivity(this CacheManager cm, int activityId)
+        public static ActivityItem GetActivity(this CacheManager cm, int activityId)
         {
             var result = cm.Activities().FirstOrDefault(x => x.ActivityID == activityId);
 
@@ -54,7 +60,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public static IEnumerable<ActivityModel> AuthorizedActivities(this CacheManager cm, ClientAuthLevel authLevel)
+        public static IEnumerable<ActivityItem> AuthorizedActivities(this CacheManager cm, ClientAuthLevel authLevel)
         {
             //procActivitySelect @Action = 'SelectAuthorizedActivities'
 
@@ -71,41 +77,54 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public static ClientSetting GetClientSetting(this CacheManager cm) => cm.GetSessionValue(SessionKeys.ClientSetting, () => ClientSetting.GetClientSettingOrDefault(cm.ClientID));
-
-        public static IEnumerable<ResourceClientModel> CurrentResourceClients(this CacheManager cm)
+        /// <summary>
+        /// Gets all scheduler properties. SchedulerProperties are cached for 1 week.
+        /// </summary>
+        public static IEnumerable<SchedulerPropertyItem> SchedulerProperties(this CacheManager cm)
         {
-            var result = cm.GetSessionValue(SessionKeys.CurrentResourceClients, () =>
+            IList<SchedulerPropertyItem> result;
+
+            var value = cm.GetMemoryCacheValue("SchedulerProperties");
+
+            if (value == null)
             {
-                int clientId = cm.ClientID;
-                var query = DA.Current.Query<ResourceClientInfo>().Where(x => x.ClientID == clientId || x.ClientID == -1);
-                var models = query.Model<ResourceClientModel>();
-                return models;
-            });
+                result = DA.Current.Query<SchedulerProperty>().Model<SchedulerPropertyItem>();
+                cm.SetMemoryCacheValue("SchedulerProperties", result, DateTimeOffset.Now.Add(TimeSpan.FromDays(7)));
+            }
+            else
+            {
+                result = (IList<SchedulerPropertyItem>)value;
+            }
 
             return result;
         }
 
-        public static ResourceClientModel GetCurrentResourceClient(this CacheManager cm, int resourceId) => cm.CurrentResourceClients().FirstOrDefault(x => x.ResourceID == resourceId);
+        public static ClientSetting GetClientSetting(this CacheManager cm) => cm.GetSessionValue(SessionKeys.ClientSetting, () => ClientSetting.GetClientSettingOrDefault(cm.CurrentUser.ClientID));
 
-        public static IEnumerable<ResourceClientModel> ResourceClients(this CacheManager cm, int resourceId)
+        public static ResourceClientItem GetCurrentResourceClient(this CacheManager cm, int resourceId)
+        {
+            // will return Everyone user if available because of the OrderBy
+            return cm.ResourceClients(resourceId).OrderBy(x => x.ClientID).FirstOrDefault(x => x.ClientID == cm.CurrentUser.ClientID || x.ClientID == -1);
+        }
+
+        public static IEnumerable<ResourceClientItem> ResourceClients(this CacheManager cm, int resourceId)
         {
             string key = "ResourceClients#" + resourceId;
 
-            var result = cm.GetContextItem<IEnumerable<ResourceClientModel>>(key);
+            var result = cm.GetContextItem<IEnumerable<ResourceClientItem>>(key);
 
             if (result == null || result.Count() <= 0)
             {
-                result = DA.Current.Query<ResourceClientInfo>().Where(x => x.ResourceID == resourceId).Model<ResourceClientModel>();
+                result = DA.Current.Query<ResourceClientInfo>().Where(x => x.ResourceID == resourceId).Model<ResourceClientItem>();
                 cm.SetContextItem(key, result);
             }
 
             return result;
         }
 
-        public static IEnumerable<ResourceClientModel> ToolEngineers(this CacheManager cm, int resourceId) => cm.ResourceClients(resourceId).Where(x => (x.AuthLevel & ClientAuthLevel.ToolEngineer) > 0).ToList();
+        public static IEnumerable<ResourceClientItem> ToolEngineers(this CacheManager cm, int resourceId) => cm.ResourceClients(resourceId).Where(x => (x.AuthLevel & ClientAuthLevel.ToolEngineer) > 0).ToList();
 
-        public static ResourceClientModel GetResourceClient(this CacheManager cm, int resourceId, int clientId) => cm.ResourceClients(resourceId).FirstOrDefault(x => x.ClientID == clientId || x.ClientID == -1);
+        public static ResourceClientItem GetResourceClient(this CacheManager cm, int resourceId, int clientId) => cm.ResourceClients(resourceId).FirstOrDefault(x => x.ClientID == clientId || x.ClientID == -1);
 
         public static ClientAuthLevel GetAuthLevel(this CacheManager cm, int resourceId, int clientId)
         {
@@ -151,7 +170,7 @@ namespace LNF.Scheduler
             return cm.GetSessionValue(SessionKeys.ClientLabs, () =>
             {
                 string kioskIp = ServiceProvider.Current.Context.UserHostAddress;
-                return KioskUtility.IpCheck(cm.ClientID, kioskIp);
+                return KioskUtility.IpCheck(cm.CurrentUser.ClientID, kioskIp);
             });
         }
 
@@ -159,34 +178,74 @@ namespace LNF.Scheduler
 
         public static void DisplayDefaultHours(this CacheManager cm, bool value) => cm.SetSessionValue(SessionKeys.DisplayDefaultHours, value);
 
-        public static IEnumerable<ProcessInfoModel> ProcessInfos(this CacheManager cm, int resourceId)
+        public static IEnumerable<ProcessInfoItem> ProcessInfos(this CacheManager cm, int resourceId)
         {
             string key = "ProcessInfos#" + resourceId.ToString();
 
-            var result = cm.GetContextItem<IEnumerable<ProcessInfoModel>>(key);
+            var result = cm.GetContextItem<IEnumerable<ProcessInfoItem>>(key);
 
             if (result == null || result.Count() == 0)
             {
-                result = DA.Current.Query<ProcessInfo>().Where(x => x.Resource.ResourceID == resourceId).Model<ProcessInfoModel>();
+                result = DA.Current.Query<ProcessInfo>().Where(x => x.Resource.ResourceID == resourceId).Model<ProcessInfoItem>();
                 cm.SetContextItem(key, result);
             }
 
             return result;
         }
 
-        public static IEnumerable<ProcessInfoLineModel> ProcessInfoLines(this CacheManager cm, int processInfoId)
+        public static IEnumerable<ProcessInfoLineItem> ProcessInfoLines(this CacheManager cm, int processInfoId)
         {
             string key = "ProcessInfoLines#" + processInfoId.ToString();
 
-            var result = cm.GetContextItem<IEnumerable<ProcessInfoLineModel>>(key);
+            var result = cm.GetContextItem<IEnumerable<ProcessInfoLineItem>>(key);
 
             if (result == null || result.Count() == 0)
             {
-                result = DA.Current.Query<ProcessInfoLine>().Where(x => x.ProcessInfoID == processInfoId).Model<ProcessInfoLineModel>();
+                result = DA.Current.Query<ProcessInfoLine>().Where(x => x.ProcessInfoID == processInfoId).Model<ProcessInfoLineItem>();
                 cm.SetContextItem(key, result);
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets ResourceCosts for all ChargeTypes and Resources. Cached for 24 hours.
+        /// </summary>
+        public static IEnumerable<ResourceCost> ResourceCosts(this CacheManager cm)
+        {
+            var result = (IEnumerable<ResourceCost>)cm.GetMemoryCacheValue("ResourceCosts");
+
+            if (result == null || result.Count() == 0)
+            {
+                result = DA.Use<IResourceManager>().GetResourceCosts();
+                cm.SetMemoryCacheValue("ResourceCosts", result, DateTimeOffset.Now.AddHours(24));
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets a ResourceCost for each ChargeType for the given ResourceID.
+        /// </summary>
+        public static IEnumerable<ResourceCost> ResourceCosts(this CacheManager cm, int resourceId)
+        {
+            return cm.ResourceCosts().Where(x => x.ResourceID == resourceId);
+        }
+
+        /// <summary>
+        /// Gets a single ResourceCost for given ResourceID and the MaxChargeTypeID of the current user.
+        /// </summary>
+        public static ResourceCost GetResourceCost(this CacheManager cm, int resourceId)
+        {
+            return cm.GetResourceCost(resourceId, cm.CurrentUser.MaxChargeTypeID);
+        }
+
+        /// <summary>
+        /// Gets a single ResourceCost for given ResourceID and ChargeTypeID.
+        /// </summary>
+        public static ResourceCost GetResourceCost(this CacheManager cm, int resourceId, int chargeTypeId)
+        {
+            return cm.ResourceCosts(resourceId).FirstOrDefault(x => x.ChargeTypeID == chargeTypeId);
         }
 
         public static IEnumerable<ReservationProcessInfoItem> ReservationProcessInfos(this CacheManager cm) => cm.GetSessionValue(SessionKeys.ReservationProcessInfos, () => new List<ReservationProcessInfoItem>());
@@ -209,6 +268,6 @@ namespace LNF.Scheduler
 
         public static void CurrentViewType(this CacheManager cm, ViewType value) => cm.SetSessionValue("CurrentViewType", value);
 
-        public static ClientAuthLevel SelectAuthLevel(this CacheManager cm, ResourceModel item, IPrivileged client) => cm.GetAuthLevel(item.ResourceID, client.ClientID);
+        public static ClientAuthLevel SelectAuthLevel(this CacheManager cm, ResourceItem item, IPrivileged client) => cm.GetAuthLevel(item.ResourceID, client.ClientID);
     }
 }

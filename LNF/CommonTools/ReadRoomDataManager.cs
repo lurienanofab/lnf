@@ -673,17 +673,19 @@ namespace LNF.CommonTools
             int[] clients = result.Where(x => x.Client == client).Select(x => x.Client.ClientID).Distinct().ToArray();
             DataTable dtClients = ds.Tables["clients"];
             dtClients.Columns.Add("ClientID", typeof(int));
+
             foreach (int id in clients)
                 dtClients.Rows.Add(id);
 
             var rooms = Session.Query<Room>().Where(x => x.Active).ToArray()
-                .Join(CostManager.FindCosts("RoomCost", eDate), x => x.RoomID, y => y.RecordID, (x, y) => new { RoomID = x.RoomID, RoomName = x.RoomName, PassbackRoom = x.PassbackRoom, IsChargeRoom = (y.AcctPer != "None") });
+                .Join(CostManager.FindCosts(new[] { "RoomCost" }, eDate), x => x.RoomID, y => y.RecordID, (x, y) => new { RoomID = x.RoomID, RoomName = x.RoomName, PassbackRoom = x.PassbackRoom, IsChargeRoom = (y.AcctPer != "None") });
 
             DataTable dtRooms = ds.Tables["rooms"];
             dtRooms.Columns.Add("RoomID", typeof(int));
             dtRooms.Columns.Add("RoomName", typeof(string));
             dtRooms.Columns.Add("PassbackRoom", typeof(bool));
             dtRooms.Columns.Add("IsChargeRoom", typeof(bool));
+
             foreach (var r in rooms)
                 dtRooms.Rows.Add(r.RoomID, r.RoomName, r.PassbackRoom, r.IsChargeRoom);
 

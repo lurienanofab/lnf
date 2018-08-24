@@ -81,7 +81,7 @@ namespace LNF.Repository.Scheduler
             return string.IsNullOrEmpty(AccountOrder) ? DefaultAccountOrder : AccountOrder;
         }
 
-        public virtual BuildingModel GetBuildingOrDeafult()
+        public virtual BuildingItem GetBuildingOrDeafult()
         {
             int buildingId = BuildingID.GetValueOrDefault(DefaultBuildingID);
 
@@ -91,7 +91,7 @@ namespace LNF.Repository.Scheduler
                 return CacheManager.Current.ResourceTree().GetBuilding(buildingId);
         }
 
-        public virtual LabModel GetLabOrDefault()
+        public virtual LabItem GetLabOrDefault()
         {
             int labId = LabID.GetValueOrDefault(DefaultLabID);
 

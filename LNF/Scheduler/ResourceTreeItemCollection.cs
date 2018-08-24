@@ -1,7 +1,6 @@
 ﻿using LNF.Cache;
 using LNF.Models.Data;
 using LNF.Models.Scheduler;
-using LNF.Repository.Scheduler;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,23 +10,29 @@ namespace LNF.Scheduler
 {
     public class ResourceTreeItemCollection : IEnumerable<ResourceTreeItem>
     {
-        private IList<ResourceTreeItem> _items;
+        private IEnumerable<ResourceTreeItem> _items;
 
         public ResourceTreeItemCollection(IEnumerable<ResourceTreeItem> items)
         {
-            _items = items.ToList();
+            _items = items;
         }
 
         public int Count
         {
-            get { return _items.Count; }
+            get { return _items.Count(); }
         }
 
-        public IEnumerable<BuildingModel> Buildings()
+        public IEnumerable<BuildingItem> Buildings()
         {
-            var distinct = _items.Select(x => new { x.BuildingID, x.BuildingName, x.BuildingDescription, x.BuildingIsActive }).Distinct();
+            var distinct = _items.Select(x => new
+            {
+                x.BuildingID,
+                x.BuildingName,
+                x.BuildingDescription,
+                x.BuildingIsActive
+            }).Distinct();
 
-            var result = distinct.OrderBy(x => x.BuildingID).Select(x => new BuildingModel()
+            var result = distinct.OrderBy(x => x.BuildingID).Select(x => new BuildingItem()
             {
                 BuildingID = x.BuildingID,
                 BuildingName = x.BuildingName,
@@ -38,11 +43,23 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public IEnumerable<LabModel> Labs()
+        public IEnumerable<LabItem> Labs()
         {
-            var distinct = _items.Select(x => new { x.LabID, x.LabName, x.LabDisplayName, x.LabDescription, x.LabIsActive, x.RoomID, x.RoomName, x.BuildingID, x.BuildingName, x.BuildingIsActive }).Distinct();
+            var distinct = _items.Select(x => new
+            {
+                x.LabID,
+                x.LabName,
+                x.LabDisplayName,
+                x.LabDescription,
+                x.LabIsActive,
+                x.RoomID,
+                x.RoomName,
+                x.BuildingID,
+                x.BuildingName,
+                x.BuildingIsActive
+            }).Distinct();
 
-            var result = distinct.OrderBy(x => x.LabID).Select(x => new LabModel()
+            var result = distinct.OrderBy(x => x.LabID).Select(x => new LabItem()
             {
                 LabID = x.LabID,
                 LabName = x.LabName,
@@ -59,11 +76,29 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public IList<ProcessTechModel> ProcessTechs()
+        public IList<ProcessTechItem> ProcessTechs()
         {
-            var distinct = _items.Select(x => new { x.ProcessTechID, x.ProcessTechName, x.ProcessTechDescription, x.ProcessTechIsActive, x.ProcessTechGroupID, x.ProcessTechGroupName, x.LabID, x.LabName, x.LabDisplayName, x.LabDescription, x.LabIsActive, x.RoomID, x.RoomName, x.BuildingID, x.BuildingName, x.BuildingIsActive }).Distinct();
+            var distinct = _items.Select(x => new
+            {
+                x.ProcessTechID,
+                x.ProcessTechName,
+                x.ProcessTechDescription,
+                x.ProcessTechIsActive,
+                x.ProcessTechGroupID,
+                x.ProcessTechGroupName,
+                x.LabID,
+                x.LabName,
+                x.LabDisplayName,
+                x.LabDescription,
+                x.LabIsActive,
+                x.RoomID,
+                x.RoomName,
+                x.BuildingID,
+                x.BuildingName,
+                x.BuildingIsActive
+            }).Distinct();
 
-            var result = distinct.OrderBy(x => x.LabID).Select(x => new ProcessTechModel()
+            var result = distinct.OrderBy(x => x.LabID).Select(x => new ProcessTechItem()
             {
                 ProcessTechID = x.ProcessTechID,
                 ProcessTechName = x.ProcessTechName,
@@ -83,35 +118,47 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public IEnumerable<ResourceModel> Resources()
+        public IEnumerable<ResourceTreeItem> Resources()
         {
-            var result = CreateResourceModels(_items).OrderBy(x => x.LabID).ToList();
+            var result = _items.OrderBy(x => x.LabID).ToList();
             return result;
         }
 
-        public ResourceModel GetResource(int resourceId)
+        public ResourceTreeItem GetResource(int resourceId)
         {
-            return CreateResourceModels(_items.Where(x => x.ResourceID == resourceId)).First();
+            var result = _items.FirstOrDefault(x => x.ResourceID == resourceId);
+            if (result == null)
+                throw new Exception($"Could not find a resource with ResourceID {resourceId}. [Count = {Count}, ClientID = {CacheManager.Current.CurrentUser.ClientID}]");
+            return result;
         }
 
-        public BuildingModel GetBuilding(int buildingId)
+        public BuildingItem GetBuilding(int buildingId)
         {
-            return Buildings().First(x => x.BuildingID == buildingId);
+            var result = Buildings().FirstOrDefault(x => x.BuildingID == buildingId);
+            if (result == null)
+                throw new Exception($"Could not find a building with BuildingID {buildingId}. [Count = {Count}, ClientID = {CacheManager.Current.CurrentUser.ClientID}]");
+            return result;
         }
 
-        public LabModel GetLab(int labId)
+        public LabItem GetLab(int labId)
         {
-            return Labs().First(x => x.LabID == labId);
+            var result = Labs().FirstOrDefault(x => x.LabID == labId);
+            if (result == null)
+                throw new Exception($"Could not find a lab with LabID {labId}. [Count = {Count}, ClientID = {CacheManager.Current.CurrentUser.ClientID}]");
+            return result;
         }
 
-        public ProcessTechModel GetProcessTech(int procTechId)
+        public ProcessTechItem GetProcessTech(int procTechId)
         {
-            return ProcessTechs().First(x => x.ProcessTechID == procTechId);
+            var result = ProcessTechs().FirstOrDefault(x => x.ProcessTechID == procTechId);
+            if (result == null)
+                throw new Exception($"Could not find a process tech with ProcessTechID {procTechId}. [Count = {Count}, ClientID = {CacheManager.Current.CurrentUser.ClientID}]");
+            return result;
         }
 
-        public ActivityModel GetCurrentActivity(int resourceId)
+        public ActivityItem GetCurrentActivity(int resourceId)
         {
-            ResourceTreeItem item = _items.Where(x => x.ResourceID == resourceId).FirstOrDefault();
+            var item = _items.FirstOrDefault(x => x.ResourceID == resourceId);
             if (item == null) return null;
             if (item.CurrentActivityID == 0) return null;
             var result = CacheManager.Current.GetActivity(item.CurrentActivityID);
@@ -120,7 +167,7 @@ namespace LNF.Scheduler
 
         public ClientItem GetCurrentClient(int resourceId)
         {
-            ResourceTreeItem item = _items.Where(x => x.ResourceID == resourceId).FirstOrDefault();
+            var item = _items.FirstOrDefault(x => x.ResourceID == resourceId);
             if (item == null) return null;
             if (item.CurrentClientID == 0) return null;
             var result = CacheManager.Current.GetClient(item.CurrentClientID);
@@ -135,42 +182,6 @@ namespace LNF.Scheduler
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        public static IEnumerable<ResourceModel> CreateResourceModels(IEnumerable<ResourceTreeItem> items)
-        {
-            return items.Select(x => new ResourceModel()
-            {
-                AuthDuration = x.AuthDuration,
-                AuthState = x.AuthState,
-                AutoEnd = TimeSpan.FromMinutes(x.AutoEnd),
-                GracePeriod = TimeSpan.FromMinutes(x.GracePeriod),
-                Granularity = TimeSpan.FromMinutes(x.Granularity),
-                HelpdeskEmail = x.HelpdeskEmail,
-                IsReady = x.IsReady,
-                IsSchedulable = x.IsSchedulable,
-                MaxAlloc = TimeSpan.FromMinutes(x.MaxAlloc),
-                MaxReservTime = TimeSpan.FromMinutes(x.MaxReservTime),
-                MinCancelTime = TimeSpan.FromMinutes(x.MinCancelTime),
-                MinReservTime = TimeSpan.FromMinutes(x.MinReservTime),
-                Offset = TimeSpan.FromHours(x.Offset),
-                ReservFence = TimeSpan.FromMinutes(x.ReservFence),
-                ResourceID = x.ResourceID,
-                ResourceIsActive = x.ResourceIsActive,
-                ResourceName = x.ResourceName,
-                ResourceDescription = x.ResourceDescription,
-                State = x.State,
-                StateNotes = x.StateNotes,
-                UnloadTime = TimeSpan.FromMinutes(x.UnloadTime),
-                WikiPageUrl = x.WikiPageUrl,
-                ProcessTechID = x.ProcessTechID,
-                ProcessTechName = x.ProcessTechName,
-                LabID = x.LabID,
-                LabName = x.LabName,
-                LabDisplayName = x.LabDisplayName,
-                BuildingID = x.BuildingID,
-                BuildingName = x.BuildingName
-            }).ToList();
         }
     }
 }

@@ -796,19 +796,9 @@ namespace LNF.CommonTools
 
             using (LogTaskTimer.Start("BillingDataProcessStep1.PopulateToolBilling", "period = '{0:yyyy-MM-dd}', clientId = {1}, isTemp = {2}, rowsSelectedFromToolData = {3}, rowsDeletedFromToolBilling = {4}, rowsInsertedIntoToolBilling = {5}", () => new object[] { period, clientId, isTemp, rowsSelectedFromToolData, rowsDeletedFromToolBilling, rowsInsertedIntoToolBilling }))
             {
-                IToolBilling[] source;
+                IToolBilling[] source = GetToolData(period, clientId, 0, isTemp);
 
-                // Must use a DataTable here because the stored proc returns new ToolBilling rows, without ToolBillingID, which causes problems
-                using (var dba = DA.Current.GetAdapter())
-                {
-                    dba.AddParameter("@Action", "ForToolBilling");
-                    dba.AddParameter("@Period", period);
-                    dba.AddParameterIf("@ClientID", clientId > 0, clientId);
-                    DataTable dt = dba.FillDataTable("Billing.dbo.ToolData_Select");
-                    source = ToolBillingUtility.CreateToolBillingFromDataTable(dt, isTemp).ToArray();
-                }
-
-                rowsSelectedFromToolData = source.Count();
+                rowsSelectedFromToolData = source.Length;
 
                 foreach (IToolBilling tb in source)
                     CalculateToolBillingCharges(tb, isTemp);
@@ -821,7 +811,24 @@ namespace LNF.CommonTools
             }
         }
 
-        private static void CalculateToolBillingCharges(IToolBilling tb, bool isTemp)
+        public static IToolBilling[] GetToolData(DateTime period, int clientId, int reservationId, bool isTemp)
+        {
+            IToolBilling[] source;
+
+            // Must use a DataTable here because the stored proc returns new ToolBilling rows, without ToolBillingID, which causes problems
+            using (var dba = DA.Current.GetAdapter())
+            {
+                dba.AddParameter("@Action", "ForToolBilling");
+                dba.AddParameter("@Period", period);
+                dba.AddParameterIf("@ClientID", clientId > 0, clientId);
+                dba.AddParameterIf("@ReservationID", reservationId > 0, reservationId);
+                DataTable dt = dba.FillDataTable("Billing.dbo.ToolData_Select");
+                source = ToolBillingUtility.CreateToolBillingFromDataTable(dt, isTemp).ToArray();
+                return source;
+            }
+        }
+
+        public static void CalculateToolBillingCharges(IToolBilling tb, bool isTemp)
         {
             ToolBillingManager.CalculateReservationFee(tb);
             ToolBillingManager.CalculateUsageFeeCharged(tb);

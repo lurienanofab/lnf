@@ -3,7 +3,7 @@ using System;
 
 namespace LNF.Models.Scheduler
 {
-    public class ResourceClientModel : IPrivileged, IAuthorized
+    public class ResourceClientItem : IPrivileged, IAuthorized
     {
         public int ResourceClientID { get; set; }
         public int ResourceID { get; set; }

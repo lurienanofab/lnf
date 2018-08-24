@@ -124,11 +124,14 @@ namespace LNF.Impl.DataAccess
         {
             if (!CurrentSessionContext.HasBind(_sessionFactory))
             {
+
                 ISession session = _sessionFactory.OpenSession();
                 CurrentSessionContext.Bind(session);
 
                 if (!IsProduction())
-                    Debug.WriteLine("Started new session!");
+                {
+                    Debug.WriteLine($"Started new session!");
+                }
             }
         }
 

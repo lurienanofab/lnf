@@ -4,6 +4,7 @@ using LNF.Repository;
 using LNF.Repository.Data;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace LNF.Data
@@ -40,13 +41,14 @@ namespace LNF.Data
         private IEnumerable<CostItem> GetCurrentCosts()
         {
             if (_costs == null)
-                _costs = CostManager.FindCosts("RoomCost", EndDate);
+                _costs = CostManager.FindCosts(new[] { "RoomCost" }, EndDate).Model<CostItem>();
+
             return _costs;
         }
 
-        public System.Data.DataTable EventsToDataTable(IEnumerable<Event> events)
+        public DataTable EventsToDataTable(IEnumerable<Event> events)
         {
-            var dt = new System.Data.DataTable();
+            var dt = new DataTable();
 
             dt.Columns.Add("ID", typeof(string));
             dt.Columns.Add("DeviceID", typeof(string));

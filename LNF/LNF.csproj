@@ -87,8 +87,10 @@
     <Compile Include="Billing\ToolBillingManager.cs" />
     <Compile Include="Billing\ToolBillingUtility.cs" />
     <Compile Include="Cache\CacheItemNotFoundException.cs" />
+    <Compile Include="Cache\MemoryCacheHackExtenstions.cs" />
     <Compile Include="CommonTools\IAdministrativeHelper.cs" />
     <Compile Include="CommonTools\IReadRoomDataManager.cs" />
+    <Compile Include="Control\IService.cs" />
     <Compile Include="Data\AccountManager.cs" />
     <Compile Include="Data\ActiveDataItemManager.cs" />
     <Compile Include="Data\ActiveLogManager.cs" />
@@ -125,7 +127,6 @@
     <Compile Include="CommonTools\GenericEqualityComparer.cs" />
     <Compile Include="CommonTools\BillingDataProcessStep1.cs" />
     <Compile Include="Control\ErrorResponse.cs" />
-    <Compile Include="Control\IControlService.cs" />
     <Compile Include="Data\ClientAccountInfoUtility.cs" />
     <Compile Include="Data\ClientDemographics.cs" />
     <Compile Include="Data\ClientEqualityComparer.cs" />
@@ -472,7 +473,7 @@
     <Compile Include="Repository\Scheduler\ResourceInfo.cs" />
     <Compile Include="Repository\Scheduler\ResourceLogProperty.cs" />
     <Compile Include="Repository\Scheduler\ResourceStatus.cs" />
-    <Compile Include="Repository\Scheduler\ResourceTreeItem.cs" />
+    <Compile Include="Repository\Scheduler\ResourceTree.cs" />
     <Compile Include="Repository\Scheduler\SchedulerProperty.cs" />
     <Compile Include="Repository\Store\ItemPriceHistory.cs" />
     <Compile Include="Repository\Store\StoreOrder.cs" />
@@ -618,16 +619,9 @@
     <Compile Include="Scheduler\ResourceClientUtility.cs" />
     <Compile Include="CommonTools\DataTableManager.cs" />
     <Compile Include="IScriptingService.cs" />
-    <Compile Include="Scheduler\ResourceItem.cs" />
+    <Compile Include="Scheduler\ResourceListItem.cs" />
     <Compile Include="Scheduler\ResourceStatusUtility.cs" />
     <Compile Include="Scheduler\ResourceTreeItemCollection.cs" />
-    <Compile Include="Scheduler\ResourceTree\BuildingNode.cs" />
-    <Compile Include="Scheduler\ResourceTree\IResourceTreeNode.cs" />
-    <Compile Include="Scheduler\ResourceTree\LabNode.cs" />
-    <Compile Include="Scheduler\ResourceTree\PathInfo.cs" />
-    <Compile Include="Scheduler\ResourceTree\ProcessTechNode.cs" />
-    <Compile Include="Scheduler\ResourceTree\ResourceNode.cs" />
-    <Compile Include="Scheduler\ResourceTree\ResourceTree.cs" />
     <Compile Include="Scheduler\ResourceUtility.cs" />
     <Compile Include="Scripting\Data.cs" />
     <Compile Include="Scripting\Header.cs" />

@@ -6,10 +6,10 @@ namespace LNF.Repository.Scheduler
 {
     public static class Extensions
     {
-        public static ResourceClientModel GetResourceClientItem(this ResourceClientInfo item)
+        public static ResourceClientItem GetResourceClientItem(this ResourceClientInfo item)
         {
             if (item == null) return null;
-            return new ResourceClientModel()
+            return new ResourceClientItem()
             {
                 ResourceClientID = item.ResourceClientID,
                 ResourceID = item.ResourceID,
@@ -27,9 +27,9 @@ namespace LNF.Repository.Scheduler
             };
         }
 
-        public static IEnumerable<ResourceClientModel> GetResourceClientItems(this IQueryable<ResourceClientInfo> query)
+        public static IEnumerable<ResourceClientItem> GetResourceClientItems(this IQueryable<ResourceClientInfo> query)
         {
-            return query.Select(x => new ResourceClientModel()
+            return query.Select(x => new ResourceClientItem()
             {
                 ResourceClientID = x.ResourceClientID,
                 ResourceID = x.ResourceID,
