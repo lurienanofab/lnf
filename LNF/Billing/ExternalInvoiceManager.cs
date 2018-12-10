@@ -15,8 +15,8 @@ namespace LNF.Billing
         public DateTime EndDate { get; }
         public bool ShowRemote { get; }
         public bool IncludeAccountsWithNoUsage { get; set; }
-        public IBillingTypeManager BillingTypeManager { get; }
-        public ISession Session { get { return BillingTypeManager.Session; } }
+        protected IBillingTypeManager BillingTypeManager { get; }
+        protected DataCommand Command(CommandType type = CommandType.StoredProcedure) => DataCommand.Create(BillingTypeManager.Session.GetAdapter, type);
 
         private IDictionary<string, ExternalInvoiceUsage> _data;
 
@@ -152,163 +152,145 @@ namespace LNF.Billing
 
         public DataTable GetExternalChargeTypes()
         {
-            using (var dba = Session.GetAdapter())
-                return dba.ApplyParameters(new { Action = "External" }).FillDataTable("ChargeType_Select");
+            return Command()
+                .Param("Action", "External")
+                .FillDataTable("dbo.ChargeType_Select");
         }
 
         public DataTable GetActiveExternalOrgs(DateTime sd, DateTime ed)
         {
-            using (var dba = Session.GetAdapter())
-            {
-                DataTable dt = dba.ApplyParameters(new { Action = "ActiveExternal", sDate = sd, eDate = ed }).FillDataTable("Org_Select");
-                dt.PrimaryKey = new[] { dt.Columns["AccountID"] };
-                return dt;
-            }
+            var dt = Command()
+                .Param(new { Action = "ActiveExternal", sDate = sd, eDate = ed })
+                .FillDataTable("dbo.Org_Select");
+
+            dt.PrimaryKey = new[] { dt.Columns["AccountID"] };
+
+            return dt;
         }
 
         public ExternalInvoiceUsage GetToolUsage()
         {
-            using (var dba = Session.GetAdapter())
+            var ds = Command()
+                .Param("Action", "ForInvoice")
+                .Param("StartPeriod", StartDate)
+                .Param("EndPeriod", EndDate)
+                .Param("IsInternal", false)
+                .Param("AccountID", AccountID > 0, AccountID)
+                .Param("BillingTypeID", !ShowRemote, BillingType.Remote)
+                .FillDataSet("dbo.ToolBilling_Select");
+
+            // It will return a dataset with two tables inside
+            // table #1: the data table contains individual tool usage
+            // table #2: the client table contains all users who has used the tools on this account
+
+            ds.Tables[0].Columns.Add("LineCost", typeof(double));
+
+            //Calculate the true cost based on billing types
+            BillingTypeManager.CalculateToolLineCost(ds.Tables[0]);
+
+            var dt = ds.Tables[0];
+            var dtClient = ds.Tables[1];
+
+            var result = new ExternalInvoiceUsage();
+
+            //Aggregate the report based on ClientID
+            foreach (DataRow dr in dtClient.Rows)
             {
-                dba.AddParameter("@Action", "ForInvoice");
-                dba.AddParameter("@StartPeriod", StartDate);
-                dba.AddParameter("@EndPeriod", EndDate);
-                dba.AddParameter("@IsInternal", false);
-
-                if (AccountID > 0)
-                    dba.AddParameter("@AccountID", AccountID);
-
-                if (!ShowRemote)
-                    dba.AddParameter("@BillingTypeID", BillingType.Remote);
-
-                // It will return a dataset with two tables inside
-                // table #1: the data table contains individual tool usage
-                // table #2: the client table contains all users who has used the tools on this account
-                var ds = dba.FillDataSet("ToolBilling_Select");
-
-                ds.Tables[0].Columns.Add("LineCost", typeof(double));
-
-                //Calculate the true cost based on billing types
-                BillingTypeManager.CalculateToolLineCost(ds.Tables[0]);
-
-                var dt = ds.Tables[0];
-                var dtClient = ds.Tables[1];
-
-                var result = new ExternalInvoiceUsage();
-
-                //Aggregate the report based on ClientID
-                foreach (DataRow dr in dtClient.Rows)
-                {
-                    double totalFee = Convert.ToDouble(dt.Compute("SUM(LineCost)", string.Format("ClientID = {0} AND AccountID = {1}", dr["ClientID"], dr["AccountID"])));
-                    DataRow[] rows = dt.Select(string.Format("ClientID = {0} AND AccountID = {1}", dr["ClientID"], dr["AccountID"]));
-                    string desc = ExternalInvoiceUtility.GetToolDescription(rows[0]);
-                    result.Add(ExternalInvoiceUtility.CreateInvoiceLineItem(rows[0], 1, totalFee, desc));
-                }
-
-                return result;
+                string filter = $"ClientID = {dr["ClientID"]} AND AccountID = {dr["AccountID"]}";
+                double totalFee = Convert.ToDouble(dt.Compute("SUM(LineCost)", filter));
+                DataRow[] rows = dt.Select(filter);
+                string desc = ExternalInvoiceUtility.GetToolDescription(rows[0]);
+                result.Add(ExternalInvoiceUtility.CreateInvoiceLineItem(rows[0], 1, totalFee, desc));
             }
+
+            return result;
         }
 
         public ExternalInvoiceUsage GetExternalRoomUsage()
         {
-            using (var dba = Session.GetAdapter())
+            var ds = Command()
+                .Param("Action", "ForInvoice")
+                .Param("StartPeriod", StartDate)
+                .Param("EndPeriod", EndDate)
+                .Param("IsInternal", false)
+                .Param("AccountID", AccountID > 0, AccountID)
+                .Param("BillingTypeID", !ShowRemote, BillingType.Remote)
+                .FillDataSet("dbo.RoomApportionmentInDaysMonthly_Select");
+
+            ds.Tables[0].Columns.Add("LineCost", typeof(double));
+
+            //Calculate the true cost based on billing types
+            BillingTypeManager.CalculateRoomLineCost(ds.Tables[0]);
+
+            DataTable dt = ds.Tables[0];
+            DataTable dtClient = ds.Tables[1];
+
+            var result = new ExternalInvoiceUsage();
+
+            //Aggregate the report based on ClientID
+            foreach (DataRow dr in dtClient.Rows)
             {
-                dba.AddParameter("@Action", "ForInvoice");
-                dba.AddParameter("@StartPeriod", StartDate);
-                dba.AddParameter("@EndPeriod", EndDate);
-                dba.AddParameter("@IsInternal", false);
-
-                if (AccountID > 0)
-                    dba.AddParameter("@AccountID", AccountID);
-
-                if (!ShowRemote)
-                    dba.AddParameter("@BillingTypeID", BillingType.Remote);
-
-                DataSet ds = dba.FillDataSet("RoomApportionmentInDaysMonthly_Select");
-
-                ds.Tables[0].Columns.Add("LineCost", typeof(double));
-
-                //Calculate the true cost based on billing types
-                BillingTypeManager.CalculateRoomLineCost(ds.Tables[0]);
-
-                DataTable dt = ds.Tables[0];
-                DataTable dtClient = ds.Tables[1];
-
-                var result = new ExternalInvoiceUsage();
-
-                //Aggregate the report based on ClientID
-                foreach (DataRow dr in dtClient.Rows)
-                {
-                    double totalFee = Convert.ToDouble(dt.Compute("SUM(LineCost)", string.Format("ClientID = {0} AND AccountID = {1}", dr["ClientID"], dr["AccountID"])));
-                    DataRow[] rows = dt.Select(string.Format("ClientID = {0} AND AccountID = {1}", dr["ClientID"], dr["AccountID"]), string.Empty);
-                    string desc = ExternalInvoiceUtility.GetRoomDescription(rows[0]);
-                    result.Add(ExternalInvoiceUtility.CreateInvoiceLineItem(rows[0], 1, totalFee, desc));
-                }
-
-                return result;
+                string filter = $"ClientID = {dr["ClientID"]} AND AccountID = {dr["AccountID"]}";
+                double totalFee = Convert.ToDouble(dt.Compute("SUM(LineCost)", filter));
+                DataRow[] rows = dt.Select(filter);
+                string desc = ExternalInvoiceUtility.GetRoomDescription(rows[0]);
+                result.Add(ExternalInvoiceUtility.CreateInvoiceLineItem(rows[0], 1, totalFee, desc));
             }
+
+            return result;
         }
 
         public ExternalInvoiceUsage GetStoreUsage()
         {
-            using (var dba = Session.GetAdapter())
+            var ds = Command()
+                .Param("Action", "ForInvoice")
+                .Param("StartPeriod", StartDate)
+                .Param("EndPeriod", EndDate)
+                .Param("IsInternal", false)
+                .Param("AccountID", AccountID > 0, AccountID)
+                .FillDataSet("dbo.StoreBilling_Select");
+
+            var dt = ds.Tables[0];
+            var dtClient = ds.Tables[1];
+
+            var result = new ExternalInvoiceUsage();
+
+            //Aggregate the report based on ClientID
+            foreach (DataRow dr in dtClient.Rows)
             {
-                dba.AddParameter("@Action", "ForInvoice");
-                dba.AddParameter("@StartPeriod", StartDate);
-                dba.AddParameter("@EndPeriod", EndDate);
-                dba.AddParameter("@IsInternal", false);
-
-                if (AccountID > 0)
-                    dba.AddParameter("@AccountID", AccountID);
-
-                var ds = dba.FillDataSet("StoreBilling_Select");
-
-                DataTable dt = ds.Tables[0];
-                DataTable dtClient = ds.Tables[1];
-
-                var result = new ExternalInvoiceUsage();
-
-                //Aggregate the report based on ClientID
-                foreach (DataRow dr in dtClient.Rows)
-                {
-                    double totalFee = Convert.ToDouble(dt.Compute("SUM(LineCost)", string.Format("ClientID = {0} AND AccountID = {1}", dr["ClientID"], dr["AccountID"])));
-                    DataRow[] rows = dt.Select(string.Format("ClientID = {0} AND AccountID = {1}", dr["ClientID"], dr["AccountID"]));
-                    string desc = ExternalInvoiceUtility.GetStoreDescription(rows[0]);
-                    result.Add(ExternalInvoiceUtility.CreateInvoiceLineItem(rows[0], 1, totalFee, desc));
-                }
-
-                return result;
+                string filter = $"ClientID = {dr["ClientID"]} AND AccountID = {dr["AccountID"]}";
+                double totalFee = Convert.ToDouble(dt.Compute("SUM(LineCost)", filter));
+                DataRow[] rows = dt.Select(filter);
+                string desc = ExternalInvoiceUtility.GetStoreDescription(rows[0]);
+                result.Add(ExternalInvoiceUtility.CreateInvoiceLineItem(rows[0], 1, totalFee, desc));
             }
+
+            return result;
         }
 
         public ExternalInvoiceUsage GetMiscUsage()
         {
-            using (var dba = Session.GetAdapter())
+            var dt = Command()
+                .Param("Action", "ForInvoice")
+                .Param("StartPeriod", StartDate)
+                .Param("EndPeriod", EndDate)
+                .Param("IsInternal", false)
+                .Param("AccountID", AccountID > 0, AccountID)
+                .FillDataTable("dbo.MiscBillingCharge_Select");
+
+            dt.Columns.Add("LineCost", typeof(double), "Quantity * Cost");
+
+            var result = new ExternalInvoiceUsage();
+
+            //Aggregate the report based on ClientID
+            foreach (DataRow dr in dt.Rows)
             {
-                dba.AddParameter("@Action", "ForInvoice");
-                dba.AddParameter("@StartPeriod", StartDate);
-                dba.AddParameter("@EndPeriod", EndDate);
-                dba.AddParameter("@IsInternal", false);
-
-                if (AccountID > 0)
-                    dba.AddParameter("@AccountID", AccountID);
-
-                var dt = dba.FillDataTable("MiscBillingCharge_Select");
-
-                dt.Columns.Add("LineCost", typeof(double), "Quantity * Cost");
-
-                var result = new ExternalInvoiceUsage();
-
-                //Aggregate the report based on ClientID
-                foreach (DataRow dr in dt.Rows)
-                {
-                    double totalFee = Convert.ToDouble(dr.Field<decimal>("Cost"));
-                    string desc = ExternalInvoiceUtility.GetMiscDescription(dr);
-                    result.Add(ExternalInvoiceUtility.CreateInvoiceLineItem(dr, dr.Field<double>("Quantity"), totalFee, desc));
-                }
-
-                return result;
+                double totalFee = Convert.ToDouble(dr.Field<decimal>("Cost"));
+                string desc = ExternalInvoiceUtility.GetMiscDescription(dr);
+                result.Add(ExternalInvoiceUtility.CreateInvoiceLineItem(dr, dr.Field<double>("Quantity"), totalFee, desc));
             }
+
+            return result;
         }
 
         public IDictionary<string, ExternalInvoiceUsage> GetAllUsage()
@@ -321,7 +303,6 @@ namespace LNF.Billing
                 { "Misc", GetMiscUsage() }
             };
         }
-
 
         public IEnumerator<KeyValuePair<string, ExternalInvoiceUsage>> GetEnumerator()
         {

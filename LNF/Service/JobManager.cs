@@ -20,9 +20,10 @@ namespace LNF.Service
 
         public JobManager()
         {
-            _log = new List<string>();
-
-            _log.Add(string.Format("[{0:yyyy-MM-dd HH:mm:ss}] Queue started.", DateTime.Now));
+            _log = new List<string>
+            {
+                string.Format("[{0:yyyy-MM-dd HH:mm:ss}] Queue started.", DateTime.Now)
+            };
 
             _queue = new BlockingCollection<ServiceJob>();
 
@@ -74,27 +75,26 @@ namespace LNF.Service
 
         protected virtual void OnJobError(ServiceJob job, Exception ex)
         {
-            if (JobError != null)
-                JobError(this, new JobException(job, ex));
+            JobError?.Invoke(this, new JobException(job, ex));
         }
 
         private async Task<bool> Pop(ServiceJob job)
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
-            _log.Add(string.Format("[{0:yyyy-MM-dd HH:mm:ss}] Started job ID {1} ({2}).", DateTime.Now, job.ID, job.Name));
+            _log.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Started job ID {job.ID} ({job.Name}).");
 
             if (job.Action != null)
             {
                 bool result = await job.Action();
                 sw.Stop();
-                _log.Add(string.Format("[{0:yyyy-MM-dd HH:mm:ss}] Completed job ID {1} ({2}) in {3} seconds. Result: {4}", DateTime.Now, job.ID, job.Name, sw.Elapsed.TotalSeconds, result));
+                _log.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Completed job ID {job.ID} ({job.Name}) in {sw.Elapsed.TotalSeconds:0.00} seconds. Result: {result}");
                 return result;
             }
             else
             {
-                _log.Add(string.Format("[{0:yyyy-MM-dd HH:mm:ss] Unable to process job. {1} does not have an action to execute.", DateTime.Now, job.Name));
-                throw new InvalidOperationException(string.Format("Unable to process job. {1} does not have an action to execute.", job.Name));
+                _log.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Unable to process job. {job.Name} does not have an action to execute.");
+                throw new InvalidOperationException($"Unable to process job. {job.Name} does not have an action to execute.");
             }
         }
     }

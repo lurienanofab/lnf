@@ -28,9 +28,7 @@ namespace LNF.Impl.Conventions
         {
             if (value == null) return null;
 
-            var b = value as Bytes;
-
-            if (b == null) return null;
+            if (!(value is Bytes b)) return null;
 
             return new Bytes(b.ToArray());
         }

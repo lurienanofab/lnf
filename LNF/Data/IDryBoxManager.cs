@@ -1,6 +1,7 @@
-﻿using System;
-using LNF.Repository;
+﻿using LNF.Repository;
 using LNF.Repository.Data;
+using System;
+using System.Data;
 
 namespace LNF.Data
 {
@@ -9,7 +10,6 @@ namespace LNF.Data
         DryBoxAssignment[] ActiveAssignments(DateTime startDate, DateTime endDate);
         void Approve(DryBoxAssignment dba, Client modifiedBy);
         DryBoxAssignment CurrentAssignment(DryBox item);
-        ClientAccountInfo GetClientAccountInfo(DryBoxAssignmentLog item);
         bool? IsAccountActive(DryBox item);
         void Reject(DryBoxAssignment dba);
         void Remove(DryBoxAssignment dba, Client modifiedBy);
@@ -18,5 +18,6 @@ namespace LNF.Data
         bool HasDryBox(ClientAccount item);
         ClientAccount GetDryBoxClientAccount(ClientOrg item);
         bool HasDryBox(ClientOrg item);
+        DataSet ReadDryBoxData(DateTime sd, DateTime ed, int clientId = 0);
     }
 }

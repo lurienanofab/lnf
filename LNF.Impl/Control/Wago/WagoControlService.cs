@@ -2,7 +2,6 @@
 using LNF.Repository.Control;
 using RestSharp;
 using System;
-using System.Threading.Tasks;
 
 namespace LNF.Impl.Control.Wago
 {
@@ -19,7 +18,7 @@ namespace LNF.Impl.Control.Wago
                 Host = controlElement.Host;
         }
 
-        private RestClient GetClient()
+        private IRestClient GetClient()
         {
             if (_client == null)
             {
@@ -32,16 +31,16 @@ namespace LNF.Impl.Control.Wago
             return _client;
         }
 
-        public Task<BlockResponse> GetBlockState(Block block)
+        public BlockResponse GetBlockState(Block block)
         {
             var request = new RestRequest("wago/block/{blockId}");
             request.AddUrlSegment("blockId", block.BlockID);
-            return GetSuccessfulResult<BlockResponse>(request);            
+            return GetSuccessfulResult<BlockResponse>(request);
         }
 
-        public Task<PointResponse> SetPointState(Point point, bool state, uint duration)
+        public PointResponse SetPointState(Point point, bool state, uint duration)
         {
-            var request = new RestRequest("wago/block/{blockId}/point/{pointId}");
+            var request = new RestRequest("wago/point/{pointId}");
             request.AddUrlSegment("blockId", point.Block.BlockID);
             request.AddUrlSegment("pointId", point.PointID);
             request.AddParameter("state", state);
@@ -49,18 +48,18 @@ namespace LNF.Impl.Control.Wago
             return GetSuccessfulResult<PointResponse>(request);
         }
 
-        public Task<PointResponse> Cancel(Point point)
+        public PointResponse Cancel(Point point)
         {
-            var request = new RestRequest("wago/block/{blockId}/point/{pointId}/cancel");
+            var request = new RestRequest("wago/point/{pointId}/cancel");
             request.AddUrlSegment("blockId", point.Block.BlockID);
             request.AddUrlSegment("pointId", point.PointID);
             return GetSuccessfulResult<PointResponse>(request);
         }
 
-        private async Task<T> GetSuccessfulResult<T>(IRestRequest request)
+        private T GetSuccessfulResult<T>(IRestRequest request) where T : class, new()
         {
             var client = GetClient();
-            var response = await client.ExecuteGetTaskAsync<T>(request);
+            var response = client.Execute<T>(request);
 
             if (response.IsSuccessful)
                 return response.Data;

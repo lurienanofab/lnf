@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {
-    public class ReservationProcessInfoMap : ClassMap<ReservationProcessInfo>
+    internal class ReservationProcessInfoMap : ClassMap<ReservationProcessInfo>
     {
-        public ReservationProcessInfoMap()
+        internal ReservationProcessInfoMap()
         {
             Schema("sselScheduler.dbo");
             Id(x => x.ReservationProcessInfoID);
@@ -17,9 +13,9 @@ namespace LNF.Impl.Mappings.Scheduler
             References(x => x.ProcessInfoLine);
             Map(x => x.Value).Not.Nullable();
             Map(x => x.Special).Not.Nullable();
-            Map(x => x.RunNumber).Not.Nullable();
-            //Map(x => x.ForgivenessPercentage).Not.Nullable();
-            Map(x => x.Active);
+            Map(x => x.RunNumber).Nullable();
+            Map(x => x.ChargeMultiplier).Nullable();
+            Map(x => x.Active).Nullable();
         }
     }
 }

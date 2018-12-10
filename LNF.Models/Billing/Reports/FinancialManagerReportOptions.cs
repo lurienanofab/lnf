@@ -22,6 +22,16 @@ namespace LNF.Models.Billing.Reports
         /// </summary>
         public bool IncludeManager { get; set; }
 
+        /// <summary>
+        /// The unique ClientID for the lab user, zero for all lab users.
+        /// </summary>
+        public int ClientID { get; set; }
+
+        /// <summary>
+        /// The unique ClientOrgID for the manager, zero for all managers.
+        /// </summary>
+        public int ManagerOrgID { get; set; }
+
         public FinancialManagerReportOptions()
         {
             IncludeManager = true;

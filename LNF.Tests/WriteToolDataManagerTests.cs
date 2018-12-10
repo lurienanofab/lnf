@@ -12,13 +12,12 @@ namespace LNF.Tests
         [TestMethod]
         public void CanWriteToolDataClean()
         {
-            DateTime startPeriod = DateTime.Parse("2017-07-01");
-            DateTime endPeriod = DateTime.Parse("2017-08-01");
+            DateTime sd = DateTime.Parse("2017-07-01");
+            DateTime ed = DateTime.Parse("2017-08-01");
             int clientId = 1296;
-            int record = 14021;
 
-            var mgr = WriteToolDataManager.Create(startPeriod, endPeriod, clientId, record);
-            mgr.WriteToolDataClean();
+            var proc = new WriteToolDataCleanProcess(sd, ed, clientId);
+            var result = proc.Start();
         }
     }
 }

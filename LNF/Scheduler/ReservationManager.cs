@@ -1,9 +1,10 @@
 ﻿using LNF.Cache;
 using LNF.CommonTools;
 using LNF.Data;
-using LNF.Logging;
 using LNF.Models.Data;
 using LNF.Models.Scheduler;
+using LNF.Models.Worker;
+using LNF.PhysicalAccess;
 using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Repository.Scheduler;
@@ -12,7 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace LNF.Scheduler
 {
@@ -52,7 +52,7 @@ namespace LNF.Scheduler
             ReservationState.Undefined, ReservationState.StartOnly, ReservationState.Editable, ReservationState.StartOrDelete
         };
 
-        public int GetSubStateVal(bool isInLab, bool isReserver, bool isInvited, bool isAuthorized, bool isBeforeMinCancelTime, bool isStartable)
+        private int GetSubStateVal(bool isInLab, bool isReserver, bool isInvited, bool isAuthorized, bool isBeforeMinCancelTime, bool isStartable)
         {
             return (isInLab ? 32 : 0)
                 + (isReserver ? 16 : 0)
@@ -78,8 +78,6 @@ namespace LNF.Scheduler
             //  @BeginDateTime, @EndDateTime, @CreatedOn, GETDATE(),
             //  @Duration, @Notes, @AutoEnd, 1.00, @RecurrenceID, 1,
             //  @HasProcessInfo, @HasInvitees, @IsActive, 0, 0, @KeepAlive, @MaxReservedDuration, @TotalProcessRuns)
-
-            bool isInLab = CacheManager.Current.ClientInLab(rsv.Resource.ProcessTech.Lab.LabID);
 
             CanCreateCheck(rsv);
 
@@ -166,7 +164,7 @@ namespace LNF.Scheduler
                 KeepAlive = false
             };
 
-            Session.SaveOrUpdate(result);
+            Session.Insert(result);
 
             InsertReservationHistory("InsertRepair", "procReservationInsert", result, modifiedByClientId);
 
@@ -183,7 +181,7 @@ namespace LNF.Scheduler
                 {
                     // Granularity			: stored in minutes and entered in minutes
                     // Offset				: stored in hours and entered in hours 
-                    DateTime granStartTime = ResourceUtility.GetNextGranularity(TimeSpan.FromMinutes(rsv.Resource.Granularity), TimeSpan.FromHours(rsv.Resource.Offset), DateTime.Now, NextGranDir.Previous);
+                    DateTime granStartTime = ResourceUtility.GetNextGranularity(TimeSpan.FromMinutes(rsv.Resource.Granularity), TimeSpan.FromHours(rsv.Resource.Offset), DateTime.Now, GranularityDirection.Previous);
 
                     if (rsv.BeginDateTime < granStartTime)
                     {
@@ -224,7 +222,7 @@ namespace LNF.Scheduler
         /// <summary>
         /// Ends a reservation, and turn off Interlock
         /// </summary>
-        public async Task EndReservation(int reservationId)
+        public void EndReservation(int reservationId)
         {
             var rsv = Session.Single<Reservation>(reservationId);
 
@@ -239,7 +237,7 @@ namespace LNF.Scheduler
 
             // Turn Interlock Off
             if (CacheManager.Current.WagoEnabled)
-                await WagoInterlock.ToggleInterlock(rsv.Resource.ResourceID, false, 0);
+                WagoInterlock.ToggleInterlock(rsv.Resource.ResourceID, false, 0);
 
             // Check for other open reservation slots between now and the reservation fence
             DateTime? nextBeginDateTime = OpenResSlot(rsv.Resource.ResourceID, TimeSpan.FromMinutes(rsv.Resource.ReservFence), TimeSpan.FromMinutes(rsv.Resource.MinReservTime), DateTime.Now, rsv.EndDateTime);
@@ -248,7 +246,7 @@ namespace LNF.Scheduler
                 return;
 
             // Get the next reservation start time
-            DateTime currentEndDateTime = ResourceUtility.GetNextGranularity(TimeSpan.FromMinutes(rsv.Resource.Granularity), TimeSpan.FromHours(rsv.Resource.Offset), rsv.ActualEndDateTime.Value, NextGranDir.Previous);
+            DateTime currentEndDateTime = ResourceUtility.GetNextGranularity(TimeSpan.FromMinutes(rsv.Resource.Granularity), TimeSpan.FromHours(rsv.Resource.Offset), rsv.ActualEndDateTime.Value, GranularityDirection.Previous);
 
             // Send email notifications to all clients who want to be notified of open reservation slots
             EmailManager.EmailOnOpenSlot(rsv.Resource.ResourceID, currentEndDateTime, nextBeginDateTime.Value, EmailNotify.Always, reservationId);
@@ -257,28 +255,25 @@ namespace LNF.Scheduler
                 EmailManager.EmailOnOpenSlot(rsv.Resource.ResourceID, currentEndDateTime, nextBeginDateTime.Value, EmailNotify.OnOpening, reservationId);
         }
 
-        public ReservationState GetReservationState(int reservationId, int clientId, bool isInLab)
+        public ReservationStateArgs CreateReservationStateArgs(Reservation rsv, Client client, string kioskIp)
         {
-            // Get Reservation Info
-            var rsv = Session.Single<Reservation>(reservationId);
-            var client = Session.Single<Client>(clientId);
+            // Determine Ownership
+            bool isReserver = rsv.Client.ClientID == client.ClientID;
 
-            return GetReservationState(rsv, client, isInLab);
-        }
+            // Determine Invition
+            bool isInvited = IsInvited(rsv.ReservationID, client.ClientID);
 
-        public ReservationState GetReservationState(Reservation rsv, Client client, bool isInLab)
-        {
-            var args = ReservationStateArgs.Create(rsv, client, isInLab, this);
+            // Determine Authorization
+            var userAuth = GetAuthLevel(rsv, client);
+            bool isAuthorized = (userAuth & (ClientAuthLevel)rsv.Activity.StartEndAuth) > 0;
 
-            try
-            {
-                return GetReservationState(args);
-            }
-            catch (Exception ex)
-            {
-                string errmsg = string.Format(string.Format("Unable to determine reservation state for ReservationID: {0}, BeginDateTime: {1:yyyy-MM-dd HH:mm:ss}, ResourceID: {2}, isReserver: {3}, isInvited: {4}, isAuthorized: {5}, beforeMinCancelTime: {6}", rsv.ReservationID, rsv.BeginDateTime, rsv.Resource.ResourceID, args.IsReserver, args.IsInvited, args.IsAuthorized, args.IsBeforeMinCancelTime));
-                throw new Exception(errmsg, ex);
-            }
+            bool isBeforeMinCancelTime = (DateTime.Now <= rsv.BeginDateTime.AddMinutes(-1 * rsv.Resource.MinCancelTime));
+
+            bool inLab = PhysicalAccessUtility.ClientInLab(client.ClientID, kioskIp, rsv.Resource.ProcessTech.Lab.LabID);
+
+            var args = new ReservationStateArgs(inLab, isReserver, isInvited, isAuthorized, rsv.Activity.IsRepair, rsv.Activity.IsFacilityDownTime, isBeforeMinCancelTime, rsv.Resource.MinReservTime, rsv.BeginDateTime, rsv.EndDateTime, rsv.ActualBeginDateTime, rsv.ActualEndDateTime, userAuth);
+
+            return args;
         }
 
         public ReservationState GetReservationState(ReservationStateArgs args)
@@ -371,7 +366,7 @@ namespace LNF.Scheduler
             // if this is false, the state changes as shown above 
 
             // Repair Reservations, returns immediately
-            if (!args.IsRepair) return ReservationState.Repair;
+            if (args.IsRepair) return ReservationState.Repair;
 
             if (args.ActualBeginDateTime == null && args.ActualEndDateTime == null)
             {
@@ -385,7 +380,7 @@ namespace LNF.Scheduler
                 }
 
                 // redefine min cancel time (MCT) for tool engineers - can edit up until scheduled start time
-                return GetUnstartedReservationState(args.BeginDateTime, args.MinReservTime, args.IsInLab, args.IsToolEngineer, args.IsReserver, args.IsInvited, args.IsAuthorized, args.IsBeforeMinCancelTime);
+                return GetUnstartedReservationState(args);
             }
             else if (args.ActualBeginDateTime != null && args.ActualEndDateTime == null)
             {
@@ -434,33 +429,33 @@ namespace LNF.Scheduler
             }
         }
 
-        public ReservationState GetUnstartedReservationState(DateTime beginDateTime, int minReservTime, bool isInLab, bool isEngineer, bool isReserver, bool isInvited, bool isAuthorized, bool isBeforeMinCancelTime)
+        public ReservationState GetUnstartedReservationState(ReservationStateArgs args)
         {
-            var isStartable = IsStartable(beginDateTime, minReservTime);
+            var isStartable = IsStartable(args.BeginDateTime, args.MinReservTime);
 
-            var actual = (isEngineer)
-                 ? new { isInLab = false, isReserver = false, isInvited = false, isAuthorized = false, isBeforeMinCancelTime = DateTime.Now <= beginDateTime, isStartable }
-                 : new { isInLab, isReserver, isInvited, isAuthorized, isBeforeMinCancelTime, isStartable };
+            var actual = (args.IsToolEngineer)
+                 ? new { IsInLab = false, IsReserver = false, IsInvited = false, IsAuthorized = false, IsBeforeMinCancelTime = DateTime.Now <= args.BeginDateTime, IsStartable = isStartable }
+                 : new { args.IsInLab, args.IsReserver, args.IsInvited, args.IsAuthorized, args.IsBeforeMinCancelTime, IsStartable = isStartable };
 
-            var subStateValue = GetSubStateVal(actual.isInLab, actual.isReserver, actual.isInvited, actual.isAuthorized, actual.isBeforeMinCancelTime, actual.isStartable);
+            var subStateValue = GetSubStateVal(actual.IsInLab, actual.IsReserver, actual.IsInvited, actual.IsAuthorized, actual.IsBeforeMinCancelTime, actual.IsStartable);
 
-            var result = (isEngineer)
+            var result = (args.IsToolEngineer)
                 ? TruthTableTE[subStateValue]
                 : TruthTable[subStateValue];
 
             if (result == ReservationState.Undefined)
             {
                 var errmsg = "Unstarted reservation state is undefined."
-                    + " IsEngineer: {0}, IsInLab: {1}, IsReserver: {2}, IsInvited: {3}, IsAuthorized: {4}, IsBeforeMinCancelTime: {5}, IsStartable: {6}, SubStateValue: {7}";
+                    + "  IsToolEngineer: {1}, IsInLab: {2}, IsReserver: {3}, IsInvited: {4}, IsAuthorized: {5}, IsBeforeMinCancelTime: {6}, IsStartable: {7}, SubStateValue: {8}";
 
                 throw new Exception(string.Format(errmsg,
-                    isEngineer ? "Yes" : "No",
-                    actual.isInLab ? "Yes" : "No",
-                    actual.isReserver ? "Yes" : "No",
-                    actual.isInvited ? "Yes" : "No",
-                    actual.isAuthorized ? "Yes" : "No",
-                    actual.isBeforeMinCancelTime ? "Yes" : "No",
-                    actual.isStartable ? "Yes" : "No",
+                    args.IsToolEngineer ? "Yes" : "No",
+                    actual.IsInLab ? "Yes" : "No",
+                    actual.IsReserver ? "Yes" : "No",
+                    actual.IsInvited ? "Yes" : "No",
+                    actual.IsAuthorized ? "Yes" : "No",
+                    actual.IsBeforeMinCancelTime ? "Yes" : "No",
+                    actual.IsStartable ? "Yes" : "No",
                     subStateValue));
             }
 
@@ -583,29 +578,31 @@ namespace LNF.Scheduler
         ///<summary>
         ///Ends any reservations that needs to be auto-ended. This includes both types of auto-ending: resource-centric and reservation-centric.
         ///</summary>
-        public async Task EndAutoEndReservations(IEnumerable<Reservation> reservations)
+        public HandleAutoEndReservationsProcessResult HandleAutoEndReservations(IEnumerable<Reservation> reservations)
         {
             //End auto-end reservations, and turn off interlocks
 
-            int count = reservations.Count();
-
-            using (var timer = LogTaskTimer.Start("ReservationUtility.EndAutoEndReservations", "count = {0}", () => new object[] { count }))
+            var result = new HandleAutoEndReservationsProcessResult()
             {
-                foreach (Reservation rsv in reservations)
+                ReservationsCount = reservations.Count()
+            };
+
+            foreach (Reservation rsv in reservations)
+            {
+                try
                 {
-                    try
-                    {
-                        End(rsv, -1, -1);
-                        await WagoInterlock.ToggleInterlock(rsv.Resource.ResourceID, false, 0); //always pass 0 when ending auto-end reservations
-                        AutoEndLog.AddEntry(rsv, "autoend");
-                        timer.AddData("Ended auto-end reservation {0} for resource {1}", rsv.ReservationID, rsv.Resource.ResourceID);
-                    }
-                    catch (Exception ex)
-                    {
-                        timer.AddData("***ERROR*** Failed to auto-end reservation {0} for resource {1}: {2}", rsv.ReservationID, rsv.Resource.ResourceID, ex.Message);
-                    }
+                    End(rsv, -1, -1);
+                    WagoInterlock.ToggleInterlock(rsv.Resource.ResourceID, false, 0); //always pass 0 when ending auto-end reservations
+                    AutoEndLog.AddEntry(rsv, "autoend");
+                    result.Data.Add($"Ended auto-end reservation {rsv.ReservationID} for resource {rsv.Resource.ResourceID}");
+                }
+                catch (Exception ex)
+                {
+                    result.Data.Add($"***ERROR*** Failed to auto-end reservation {rsv.ReservationID} for resource {rsv.Resource.ResourceID}: {ex.Message}");
                 }
             }
+
+            return result;
         }
 
         /// <summary>
@@ -622,7 +619,7 @@ namespace LNF.Scheduler
 
             // Send email to reserver and invitees
             EmailManager.EmailOnUserDelete(rsv);
-            EmailManager.EmailOnUninvited(rsv, ReservationInviteeItem.Create(GetInvitees(rsv)));
+            EmailManager.EmailOnUninvited(rsv, ReservationInviteeItem.Create(GetInvitees(rsv.ReservationID)));
 
             // Send email notifications to all clients want to be notified of open reservation slots
             EmailManager.EmailOnOpenSlot(res.ResourceID, rsv.BeginDateTime, rsv.EndDateTime, EmailNotify.Always, reservationId);
@@ -680,9 +677,9 @@ namespace LNF.Scheduler
             return query.Count;
         }
 
-        public IQueryable<ReservationInvitee> GetInvitees(Reservation rsv)
+        public IQueryable<ReservationInvitee> GetInvitees(int reservationId)
         {
-            return Session.Query<ReservationInvitee>().Where(x => x.Reservation.ReservationID == rsv.ReservationID);
+            return Session.Query<ReservationInvitee>().Where(x => x.Reservation.ReservationID == reservationId);
         }
 
         public IList<Reservation> SelectEndableReservations(int resourceId)
@@ -764,92 +761,96 @@ namespace LNF.Scheduler
         ///<summary>
         /// Ends any reservations that the reserver fails to start before the grace period had ended.
         ///</summary>
-        public void EndUnstartedReservations(IEnumerable<Reservation> reservations)
+        public EndUnstartedReservationsProcessResult EndUnstartedReservations(IEnumerable<Reservation> reservations)
         {
             //End unstarted reservations
-
-            int count = reservations.Count();
-
-            using (var timer = LogTaskTimer.Start("ReservationUtility.EndUnstartedReservations", "count = {0}", () => new object[] { count }))
+            var result = new EndUnstartedReservationsProcessResult()
             {
-                foreach (Reservation rsv in reservations)
+                ReservationsCount = reservations.Count()
+            };
+
+            foreach (Reservation rsv in reservations)
+            {
+                DateTime oldEndDateTime = rsv.EndDateTime;
+                DateTime newEndDateTime = rsv.BeginDateTime;
+
+                bool endReservation = false;
+                DateTime ed;
+
+                if (rsv.KeepAlive)
                 {
-                    DateTime oldEndDateTime = rsv.EndDateTime;
-                    DateTime newEndDateTime = rsv.BeginDateTime;
-
-                    bool endReservation = false;
-                    DateTime ed;
-
-                    if (rsv.KeepAlive)
-                    {
-                        //KeepAlive: we don't care about GracePeriod, only AutoEnd
-                        if (rsv.Resource.AutoEnd <= 0 || rsv.AutoEnd)
-                            ed = rsv.EndDateTime;
-                        else
-                            ed = rsv.EndDateTime.AddMinutes(rsv.Resource.AutoEnd);
-
-                        if (ed <= DateTime.Now)
-                        {
-                            endReservation = true;
-                            newEndDateTime = ed;
-                        }
-                    }
+                    //KeepAlive: we don't care about GracePeriod, only AutoEnd
+                    if (rsv.Resource.AutoEnd <= 0 || rsv.AutoEnd)
+                        ed = rsv.EndDateTime;
                     else
+                        ed = rsv.EndDateTime.AddMinutes(rsv.Resource.AutoEnd);
+
+                    if (ed <= DateTime.Now)
                     {
-                        //The end datetime will be the scheduled begin datetime plus the grace period
-                        ed = newEndDateTime.AddMinutes(rsv.Resource.GracePeriod);
                         endReservation = true;
                         newEndDateTime = ed;
                     }
-
-                    if (endReservation)
-                    {
-                        EndPastUnstarted(rsv, newEndDateTime, -1);
-                        AutoEndLog.AddEntry(rsv, "unstarted");
-                        timer.AddData("Unstarted reservation {0} was ended, KeepAlive = {1}, Reservation.AutoEnd = {2}, Resource.AutoEnd = {3}, eDate = '{4}'", rsv.ReservationID, rsv.KeepAlive, rsv.AutoEnd, rsv.Resource.AutoEnd, ed);
-
-                        DateTime? NextBeginDateTime = OpenResSlot(rsv.Resource.ResourceID, TimeSpan.FromMinutes(rsv.Resource.ReservFence), TimeSpan.FromMinutes(rsv.Resource.MinReservTime), DateTime.Now, oldEndDateTime);
-
-                        //Check if reservation slot becomes big enough
-                        if (NextBeginDateTime.HasValue)
-                        {
-                            if (NextBeginDateTime.Value.Subtract(oldEndDateTime).TotalMinutes < rsv.Resource.MinReservTime
-                                && NextBeginDateTime.Value.Subtract(newEndDateTime).TotalMinutes >= rsv.Resource.MinReservTime)
-                            {
-                                EmailManager.EmailOnOpenReservations(rsv.Resource.ResourceID, newEndDateTime, NextBeginDateTime.Value);
-                            }
-                        }
-                    }
-                    else
-                        timer.AddData("Unstarted reservation {0} was not ended, KeepAlive = {1}, Reservation.AutoEnd = {2}, Resource.AutoEnd = {3}, eDate = '{4}'", rsv.ReservationID, rsv.KeepAlive, rsv.AutoEnd, rsv.Resource.AutoEnd, ed);
                 }
+                else
+                {
+                    //The end datetime will be the scheduled begin datetime plus the grace period
+                    ed = newEndDateTime.AddMinutes(rsv.Resource.GracePeriod);
+                    endReservation = true;
+                    newEndDateTime = ed;
+                }
+
+                if (endReservation)
+                {
+                    EndPastUnstarted(rsv, newEndDateTime, -1);
+                    AutoEndLog.AddEntry(rsv, "unstarted");
+                    result.Data.Add($"Unstarted reservation {rsv.ReservationID} was ended, KeepAlive = {rsv.KeepAlive}, Reservation.AutoEnd = {rsv.AutoEnd}, Resource.AutoEnd = {rsv.Resource.AutoEnd}, ed = '{ed}'");
+
+                    DateTime? NextBeginDateTime = OpenResSlot(rsv.Resource.ResourceID, TimeSpan.FromMinutes(rsv.Resource.ReservFence), TimeSpan.FromMinutes(rsv.Resource.MinReservTime), DateTime.Now, oldEndDateTime);
+
+                    //Check if reservation slot becomes big enough
+                    if (NextBeginDateTime.HasValue)
+                    {
+                        bool sendEmail =
+                            NextBeginDateTime.Value.Subtract(oldEndDateTime).TotalMinutes < rsv.Resource.MinReservTime
+                            && NextBeginDateTime.Value.Subtract(newEndDateTime).TotalMinutes >= rsv.Resource.MinReservTime;
+
+                        if (sendEmail)
+                            EmailManager.EmailOnOpenReservations(rsv.Resource.ResourceID, newEndDateTime, NextBeginDateTime.Value);
+                    }
+                }
+                else
+                    result.Data.Add($"Unstarted reservation {rsv.ReservationID} was not ended, KeepAlive = {rsv.KeepAlive}, Reservation.AutoEnd = {rsv.AutoEnd}, Resource.AutoEnd = {rsv.Resource.AutoEnd}, ed = '{ed}'");
             }
+
+            return result;
         }
 
         ///<summary>
         ///Ends any repair reservations that are in the past.
         ///</summary>
-        public void EndRepairReservations(IEnumerable<Reservation> reservations)
+        public EndRepairReservationsProcessResult EndRepairReservations(IEnumerable<Reservation> reservations)
         {
             //End past repair reservations
-            int count = reservations.Count();
-
-            using (var timer = LogTaskTimer.Start("ReservationUtility.EndRepairReservations", "count = {0}", () => new object[] { count }))
+            var result = new EndRepairReservationsProcessResult()
             {
-                foreach (Reservation rsv in reservations)
-                {
-                    End(rsv, -1, -1);
-                    timer.AddData("Ended repair reservation {0}", rsv.ReservationID);
+                ReservationsCount = reservations.Count()
+            };
 
-                    //Reset resource state
-                    ResourceUtility.UpdateState(rsv.Resource.ResourceID, ResourceState.Online, string.Empty);
-                    AutoEndLog.AddEntry(rsv, "repair");
-                    timer.AddData("Set ResourceID {0} online", rsv.Resource.ResourceID);
-                }
+            foreach (Reservation rsv in reservations)
+            {
+                End(rsv, -1, -1);
+                result.Data.Add($"Ended repair reservation {rsv.ReservationID}");
+
+                //Reset resource state
+                ResourceUtility.UpdateState(rsv.Resource.ResourceID, ResourceState.Online, string.Empty);
+                AutoEndLog.AddEntry(rsv, "repair");
+                result.Data.Add($"Set ResourceID {rsv.Resource.ResourceID} online");
             }
+
+            return result;
         }
 
-        public Reservation ModifyExistingReservation(Reservation rsv, ReservationDuration rd)
+        public Reservation ModifyExistingReservation(Reservation rsv, ReservationDuration rd, IList<ReservationInviteeItem> invitees)
         {
             var currentUser = CacheManager.Current.CurrentUser;
 
@@ -876,8 +877,8 @@ namespace LNF.Scheduler
             ReservationInviteeData.Update(CopyReservationProcessInfoTable(), result.ReservationID);
 
             EmailManager.EmailOnUserUpdate(result);
-            EmailManager.EmailOnInvited(result, CacheManager.Current.ReservationInvitees(), ReservationModificationType.Modified);
-            EmailManager.EmailOnUninvited(rsv, CacheManager.Current.RemovedInvitees());
+            EmailManager.EmailOnInvited(result, invitees, ReservationModificationType.Modified);
+            EmailManager.EmailOnUninvited(rsv, invitees);
 
             return result;
         }
@@ -1099,7 +1100,7 @@ namespace LNF.Scheduler
         /// </summary>
         /// <param name="rsv">The reservation to start</param>
         /// <param name="clientId">The ClientID of the current user starting the reservation</param>
-        public async Task StartReservation(Reservation rsv, int clientId, bool isInLab)
+        public void StartReservation(Reservation rsv, Client client, string kioskIp)
         {
             if (rsv == null)
                 throw new ArgumentNullException("rsv", "A null Reservation object is not allowed.");
@@ -1109,7 +1110,8 @@ namespace LNF.Scheduler
 
             if (rsv.IsStarted) return;
 
-            ReservationState state = GetReservationState(rsv.ReservationID, clientId, isInLab);
+            var args = CreateReservationStateArgs(rsv, client, kioskIp);
+            ReservationState state = GetReservationState(args);
 
             if (state != ReservationState.StartOnly && state != ReservationState.StartOrDelete)
                 throw new Exception(string.Format("Reservation #{0} is not startable at this time. [State = {1}]", rsv.ReservationID, state));
@@ -1119,15 +1121,15 @@ namespace LNF.Scheduler
             // End Previous un-ended reservations
             var endableRsvQuery = SelectEndableReservations(rsv.Resource.ResourceID);
             foreach (var endableRsv in endableRsvQuery)
-                End(endableRsv, clientId, clientId);
+                End(endableRsv, client.ClientID, client.ClientID);
 
             // Start Reservation
-            Start(rsv, clientId, clientId);
+            Start(rsv, client.ClientID, client.ClientID);
 
             // If Resource authorization type is rolling and the reserver is a regular user for the resource then reset reserver's expiration date
             int authLevel = 0, resourceClientId = 0;
 
-            using (var reader = ResourceClientData.SelectResourceClient(rsv.Resource.ResourceID, clientId))
+            using (var reader = ResourceClientData.SelectResourceClient(rsv.Resource.ResourceID, client.ClientID))
             {
                 if (reader.Read())
                 {
@@ -1147,8 +1149,8 @@ namespace LNF.Scheduler
             if (enableInterlock)
             {
                 uint duration = OnTheFlyUtility.GetStateDuration(res.ResourceID);
-                await WagoInterlock.ToggleInterlock(res.ResourceID, true, duration);
-                bool interlockState = await WagoInterlock.GetPointState(res.ResourceID);
+                WagoInterlock.ToggleInterlock(res.ResourceID, true, duration);
+                bool interlockState = WagoInterlock.GetPointState(res.ResourceID);
                 if (!interlockState)
                     throw new InvalidOperationException(string.Format("Failed to start interlock for ResourceID {0}", res.ResourceID));
             }
@@ -1208,8 +1210,11 @@ namespace LNF.Scheduler
 
         public IList<Reservation> SelectHistoryToForgiveForRepair(int resourceId, DateTime sd, DateTime ed)
         {
-            //[2013-05-20 jg] We no longer care if the reservation was canceled or not, all need to be forgiven
+            // [2013-05-20 jg] We no longer care if the reservation was canceled or not, all need to be forgiven
             //      because of the booking fee on uncancelled reservations.
+
+            // [2018-08-29 jg] The only problem is when a repair is extened the email will be sent again to
+            //      a reservation that was already forgiven for repair (when the repair was made originally)
 
             int repairActivityId = 14;
 
@@ -1380,6 +1385,12 @@ namespace LNF.Scheduler
             return (maxAlloc - reserved).TotalMinutes;
         }
 
+        public ClientAuthLevel GetAuthLevel(Reservation rsv, IPrivileged client)
+        {
+            var resourceClients = Session.Query<ResourceClient>().Where(x => x.Resource.ResourceID == rsv.Resource.ResourceID).ToList();
+            return GetAuthLevel(resourceClients, client);
+        }
+
         public ClientAuthLevel GetAuthLevel(IEnumerable<IAuthorized> resourceClients, IPrivileged client)
         {
             if (client.HasPriv(ClientPrivilege.Administrator | ClientPrivilege.Developer))
@@ -1466,6 +1477,9 @@ namespace LNF.Scheduler
             rsv.CancelledDateTime = DateTime.Now;
             rsv.ChargeMultiplier = 0;
 
+            // can't hurt
+            Session.SaveOrUpdate(rsv);
+
             //-- Delete Reservation ProcessInfos
             //DELETE FROM dbo.ReservationProcessInfo
             //WHERE ReservationID = @ReservationID
@@ -1482,23 +1496,24 @@ namespace LNF.Scheduler
             InsertReservationHistory("WithForgive", "procReservationDelete", rsv, modifiedByClientId);
         }
 
-        public IList<ClientAccount> AvailableAccounts(Reservation rsv)
+        public IList<ClientAccount> AvailableAccounts(ReservationItem rsv)
         {
             IList<ClientAccount> result = null;
 
             DateTime sd = rsv.CreatedOn.Date;
             DateTime ed = sd.AddDays(1);
 
-            if (rsv.Activity.AccountType == ActivityAccountType.Reserver || rsv.Activity.AccountType == ActivityAccountType.Both)
+            if (rsv.ActivityAccountType == ActivityAccountType.Reserver || rsv.ActivityAccountType == ActivityAccountType.Both)
             {
                 //Load reserver's accounts
-                result = ClientManager.ActiveClientAccounts(rsv.Client, sd, ed).ToList();
+                var c = DA.Current.Single<Client>(rsv.ClientID);
+                result = ClientManager.ActiveClientAccounts(c, sd, ed).ToList();
             }
 
-            if (rsv.Activity.AccountType == ActivityAccountType.Invitee || rsv.Activity.AccountType == ActivityAccountType.Both)
+            if (rsv.ActivityAccountType == ActivityAccountType.Invitee || rsv.ActivityAccountType == ActivityAccountType.Both)
             {
                 //Loads each of the invitee's accounts
-                foreach (ReservationInvitee ri in GetInvitees(rsv))
+                foreach (ReservationInvitee ri in GetInvitees(rsv.ReservationID))
                 {
                     IQueryable<ClientAccount> temp = ClientManager.ActiveClientAccounts(ri.Invitee, sd, ed);
 
@@ -1548,9 +1563,9 @@ namespace LNF.Scheduler
             InsertReservationHistory("InsertFacilityDownTime", "procReservationInsert", rsv, modifiedByClientId);
         }
 
-        public bool IsInvited(Reservation rsv, Client c)
+        public bool IsInvited(int reservationId, int clientId)
         {
-            return Session.Query<ReservationInvitee>().Any(x => x.Reservation.ReservationID == rsv.ReservationID && x.Invitee == c);
+            return Session.Query<ReservationInvitee>().Any(x => x.Reservation.ReservationID == reservationId && x.Invitee.ClientID == clientId);
         }
 
         public void Start(Reservation rsv, int? startedByClientId, int? modifiedByClientId)
@@ -1567,6 +1582,9 @@ namespace LNF.Scheduler
             rsv.ClientIDBegin = startedByClientId;
             rsv.IsStarted = true;
 
+            // can't hurt
+            Session.SaveOrUpdate(rsv);
+
             // also an entry into history is made
             InsertReservationHistory("Start", "procReservationUpdate", rsv, modifiedByClientId);
         }
@@ -1581,6 +1599,9 @@ namespace LNF.Scheduler
 
             if (!rsv.Activity.Editable)
                 rsv.Resource.State = ResourceState.Online;
+
+            // can't hurt
+            Session.SaveOrUpdate(rsv);
 
             InsertReservationHistory("End", "procReservationUpdate", rsv, modifiedByClientId);
         }
@@ -1600,6 +1621,9 @@ namespace LNF.Scheduler
             rsv.ChargeMultiplier = 0;
             rsv.ApplyLateChargePenalty = false;
             rsv.ClientIDEnd = endedByClientId;
+
+            // can't hurt
+            Session.SaveOrUpdate(rsv);
 
             // also an entry into history is made
             InsertReservationHistory("EndForRepair", "procReservationUpdate", rsv, modifiedByClientId);
@@ -1651,6 +1675,9 @@ namespace LNF.Scheduler
             rsv.MaxReservedDuration = Math.Max(rsv.Duration, rsv.MaxReservedDuration);
             rsv.LastModifiedOn = DateTime.Now;
 
+            // can't hurt
+            Session.SaveOrUpdate(rsv);
+
             // also an entry into history is made
             InsertReservationHistory("Update", "procReservationUpdate", rsv, modifiedByClientId);
         }
@@ -1668,7 +1695,10 @@ namespace LNF.Scheduler
             rsv.LastModifiedOn = DateTime.Now;
             rsv.CancelledDateTime = DateTime.Now;
 
-            // also an entry into history is made
+            // needed so that when we check for conflicting reservation IsActive will be false
+            Session.SaveOrUpdate(rsv);
+
+            // also add an entry into history
             InsertReservationHistory("ByReservationID", "procReservationDelete", rsv, modifiedByClientId);
         }
 
@@ -1683,6 +1713,9 @@ namespace LNF.Scheduler
 
             rsv.ChargeMultiplier = chargeMultiplier;
             rsv.ApplyLateChargePenalty = applyLateChargePenalty;
+
+            // can't hurt
+            Session.SaveOrUpdate(rsv);
 
             // also an entry into history is made
             InsertReservationHistory("UpdateCharges", "procReservationUpdate", rsv, modifiedByClientId);
@@ -1710,6 +1743,9 @@ namespace LNF.Scheduler
             //WHERE ReservationID = @ReservationID
 
             rsv.LastModifiedOn = DateTime.Now;
+
+            // can't hurt
+            Session.SaveOrUpdate(rsv);
 
             // also an entry into history is made
             InsertReservationHistory("UpdateFacilityDownTime", "procReservationUpdate", rsv, modifiedByClientId);
@@ -1816,6 +1852,64 @@ namespace LNF.Scheduler
                 else
                     return TimeSpan.FromMinutes(-1 * reservableMinutes);
             }
+        }
+
+        public int PurgeReservation(int reservationId)
+        {
+            string sql = "DELETE FROM sselScheduler.dbo.ReservationHistory WHERE ReservationID = @ReservationID; DELETE FROM sselScheduler.dbo.ReservationProcessInfo WHERE ReservationID = @ReservationID; DELETE FROM sselScheduler.dbo.ReservationInvitee WHERE ReservationID = @ReservationID; DELETE FROM sselScheduler.dbo.Reservation WHERE ReservationID = @ReservationID";
+
+            int result = DA.Command(CommandType.Text)
+                .Param("ReservationID", reservationId)
+                .ExecuteNonQuery(sql).Value;
+
+            return result;
+        }
+
+        public int PurgeReservations(int resourceId, DateTime sd, DateTime ed)
+        {
+            string sql;
+
+            sql = "SELECT ReservationID FROM sselScheduler.dbo.Reservation WHERE ResourceID = @resourceId AND (BeginDateTime < @ed AND EndDateTime > @sd)";
+
+            int[] reservationIds = DA.Command(CommandType.Text)
+                .Param(new { resourceId, sd, ed })
+                .FillDataTable(sql)
+                .AsEnumerable()
+                .Select(x => x.Field<int>("ReservationID"))
+                .ToArray();
+
+            sql = "DELETE FROM sselScheduler.dbo.ReservationHistory WHERE ReservationID IN (:p); DELETE FROM sselScheduler.dbo.ReservationProcessInfo WHERE ReservationID IN (:p); DELETE FROM sselScheduler.dbo.ReservationInvitee WHERE ReservationID IN (:p); DELETE FROM sselScheduler.dbo.Reservation WHERE ReservationID IN (:p)";
+
+            int result = DA.Command(CommandType.Text)
+                .ParamList("p", reservationIds)
+                .ExecuteNonQuery(sql).Value;
+
+            return result;
+        }
+
+        public SaveReservationHistoryResult SaveReservationHistory(ReservationItem rsv, int accountId, double forgivenPct, string notes, bool emailClient)
+        {
+            double chargeMultiplier = 1.00 - (forgivenPct / 100.0);
+
+            bool udpated = ServiceProvider.Current.Scheduler.UpdateReservationHistory(new ReservationHistoryUpdate
+            {
+                ReservationID = rsv.ReservationID,
+                AccountID = accountId,
+                ChargeMultiplier = chargeMultiplier,
+                Notes = notes,
+                EmailClient = emailClient
+            });
+
+            var period = rsv.ChargeBeginDateTime.FirstOfMonth();
+            var clientId = rsv.ClientID;
+
+            string logmsg = ServiceProvider.Current.Worker.Execute(new UpdateBillingWorkerRequest(period, clientId, new[] { "tool", "room" }));
+
+            return new SaveReservationHistoryResult
+            {
+                ReservationUpdated = udpated,
+                BillingLog = logmsg
+            };
         }
     }
 }

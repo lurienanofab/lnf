@@ -144,7 +144,7 @@ namespace LNF.CommonTools
         ///</summary>
         public static string Clip(this string s, int length, string suffix = null)
         {
-            var left = Utility.Left(s, length);
+            var left = Utility.Clip(s, length);
 
             if (string.IsNullOrEmpty(suffix))
                 return left;

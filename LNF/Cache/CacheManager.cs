@@ -50,7 +50,7 @@ namespace LNF.Cache
             if (value == null)
             {
                 result = DA.Current.Query<ClientInfo>().Where(x => x.ClientActive).Model<ClientItem>();
-                SetMemoryCacheValue("Clients", result, DateTimeOffset.Now.Add(TimeSpan.FromMinutes(30)));
+                SetMemoryCacheValue("Clients", result, DateTimeOffset.Now.Add(TimeSpan.FromSeconds(60)));
             }
             else
             {
@@ -165,7 +165,6 @@ namespace LNF.Cache
 
                 ServiceProvider.Current.Context.SetSessionValue(SessionKeys.CurrentUser, result); //might be null, that's ok
                 ServiceProvider.Current.Context.SetSessionValue(SessionKeys.Cache, Guid.NewGuid().ToString("n"));
-                ServiceProvider.Current.Context.SetSessionValue(SessionKeys.IsKiosk, KioskUtility.IsKiosk());
             }
 
             // now we either have an authenticated user with matching session variables

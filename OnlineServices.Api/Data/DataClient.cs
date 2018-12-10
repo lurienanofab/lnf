@@ -1,154 +1,211 @@
 ﻿using LNF.Models;
 using LNF.Models.Data;
+using LNF.Models.Data.Utility.BillingChecks;
+using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Net.Http;
-using System.Threading.Tasks;
-using LNF.Models.Data.Utility.BillingChecks;
+using System.Linq;
 
 namespace OnlineServices.Api.Data
 {
-    public class DataClient : ApiClient
+    public class DataClient : ApiClient, IDataService
     {
-        public DataClient() : base(ConfigurationManager.AppSettings["ApiHost"]) { }
+        public DataClient() : base(GetApiBaseUrl()) { }
 
-        public async Task<IEnumerable<ClientItem>> GetClients(int limit, int skip = 0)
+        public IEnumerable<ClientItem> GetClients(int limit, int skip = 0)
         {
-            return await Get<IEnumerable<ClientItem>>(string.Format("data/client?limit={0}&skip={1}", limit, skip));
+            return Get<List<ClientItem>>("webapi/data/client", QueryStrings(new { limit, skip }));
         }
 
-        public async Task<ClientItem> GetClient(int clientId)
+        public IEnumerable<ClientItem> GetActiveClients(ClientPrivilege privs = 0)
         {
-            return await Get<ClientItem>(string.Format("data/client/{0}", clientId));
+            return Get<List<ClientItem>>("webapi/data/client/active", QueryStrings(new { privs = (int)privs }));
         }
 
-        public async Task<IEnumerable<ClientItem>> GetActiveClients(ClientPrivilege privs = 0)
+        public IEnumerable<ClientItem> GetActiveClientsInRange(DateTime sd, DateTime ed, ClientPrivilege privs = 0)
         {
-            return await Get<IEnumerable<ClientItem>>(string.Format("data/client/active?privs={0}", (int)privs));
+            return Get<List<ClientItem>>("webapi/data/client/active/range", QueryStrings(new { sd = sd.ToString("yyyy-MM-dd"), ed = ed.ToString("yyyy-MM-dd"), privs = (int)privs }));
         }
 
-        public async Task<IEnumerable<ClientItem>> GetActiveClients(DateTime sd, DateTime ed, ClientPrivilege privs = 0)
+        public ClientItem GetClient(int clientId)
         {
-            return await Get<IEnumerable<ClientItem>>(string.Format("data/client/active/range?sd={0:yyyy-MM-dd}&ed={1:yyyy-MM-dd}&privs={2}", sd, ed, (int)privs));
+            return Get<ClientItem>("webapi/data/client", QueryStrings(new { clientId }));
         }
 
-        public async Task<ClientItem> AddClient(ClientItem client)
+        public ClientItem GetClient(string username)
         {
-            return await Post<ClientItem>("data/client", client);
+            return Get<ClientItem>("webapi/data/client", QueryStrings(new { username }));
         }
 
-        public async Task<bool> UpdateClient(ClientItem client)
+        public ClientDemographics GetClientDemographics(int clientId)
         {
-            return await Put<bool>("data/client", client);
+            return Get<ClientDemographics>("webapi/data/client/{clientId}/demographics", UrlSegments(new { clientId }));
         }
 
-        public async Task<IEnumerable<ClientAccountItem>> GetClientAccounts(int clientId)
+        public ClientItem InsertClient(ClientItem client)
         {
-            return await Get<IEnumerable<ClientAccountItem>>(string.Format("data/client/{0}/accounts/active", clientId));
+            return Post<ClientItem>("webapi/data/client", client);
         }
 
-        public async Task<IEnumerable<ClientAccountItem>> GetActiveClientAccounts(int clientId)
+        public bool UpdateClient(ClientItem client)
         {
-            return await Get<IEnumerable<ClientAccountItem>>(string.Format("data/client/{0}/accounts/active", clientId));
+            return Put("webapi/data/client", client);
         }
 
-        public async Task<IEnumerable<ClientAccountItem>> GetActiveClientAccounts(int clientId, DateTime sd, DateTime ed)
+        public IEnumerable<ClientAccountItem> GetClientAccounts(int clientId)
         {
-            return await Get<IEnumerable<ClientAccountItem>>(string.Format("data/client/{0}/accounts/active/range?sd={1:yyyy-MM-dd}&ed={2:yyyy-MM-dd}", clientId, sd, ed));
+            return Get<List<ClientAccountItem>>("webapi/data/client/{clientId}/accounts/active", UrlSegments(new { clientId }));
         }
 
-        public async Task<IEnumerable<ClientRemoteItem>> GetActiveClientRemotes(DateTime sd, DateTime ed)
+        public IEnumerable<ClientAccountItem> GetActiveClientAccounts(int clientId)
         {
-            return await Get<IEnumerable<ClientRemoteItem>>(string.Format("data/client/remote/active?sd={0:yyyy-MM-dd}&ed={1:yyyy-MM-dd}", sd, ed));
+            return Get<List<ClientAccountItem>>("webapi/data/client/{clientId}/accounts/active", UrlSegments(new { clientId }));
         }
 
-        public async Task<ClientRemoteItem> AddClientRemote(ClientRemoteItem model, DateTime period)
+        public IEnumerable<ClientAccountItem> GetActiveClientAccountsInRange(int clientId, DateTime sd, DateTime ed)
         {
-            return await Post<ClientRemoteItem>(string.Format("data/client/remote?period={0:yyyy-MM-dd}", period), model);
+            return Get<List<ClientAccountItem>>("webapi/data/client/{clientId}/accounts/active/range", UrlSegments(new { clientId }) & QueryStrings(new { sd = sd.ToString("yyyy-MM-dd"), ed = ed.ToString("yyyy-MM-dd") }));
         }
 
-        public async Task<bool> DeleteClientRemote(int clientRemoteId)
+        public IEnumerable<ClientItem> GetClientOrgs(int clientId)
         {
-            return await Delete(string.Format("data/client/remote/{0}", clientRemoteId));
+            return Get<List<ClientItem>>("webapi/client/{clientId}/orgs", UrlSegments(new { clientId }));
         }
 
-        public async Task<IEnumerable<DryBoxItem>> GetDryBoxes()
+        public IEnumerable<ClientItem> GetActiveClientOrgs(int clientId)
         {
-            return await Get<IEnumerable<DryBoxItem>>("data/drybox");
+            return Get<List<ClientItem>>("webapi/client/{clientId}/orgs/active", UrlSegments(new { clientId }));
         }
 
-        public async Task<bool> UpdateDryBox(DryBoxItem model)
+        public IEnumerable<ClientItem> GetActiveClientOrgsInRange(int clientId, DateTime sd, DateTime ed)
         {
-            return await Put<DryBoxItem>("data/drybox", model);
+
+            return Get<List<ClientItem>>("webapi/client/{clientId}/org/active/range", UrlSegments(new { clientId }) & QueryStrings(new { sd = sd.ToString("yyyy-MM-dd"), ed = ed.ToString("yyyy-MM-dd") }));
         }
 
-        public async Task<IEnumerable<ServiceLogItem>> GetServiceLogs(Guid? id = null, string service = null, string subject = null)
+        public IEnumerable<ClientRemoteItem> GetActiveClientRemotesInRange(DateTime sd, DateTime ed)
         {
-            string url = "data/servicelog";
+            return Get<List<ClientRemoteItem>>("webapi/data/client/remote/active/range", QueryStrings(new { sd = sd.ToString("yyyy-MM-dd"), ed = ed.ToString("yyyy-MM-dd") }));
+        }
+
+        public ClientRemoteItem InsertClientRemote(ClientRemoteItem model, DateTime period)
+        {
+            return Post<ClientRemoteItem>("webapi/data/client/remote", model, QueryStrings(new { period = period.ToString("yyyy-MM-dd") }));
+        }
+
+        public int DeleteClientRemote(int clientRemoteId)
+        {
+            return Delete("webapi/data/client/remote/{clientRemoteId}", UrlSegments(new { clientRemoteId }));
+        }
+
+        public IEnumerable<CostItem> GetCosts(int limit, int skip = 0)
+        {
+            return Get<List<CostItem>>("webapi/data/cost", QueryStrings(new { limit, skip }));
+        }
+
+        public CostItem GetCost(int costId)
+        {
+            return Get<CostItem>("webapi/data/cost/{costId}", UrlSegments(new { costId }));
+        }
+
+        public IEnumerable<CostItem> GetResourceCosts(int resourceId, DateTime? cutoff = null, int? chargeTypeId = null)
+        {
+            var pc = new ParameterCollection
+            {
+                { "resourceId", resourceId, ParameterType.UrlSegment }
+            };
+
+            if (cutoff.HasValue)
+                pc.Add("cutoff", cutoff.Value.ToString("yyyy-MM-dd"), ParameterType.QueryString);
+
+            if (chargeTypeId.HasValue)
+                pc.Add("chargeTypeId", chargeTypeId.Value, ParameterType.QueryString);
+
+            return Get<List<CostItem>>("webapi/data/cost/resource/{resourceId}", pc);
+        }
+
+        public IEnumerable<DryBoxItem> GetDryBoxes()
+        {
+            return Get<List<DryBoxItem>>("webapi/data/drybox");
+        }
+
+        public bool UpdateDryBox(DryBoxItem model)
+        {
+            return Put("webapi/data/drybox", model);
+        }
+
+        public IEnumerable<ServiceLogItem> GetServiceLogs(Guid? id = null, string service = null, string subject = null)
+        {
+            string url = "webapi/data/servicelog";
+
+            ParameterCollection parameters = new ParameterCollection();
 
             if (id.HasValue)
-                url += "/" + id.ToString().ToLower();
-
-            string amp = "?";
+            {
+                url += "/{id}";
+                parameters.Add("id", id.ToString().ToLower(), ParameterType.UrlSegment);
+            }
 
             if (!string.IsNullOrEmpty(service))
             {
-                url += amp + "service=" + service;
-                amp = "&";
+                parameters.Add("service", service, ParameterType.QueryString);
             }
 
             if (!string.IsNullOrEmpty(subject))
             {
-                url += amp + "subject=" + subject;
-                amp = "&";
+                parameters.Add("subject", subject, ParameterType.QueryString);
             }
 
-            return await Get<IEnumerable<ServiceLogItem>>(url);
+            return Get<List<ServiceLogItem>>(url, parameters);
         }
 
-        public async Task<ServiceLogItem> AddServiceLog(ServiceLogItem model)
+        public ServiceLogItem InsertServiceLog(ServiceLogItem model)
         {
-            return await Post<ServiceLogItem>("data/servicelog", model);
+            return Post<ServiceLogItem>("webapi/data/servicelog", model);
         }
 
-        public async Task<bool> UpdateServiceLog(Guid id, string data)
+        public bool UpdateServiceLog(Guid id, string data)
         {
             IDictionary<string, string> postData = new Dictionary<string, string> { { "", data } };
-            HttpContent content = new FormUrlEncodedContent(postData);
-            return await Put<bool>(string.Format("data/servicelog/{0}", id), content);
+            ParameterCollection parameters = new ParameterCollection { postData.Select(x => new Parameter(x.Key, x.Value, ParameterType.RequestBody)) };
+            return Put(string.Format("webapi/data/servicelog/{0}", id), parameters);
         }
 
-        public async Task<IEnumerable<AutoEndProblem>> GetAutoEndProblems(DateTime period)
+        public IEnumerable<AutoEndProblem> GetAutoEndProblems(DateTime period)
         {
-            var result = await Get<IEnumerable<AutoEndProblem>>(string.Format("data/utility/billing-checks/auto-end-problems?period={0:yyyy-MM-dd}", period));
+            var result = Get<List<AutoEndProblem>>("webapi/data/utility/billing-checks/auto-end-problems", QueryStrings(new { period = period.ToString("yyyy-MM-dd") }));
             return result;
         }
 
-        public async Task<int> FixAllAutoEndProblems(DateTime period)
+        public int FixAllAutoEndProblems(DateTime period)
         {
-            var result = await Get<int>(string.Format("data/utility/billing-checks/auto-end-problems/fix-all?period={0:yyyy-MM-dd}", period));
+            var result = Get<int>("webapi/data/utility/billing-checks/auto-end-problems/fix-all", QueryStrings(new { period = period.ToString("yyyy-MM-dd") }));
             return result;
         }
 
-        public async Task<int> FixAutoEndProblem(DateTime period, int reservationId)
+        public int FixAutoEndProblem(DateTime period, int reservationId)
         {
             if (reservationId <= 0)
                 throw new ArgumentOutOfRangeException("reservationId");
 
-            var result = await Get<int>(string.Format("data/utility/billing-checks/auto-end-problems/fix?period={0:yyyy-MM-dd}&reservationId={1}", period, reservationId));
+            var result = Get<int>("webapi/data/utility/billing-checks/auto-end-problems/fix", QueryStrings(new { period = period.ToString("yyyy-MM-dd"), reservationId }));
 
             return result;
         }
 
-        public async Task<string> GetSiteMenu(int clientId)
+        public string GetSiteMenu(int clientId)
         {
             if (clientId <= 0)
                 throw new ArgumentOutOfRangeException("clientId");
 
-            var result = await Get<string>(string.Format("data/ajax/menu?clientId={0}", clientId));
+            var result = Get("webapi/data/ajax/menu", QueryStrings(new { clientId }));
 
             return result;
+        }
+
+        public AccountItem GetAccount(int accountId)
+        {
+            return Get<AccountItem>("webapi/data/account/{accountId}", UrlSegments(new { accountId }));
         }
     }
 }

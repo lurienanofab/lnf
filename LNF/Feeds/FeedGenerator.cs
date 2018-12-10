@@ -21,7 +21,7 @@ namespace LNF.Feeds
         {
             public static class StaffHours
             {
-                public static IClientManager ClientManager => DA.Use<IClientManager>();
+                public static IClientManager ClientManager => ServiceProvider.Current.Use<IClientManager>();
 
                 public static string GetUrl(FeedFormats format, string UserName)
                 {

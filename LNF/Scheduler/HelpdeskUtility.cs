@@ -17,7 +17,7 @@ namespace LNF.Scheduler
 {
     public static class HelpdeskUtility
     {
-        public static IClientOrgManager ClientOrgManager => DA.Use<IClientOrgManager>();
+        public static IClientOrgManager ClientOrgManager => ServiceProvider.Current.Use<IClientOrgManager>();
 
         public static string Url
         {

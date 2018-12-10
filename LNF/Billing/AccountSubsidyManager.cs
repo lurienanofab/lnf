@@ -13,7 +13,7 @@ namespace LNF.Billing
         public IEnumerable<AccountSubsidy> GetActive(DateTime sd, DateTime ed)
         {
             //base query
-            var baseQuery = DA.Current.Query<AccountSubsidy>()
+            var baseQuery = Session.Query<AccountSubsidy>()
                 .Where(x => x.EnableDate < ed && (x.DisableDate == null || x.DisableDate > sd))
                 .ToList();
 

@@ -15,12 +15,12 @@ namespace LNF.Repository.Data
         /// <summary>
         /// The Client whose card was used to access the room
         /// </summary>
-        public virtual Client Client { get; set; }
+        public virtual int ClientID { get; set; }
 
         /// <summary>
         /// The Room that was accessed
         /// </summary>
-        public virtual Room Room { get; set; }
+        public virtual int RoomID { get; set; }
 
         /// <summary>
         /// The date/time the user entered the room

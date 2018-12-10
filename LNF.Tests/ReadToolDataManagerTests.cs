@@ -1,8 +1,8 @@
-﻿using System;
-using System.Data;
-using System.Linq;
-using LNF.CommonTools;
+﻿using LNF.CommonTools;
+using LNF.Repository;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Data;
 
 namespace LNF.Tests
 {
@@ -12,13 +12,12 @@ namespace LNF.Tests
         [TestMethod]
         public void CanReadToolDataFiltered()
         {
-            DateTime startDate = DateTime.Parse("2017-07-01");
-            DateTime endDate = DateTime.Parse("2017-08-01");
+            DateTime period = DateTime.Parse("2017-07-01");
             int clientId = 1296;
             int resourceId = 14021;
 
-            ReadToolDataManager reader = new ReadToolDataManager();
-            DataTable dtSource = reader.ReadToolDataFiltered(startDate, endDate, clientId, resourceId);
+            var reader = ServiceProvider.Current.Use<IReadToolDataManager>();
+            DataTable dtSource = reader.ReadToolData(period, clientId, resourceId);
             var rows = dtSource.Select($"ReservationID = {757744}");
             Assert.AreEqual(1, rows.Length);
             var ot = rows[0].Field<double>("OverTime");

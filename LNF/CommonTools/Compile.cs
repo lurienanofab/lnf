@@ -1,10 +1,9 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using System.Data;
+﻿using LNF.Repository;
+using System;
 using System.CodeDom.Compiler;
-using LNF.Repository;
+using System.Data;
+using System.Linq;
+using System.Text;
 
 namespace LNF.CommonTools
 {
@@ -69,215 +68,209 @@ namespace LNF.CommonTools
         {
             InitArrays();
 
-            using (var dba = GetDBA())
+            var dtAuxCost = DA.Command()
+                .Param("CostType", "All")
+                .FillDataTable("dbo.AuxCost_Select");
+
+            string[] arySearch = { "'Room*'", "'Tool*'", "'Store*'", "'Store*'" };
+
+            DataRow[] fdr = null;
+
+            for (int j = 0; j <= 3; j++)
             {
-                DataTable dtAuxCost = dba.ApplyParameters(new { CostType = "All" }).FillDataTable("AuxCost_Select");
-
-                string[] arySearch = { "'Room*'", "'Tool*'", "'Store*'", "'Store*'" };
-
-                DataRow[] fdr = null;
-
-                for (int j = 0; j <= 3; j++)
+                fdr = dtAuxCost.Select("AuxCostParm like " + arySearch[j]);
+                for (int i = 0; i <= fdr.GetUpperBound(0); i++)
                 {
-                    fdr = dtAuxCost.Select("AuxCostParm like " + arySearch[j]);
-                    for (int i = 0; i <= fdr.GetUpperBound(0); i++)
-                    {
-                        if (Convert.ToBoolean(fdr[i]["AllowPerUse"]))
-                            AddAuxParmToArray(j, fdr[i]["AuxCostParm"].ToString(), "Add", fdr[i]["Description"].ToString());
-                        if (Convert.ToBoolean(fdr[i]["AllowPerPeriod"]))
-                            AddAuxParmToArray(j, fdr[i]["AuxCostParm"].ToString(), "Mul", fdr[i]["Description"].ToString());
-                    }
+                    if (Convert.ToBoolean(fdr[i]["AllowPerUse"]))
+                        AddAuxParamToArray(j, fdr[i]["AuxCostParm"].ToString(), "Add", fdr[i]["Description"].ToString());
+                    if (Convert.ToBoolean(fdr[i]["AllowPerPeriod"]))
+                        AddAuxParamToArray(j, fdr[i]["AuxCostParm"].ToString(), "Mul", fdr[i]["Description"].ToString());
                 }
             }
         }
 
-        public Compile(bool bToolCostEstOnly)
-        {
-            InitArrays();
-        }
-
         public void InitArrays()
         {
-            RoomVars = new string[] 
+            RoomVars = new string[]
             {
-		        "Entries",
-		        "Hours",
-		        "Days",
-		        "Months",
-		        "CostPeriod",
-		        "PerEntry",
-		        "PerPeriod"
-	        };
+                "Entries",
+                "Hours",
+                "Days",
+                "Months",
+                "CostPeriod",
+                "PerEntry",
+                "PerPeriod"
+            };
 
             string[] ToolVars = new string[]
             {
-		        "Uses",
-		        "SchedDuration",
-		        "ActDuration",
-		        "OverTime",
-		        "IsStarted",
-		        "Days",
-		        "Months",
-		        "CostPeriod",
-		        "PerUse",
-		        "PerPeriod"
-	        };
+                "Uses",
+                "SchedDuration",
+                "ActDuration",
+                "OverTime",
+                "IsStarted",
+                "Days",
+                "Months",
+                "CostPeriod",
+                "PerUse",
+                "PerPeriod"
+            };
 
             StoreInvVars = new string[]
             {
-		        "ItemCost",
-		        "Rebate"
-	        };
+                "ItemCost",
+                "Rebate"
+            };
 
             StoreJEVars = new string[]
             {
-		        "ItemCost",
-		        "Rebate"
-	        };
+                "ItemCost",
+                "Rebate"
+            };
 
             aryVars = new string[][]
             {
-		        RoomVars,
-		        ToolVars,
-		        StoreInvVars,
-		        StoreJEVars
-	        };
+                RoomVars,
+                ToolVars,
+                StoreInvVars,
+                StoreJEVars
+            };
 
             RoomVarTypes = new string[]
             {
-		        "Double",
-		        "Double",
-		        "Double",
-		        "Double",
-		        "String",
-		        "Double",
-		        "Double"
-	        };
+                "Double",
+                "Double",
+                "Double",
+                "Double",
+                "String",
+                "Double",
+                "Double"
+            };
 
             ToolVarTypes = new string[]
             {
-		        "Double",
-		        "Double",
-		        "Double",
-		        "Double",
-		        "Boolean",
-		        "Double",
-		        "Double",
-		        "String",
-		        "Double",
-		        "Double"
-	        };
+                "Double",
+                "Double",
+                "Double",
+                "Double",
+                "Boolean",
+                "Double",
+                "Double",
+                "String",
+                "Double",
+                "Double"
+            };
 
             StoreInvVarTypes = new string[]
             {
-		        "Double",
-		        "Double"
-	        };
+                "Double",
+                "Double"
+            };
 
             StoreJEVarTypes = new string[]
             {
-		        "Double",
-		        "Double"
-	        };
+                "Double",
+                "Double"
+            };
 
             aryVarTypes = new string[][]
             {
-		        RoomVarTypes,
-		        ToolVarTypes,
-		        StoreInvVarTypes,
-		        StoreJEVarTypes
-	        };
+                RoomVarTypes,
+                ToolVarTypes,
+                StoreInvVarTypes,
+                StoreJEVarTypes
+            };
 
             RoomVarFormats = new string[]
             {
-		        "{0:#.0}",
-		        "{0:#.0}",
-		        "{0:#.0}",
-		        "{0:#.0}",
-		        "",
-		        "{0:$#,##0.00}",
-		        "{0:$#,##0.00}"
-	        };
+                "{0:#.0}",
+                "{0:#.0}",
+                "{0:#.0}",
+                "{0:#.0}",
+                "",
+                "{0:$#,##0.00}",
+                "{0:$#,##0.00}"
+            };
 
             ToolVarFormats = new string[]
             {
-		        "{0:#.0}",
-		        "{0:#.0}",
-		        "{0:#.0}",
-		        "{0:#.0}",
-		        "",
-		        "{0:#.0}",
-		        "{0:#.0}",
-		        "",
-		        "{0:$#,##0.00}",
-		        "{0:$#,##0.00}"
-	        };
+                "{0:#.0}",
+                "{0:#.0}",
+                "{0:#.0}",
+                "{0:#.0}",
+                "",
+                "{0:#.0}",
+                "{0:#.0}",
+                "",
+                "{0:$#,##0.00}",
+                "{0:$#,##0.00}"
+            };
 
             StoreInvVarFormats = new string[]
             {
-		        "{0:$#,##0.00}",
-		        "{0:#,##0.0}"
-	        };
+                "{0:$#,##0.00}",
+                "{0:#,##0.0}"
+            };
 
             StoreJEVarFormats = new string[]
             {
-		        "{0:$#,##0.00}",
-		        "{0:#,##0.0}"
-	        };
+                "{0:$#,##0.00}",
+                "{0:#,##0.0}"
+            };
 
             aryVarFormats = new string[][]
             {
-		        RoomVarFormats,
-		        ToolVarFormats,
-		        StoreInvVarFormats,
-		        StoreJEVarFormats
-	        };
+                RoomVarFormats,
+                ToolVarFormats,
+                StoreInvVarFormats,
+                StoreJEVarFormats
+            };
 
             RoomNotes = new string[]
             {
-		        "number of (apportioned) entries into the room for the month",
-		        "apportioned hours spent in room during the month",
-		        "apportioned days spent in room during the month",
-		        "apportioned months spent in room during the month",
-		        "one of None, Hourly, Daily, or Monthly",
-		        "cost per room entry",
-		        "cost per Hour, Day, or Month"
-	        };
+                "number of (apportioned) entries into the room for the month",
+                "apportioned hours spent in room during the month",
+                "apportioned days spent in room during the month",
+                "apportioned months spent in room during the month",
+                "one of None, Hourly, Daily, or Monthly",
+                "cost per room entry",
+                "cost per Hour, Day, or Month"
+            };
 
             ToolNotes = new string[]
             {
-		        "number of uses of the tool per reservation",
-		        "number of hours reserved",
-		        "actual reservation duration",
-		        "time used beyond scheduled end time",
-		        "true/false - was reservation started by user",
-		        "apportioned days reserved on this tool",
-		        "apportioned months reserved on this tool",
-		        "one of None, Hourly, Daily, or Monthly",
-		        "cost per reservation",
-		        "cost per Hour, Day, or Month"
-	        };
+                "number of uses of the tool per reservation",
+                "number of hours reserved",
+                "actual reservation duration",
+                "time used beyond scheduled end time",
+                "true/false - was reservation started by user",
+                "apportioned days reserved on this tool",
+                "apportioned months reserved on this tool",
+                "one of None, Hourly, Daily, or Monthly",
+                "cost per reservation",
+                "cost per Hour, Day, or Month"
+            };
 
             StoreInvNotes = new string[]{
-		        "summed cost of all items of a given type",
-		        "rebate amount that applied to the purchase"
-	        };
+                "summed cost of all items of a given type",
+                "rebate amount that applied to the purchase"
+            };
 
             StoreJENotes = new string[]
             {
-		        "summed cost of all items of a given type",
-		        "rebate amount that applied to the purchase"
-	        };
+                "summed cost of all items of a given type",
+                "rebate amount that applied to the purchase"
+            };
 
             aryNotes = new string[][]{
-		        RoomNotes,
-		        ToolNotes,
-		        StoreInvNotes,
-		        StoreJENotes
-	        };
+                RoomNotes,
+                ToolNotes,
+                StoreInvNotes,
+                StoreJENotes
+            };
         }
 
-        private void AddAuxParmToArray(int idxAry, string AuxCostParm, string parmType, string Description)
+        private void AddAuxParamToArray(int idxAry, string AuxCostParm, string parmType, string Description)
         {
             int baseLen = aryVars[idxAry].Length;
             Array.Resize(ref aryVars[idxAry], baseLen + 1);
@@ -450,23 +443,20 @@ namespace LNF.CommonTools
             // strange, but makes things consistent
             if (type == "Misc")
             {
-                using (var dba = GetDBA())
-                {
-                    string paramName = "@" + costFilter;
-                    dba.SelectCommand
-                        .AddParameter("@Action", "ByPeriod")
-                        .AddParameter("@Period", period)
-                        .AddParameterIf(paramName, !string.IsNullOrEmpty(costFilter), costFilterValue);
-                    DataTable dtMisc = dba.FillDataTable("ExternalMiscExp_Select");
+                var dtMisc = DA.Command()
+                    .Param("Action", "ByPeriod")
+                    .Param("Period", period)
+                    .Param(costFilter, !string.IsNullOrEmpty(costFilter), costFilterValue)
+                    .FillDataTable("dbo.ExternalMiscExp_Select");
 
-                    // leave the description column
-                    if (dtMisc.Rows.Count > 0 && agg != AggType.None)
-                    {
-                        dtMisc.Columns.Remove(dtMisc.Columns["ExpID"]);
-                        dtMisc.Columns["CalcCost"].ColumnName = "TotalCalcCost";
-                    }
-                    return dtMisc;
+                // leave the description column
+                if (dtMisc.Rows.Count > 0 && agg != AggType.None)
+                {
+                    dtMisc.Columns.Remove(dtMisc.Columns["ExpID"]);
+                    dtMisc.Columns["CalcCost"].ColumnName = "TotalCalcCost";
                 }
+
+                return dtMisc;
             }
             else
             {
@@ -503,89 +493,82 @@ namespace LNF.CommonTools
                 DataTable dtClient;
                 DataTable dtCliAcctType;
                 DataTable dtAggCols;
-                using (var dba = GetDBA())
-                {
-                    dba.SelectCommand.CommandTimeout = 300;
-                    dba.SelectCommand
-                        .AddParameter("@CostType", CostType)
-                        .AddParameter("@Period", period)
-                        .AddParameterIf("@" + costFilter, !string.IsNullOrEmpty(costFilter), costFilterValue)
-                        .AddParameterIf("@RecordID", recordId > 0, recordId)
-                        .AddParameterIf("@ClientID", clientId > 0, clientId)
-                        .AddParameterIf("@CostToday", exp, true)
-                        .AddParameterIf("@PartialAgg", agg == AggType.CliAcctType, true);
 
-                    ds = dba.FillDataSet(tableNamePrefix + "CostData_Select");
-                    dt = ds.Tables[0].Copy();
-                    //dt table for room type has 16 columns as below
-                    //0	"ClientID"	
-                    //1	"AccountID"	
-                    //2	"RoomID"	
-                    //3	"Entries"	
-                    //4	"Hours"	
-                    //5	"Days"	
-                    //6	"Months"	
-                    //7	"Period"	
-                    //8	"CostPeriod"	
-                    //9	"PerEntry"	
-                    //10	"PerPeriod"	
-                    //11	"ChargeTypeID"	
-                    //12	"RoomCapCostAdd"
-                    //13	"RoomCapCostMul"
-                    //14	"CalcCost"	
-                    //15	"BillingType"	
+                var ds = DA.Command()
+                    .Timeout(300)
+                    .Param("CostType", CostType)
+                    .Param("Period", period)
+                    .Param(costFilter, !string.IsNullOrEmpty(costFilter), costFilterValue)
+                    .Param("RecordID", recordId > 0, recordId)
+                    .Param("ClientID", clientId > 0, clientId)
+                    .Param("CostToday", exp, true)
+                    .Param("PartialAgg", agg == AggType.CliAcctType, true)
+                    .FillDataSet($"dbo.{tableNamePrefix}CostData_Select");
 
-                    //dt table for tool type has 26 columns as below
-                    //0  ClientID
-                    //1  AccountID
-                    //2  ResourceID
-                    //3  Uses
-                    //4  SchedDuration
-                    //5  ActDuration
-                    //6  OverTime
-                    //7  Days
-                    //8  Months
-                    //9  IsStarted
-                    //10 ToolChargeMultiplierMul
-                    //11 Period
-                    //12 CostPeriod
-                    //13 PerUse
-                    //14 PerPeriod
-                    //15 ChargeTypeID
-                    //16 ToolCapCostAdd
-                    //17 ToolCapCostMul
-                    //18 ToolCreateReservCostAdd
-                    //19 ToolCreateReservCostMul
-                    //20 ToolMissedReservCostAdd
-                    //21 ToolMissedReservCostMul
-                    //22 ToolOvertimeCostAdd
-                    //23 ToolOvertimeCostMul
-                    //24 CalcCost
-                    //25 IsStarted1
-                    //26 BillingType
+                dt = ds.Tables[0].Copy();
 
-                    //It will be true only when no one orders anything in that specific month
-                    if (dt.Rows.Count == 0)
-                        return dt;
+                //dt table for room type has 16 columns as below
+                //0	"ClientID"	
+                //1	"AccountID"	
+                //2	"RoomID"	
+                //3	"Entries"	
+                //4	"Hours"	
+                //5	"Days"	
+                //6	"Months"	
+                //7	"Period"	
+                //8	"CostPeriod"	
+                //9	"PerEntry"	
+                //10	"PerPeriod"	
+                //11	"ChargeTypeID"	
+                //12	"RoomCapCostAdd"
+                //13	"RoomCapCostMul"
+                //14	"CalcCost"	
+                //15	"BillingType"	
 
-                    dtClient = ds.Tables[1].Copy();
-                    dtCliAcctType = ds.Tables[2].Copy();
-                    dtAggCols = ds.Tables[3].Copy();
-                    CapCost = Convert.ToDouble(ds.Tables[4].Rows[0]["CapCost"]);
-                }
+                //dt table for tool type has 26 columns as below
+                //0  ClientID
+                //1  AccountID
+                //2  ResourceID
+                //3  Uses
+                //4  SchedDuration
+                //5  ActDuration
+                //6  OverTime
+                //7  Days
+                //8  Months
+                //9  IsStarted
+                //10 ToolChargeMultiplierMul
+                //11 Period
+                //12 CostPeriod
+                //13 PerUse
+                //14 PerPeriod
+                //15 ChargeTypeID
+                //16 ToolCapCostAdd
+                //17 ToolCapCostMul
+                //18 ToolCreateReservCostAdd
+                //19 ToolCreateReservCostMul
+                //20 ToolMissedReservCostAdd
+                //21 ToolMissedReservCostMul
+                //22 ToolOvertimeCostAdd
+                //23 ToolOvertimeCostMul
+                //24 CalcCost
+                //25 IsStarted1
+                //26 BillingType
+
+                //It will be true only when no one orders anything in that specific month
+                if (dt.Rows.Count == 0)
+                    return dt;
+
+                dtClient = ds.Tables[1].Copy();
+                dtCliAcctType = ds.Tables[2].Copy();
+                dtAggCols = ds.Tables[3].Copy();
+                CapCost = Convert.ToDouble(ds.Tables[4].Rows[0]["CapCost"]);
 
                 // get formula from DB
                 if (formula.Length == 0)
                 {
-                    using (var dba = GetDBA())
-                    {
-                        formula = dba.ApplyParameters(new
-                        {
-                            FormulaType = type,
-                            sDate = period,
-                            CostToday = exp
-                        }).ExecuteScalar<string>(tableNamePrefix + "CostFormula_Select");
-                    }
+                    formula = DA.Command()
+                        .Param(new { FormulaType = type, sDate = period, CostToday = exp })
+                        .ExecuteScalar<string>($"dbo.{tableNamePrefix}CostFormula_Select");
                 }
 
                 CompileCode(fTypeKey, formula);
@@ -597,7 +580,7 @@ namespace LNF.CommonTools
                 {
                     lineTotalCost = CalcSingleItem(fTypeKey, dr);
 
-                    //2008-09-05 IF it's tool cost, we also have to consider the forgiven charges
+                    //2008-09-05 If it's tool cost, we also have to consider the forgiven charges
                     if (fTypeKey == 1)
                         dr["CalcCost"] = lineTotalCost * Convert.ToDouble(dr["ToolChargeMultiplierMul"]);
                     else
@@ -618,10 +601,12 @@ namespace LNF.CommonTools
                     //This code is execuated whenever aggregate data is needed - and it's all grouped by the columns in dtCliAcctType
                     DataRow ndr = default(DataRow);
                     DataTable dtRet = new DataTable();
+
                     foreach (DataColumn dc in dtCliAcctType.Columns)
                     {
                         dtRet.Columns.Add(dc.ColumnName, typeof(int));
                     }
+
                     foreach (DataRow dr in dtAggCols.Rows)
                     {
                         dtRet.Columns.Add("Total" + dr["colName"].ToString(), typeof(double));
@@ -636,9 +621,7 @@ namespace LNF.CommonTools
                         {
                             ndr[dc.ColumnName] = drCliAcctType[dc.ColumnName];
                             if (strCompute.Length > 0)
-                            {
                                 strCompute += " AND ";
-                            }
                             strCompute += dc.ColumnName + "=" + drCliAcctType[dc.ColumnName].ToString();
                         }
 
@@ -659,24 +642,20 @@ namespace LNF.CommonTools
             // strange, but makes things consistent
             if (type == "Misc")
             {
-                using (var dba = GetDBA())
+                var dtMisc = DA.Command()
+                        .Param("Action", "ByPeriod")
+                        .Param("Period", period)
+                        .Param(costFilter, !string.IsNullOrEmpty(costFilter), costFilterValue)
+                        .FillDataTable("dbo.ExternalMiscExp_Select");
+
+                // leave the description column
+                if (dtMisc.Rows.Count > 0 && agg != AggType.None)
                 {
-                    string paramName = "@" + costFilter;
-                    dba.SelectCommand
-                        .AddParameter("@Action", "ByPeriod")
-                        .AddParameter("@Period", period)
-                        .AddParameterIf(paramName, !string.IsNullOrEmpty(costFilter), costFilterValue);
-
-                    DataTable dtMisc = dba.FillDataTable("ExternalMiscExp_Select");
-
-                    // leave the description column
-                    if (dtMisc.Rows.Count > 0 && agg != AggType.None)
-                    {
-                        dtMisc.Columns.Remove(dtMisc.Columns["ExpID"]);
-                        dtMisc.Columns["CalcCost"].ColumnName = "TotalCalcCost";
-                    }
-                    return dtMisc;
+                    dtMisc.Columns.Remove(dtMisc.Columns["ExpID"]);
+                    dtMisc.Columns["CalcCost"].ColumnName = "TotalCalcCost";
                 }
+
+                return dtMisc;
             }
             else
             {
@@ -713,90 +692,81 @@ namespace LNF.CommonTools
                 DataTable dtClient;
                 DataTable dtCliAcctType;
                 DataTable dtAggCols;
-                using (var dba = GetDBA())
-                {
-                    string paramName = "@" + costFilter;
-                    dba.SelectCommand
-                        .AddParameter("@CostType", costType)
-                        .AddParameter("@Period", period)
-                        .AddParameterIf(paramName, !string.IsNullOrEmpty(costFilter), costFilterValue)
-                        .AddParameterIf("@RecordID", recordId > 0, recordId)
-                        .AddParameterIf("@ClientID", clientId > 0, clientId)
-                        .AddParameterIf("@CostToday", exp, true)
-                        .AddParameterIf("@PartialAgg", agg == AggType.CliAcctType, true);
 
-                    ds = dba.FillDataSet(tableNamePrefix + "CostData_Select2");
-                    dt = ds.Tables[0].Copy();
+                var ds = DA.Command()
+                    .Param("CostType", costType)
+                    .Param("Period", period)
+                    .Param(costFilter, !string.IsNullOrEmpty(costFilter), costFilterValue)
+                    .Param("RecordID", recordId > 0, recordId)
+                    .Param("ClientID", clientId > 0, clientId)
+                    .Param("CostToday", exp, true)
+                    .Param("PartialAgg", agg == AggType.CliAcctType, true)
+                    .FillDataSet($"dbo.{tableNamePrefix}CostData_Select2");
 
-                    //dt table for room type has 16 columns as below
-                    //0	"ClientID"	
-                    //1	"AccountID"	
-                    //2	"RoomID"	
-                    //3	"Entries"	
-                    //4	"Hours"	
-                    //5	"Days"	
-                    //6	"Months"	
-                    //7	"Period"	
-                    //8	"CostPeriod"	
-                    //9	"PerEntry"	
-                    //10	"PerPeriod"	
-                    //11	"ChargeTypeID"	
-                    //12	"RoomCapCostAdd"
-                    //13	"RoomCapCostMul"
-                    //14	"CalcCost"	
-                    //15	"BillingType"	
+                dt = ds.Tables[0].Copy();
 
-                    //dt table for tool type has 26 columns as below
-                    //0  ClientID
-                    //1  AccountID
-                    //2  ResourceID
-                    //3  Uses
-                    //4  SchedDuration
-                    //5  ActDuration
-                    //6  OverTime
-                    //7  Days
-                    //8  Months
-                    //9  IsStarted
-                    //10 ToolChargeMultiplierMul
-                    //11 Period
-                    //12 CostPeriod
-                    //13 PerUse
-                    //14 PerPeriod
-                    //15 ChargeTypeID
-                    //16 ToolCapCostAdd
-                    //17 ToolCapCostMul
-                    //18 ToolCreateReservCostAdd
-                    //19 ToolCreateReservCostMul
-                    //20 ToolMissedReservCostAdd
-                    //21 ToolMissedReservCostMul
-                    //22 ToolOvertimeCostAdd
-                    //23 ToolOvertimeCostMul
-                    //24 CalcCost
-                    //25 IsStarted1
-                    //26 BillingType
+                //dt table for room type has 16 columns as below
+                //0	"ClientID"	
+                //1	"AccountID"	
+                //2	"RoomID"	
+                //3	"Entries"	
+                //4	"Hours"	
+                //5	"Days"	
+                //6	"Months"	
+                //7	"Period"	
+                //8	"CostPeriod"	
+                //9	"PerEntry"	
+                //10	"PerPeriod"	
+                //11	"ChargeTypeID"	
+                //12	"RoomCapCostAdd"
+                //13	"RoomCapCostMul"
+                //14	"CalcCost"	
+                //15	"BillingType"	
 
-                    //It will be true only when no one orders anything in that specific month
-                    if (dt.Rows.Count == 0)
-                        return dt;
+                //dt table for tool type has 26 columns as below
+                //0  ClientID
+                //1  AccountID
+                //2  ResourceID
+                //3  Uses
+                //4  SchedDuration
+                //5  ActDuration
+                //6  OverTime
+                //7  Days
+                //8  Months
+                //9  IsStarted
+                //10 ToolChargeMultiplierMul
+                //11 Period
+                //12 CostPeriod
+                //13 PerUse
+                //14 PerPeriod
+                //15 ChargeTypeID
+                //16 ToolCapCostAdd
+                //17 ToolCapCostMul
+                //18 ToolCreateReservCostAdd
+                //19 ToolCreateReservCostMul
+                //20 ToolMissedReservCostAdd
+                //21 ToolMissedReservCostMul
+                //22 ToolOvertimeCostAdd
+                //23 ToolOvertimeCostMul
+                //24 CalcCost
+                //25 IsStarted1
+                //26 BillingType
 
-                    dtClient = ds.Tables[1].Copy();
-                    dtCliAcctType = ds.Tables[2].Copy();
-                    dtAggCols = ds.Tables[3].Copy();
-                    CapCost = Convert.ToDouble(ds.Tables[4].Rows[0]["CapCost"]);
-                }
+                //It will be true only when no one orders anything in that specific month
+                if (dt.Rows.Count == 0)
+                    return dt;
+
+                dtClient = ds.Tables[1].Copy();
+                dtCliAcctType = ds.Tables[2].Copy();
+                dtAggCols = ds.Tables[3].Copy();
+                CapCost = Convert.ToDouble(ds.Tables[4].Rows[0]["CapCost"]);
 
                 // get formula from DB
                 if (formula.Length == 0)
                 {
-                    using (var dba = GetDBA())
-                    {
-                        formula = dba.ApplyParameters(new
-                        {
-                            FormulaType = type,
-                            sDate = period,
-                            CostToday = exp
-                        }).ExecuteScalar<string>(tableNamePrefix + "CostFormula_Select2");
-                    }
+                    formula = DA.Command()
+                        .Param(new { FormulaType = type, sDate = period, CostToday = exp })
+                        .ExecuteScalar<string>($"dbo.{tableNamePrefix}CostFormula_Select2");
                 }
 
                 CompileCode(typeKey, formula);
@@ -869,14 +839,13 @@ namespace LNF.CommonTools
 
         public double EstimateToolRunCost(int accountId, int resourceId, double duration)
         {
-            DataTable dt;
-            string formula;
+            DataTable dt = DA.Command()
+                .Param(new { AccountID = accountId, ResourceID = resourceId, Duration = duration })
+                .FillDataTable("dbo.ToolCost_Estimate");
 
-            using (var dba = GetDBA())
-            {
-                dt = dba.ApplyParameters(new { AccountID = accountId, ResourceID = resourceId, Duration = duration }).FillDataTable("ToolCost_Estimate");
-                formula = dba.ApplyParameters(new { FormulaType = "Tool", sDate = DateTime.Now.Date }).ExecuteScalar<string>("CostFormula_Select");
-            }
+            string formula = DA.Command()
+                .Param(new { FormulaType = "Tool", sDate = DateTime.Now.Date })
+                .ExecuteScalar<string>("dbo.CostFormula_Select");
 
             CompileCode(1, formula);
 
@@ -886,11 +855,6 @@ namespace LNF.CommonTools
                 return CalcSingleItem(1, dr);
             else
                 throw new Exception("CalcSingleItem returned nothing");
-        }
-
-        private UnitOfWorkAdapter GetDBA()
-        {
-            return DA.Current.GetAdapter();
         }
     }
 }

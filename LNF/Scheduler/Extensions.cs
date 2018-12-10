@@ -20,7 +20,8 @@ namespace LNF.Scheduler
 
             if (result == null || result.Count == 0)
             {
-                var items = DA.Current.Query<ResourceTree>().Where(x => x.ClientID == cm.CurrentUser.ClientID).Model<ResourceTreeItem>();
+                var currentUserClientId = cm.CurrentUser.ClientID;
+                var items = DA.Current.Query<ResourceTree>().Where(x => x.ClientID == currentUserClientId).Model<ResourceTreeItem>();
                 result = new ResourceTreeItemCollection(items);
                 cm.SetContextItem("ResourceTree", result);
             }
@@ -130,7 +131,7 @@ namespace LNF.Scheduler
         {
             var client = cm.GetClient(clientId);
             var resourceClients = cm.ResourceClients(resourceId);
-            return DA.Use<IReservationManager>().GetAuthLevel(resourceClients, client);
+            return ServiceProvider.Current.Use<IReservationManager>().GetAuthLevel(resourceClients, client);
         }
 
         public static void ClearResourceClients(this CacheManager cm, int resourceId)
@@ -145,7 +146,8 @@ namespace LNF.Scheduler
 
             if (result < Reservation.MinReservationBeginDate)
             {
-                result = DateTime.Now.Date;
+                if (!DateTime.TryParse(ServiceProvider.Current.Context.QueryString["Date"], out result))
+                    result = DateTime.Now.Date;
                 cm.WeekStartDate(result);
             }
 
@@ -154,30 +156,11 @@ namespace LNF.Scheduler
 
         public static void WeekStartDate(this CacheManager cm, DateTime value) => cm.SetSessionValue(SessionKeys.WeekStartDate, value);
 
-        public static bool IsOnKiosk(this CacheManager cm)
-        {
-            return cm.GetSessionValue(SessionKeys.IsOnKiosk, () =>
-            {
-                string kioskIp = ServiceProvider.Current.Context.UserHostAddress;
-                return KioskUtility.IsOnKiosk(cm.GetClientLabs(), kioskIp);
-            });
-        }
-
-        public static bool ClientInLab(this CacheManager cm, int labId) => KioskUtility.ClientInLab(cm.GetClientLabs(), labId);
-
-        public static int[] GetClientLabs(this CacheManager cm)
-        {
-            return cm.GetSessionValue(SessionKeys.ClientLabs, () =>
-            {
-                string kioskIp = ServiceProvider.Current.Context.UserHostAddress;
-                return KioskUtility.IpCheck(cm.CurrentUser.ClientID, kioskIp);
-            });
-        }
-
         public static bool DisplayDefaultHours(this CacheManager cm) => cm.GetSessionValue(SessionKeys.DisplayDefaultHours, () => true);
 
         public static void DisplayDefaultHours(this CacheManager cm, bool value) => cm.SetSessionValue(SessionKeys.DisplayDefaultHours, value);
 
+        [Obsolete]
         public static IEnumerable<ProcessInfoItem> ProcessInfos(this CacheManager cm, int resourceId)
         {
             string key = "ProcessInfos#" + resourceId.ToString();
@@ -193,6 +176,7 @@ namespace LNF.Scheduler
             return result;
         }
 
+        [Obsolete]
         public static IEnumerable<ProcessInfoLineItem> ProcessInfoLines(this CacheManager cm, int processInfoId)
         {
             string key = "ProcessInfoLines#" + processInfoId.ToString();
@@ -217,7 +201,7 @@ namespace LNF.Scheduler
 
             if (result == null || result.Count() == 0)
             {
-                result = DA.Use<IResourceManager>().GetResourceCosts();
+                result = ServiceProvider.Current.Use<IResourceManager>().GetResourceCosts();
                 cm.SetMemoryCacheValue("ResourceCosts", result, DateTimeOffset.Now.AddHours(24));
             }
 
@@ -248,21 +232,11 @@ namespace LNF.Scheduler
             return cm.ResourceCosts(resourceId).FirstOrDefault(x => x.ChargeTypeID == chargeTypeId);
         }
 
+        [Obsolete]
         public static IEnumerable<ReservationProcessInfoItem> ReservationProcessInfos(this CacheManager cm) => cm.GetSessionValue(SessionKeys.ReservationProcessInfos, () => new List<ReservationProcessInfoItem>());
 
+        [Obsolete]
         public static void ReservationProcessInfos(this CacheManager cm, IEnumerable<ReservationProcessInfoItem> value) => cm.SetSessionValue(SessionKeys.ReservationProcessInfos, value);
-
-        public static IEnumerable<ReservationInviteeItem> ReservationInvitees(this CacheManager cm) => cm.GetSessionValue<IEnumerable<ReservationInviteeItem>>(SessionKeys.ReservationInvitees, () => new List<ReservationInviteeItem>());
-
-        public static void ReservationInvitees(this CacheManager cm, IEnumerable<ReservationInviteeItem> value) => cm.SetSessionValue(SessionKeys.ReservationInvitees, value);
-
-        public static IEnumerable<ReservationInviteeItem> RemovedInvitees(this CacheManager cm) => cm.GetSessionValue<IEnumerable<ReservationInviteeItem>>(SessionKeys.RemovedInvitees, () => new List<ReservationInviteeItem>());
-
-        public static void RemovedInvitees(this CacheManager cm, IEnumerable<ReservationInviteeItem> value) => cm.SetSessionValue(SessionKeys.RemovedInvitees, value);
-
-        public static IEnumerable<AvailableInviteeItem> AvailableInvitees(this CacheManager cm) => cm.GetSessionValue<IEnumerable<AvailableInviteeItem>>(SessionKeys.AvailableInvitees, () => new List<AvailableInviteeItem>());
-
-        public static void AvailableInvitees(this CacheManager cm, IEnumerable<AvailableInviteeItem> value) => cm.SetSessionValue(SessionKeys.AvailableInvitees, value);
 
         public static ViewType CurrentViewType(this CacheManager cm) => cm.GetSessionValue("CurrentViewType", () => ViewType.WeekView);
 

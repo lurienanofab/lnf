@@ -1,14 +1,10 @@
 ﻿using LNF.Cache;
 using LNF.Data;
 using LNF.Models.Data;
-using LNF.Repository.Data;
 using LNF.Web.Mvc.UI;
 using LNF.Web.Mvc.Utility;
-using RestSharp;
-using RestSharp.Authenticators;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -23,29 +19,8 @@ namespace LNF.Web.Mvc
     {
         public static IHtmlString SiteMenu(this HtmlHelper helper, ClientItem client)
         {
-            // Why get the html from an ajax service?
-            //  Because then there is one place where the menu is generated and can be used in different projects
-            //  without having to copy and paste a partial view cshtml file resulting in a bunch of copies that
-            //  can't be easily changed globally, or deal with hard to maintain html generation code. This method
-            //  allows for maintaining a single cshtml partial view which is the best scenario.
-
             if (helper.ViewContext.HttpContext.Session["SiteMenu"] == null)
-            {
-                var rc = new RestClient(ConfigurationManager.AppSettings["ApiHost"])
-                {
-                    Authenticator = new HttpBasicAuthenticator(ConfigurationManager.AppSettings["BasicAuthUsername"], ConfigurationManager.AppSettings["BasicAuthPassword"])
-                };
-
-                var request = new RestRequest("data/ajax/menu");
-                request.AddParameter("clientId", client.ClientID);
-
-                var response = rc.Execute(request);
-
-                if (response.IsSuccessful)
-                    helper.ViewContext.HttpContext.Session["SiteMenu"] = new HtmlString(response.Content);
-                else
-                    helper.ViewContext.HttpContext.Session["SiteMenu"] = new HtmlString(string.Format("SiteMenu Error: [{0}] {1}", (int)response.StatusCode, response.StatusDescription));
-            }
+                helper.ViewContext.HttpContext.Session["SiteMenu"] = WebUtility.GetSiteMenu(client.ClientID);
 
             return new HtmlString(helper.ViewContext.HttpContext.Session["SiteMenu"].ToString());
         }

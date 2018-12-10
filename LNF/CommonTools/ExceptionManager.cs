@@ -1,20 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository;
+﻿using LNF.Repository;
+using System;
 
 namespace LNF.CommonTools
 {
     /// <summary>
-    /// This is used to put exceptional message into table ExceptionDump
+    /// This is used to put exception message into table ExceptionDump.
     /// </summary>
-    /// <remarks>
-    /// Usage Scenario
-    /// ExceptionManager exp = new ExceptionManager {TimeStamp = DateTime.Now, ExpName = "User has zero or negagive TotalOriginalPayment", AppName = this.GetType().Assembly.GetName().Name, FunctionName = "CommonTools-DistributeSubsidyMoneyEvenly"};
-    /// exp.CustomData = String.Format("ClientID = {0}, Period = '{1}'", ClientID, Period);
-    /// exp.LogException();
-    ///</remarks>
     public class ExceptionManager
     {
         public DateTime TimeStamp;
@@ -27,92 +18,38 @@ namespace LNF.CommonTools
 
         public string ExpName
         {
-            get
-            {
-                return _ExpName;
-            }
-            set
-            {
-                if (value.Length > 50)
-                    _ExpName = value.Substring(0, 50);
-                else
-                    _ExpName = value;
-            }
+            get { return _ExpName; }
+            set { _ExpName = Utility.Clip(value, 50); }
         }
 
         public string AppName
         {
-            get
-            {
-                return _AppName;
-            }
-            set
-            {
-                if (value.Length > 50)
-                    _AppName = value.Substring(0, 50);
-                else
-                    _AppName = value;
-            }
+            get { return _AppName; }
+            set { _AppName = Utility.Clip(value, 50); }
         }
 
         public string FunctionName
         {
-            get
-            {
-                return _FunctionName;
-            }
-            set
-            {
-                if (value.Length > 50)
-                    _FunctionName = value.Substring(0, 50);
-                else
-                    _FunctionName = value;
-            }
+            get { return _FunctionName; }
+            set { _FunctionName = Utility.Clip(value, 50); }
         }
 
         public string ExceptionMessage
         {
-            get
-            {
-                return _ExceptionMessage;
-            }
-            set
-            {
-                if (value.Length > 1000)
-                    _ExceptionMessage = value.Substring(0, 1000);
-                else
-                    _ExceptionMessage = value;
-            }
+            get { return _ExceptionMessage; }
+            set { _ExceptionMessage = Utility.Clip(value, 1000); }
         }
 
         public string CustomData
         {
-            get
-            {
-                return _CustomData;
-            }
-            set
-            {
-                if (value.Length > 1000)
-                    _CustomData = value.Substring(0, 1000);
-                else
-                    _CustomData = value;
-            }
+            get { return _CustomData; }
+            set { _CustomData = Utility.Clip(value, 1000); }
         }
 
         public string Comment
         {
-            get
-            {
-                return _Comment;
-            }
-            set
-            {
-                if (value.Length > 50)
-                    _Comment = value.Substring(0, 50);
-                else
-                    _Comment = value;
-            }
+            get { return _Comment; }
+            set { _Comment = Utility.Clip(value, 50); }
         }
 
         public void LogException()
@@ -122,25 +59,11 @@ namespace LNF.CommonTools
 
         private void InsertIntoDB()
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.SelectCommand.ApplyParameters(new
-                    {
-                        TimeStamp = TimeStamp,
-                        ExpName = _ExpName,
-                        AppName = _AppName,
-                        FunctionName = _FunctionName,
-                        ExceptionMessage = _ExceptionMessage,
-                        CustomData = _CustomData,
-                        Comment = _Comment
-                    }).ExecuteNonQuery("ExceptionDump_Insert");
-            }
+            DA.Command()
+                .Param(new { TimeStamp, ExpName, AppName, FunctionName, ExceptionMessage, CustomData, Comment })
+                .ExecuteNonQuery("dbo.ExceptionDump_Insert");
         }
 
-        public static void CleanOldException()
-        {
-            using (var dba = DA.Current.GetAdapter())
-                dba.SelectCommand.ExecuteNonQuery("ExceptionDump_Delete");
-        }
+        public static void Purge() => DA.Command().ExecuteNonQuery("dbo.ExceptionDump_Delete");
     }
 }

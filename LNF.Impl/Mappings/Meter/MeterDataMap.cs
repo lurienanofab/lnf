@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Meter;
-using FluentNHibernate.Mapping;
 
 namespace LNF.Impl.Mappings.Meter
 {
@@ -13,11 +9,10 @@ namespace LNF.Impl.Mappings.Meter
         {
             Schema("Meter.dbo");
             Id(x => x.MeterDataID);
-            References(x => x.FileImport);
-            Map(x => x.ImportFileName);
+            Map(x => x.FileIndex);
             Map(x => x.LineIndex);
-            Map(x => x.TimeStamp);
             Map(x => x.Header);
+            Map(x => x.TimeStamp);
             Map(x => x.Value);
         }
     }

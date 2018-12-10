@@ -16,7 +16,7 @@ namespace LNF.Impl.ModelFactory
     {
         public static class Data
         {
-            public static IAccountManager AccountManager => DA.Use<IAccountManager>();
+            public static IAccountManager AccountManager => ServiceProvider.Current.Use<IAccountManager>();
 
             public static ClientAccountItem CreateClientAccountModel(ClientAccount source)
             {
@@ -91,14 +91,18 @@ namespace LNF.Impl.ModelFactory
 
         public static class Scheduler
         {
-            public static IClientOrgManager ClientOrgManager => DA.Use<IClientOrgManager>();
+            public static IClientOrgManager ClientOrgManager => ServiceProvider.Current.Use<IClientOrgManager>();
 
             public static ReservationItem CreateReservationModel(Reservation source)
             {
                 var result = new ReservationItem();
 
                 result.InjectFrom(source);
+
                 result.ResourceID = source.Resource.ResourceID;
+                result.ProcessTechID = source.Resource.ProcessTech.ProcessTechID;
+                result.LabID = source.Resource.ProcessTech.Lab.LabID;
+                result.BuildingID = source.Resource.ProcessTech.Lab.Building.BuildingID;
                 result.ResourceName = source.Resource.ResourceName;
                 result.ClientID = source.Client.ClientID;
                 result.LName = source.Client.LName;

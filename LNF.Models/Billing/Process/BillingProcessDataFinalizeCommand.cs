@@ -7,7 +7,6 @@ namespace LNF.Models.Billing.Process
     /// </summary>
     public class BillingProcessDataFinalizeCommand
     {
-        public DateTime StartPeriod { get; set; }
-        public DateTime EndPeriod { get; set; }
+        public DateTime Period { get; set; }
     }
 }

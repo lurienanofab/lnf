@@ -7,10 +7,10 @@ using System;
 
 namespace LNF.Scheduler
 {
-    public enum NextGranDir
+    public enum GranularityDirection
     {
         Previous = 0,
-        Future = 1
+        Next = 1
     }
 
     public static class ResourceUtility
@@ -96,7 +96,7 @@ namespace LNF.Scheduler
         /// <param name="actualTime">The point in time to determine the next or previous granularity</param>
         /// <param name="granDir">The direction (next or pervious) to search in</param>
         /// <returns>The DateTime value of the next or previous granularity</returns>
-        public static DateTime GetNextGranularity(TimeSpan granularity, TimeSpan offset, DateTime actualTime, NextGranDir granDir)
+        public static DateTime GetNextGranularity(TimeSpan granularity, TimeSpan offset, DateTime actualTime, GranularityDirection granDir)
         {
             // get number of minutes between now and beginning of day (midnight + offset) of passed-in date
             DateTime dayBegin = new DateTime(actualTime.Year, actualTime.Month, actualTime.Day).Add(offset);

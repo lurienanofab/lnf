@@ -9,7 +9,7 @@ namespace LNF.Billing
 {
     public static class OrgRechargeUtility
     {
-        public static IChargeTypeManager ChargeTypeManager => DA.Use<IChargeTypeManager>();
+        public static IChargeTypeManager ChargeTypeManager => ServiceProvider.Current.Use<IChargeTypeManager>();
 
         public static Account GetRechargeAccount(Org org, DateTime startDate, DateTime endDate)
         {

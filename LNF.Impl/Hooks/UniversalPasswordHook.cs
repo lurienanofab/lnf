@@ -18,7 +18,7 @@ namespace LNF.Impl.Hooks
                 var c = DA.Current.Query<ClientInfo>().FirstOrDefault(x => x.UserName == Context.Username);
                 if (c != null)
                 {
-                    Result.Client = c.GetClientItem();
+                    Result.Client = c.CreateClientItem();
                     Result.IsLoggedIn = true;
                     return;
                 }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Net.Http;
 
 namespace OnlineServices.Api.Authorization.Credentials
 {
@@ -20,7 +19,7 @@ namespace OnlineServices.Api.Authorization.Credentials
             Password = password;
         }
 
-        protected override void AddPostData(IDictionary<string, string> postData)
+        protected override void AddPostData(IDictionary<string, object> postData)
         {
             postData.Add("username", Username);
             postData.Add("password", Password);

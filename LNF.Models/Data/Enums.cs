@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace LNF.Models.Data
 {
@@ -21,5 +22,13 @@ namespace LNF.Models.Data
         PhysicalAccess = 512,
         OnlineAccess = 1024,
         Developer = 2048
+    }
+
+    public static class ClientPrivilegeUtility
+    {
+        public static string[] GetRoles(ClientPrivilege privs)
+        {
+            return privs.ToString().Split(',').Select(x => x.Trim()).ToArray();
+        }
     }
 }

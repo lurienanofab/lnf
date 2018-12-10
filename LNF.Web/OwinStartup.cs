@@ -79,7 +79,7 @@ namespace LNF.Web
 
             if (!IsStaticContent(uri))
             {
-                uow = ServiceProvider.Current.Resolver.GetInstance<IUnitOfWork>();
+                uow = ServiceProvider.Current.Use<IUnitOfWork>();
             }
 
             await Next.Invoke(context);

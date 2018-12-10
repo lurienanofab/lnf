@@ -13,9 +13,9 @@ namespace LNF.Reporting
 {
     public class ClientDatabaseReport : DefaultReport<UserCriteria>
     {
-        protected IClientManager ClientManager => DA.Use<IClientManager>();
-        protected IAccountManager AccountManager => DA.Use<IAccountManager>();
-        protected IActiveLogManager ActiveLogManager => DA.Use<IActiveLogManager>();
+        protected IClientManager ClientManager => ServiceProvider.Current.Use<IClientManager>();
+        protected IAccountManager AccountManager => ServiceProvider.Current.Use<IAccountManager>();
+        protected IActiveLogManager ActiveLogManager => ServiceProvider.Current.Use<IActiveLogManager>();
 
         public override string Key { get { return "client-database-report"; } }
         public override string Title { get { return "Client Database Report"; } }

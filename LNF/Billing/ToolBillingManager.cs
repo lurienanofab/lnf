@@ -57,7 +57,7 @@ namespace LNF.Billing
 
         public int UpdateBillingType(int clientId, int accountId, int billingTypeId, DateTime period)
         {
-            string queryName = "UpdateBillingTypeToolBilling" + ((RepositoryUtility.IsCurrentPeriod(period)) ? "Temp" : string.Empty);
+            string queryName = "UpdateBillingTypeToolBilling" + ((Utility.IsCurrentPeriod(period)) ? "Temp" : string.Empty);
 
             var query = Session.NamedQuery(queryName)
                 .SetParameter("ClientID", clientId)
@@ -391,72 +391,7 @@ namespace LNF.Billing
         #endregion
 
         #region ToolDataClean
-        public IList<ToolDataClean> PopulateToolDataClean(DateTime period, IList<Reservation> reservations)
-        {
-            int reservationCount = reservations.Count;
-            int rowsDeletedFromToolDataClean = 0;
-            int rowsInsertedIntoToolDataClean = 0;
-
-            using (LogTaskTimer.Start("ToolBillingUtility.PopulateToolDataClean", "period = '{0:yyyy-MM-dd}', reservationCount = {1}, rowsDeletedFromToolDataClean = {2}, rowsInsertedIntoToolDataClean = {3}", () => new object[] { period, reservationCount, rowsDeletedFromToolDataClean, rowsInsertedIntoToolDataClean }))
-            {
-                if (reservationCount == 0) return null;
-
-                //does the same crap as in sselScheduler.dbo.SSEL_DataRead @Action = 'ToolDataRaw'
-                IList<ToolDataRaw> data = DataRaw(period, reservations);
-
-                List<ToolDataClean> insert = new List<ToolDataClean>();
-                List<ToolDataClean> delete = new List<ToolDataClean>();
-                int minReservationId = reservations.Select(r => r.ReservationID).Min();
-
-                IList<ToolDataClean> all = Session.Query<ToolDataClean>().Where(x => x.ReservationID >= minReservationId).ToArray();
-
-                //add new rows
-                foreach (ToolDataRaw item in data)
-                {
-                    //delete existing rows
-                    IEnumerable<ToolDataClean> existing = all.Where(x => x.ReservationID == item.ReservationID);
-                    if (existing.Count() > 0) delete.AddRange(existing);
-
-                    //ActualBeginDateTime and ActualEndDateTime should both have values because of ReservationUtility.PrepareReservationsForBilling
-                    ToolDataClean tdc = new ToolDataClean()
-                    {
-                        ClientID = item.ClientID,
-                        ResourceID = item.ResourceID,
-                        RoomID = item.RoomID,
-                        BeginDateTime = item.BeginDateTime,
-                        EndDateTime = item.EndDateTime,
-                        ActualBeginDateTime = item.ActualBeginDateTime.Value,
-                        ActualEndDateTime = item.ActualEndDateTime.Value,
-                        AccountID = item.AccountID,
-                        ActivityID = item.ActivityID,
-                        SchedDuration = item.SchedDuration,
-                        ActDuration = item.ActDuration,
-                        OverTime = item.OverTime,
-                        IsStarted = item.IsStarted,
-                        ChargeMultiplier = item.ChargeMultiplier,
-                        ReservationID = item.ReservationID,
-                        MaxReservedDuration = item.MaxReservedDuration,
-                        IsActive = item.IsActive,
-                        CancelledDateTime = item.CancelledDateTime,
-                        OriginalBeginDateTime = item.OriginalBeginDateTime,
-                        OriginalEndDateTime = item.OriginalEndDateTime,
-                        OriginalModifiedOn = item.OriginalModifiedOn,
-                        CreatedOn = item.CreatedOn
-                    };
-
-                    insert.Add(tdc);
-                }
-
-                Session.Delete(delete);
-                rowsDeletedFromToolDataClean = delete.Count;
-
-                Session.Insert(insert);
-                rowsInsertedIntoToolDataClean = insert.Count;
-
-                return insert;
-            }
-        }
-
+        
         public int UpdateChargeMultiplierByReservationToolDataClean(Reservation rsv)
         {
             return Session.NamedQuery("UpdateChargeMultiplierToolDataClean")

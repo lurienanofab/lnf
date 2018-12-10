@@ -2,7 +2,7 @@
 
 namespace LNF.PhysicalAccess
 {
-    public class Card
+    public class zCard
     {
         public object ID { get; set; }
         public int ClientID { get; set; }
@@ -15,6 +15,6 @@ namespace LNF.PhysicalAccess
         public DateTime BadgeIssueDate { get; set; }
         public DateTime BadgeExpireDate { get; set; }
         public DateTime? LastAccess { get; set; }
-        public Status Status { get; set; }
+        public zStatus Status { get; set; }
     }
 }

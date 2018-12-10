@@ -4,22 +4,19 @@ using System.Data;
 
 namespace LNF.CommonTools
 {
-    public class ReadMiscDataManager
+    public class ReadMiscDataManager : ManagerBase, IReadMiscDataManager
     {
-        internal ReadMiscDataManager() { }
+        public ReadMiscDataManager(ISession session) : base(session) { }
 
         public DataTable ReadMiscData(DateTime period)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                var dt = dba
-                    .ApplyParameters(new { Action = "GetAllByPeriod", Period = period })
-                    .FillDataTable("MiscBillingCharge_Select");
+            var dt = new DataTable("MiscExp");
 
-                dt.TableName = "MiscExp";
+            Command()
+                .Param(new { Action = "GetAllByPeriod", Period = period })
+                .FillDataTable(dt, "dbo.MiscBillingCharge_Select");
 
-                return dt;
-            }
+            return dt;
         }
     }
 }

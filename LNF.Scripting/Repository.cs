@@ -9,6 +9,8 @@ namespace LNF.Scripting
 {
     public static class Repository
     {
+        public static ReadOnlyDataCommand ReadOnlyCommand(CommandType type = CommandType.StoredProcedure) => new ReadOnlyDataCommand(type);
+
         public static IList<IDictionary> Query(string query, Parameters parameters)
         {
             var q = DA.Current.SqlQuery(query).SetParameters(parameters);
@@ -18,28 +20,26 @@ namespace LNF.Scripting
 
         public static IEnumerable SqlQuery(string query, Parameters parameters)
         {
-            using (SQLDBAccess dba = new SQLDBAccess("cnSselDataReadOnly"))
+            var command = ReadOnlyCommand(CommandType.Text);
+
+            if (parameters != null)
             {
-                if (parameters != null)
-                {
-                    var cmd = dba.SelectCommand;
-                    foreach (KeyValuePair<object, object> kvp in parameters)
-                        if(query.Contains("@" + kvp.Key.ToString()))
-                            cmd.AddParameter("@" + kvp.Key.ToString(), kvp.Value.ToString() == "null" ? DBNull.Value : kvp.Value);
-                }
-
-                DataTable dt = dba.CommandTypeText().FillDataTable(query);
-                IList<IDictionary<object, object>> result = new List<IDictionary<object, object>>();
-                foreach (DataRow dr in dt.Rows)
-                {
-                    IDictionary<object, object> dict = new Dictionary<object, object>();
-                    foreach (DataColumn dc in dt.Columns)
-                        dict.Add(dc.ColumnName, dr[dc.ColumnName]);
-                    result.Add(dict);
-                }
-
-                return result;
+                foreach (KeyValuePair<object, object> kvp in parameters)
+                    if (query.Contains("@" + kvp.Key.ToString()))
+                        command.Param(kvp.Key.ToString(), kvp.Value.ToString() == "null", DBNull.Value, kvp.Value);
             }
+
+            DataTable dt = command.FillDataTable(query);
+            IList<IDictionary<object, object>> result = new List<IDictionary<object, object>>();
+            foreach (DataRow dr in dt.Rows)
+            {
+                IDictionary<object, object> dict = new Dictionary<object, object>();
+                foreach (DataColumn dc in dt.Columns)
+                    dict.Add(dc.ColumnName, dr[dc.ColumnName]);
+                result.Add(dict);
+            }
+
+            return result;
         }
     }
 }

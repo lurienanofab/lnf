@@ -16,7 +16,7 @@ namespace LNF.WebApi
             config.EnableCors(cors);
 
             // Add authorize filter
-            config.Filters.Add(new MultipleAuthenticationAttribute(typeof(BasicAuthenticationAttribute), typeof(FormsAuthenticationAttribute), typeof(ApiKeyAuthenticationAttribute)));
+            config.Filters.Add(new MultiAuthorizeAttribute());
 
             // Always show error details
             config.IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always;

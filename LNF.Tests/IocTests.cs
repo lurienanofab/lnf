@@ -66,7 +66,7 @@ namespace LNF.Tests
 
             using (ServiceProvider.Current.DataAccess.StartUnitOfWork())
             {
-                var mgr = DA.Use<IActiveDataItemManager>();
+                var mgr = ServiceProvider.Current.Use<IActiveDataItemManager>();
                 var range = mgr.Range(DA.Current.Query<Client>().Where(x => x.ClientID == 1301),
                     k => new ActiveLogKey("Client", k.ClientID),
                     DateTime.Parse("2018-01-01"), DateTime.Parse("2018-02-01"));

@@ -2,7 +2,17 @@
 
 namespace LNF.Repository.Billing
 {
-    public class StoreBilling : IDataItem
+    public class StoreBilling : StoreBillingBase
+    {
+        public override bool IsTemp => false;
+    }
+
+    public class StoreBillingTemp : StoreBillingBase
+    {
+        public override bool IsTemp => true;
+    }
+
+    public abstract class StoreBillingBase : IStoreBilling
     {
         public virtual int StoreBillingID { get; set; }
         public virtual DateTime Period { get; set; }
@@ -16,6 +26,7 @@ namespace LNF.Repository.Billing
         public virtual decimal CostMultiplier { get; set; }
         public virtual decimal LineCost { get; set; }
         public virtual DateTime StatusChangeDate { get; set; }
+        public abstract bool IsTemp { get; }
 
         public virtual decimal GetTotalCharge()
         {
@@ -34,4 +45,22 @@ namespace LNF.Repository.Billing
             return GetTotalCharge();
         }
     }
+
+    public interface IStoreBilling : IDataItem
+    {
+        int StoreBillingID { get; set; }
+        DateTime Period { get; set; }
+        int ClientID { get; set; }
+        int AccountID { get; set; }
+        int ChargeTypeID { get; set; }
+        int ItemID { get; set; }
+        int CategoryID { get; set; }
+        decimal Quantity { get; set; }
+        decimal UnitCost { get; set; }
+        decimal CostMultiplier { get; set; }
+        decimal LineCost { get; set; }
+        DateTime StatusChangeDate { get; set; }
+        bool IsTemp { get; }
+    }
+
 }

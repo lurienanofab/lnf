@@ -11,45 +11,38 @@ namespace LNF.Scheduler.Data
     {
         public static IDataReader SelectAllDataReader(int reservationId)
         {
-            var dba = DA.Current.GetAdapter();
-
-            return dba
-                .ApplyParameters(new { ReservationID = reservationId })
+            return DA.Command()
+                .Param("ReservationID", reservationId)
                 .ExecuteReader("sselScheduler.dbo.procReservationProcessInfoSelect");
         }
 
         public static DataTable SelectAllDataTable(int reservationId)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba
-                    .MapSchema()
-                    .ApplyParameters(new { ReservationID = reservationId })
-                    .FillDataTable("sselScheduler.dbo.procReservationProcessInfoSelect");
+            return DA.Command()
+                .MapSchema()
+                .Param("ReservationID", reservationId)
+                .FillDataTable("sselScheduler.dbo.procReservationProcessInfoSelect");
         }
 
         public static void Update(DataTable dt, int reservationId)
         {
-            using (var dba = DA.Current.GetAdapter())
+            DA.Command().Update(dt, x =>
             {
-                dba.InsertCommand
-                    .AddParameter("@ReservationID", reservationId)
-                    .AddParameter("@ProcessInfoLineID", SqlDbType.Int)
-                    .AddParameter("@Value", SqlDbType.Float)
-                    .AddParameter("@Special", SqlDbType.Bit);
+                x.Insert.SetCommandText("sselScheduler.dbo.procReservationProcessInfoInsert");
+                x.Insert.AddParameter("ReservationID", reservationId);
+                x.Insert.AddParameter("ProcessInfoLineID", SqlDbType.Int);
+                x.Insert.AddParameter("Value", SqlDbType.Float);
+                x.Insert.AddParameter("Special", SqlDbType.Bit);
 
-                dba.UpdateCommand
-                    .AddParameter("@ReservationProcessInfoID", SqlDbType.Int)
-                    .AddParameter("@ProcessInfoLineID", SqlDbType.Int)
-                    .AddParameter("@Value", SqlDbType.Float)
-                    .AddParameter("@Special", SqlDbType.Bit);
+                x.Update.SetCommandText("sselScheduler.dbo.procReservationProcessInfoUpdate");
+                x.Update.AddParameter("ReservationProcessInfoID", SqlDbType.Int);
+                x.Update.AddParameter("ProcessInfoLineID", SqlDbType.Int);
+                x.Update.AddParameter("Value", SqlDbType.Float);
+                x.Update.AddParameter("Special", SqlDbType.Bit);
 
-                dba.DeleteCommand.AddParameter("@ReservationProcessInfoID", SqlDbType.Int);
-
-                dba.UpdateDataTable(dt,
-                    "sselScheduler.dbo.procReservationProcessInfoInsert",
-                    "sselScheduler.dbo.procReservationProcessInfoUpdate",
-                    "sselScheduler.dbo.procReservationProcessInfoDelete");
-            }
+                x.Delete.SetCommandText("sselScheduler.dbo.procReservationProcessInfoDelete");
+                x.Delete.AddParameter("ReservationProcessInfoID", SqlDbType.Int);
+            });
         }
     }
 }

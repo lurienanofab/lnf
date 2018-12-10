@@ -48,6 +48,21 @@ namespace LNF.Billing
             get { return Reservation.ChargeEndDateTime - Reservation.ChargeBeginDateTime; }
         }
 
+        public TimeSpan ActivatedUsedDuration
+        {
+            get { return TimeSpan.Zero; }
+        }
+
+        public TimeSpan ActivatedUnusedDuration
+        {
+            get { return TimeSpan.Zero; }
+        }
+
+        public TimeSpan UnactivatedDuration
+        {
+            get { return TimeSpan.Zero; }
+        }
+
         /// <summary>
         /// The time the reservation exceeded the scheduled end time. Will be zero when reservations end early.
         /// </summary>

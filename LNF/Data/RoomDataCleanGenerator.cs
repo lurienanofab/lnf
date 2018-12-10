@@ -1,5 +1,5 @@
 ﻿using LNF.Models.Data;
-using LNF.PhysicalAccess;
+using LNF.Models.PhysicalAccess;
 using LNF.Repository;
 using LNF.Repository.Data;
 using System;
@@ -14,7 +14,7 @@ namespace LNF.Data
         private const double MAX_TIME = 8.0;
         private IEnumerable<CostItem> _costs;
 
-        protected ICostManager CostManager => DA.Use<ICostManager>();
+        protected ICostManager CostManager => ServiceProvider.Current.Use<ICostManager>();
 
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
@@ -31,7 +31,7 @@ namespace LNF.Data
 
         public RoomDataClean[] Generate()
         {
-            var events = ServiceProvider.Current.PhysicalAccess.GetEvents(StartDate, EndDate, Client, Room);
+            var events = ServiceProvider.Current.PhysicalAccess.GetEvents(StartDate, EndDate, Client.ClientID, Room.RoomID);
 
             var result = Filter(events);
 
@@ -66,13 +66,15 @@ namespace LNF.Data
             dt.Columns.Add("CardIssueDate", typeof(DateTime));
             dt.Columns.Add("CardExpireDate", typeof(DateTime));
 
+            var rooms = DA.Current.Query<Room>().Where(x => x.Active).ToList();
+
             foreach (var e in events)
             {
                 var dr = dt.NewRow();
                 dr["ID"] = e.ID;
                 dr["DeviceID"] = e.DeviceID;
-                dr["ClientID"] = e.Client.ClientID;
-                dr["RoomID"] = e.Room.RoomID;
+                dr["ClientID"] = e.ClientID;
+                dr["RoomID"] = rooms.First(x => x.RoomName == e.DeviceDescription).RoomID;
                 dr["EventType"] = e.EventType.ToString();
                 dr["UserName"] = e.UserName;
                 dr["LastName"] = e.LastName;
@@ -97,8 +99,11 @@ namespace LNF.Data
             if (events.Count() == 0)
                 return result.ToArray();
 
-            Client[] clients = events.Select(x => x.Client).Distinct().ToArray();
-            Room[] rooms = events.Where(x => x.Room != null).Select(x => x.Room).Distinct().ToArray();
+            int[] clientIds = events.Select(x => x.ClientID).Distinct().ToArray();
+            var clients = DA.Current.Query<Client>().Where(x => clientIds.Contains(x.ClientID));
+
+            string[] roomNames = events.Where(x => x.DeviceDescription != null).Select(x => x.DeviceDescription).Distinct().ToArray();
+            var rooms = DA.Current.Query<Room>().Where(x => roomNames.Contains(x.RoomName));
 
             //loop through clients, extract their lab usage data, subset it and then clean
             Event[] fdr;
@@ -111,7 +116,7 @@ namespace LNF.Data
                 {
                     if (IsChargeable(room)) //only store chargeable rooms
                     {
-                        fdr = events.Where(x => x.Client == client && x.Room == room).OrderBy(x => x.EventDateTime).ToArray();
+                        fdr = events.Where(x => x.ClientID == client.ClientID && x.DeviceDescription == room.RoomName).OrderBy(x => x.EventDateTime).ToArray();
                         if (fdr.Length > 0)
                         {
                             clean = DataCleaner(fdr, client, room).ToArray();
@@ -136,8 +141,8 @@ namespace LNF.Data
                                         {
                                             result.Add(new RoomDataClean()
                                             {
-                                                Client = client,
-                                                Room = room,
+                                                ClientID = client.ClientID,
+                                                RoomID = room.RoomID,
                                                 EntryDT = entry,
                                                 ExitDT = exit,
                                                 Duration = exit.Subtract(entry).TotalHours
@@ -151,8 +156,8 @@ namespace LNF.Data
                                         entry = clean0.EventDateTime;
                                         result.Add(new RoomDataClean()
                                         {
-                                            Client = client,
-                                            Room = room,
+                                            ClientID = client.ClientID,
+                                            RoomID = room.RoomID,
                                             EntryDT = entry,
                                             ExitDT = entry, //It's better to have something in ExitDT, because if it's null it's difficult to do query
                                             Duration = 0 //Wen: since non antipassback room cannot have the "out" event, its duration is meaningless
@@ -432,8 +437,8 @@ namespace LNF.Data
         {
             return new Event()
             {
-                Client = client,
-                Room = room
+                ClientID = client.ClientID,
+                DeviceDescription = room.RoomName
             };
         }
 

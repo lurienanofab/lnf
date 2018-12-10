@@ -16,18 +16,15 @@ namespace LNF.Scheduler.Data
         {
             bool result = false;
 
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.SelectCommand
-                    .AddParameter("@Action", "Select")
-                    .AddParameter("@ReservationID", reservationId)
-                    .AddParameter("@ClientID", clientId);
+            var cmd = DA.Command()
+                .Param("Action", "Select")
+                .Param("ReservationID", reservationId)
+                .Param("ClientID", clientId);
 
-                using (var reader = dba.ExecuteReader("sselScheduler.dbo.procReservationInviteeSelect"))
-                {
-                    result = reader.Read();
-                    reader.Close();
-                }
+            using (var reader = cmd.ExecuteReader("sselScheduler.dbo.procReservationInviteeSelect"))
+            {
+                result = reader.Read();
+                reader.Close();
             }
 
             return result;
@@ -38,10 +35,9 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static IDataReader SelectReservationInviteesDataReader(int reservationId)
         {
-            var dba = DA.Current.GetAdapter();
-
-            return dba
-                .ApplyParameters(new { Action = "SelectByReservation", ReservationID = reservationId })
+            return DA.Command()
+                .Param("Action", "SelectByReservation")
+                .Param("ReservationID", reservationId)
                 .ExecuteReader("sselScheduler.dbo.procReservationInviteeSelect");
         }
 
@@ -51,11 +47,11 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectReservationInviteesDataTable(int reservationId)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba
-                    .MapSchema()
-                    .ApplyParameters(new { Action = "SelectByReservation", ReservationID = reservationId })
-                    .FillDataTable("sselScheduler.dbo.procReservationInviteeSelect");
+            return DA.Command()
+                .MapSchema()
+                .Param("Action", "SelectByReservation")
+                .Param("ReservationID", reservationId)
+                .FillDataTable("sselScheduler.dbo.procReservationInviteeSelect");
         }
 
         /// <summary>
@@ -63,21 +59,17 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectAvailableInvitees(int reservationId, int resourceId, int activityId, int clientId)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.SelectCommand
-                    .AddParameter("@Action", "SelectAvailInvitees")
-                    .AddParameter("@ReservationID", reservationId)
-                    .AddParameter("@ResourceID", resourceId)
-                    .AddParameter("@ActivityID", activityId)
-                    .AddParameter("@ClientID", clientId);
+            var dt = DA.Command()
+                .Param("Action", "SelectAvailInvitees")
+                .Param("ReservationID", reservationId)
+                .Param("ResourceID", resourceId)
+                .Param("ActivityID", activityId)
+                .Param("ClientID", clientId)
+                .FillDataTable("sselScheduler.dbo.procReservationInviteeSelect");
 
-                var dt = dba.FillDataTable("sselScheduler.dbo.procReservationInviteeSelect");
+            dt.PrimaryKey = new[] { dt.Columns["ClientID"] };
 
-                dt.PrimaryKey = new[] { dt.Columns["ClientID"] };
-
-                return dt;
-            }
+            return dt;
         }
 
         /// <summary>
@@ -85,20 +77,16 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static void Update(DataTable dt, int reservationId)
         {
-            using (var dba = DA.Current.GetAdapter())
+            DA.Command().Update(dt, x =>
             {
-                dba.InsertCommand
-                    .AddParameter("@ReservationID", reservationId)
-                    .AddParameter("@InviteeID", SqlDbType.Int);
+                x.Insert.SetCommandText("sselScheduler.dbo.procReservationInviteeInsert");
+                x.Insert.AddParameter("ReservationID", reservationId);
+                x.Insert.AddParameter("InviteeID", SqlDbType.Int);
 
-                dba.DeleteCommand
-                    .AddParameter("@ReservationID", reservationId)
-                    .AddParameter("@InviteeID", SqlDbType.Int);
-
-                dba.UpdateDataTable(dt,
-                    insertSql: "sselScheduler.dbo.procReservationInviteeInsert",
-                    deleteSql: "sselScheduler.dbo.procReservationInviteeDelete");
-            }
+                x.Delete.SetCommandText("sselScheduler.dbo.procReservationInviteeDelete");
+                x.Delete.AddParameter("ReservationID", reservationId);
+                x.Delete.AddParameter("InviteeID", SqlDbType.Int);
+            });
         }
     }
 }

@@ -216,6 +216,20 @@ namespace LNF.CommonTools
             return !result.Equals(defval);
         }
 
+        public static int ConvertToInt32(object v)
+        {
+            return IsDBNullOrNull(v)
+                ? 0
+                : Convert.ToInt32(v);
+        }
+
+        public static double ConvertToDouble(object v)
+        {
+            return IsDBNullOrNull(v)
+                ? 0
+                : Convert.ToDouble(v);
+        }
+
         /// <summary>
         /// Returns the underlying type of the given type. If the given type is nullable the underlying type is returned. Otherwise the given type is returned
         /// </summary>
@@ -231,17 +245,26 @@ namespace LNF.CommonTools
             return result;
         }
 
-        //I want to use Insert commands (because this is truly what's happening)
-        //The problem is that the rowstate for dt is unchanged, thus nothing gets pushed to the DB
-        //Doing a dt.copy has the same problem
-        public static DataTable CopyDT(DataTable dtIn)
+        /// <summary>
+        /// Returns null if value is zero, otherwise returns value.
+        /// </summary>
+        public static int? NullIfZero(int value)
         {
-            DataRow ndr;
-            DataTable dtOut = new DataTable();
-            dtOut = dtIn.Clone();
+            if (value == 0)
+                return null;
+            else
+                return value;
+        }
+
+        /// <summary>
+        /// Creates a copy by adding rows to a new table so that DataRowState will be Added instead of Unchanged.
+        /// </summary>
+        public static DataTable CopyDataTable(DataTable dtIn)
+        {
+            DataTable dtOut = dtIn.Clone();
             foreach (DataRow dr in dtIn.Rows)
             {
-                ndr = dtOut.NewRow();
+                DataRow ndr = dtOut.NewRow();
                 ndr.ItemArray = dr.ItemArray;
                 dtOut.Rows.Add(ndr);
             }
@@ -335,7 +358,7 @@ namespace LNF.CommonTools
 
         public static bool IsKiosk()
         {
-            return Scheduler.KioskUtility.IsKiosk();
+            return Scheduler.KioskUtility.IsKiosk(ServiceProvider.Current.Context.UserHostAddress);
         }
 
         public static bool IsMobile()
@@ -423,7 +446,7 @@ namespace LNF.CommonTools
         public static DataTable YearData(int Count)
         {
             int EndYear = DateTime.Now.Year;
-            return Utility.YearData(Count, EndYear);
+            return YearData(Count, EndYear);
         }
 
         public static DataTable YearData(int Count, int EndYear)
@@ -431,12 +454,12 @@ namespace LNF.CommonTools
             int StartYear = EndYear - Count + 1;
             DateTime StartDate = new DateTime(StartYear, 1, 1);
             DateTime EndDate = new DateTime(EndYear, 1, 1);
-            return Utility.YearData(StartDate, EndDate);
+            return YearData(StartDate, EndDate);
         }
 
         public static DataTable YearData(DateTime StartDate)
         {
-            return Utility.YearData(StartDate, DateTime.Now);
+            return YearData(StartDate, DateTime.Now);
         }
 
         public static DataTable YearData(DateTime StartDate, DateTime EndDate)
@@ -519,10 +542,10 @@ namespace LNF.CommonTools
         public static TKey PropertyValue<TSource, TKey>(TSource source, Expression<Func<TSource, TKey>> exp)
         {
             string propName = PropertyName(exp);
-            return Utility.ConvertTo<TKey>(source.GetType().GetProperty(propName).GetValue(source, null), default(TKey));
+            return ConvertTo<TKey>(source.GetType().GetProperty(propName).GetValue(source, null), default(TKey));
         }
 
-        public static string Left(string s, int length)
+        public static string Clip(string s, int length)
         {
             if (string.IsNullOrEmpty(s))
                 return s;
@@ -533,76 +556,62 @@ namespace LNF.CommonTools
                 return s;
         }
 
-        public static object DBNullCheck(object value, bool test)
+        public static object DBNullIf(object value, bool test)
         {
             if (test) return DBNull.Value;
             else return value;
         }
 
-        public static object ConvertNullableIntToObject(int? i)
+        public static object DBNullIf<T>(T? value) where T : struct
         {
-            if (i == null)
+            if (!value.HasValue)
                 return DBNull.Value;
             else
-                return i.Value;
+                return value.Value;
         }
 
-        public static object ConvertNullableDateTimeToObject(DateTime? d)
-        {
-            if (d == null)
-                return DBNull.Value;
-            else
-                return d.Value;
-        }
-
-        public static DateTime? ConvertObjectToNullableDateTime(object obj)
+        public static DateTime? ConvertToNullableDateTime(object obj)
         {
             if (obj == DBNull.Value)
                 return null;
-            else
+
+            try
             {
-                try
-                {
-                    return Convert.ToDateTime(obj);
-                }
-                catch
-                {
-                    return null;
-                }
+                return Convert.ToDateTime(obj);
+            }
+            catch
+            {
+                return null;
             }
         }
 
-        public static int? ConvertObjectToNullableInt(object obj)
+        public static int? ConvertToNullableInt32(object obj)
         {
             if (obj == DBNull.Value)
                 return null;
-            else
+
+            try
             {
-                try
-                {
-                    return Convert.ToInt32(obj);
-                }
-                catch
-                {
-                    return null;
-                }
+                return Convert.ToInt32(obj);
+            }
+            catch
+            {
+                return null;
             }
         }
 
-        public static decimal? ConvertObjectToNullableDecimal(object obj)
+        public static decimal? ConvertToNullableDouble(object obj)
         {
             if (obj == DBNull.Value)
                 return null;
-            else
+
+            try
             {
-                try
-                {
-                    return Convert.ToDecimal(obj);
-                }
-                catch
-                {
-                    return null;
-                }
+                return Convert.ToDecimal(obj);
+            }
+            catch
+            {
+                return null;
             }
         }
 
@@ -629,11 +638,10 @@ namespace LNF.CommonTools
                 return result;
             string order = (s.StartsWith(",")) ? s.Substring(1) : s;
             if (!string.IsNullOrEmpty(order))
-                result = order.Split(',').Select(x => Utility.ConvertTo(x, 0)).ToArray();
+                result = order.Split(',').Select(x => ConvertTo(x, 0)).ToArray();
             return result;
         }
 
-        [Obsolete("Replaced by LNF.Repository.RepositoryUtility.IsOverlapped")]
         public static bool Overlap(DateTime startRange1, DateTime? endRange1, DateTime startRange2, DateTime endRange2, bool exclusive = true)
         {
             //We always assume that the end date is EXCLUSIVE which means it
@@ -652,12 +660,6 @@ namespace LNF.CommonTools
                 result = startRange1 <= endRange2 && (endRange1 == null || endRange1.Value >= startRange2);
 
             return result;
-        }
-
-        [Obsolete("Use LNF.Logging.Logger")]
-        public static void LogToFile(string message, params object[] args)
-        {
-            Logger.Write(TextLogMessage.Create("default", message, args));
         }
 
         public static T ParseEnum<T>(string value) where T : struct, IConvertible
@@ -701,6 +703,75 @@ namespace LNF.CommonTools
             else
                 result = default(T); // the best we can do
 
+            return result;
+        }
+
+        /// <summary>
+        /// Converts an object to a dictionary by relecting property names and values.
+        /// </summary>
+        public static IDictionary<string, object> ObjectToDictionary(object obj)
+        {
+            Dictionary<string, object> result = new Dictionary<string, object>();
+
+            if (obj != null)
+            {
+                result = obj.GetType().GetProperties().ToDictionary(
+                    p => p.Name,
+                    p => p.GetValue(obj, null)
+                );
+            }
+
+            return result;
+        }
+
+        public static string GetQueryString(object obj)
+        {
+            if (obj == null) return string.Empty;
+            return CreateQueryString(ObjectToDictionary(obj));
+        }
+
+        public static string CreateQueryString(IDictionary<string, object> dict)
+        {
+            if (dict == null || dict.Count == 0) return string.Empty;
+
+            string result = string.Empty;
+
+            string amp = "?";
+
+            foreach (KeyValuePair<string, object> kvp in dict)
+            {
+                result += amp + kvp.Key + "=" + kvp.Value.ToString();
+                amp = "&";
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Indicates if the specified date is in the current period.
+        /// </summary>
+        public static bool IsCurrentPeriod(DateTime period)
+        {
+            DateTime sd = DateTime.Now.FirstOfMonth();
+            DateTime ed = sd.AddMonths(1);
+            return (period >= sd && period < ed);
+        }
+
+        public static string GetRequiredAppSetting(string key)
+        {
+            var result = ConfigurationManager.AppSettings[key];
+
+            if (string.IsNullOrEmpty(result))
+                throw new Exception($"Missing required AppSetting: {key}");
+
+            return result;
+        }
+
+        public static IQueryable<T> ToQueryable<T>(T item)
+        {
+            var list = new List<T>();
+            if (item != null) list.Add(item);
+            var result = list.AsQueryable();
             return result;
         }
     }

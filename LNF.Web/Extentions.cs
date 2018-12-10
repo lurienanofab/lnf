@@ -1,17 +1,11 @@
-﻿using LNF.Cache;
-using LNF.CommonTools;
-using LNF.Models.Data;
+﻿using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
-using LNF.Web.Mvc.UI;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web;
-using System.Web.Mvc;
 using System.Web.UI.WebControls;
 
 namespace LNF.Web
@@ -24,9 +18,12 @@ namespace LNF.Web
 
             foreach (var p in privs)
             {
-                ListItem item = new ListItem();
-                item.Text = p.PrivType;
-                item.Value = ((int)p.PrivFlag).ToString();
+                ListItem item = new ListItem
+                {
+                    Text = p.PrivType,
+                    Value = ((int)p.PrivFlag).ToString()
+                };
+
                 items.Add(item);
             }
         }
@@ -80,43 +77,18 @@ namespace LNF.Web
         }
     }
 
-    public static class HtmlHelperExtensions
+    public static class HttpContextExtensions
     {
-        [Obsolete]
-        public static IHtmlString CreateSiteMenu(this HtmlHelper helper)
+        public static ClientItem CurrentUser(this HttpContext context)
         {
-            var currentUser = CacheManager.Current.CurrentUser;
-
-            var siteMenu = new SiteMenu(currentUser, null);
-
-            List<DropDownMenuItem> items = siteMenu
-                .Select(x => new DropDownMenuItem()
-                {
-                    ID = x.MenuID,
-                    ParentID = x.MenuParentID,
-                    Target = x.TopWindow ? "_top" : x.NewWindow ? "_blank" : null,
-                    Text = x.MenuText,
-                    URL = x.MenuURL,
-                    CssClass = x.MenuCssClass,
-                    SortOrder = x.SortOrder
-                }).ToList();
-
-            items.Add(new DropDownMenuItem()
+            if (context.Items["CurrentUser"] == null)
             {
-                ID = 9999,
-                ParentID = 0,
-                Target = string.Empty,
-                Text = string.Format("<div>Current User: {0}</div><div id=\"jclock\"></div>", currentUser.DisplayName),
-                URL = string.Empty,
-                CssClass = "menu-clock",
-                SortOrder = 9999
-            });
+                context.Items["CurrentUser"] = ServiceProvider.Current.Data.GetClient(context.User.Identity.Name);
+            }
 
-            DropDownMenu menu = new DropDownMenu(items, "/static/images/lnfbanner.jpg", new { @class = "site-menu" });
+            var result = (ClientItem)context.Items["CurrentUser"];
 
-            string html = menu.Render();
-
-            return new HtmlString(html);
+            return result;
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using LNF.Billing;
-using LNF.Logging;
+using LNF.Models.Billing.Process;
 using LNF.Repository;
 using LNF.Repository.Billing;
 using System;
@@ -12,132 +12,129 @@ namespace LNF.CommonTools
     //2010-03-23 Subsidy billing data process - run after the 3rd day of business every month
     public static class BillingDataProcessStep4Subsidy
     {
-        public static void PopulateSubsidyBilling(DateTime period, int clientId = 0)
+        public static PopulateSubsidyBillingProcessResult PopulateSubsidyBilling(DateTime period, int clientId = 0)
         {
-            int rowsSelectedFromSource = 0;
-            int rowsDeletedFromTieredSubsidyBilling = 0;
-            int rowsInsertedIntoTieredSubsidyBilling = 0;
+            var result = new PopulateSubsidyBillingProcessResult { Command = "subsidy" };
 
-            using (var timer = LogTaskTimer.Start("BillingDataProcessStep4Subsidy.PopulateSubsidyBilling", "period = '{0:yyyy-MM-dd}', clientId = {1}, totalOutRows = {2}, rowsDeletedFromTieredSubsidyBilling = {3}", () => new object[] { period, clientId, rowsSelectedFromSource, rowsDeletedFromTieredSubsidyBilling, rowsInsertedIntoTieredSubsidyBilling }))
+            DataSet ds = GetNecessaryTables(period, clientId);
+            DataTable dtRoom = ds.Tables[0];
+            DataTable dtTool = ds.Tables[1];
+            DataTable dtTiers = ds.Tables[2];
+            DataTable dtOut = ds.Tables[3];
+            DataTable dtMiscCharges = ds.Tables[4];
+
+            //The strategy here is we loop through dtRoom where all users in current month should have data in TieredSubsidyBilling Table
+            //Then we loop through dtTool in case if someone had used the tool, but not the room (unlikely, but possible)
+            //Then we calculate the user payment 
+
+            //The code below will populate two columns "RoomSum" and "RoomMiscSum"
+            DataRow newrow;
+            foreach (DataRow dr in dtRoom.Rows)
             {
-                DataSet ds = GetNecessaryTables(period, clientId);
-                DataTable dtRoom = ds.Tables[0];
-                DataTable dtTool = ds.Tables[1];
-                DataTable dtTiers = ds.Tables[2];
-                DataTable dtOut = ds.Tables[3];
-                DataTable dtMiscCharges = ds.Tables[4];
+                newrow = dtOut.NewRow();
 
-                //The strategy here is we loop through dtRoom where all users in current month should have data in TieredSubsidyBilling Table
-                //Then we loop through dtTool in case if someone had used the tool, but not the room (unlikely, but possible)
-                //Then we calculate the user payment 
+                newrow["Period"] = dr["Period"];
+                newrow["ClientID"] = dr["ClientID"];
+                newrow["OrgID"] = dr["OrgID"];
 
-                //The code below will populate two columns "RoomSum" and "RoomMiscSum"
-                DataRow newrow;
-                foreach (DataRow dr in dtRoom.Rows)
+                newrow["RoomSum"] = dr["TotalCharge"];
+                newrow["RoomMiscSum"] = GetMiscSumPerClient(dtMiscCharges, dr.Field<int>("ClientID"), "Room");
+
+                //We still need to set the tool for people who don't use tool (but only room)
+                newrow["ToolSum"] = 0;
+                newrow["ToolMiscSum"] = 0;
+
+                //The column does not allow NULL
+                newrow["UserPaymentSum"] = 0;
+
+                dtOut.Rows.Add(newrow);
+            }
+
+            foreach (DataRow dr in dtTool.Rows)
+            {
+                DataRow[] drs = dtOut.Select($"ClientID = {dr["ClientID"]} AND OrgID = {dr["OrgID"]}");
+
+                if (drs.Length == 1)
                 {
+                    //we found data record for room, so we use the same data record
+                    drs[0]["ToolSum"] = dr["TotalCharge"];
+                    drs[0]["ToolMiscSum"] = GetMiscSumPerClient(dtMiscCharges, dr.Field<int>("ClientID"), "Tool");
+                }
+                else if (drs.Length == 0)
+                {
+                    //This user uses tool, but not room, so it's a whole new record
                     newrow = dtOut.NewRow();
 
                     newrow["Period"] = dr["Period"];
                     newrow["ClientID"] = dr["ClientID"];
                     newrow["OrgID"] = dr["OrgID"];
 
-                    newrow["RoomSum"] = dr["TotalCharge"];
-                    newrow["RoomMiscSum"] = GetMiscSumPerClient(dtMiscCharges, dr.Field<int>("ClientID"), "Room");
+                    newrow["RoomSum"] = 0;
+                    newrow["RoomMiscSum"] = 0;
 
-                    //We still need to set the tool for people who don't use tool (but only room)
-                    newrow["ToolSum"] = 0;
-                    newrow["ToolMiscSum"] = 0;
+                    newrow["ToolSum"] = dr["TotalCharge"];
+                    newrow["ToolMiscSum"] = GetMiscSumPerClient(dtMiscCharges, dr.Field<int>("ClientID"), "Tool");
 
                     //The column does not allow NULL
                     newrow["UserPaymentSum"] = 0;
 
                     dtOut.Rows.Add(newrow);
                 }
-
-                foreach (DataRow dr in dtTool.Rows)
+                else
                 {
-                    DataRow[] drs = dtOut.Select(string.Format("ClientID = {0} AND OrgID = {1}", dr["ClientID"], dr["OrgID"]));
-
-                    if (drs.Length == 1)
-                    {
-                        //we found data record for room, so we use the same data record
-                        drs[0]["ToolSum"] = dr["TotalCharge"];
-                        drs[0]["ToolMiscSum"] = GetMiscSumPerClient(dtMiscCharges, dr.Field<int>("ClientID"), "Tool");
-                    }
-                    else if (drs.Length == 0)
-                    {
-                        //This user uses tool, but not room, so it's a whole new record
-                        newrow = dtOut.NewRow();
-
-                        newrow["Period"] = dr["Period"];
-                        newrow["ClientID"] = dr["ClientID"];
-                        newrow["OrgID"] = dr["OrgID"];
-
-                        newrow["RoomSum"] = 0;
-                        newrow["RoomMiscSum"] = 0;
-
-                        newrow["ToolSum"] = dr["TotalCharge"];
-                        newrow["ToolMiscSum"] = GetMiscSumPerClient(dtMiscCharges, dr.Field<int>("ClientID"), "Tool");
-
-                        //The column does not allow NULL
-                        newrow["UserPaymentSum"] = 0;
-
-                        dtOut.Rows.Add(newrow);
-                    }
-                    else
-                    {
-                        //error, it's impossible to have more than 1 data
-                        ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.PopulateSubsidyBilling(DateTime period, int clientId = 0)", "Error in populating TieredSubsidyBilling", string.Format("There is more than one row for client {0}", drs[0]["ClientID"]), SendEmail.SystemEmail, SendEmail.DeveloperEmails);
-                    }
+                    //error, it's impossible to have more than 1 data
+                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.PopulateSubsidyBilling", "Error in populating TieredSubsidyBilling", $"There is more than one row for client {drs[0]["ClientID"]}", SendEmail.SystemEmail, SendEmail.DeveloperEmails);
                 }
-
-                foreach (DataRow dr in dtMiscCharges.Rows)
-                {
-                    DataRow[] drs = dtOut.Select(string.Format("ClientID = {0}", dr["ClientID"]));
-
-                    if (drs.Length == 0)
-                    {
-                        //This user has no tool nor room, so it's a whole new record
-                        newrow = dtOut.NewRow();
-
-                        newrow["Period"] = period;
-                        newrow["ClientID"] = dr["ClientID"];
-                        newrow["OrgID"] = 17; //always internal
-
-                        newrow["RoomSum"] = 0;
-                        newrow["RoomMiscSum"] = GetMiscSumPerClient(dtMiscCharges, Convert.ToInt32(dr["ClientID"]), "Room");
-
-                        newrow["ToolSum"] = 0;
-                        newrow["ToolMiscSum"] = GetMiscSumPerClient(dtMiscCharges, Convert.ToInt32(dr["ClientID"]), "Tool");
-
-                        //The column does not allow NULL
-                        newrow["UserPaymentSum"] = 0;
-
-                        dtOut.Rows.Add(newrow);
-                    }
-                }
-
-                rowsSelectedFromSource = dtOut.Rows.Count;
-
-                //At this point, the TiredSubsidyBilling table should have all the records but some fields are missing.  
-                //So we loop through the newly constructed table and fill out the missing fields
-                PopulateFieldsFromHistory(period, dtOut, clientId);
-
-                //Clean up the data before saving
-                rowsDeletedFromTieredSubsidyBilling = DeleteTieredSubsidyBilling(period, clientId);
-
-                //Save everything back to the main table
-                rowsInsertedIntoTieredSubsidyBilling = SaveNewTieredSubsidyBilling(dtOut);
-
-                //Calculate the real subsidy amount and populate the details, UserPaymentSum is set in this method.
-                CalculateSubsidyFee(period, clientId);
-
-                //Push changes back to billing tables
-                DistributeSubsidyMoneyEvenly(period, clientId);
-
-                //[2015-10-20 jg] Added account subsidy feature per Sandrine. Some accounts get a fixed subsidy that overrides the tiered subsidy
-                ApplyAccountSubsidy(period);
             }
+
+            foreach (DataRow dr in dtMiscCharges.Rows)
+            {
+                DataRow[] drs = dtOut.Select($"ClientID = {dr["ClientID"]}");
+
+                if (drs.Length == 0)
+                {
+                    //This user has no tool nor room, so it's a whole new record
+                    newrow = dtOut.NewRow();
+
+                    newrow["Period"] = period;
+                    newrow["ClientID"] = dr["ClientID"];
+                    newrow["OrgID"] = 17; //always internal
+
+                    newrow["RoomSum"] = 0;
+                    newrow["RoomMiscSum"] = GetMiscSumPerClient(dtMiscCharges, Convert.ToInt32(dr["ClientID"]), "Room");
+
+                    newrow["ToolSum"] = 0;
+                    newrow["ToolMiscSum"] = GetMiscSumPerClient(dtMiscCharges, Convert.ToInt32(dr["ClientID"]), "Tool");
+
+                    //The column does not allow NULL
+                    newrow["UserPaymentSum"] = 0;
+
+                    dtOut.Rows.Add(newrow);
+                }
+            }
+
+            result.RowsExtracted = dtOut.Rows.Count;
+
+            //At this point, the TiredSubsidyBilling table should have all the records but some fields are missing.  
+            //So we loop through the newly constructed table and fill out the missing fields
+            PopulateFieldsFromHistory(period, dtOut, clientId);
+
+            //Clean up the data before saving
+            result.RowsDeleted = DeleteTieredSubsidyBilling(period, clientId);
+
+            //Save everything back to the main table
+            result.RowsLoaded = SaveNewTieredSubsidyBilling(dtOut);
+
+            //Calculate the real subsidy amount and populate the details, UserPaymentSum is set in this method.
+            CalculateSubsidyFee(period, clientId);
+
+            //Push changes back to billing tables
+            DistributeSubsidyMoneyEvenly(period, clientId);
+
+            //[2015-10-20 jg] Added account subsidy feature per Sandrine. Some accounts get a fixed subsidy that overrides the tiered subsidy
+            ApplyAccountSubsidy(period);
+
+            return result;
         }
 
         private static void ApplyAccountSubsidy(DateTime period)
@@ -164,12 +161,13 @@ namespace LNF.CommonTools
                 item.ApplyToBilling(period);
         }
 
-        public static decimal GetSubsidyDiscountPercentage(DateTime period, int clientId)
+        public static decimal GetSubsidyDiscountPercentage(IEnumerable<TieredSubsidyBilling> tieredSubsidyBilling, DateTime period, int clientId)
         {
             decimal result = 0;
 
             //the the subsidy header data
-            TieredSubsidyBilling tsb = DA.Current.Query<TieredSubsidyBilling>().FirstOrDefault(x => x.Client.ClientID == clientId && x.Period == period);
+            TieredSubsidyBilling tsb = tieredSubsidyBilling.FirstOrDefault(x => x.Client.ClientID == clientId && x.Period == period);
+
             if (tsb == null) return 0;
 
             if (tsb.UserTotalSum != 0)
@@ -213,23 +211,27 @@ namespace LNF.CommonTools
             decimal subsidyFactor = 0;
             //double discountFactor = 0;
 
+            var tieredSubsidyBilling = DA.Current.Query<TieredSubsidyBilling>().Where(x => x.Period == period).ToList();
+
             foreach (DataRow dr in dtUser.Rows)
             {
                 cid = Convert.ToInt32(dr["ClientID"]);
 
-                subsidyRows = dtSubsidy.Select(string.Format("ClientID = {0}", cid));
+                string filter = $"ClientID = {cid}";
+
+                subsidyRows = dtSubsidy.Select(filter);
 
                 if (subsidyRows.Length == 1)
                 {
                     totalDiscount = Convert.ToDecimal(subsidyRows[0]["UserTotalSum"]) - Convert.ToDecimal(subsidyRows[0]["UserPaymentSum"]);
-                    roomBillingRows = dtRoomBilling.Select(string.Format("ClientID = {0}", cid));
-                    toolBillingRows = dtToolBilling.Select(string.Format("ClientID = {0}", cid));
-                    miscBillingRows = dtMiscBilling.Select(string.Format("ClientID = {0}", cid));
+                    roomBillingRows = dtRoomBilling.Select(filter);
+                    toolBillingRows = dtToolBilling.Select(filter);
+                    miscBillingRows = dtMiscBilling.Select(filter);
 
                     totalOriginalPayment = Convert.ToDecimal(subsidyRows[0]["UserTotalSum"]);
 
                     //subsidyFactor = TotalDiscount / TotalOriginalPayment;
-                    subsidyFactor = GetSubsidyDiscountPercentage(period, cid);
+                    subsidyFactor = GetSubsidyDiscountPercentage(tieredSubsidyBilling, period, cid);
                     //discountFactor = 1 - subsidyFactor;
 
                     if (totalOriginalPayment != 0)
@@ -278,8 +280,9 @@ namespace LNF.CommonTools
                             ExpName = "User has zero or negative TotalOriginalPayment",
                             AppName = typeof(BillingDataProcessStep4Subsidy).Assembly.GetName().Name,
                             FunctionName = "CommonTools-DistributeSubsidyMoneyEvenly",
-                            CustomData = string.Format("ClientID = {0} Period = {1}", cid, period)
+                            CustomData = $"ClientID = {cid}, Period = {period}"
                         };
+
                         exp.LogException();
                     }
                 }
@@ -294,65 +297,60 @@ namespace LNF.CommonTools
 
         private static void CleanUpAfterSubsidy()
         {
-            using (var dba = DA.Current.GetAdapter())
-                dba.SelectCommand.ApplyParameters(new { Action = "CleanUpAfterSubsidy" }).ExecuteNonQuery("RoomApportionmentInDaysMonthly_Update");
+            DA.Command()
+                .Param("Action", "CleanUpAfterSubsidy")
+                .ExecuteNonQuery("dbo.RoomApportionmentInDaysMonthly_Update");
         }
 
         private static void SaveSubsidyDiscountRoomToolMisc(DataTable dtIn)
         {
-            using (var dba = DA.Current.GetAdapter())
+            int count = DA.Command().Update(dtIn, x =>
             {
-                // Update the data using dateset's batch update feature.
-                dba.UpdateCommand
-                    .AddParameter("@ExpID", SqlDbType.Int)
-                    .AddParameter("@SubsidyDiscount", SqlDbType.Money);
+                x.Update.SetCommandText("dbo.MiscBillingCharge_Update_SubsidyDiscount");
+                x.Update.AddParameter("ExpID", SqlDbType.Int);
+                x.Update.AddParameter("SubsidyDiscount", SqlDbType.Money);
+            });
 
-                // Only send email on failure.
-                if (dba.UpdateDataTable(dtIn, updateSql: "MiscBillingCharge_Update_SubsidyDiscount") < 0)
-                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountRoomToolMisc(DataTable dtIn)", string.Format("Update MiscBilling SubsidyDiscount Failed - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
-            }
+            // Only send email on failure.
+            if (count < 0)
+                ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountRoomToolMisc", $"Update MiscBilling SubsidyDiscount Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
         }
 
         private static void SaveSubsidyDiscountRoom(DataTable dtIn)
         {
-            using (var dba = DA.Current.GetAdapter())
+            int count = DA.Command().Update(dtIn, x =>
             {
-                // Update the data using dateset's batch update feature.
-                dba.UpdateCommand
-                    .AddParameter("@AppID", SqlDbType.Int)
-                    .AddParameter("@SubsidyDiscount", SqlDbType.Money);
+                x.Update.SetCommandText("dbo.RoomApportionmentInDaysMonthly_Update_SubsidyDiscount");
+                x.Update.AddParameter("AppID", SqlDbType.Int);
+                x.Update.AddParameter("SubsidyDiscount", SqlDbType.Money);
+            });
 
-                // Only send email on failure.
-                if (dba.UpdateDataTable(dtIn, null, "RoomApportionmentInDaysMonthly_Update_SubsidyDiscount", null) < 0)
-                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountRoom(DataTable dtIn)", string.Format("Update RoomBilling SubsidyDiscount Failed - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
-            }
+            // Only send email on failure.
+            if (count < 0)
+                ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountRoom", $"Update RoomBilling SubsidyDiscount Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
         }
 
         private static void SaveSubsidyDiscountTool(DataTable dtIn)
         {
-            using (var dba = DA.Current.GetAdapter())
+            int count = DA.Command().Update(dtIn, x =>
             {
-                // Update the data using dateset's batch update feature.
-                dba.UpdateCommand
-                    .AddParameter("@ToolBillingID", SqlDbType.Int)
-                    .AddParameter("@SubsidyDiscount", SqlDbType.Money);
+                x.Update.SetCommandText("dbo.ToolBilling_Update_SubsidyDiscount");
+                x.Update.AddParameter("ToolBillingID", SqlDbType.Int);
+                x.Update.AddParameter("SubsidyDiscount", SqlDbType.Money);
+            });
 
-                // Only send email on failure.
-                if (dba.UpdateDataTable(dtIn, null, "ToolBilling_Update_SubsidyDiscount", null) < 0)
-                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountTool(DataTable dtIn)", string.Format("Update ToolBilling SubsidyDiscount Failed - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
-            }
+            // Only send email on failure.
+            if (count < 0)
+                ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountTool", $"Update ToolBilling SubsidyDiscount Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
         }
 
         private static DataSet GetTablesForSubsidyDiscountDistribution(DateTime period, int clientId = 0)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.SelectCommand
-                    .AddParameter("@Action", "ForSubsidyDiscountDistribution")
-                    .AddParameter("@Period", period)
-                    .AddParameterIf("@ClientID", clientId > 0, clientId);
-                return dba.FillDataSet("TieredSubsidyBilling_Select");
-            }
+            return DA.Command()
+                .Param("Action", "ForSubsidyDiscountDistribution")
+                .Param("Period", period)
+                .Param("ClientID", clientId > 0, clientId)
+                .FillDataSet("dbo.TieredSubsidyBilling_Select");
         }
 
         private static void CalculateSubsidyFee(DateTime period, int clientId = 0)
@@ -514,87 +512,80 @@ namespace LNF.CommonTools
 
             foreach (DataRow dr in dtTierBilling.Rows)
             {
-                DataRow[] rows = dtTierBillingDetailGroupByTierBillingID.Select(string.Format("TierBillingID = {0}", dr["TierBillingID"]));
+                DataRow[] rows = dtTierBillingDetailGroupByTierBillingID.Select($"TierBillingID = {dr["TierBillingID"]}");
                 double userPaymentSum = rows[0].Field<double>("UserPaymentSum");
                 dr.SetField("UserPaymentSum", userPaymentSum);
             }
 
-            using (var dba = DA.Current.GetAdapter())
+            // Update the data using dateset's batch update feature.
+            int count = DA.Command().Update(dtTierBilling, x =>
             {
-                // Update the data using dateset's batch update feature.
-                dba.UpdateCommand
-                    .AddParameter("@TierBillingID", SqlDbType.Int)
-                    .AddParameter("@UserPaymentSum", SqlDbType.Float);
+                x.Update.SetCommandText("dbo.TieredSubsidyBilling_Update");
+                x.Update.AddParameter("TierBillingID", SqlDbType.Int);
+                x.Update.AddParameter("UserPaymentSum", SqlDbType.Float);
+            });
 
-                // Only send email on failure.
-                if (dba.UpdateDataTable(dtTierBilling, updateSql: "TieredSubsidyBilling_Update") < 0)
-                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.UpdateUserPaymentSum(DateTime period, int clientId = 0)", string.Format("Update UserPaymentSum Failed - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
-            }
+            // Only send email on failure.
+            if (count < 0)
+                ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.UpdateUserPaymentSum", $"Update UserPaymentSum Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
         }
 
         private static DataSet GetNecessaryTablesForUpdatingUserPayment(DateTime period, int clientId = 0)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.SelectCommand
-                    .AddParameter("@Action", "ForUpdatingUserPaymentSum")
-                    .AddParameter("@Period", period)
-                    .AddParameterIf("@ClientID", clientId > 0, clientId);
-                return dba.FillDataSet("TieredSubsidyBilling_Select");
-            }
+            return DA.Command()
+                 .Param("Action", "ForUpdatingUserPaymentSum")
+                 .Param("Period", period)
+                 .Param("ClientID", clientId > 0, clientId)
+                 .FillDataSet("dbo.TieredSubsidyBilling_Select");
         }
 
         private static void DeleteTieredSubsidyBillingDetail(DateTime period, int clientId = 0)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.SelectCommand
-                    .AddParameter("@Action", "DeleteCurrentRange")
-                    .AddParameter("@Period", period)
-                    .AddParameterIf("@ClientID", clientId > 0, clientId)
-                    .ExecuteNonQuery("TieredSubsidyBillingDetail_Delete");
-            }
+            DA.Command()
+                .Param("Action", "DeleteCurrentRange")
+                .Param("Period", period)
+                .Param("ClientID", clientId > 0, clientId)
+                .ExecuteNonQuery("dbo.TieredSubsidyBillingDetail_Delete");
         }
 
         private static void SaveNewTieredSubsidyBillingDetail(DataTable dtIn)
         {
-            using (var dba = DA.Current.GetAdapter())
+            int count = DA.Command().Update(dtIn, x =>
             {
-                dba.InsertCommand
-                    .AddParameter("@Period", SqlDbType.DateTime)
-                    .AddParameter("@TierBillingID", SqlDbType.Int)
-                    .AddParameter("@FloorAmount", SqlDbType.Float)
-                    .AddParameter("@UserPaymentPercentage", SqlDbType.Float)
-                    .AddParameter("@OriginalApplyAmount", SqlDbType.Float);
+                x.Insert.SetCommandText("dbo.TieredSubsidyBillingDetail_Insert");
+                x.Insert.AddParameter("Period", SqlDbType.DateTime);
+                x.Insert.AddParameter("TierBillingID", SqlDbType.Int);
+                x.Insert.AddParameter("FloorAmount", SqlDbType.Float);
+                x.Insert.AddParameter("UserPaymentPercentage", SqlDbType.Float);
+                x.Insert.AddParameter("OriginalApplyAmount", SqlDbType.Float);
+            });
 
-                // Only send email on failure.
-                if (dba.UpdateDataTable(dtIn, "TieredSubsidyBillingDetail_Insert") < 0)
-                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveNewTieredSubsidyBillingDetail(DataTable dtIn)", string.Format("Error in Processing TieredSubsidyBillingDetail - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
-            }
+            // Only send email on failure.
+            if (count < 0)
+                ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveNewTieredSubsidyBillingDetail", $"Error in Processing TieredSubsidyBillingDetail - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
         }
 
         private static DataSet GetTieredSubsidyBillingRelatedTables(DateTime period, int clientId = 0)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.SelectCommand
-                    .AddParameter("@Action", "SelectAllByPeriod")
-                    .AddParameter("@Period", period)
-                    .AddParameterIf("@ClientID", clientId > 0, clientId);
-                return dba.FillDataSet("TieredSubsidyBilling_Select");
-            }
+            return DA.Command()
+                .Param("Action", "SelectAllByPeriod")
+                .Param("Period", period)
+                .Param("ClientID", clientId > 0, clientId)
+                .FillDataSet("dbo.TieredSubsidyBilling_Select");
         }
 
         private static DataTable GetTieredSubsidyBillingDetailSchema()
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba.ApplyParameters(new { Action = "SelectSchema" }).FillDataTable("TieredSubsidyBillingDetail_Select");
+            return DA.Command()
+                .Param("Action", "SelectSchema")
+                .FillDataTable("dbo.TieredSubsidyBillingDetail_Select");
         }
 
         private static DataTable GetSubsidyTiers(DateTime period)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba.ApplyParameters(new { Period = period }).FillDataTable("TieredSubsidyTiers_Select");
+            return DA.Command()
+                .Param("Period", period)
+                .FillDataTable("dbo.TieredSubsidyTiers_Select");
         }
 
         private static void TransformTiersIntoSortedDictionary(DataTable dtTiers, SortedList<double, double> TierRegular, SortedList<double, double> TierNewUser, SortedList<double, double> TierNewFacultyUser)
@@ -631,43 +622,37 @@ namespace LNF.CommonTools
 
         private static int DeleteTieredSubsidyBilling(DateTime period, int clientId = 0)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                return dba.SelectCommand
-                    .AddParameter("@Action", "DeleteCurrentRange")
-                    .AddParameter("@Period", period)
-                    .AddParameterIf("@ClientID", clientId > 0, clientId)
-                    .ExecuteNonQuery("TieredSubsidyBilling_Delete");
-            }
+            return DA.Command()
+                .Param("Action", "DeleteCurrentRange")
+                .Param("Period", period)
+                .Param("ClientID", clientId > 0, clientId)
+                .ExecuteNonQuery("dbo.TieredSubsidyBilling_Delete").Value;
         }
 
         private static int SaveNewTieredSubsidyBilling(DataTable dtIn)
         {
-            using (var dba = DA.Current.GetAdapter())
+            int count = DA.Command().Update(dtIn, x =>
             {
+                x.Insert.SetCommandText("dbo.TieredSubsidyBilling_Insert");
+                x.Insert.AddParameter("Period", SqlDbType.DateTime);
+                x.Insert.AddParameter("ClientID", SqlDbType.Int);
+                x.Insert.AddParameter("OrgID", SqlDbType.Int);
+                x.Insert.AddParameter("RoomSum", SqlDbType.Float);
+                x.Insert.AddParameter("RoomMiscSum", SqlDbType.Float);
+                x.Insert.AddParameter("ToolSum", SqlDbType.Float);
+                x.Insert.AddParameter("ToolMiscSum", SqlDbType.Float);
+                x.Insert.AddParameter("UserPaymentSum", SqlDbType.Float);
+                x.Insert.AddParameter("StartingPeriod", SqlDbType.DateTime);
+                x.Insert.AddParameter("Accumulated", SqlDbType.Float);
+                x.Insert.AddParameter("IsNewStudent", SqlDbType.Bit);
+                x.Insert.AddParameter("IsNewFacultyUser", SqlDbType.Bit);
+            });
 
-                dba.InsertCommand
-                    .AddParameter("@Period", SqlDbType.DateTime)
-                    .AddParameter("@ClientID", SqlDbType.Int)
-                    .AddParameter("@OrgID", SqlDbType.Int)
-                    .AddParameter("@RoomSum", SqlDbType.Float)
-                    .AddParameter("@RoomMiscSum", SqlDbType.Float)
-                    .AddParameter("@ToolSum", SqlDbType.Float)
-                    .AddParameter("@ToolMiscSum", SqlDbType.Float)
-                    .AddParameter("@UserPaymentSum", SqlDbType.Float)
-                    .AddParameter("@StartingPeriod", SqlDbType.DateTime)
-                    .AddParameter("@Accumulated", SqlDbType.Float)
-                    .AddParameter("@IsNewStudent", SqlDbType.Bit)
-                    .AddParameter("@IsNewFacultyUser", SqlDbType.Bit);
+            // Only send email on failure.
+            if (count < 0)
+                ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveNewTieredSubsidyBilling", $"Error in Processing TieredSubsidyBilling - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
 
-                int count = dba.UpdateDataTable(dtIn, "TieredSubsidyBilling_Insert");
-
-                // Only send email on failure.
-                if (count < 0)
-                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveNewTieredSubsidyBilling(DataTable dtIn)", string.Format("Error in Processing TieredSubsidyBilling - saving to database [{0}]", DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
-
-                return count;
-            }
+            return count;
         }
 
         //This will populate necessary data fields for calculating the new subsidy amount
@@ -705,7 +690,15 @@ namespace LNF.CommonTools
                         dr["Accumulated"] = 0;
                         dr["IsNewStudent"] = false;
 
-                        ExceptionManager exp = new ExceptionManager { TimeStamp = DateTime.Now, ExpName = "No SubsidyStartDate", AppName = typeof(BillingDataProcessStep4Subsidy).Assembly.GetName().Name, FunctionName = "CommonTools-PopulateFieldsFromHistory", CustomData = string.Format("ClientID = {0}, Period = {1}", cid, period) };
+                        ExceptionManager exp = new ExceptionManager()
+                        {
+                            TimeStamp = DateTime.Now,
+                            ExpName = "No SubsidyStartDate",
+                            AppName = typeof(BillingDataProcessStep4Subsidy).Assembly.GetName().Name,
+                            FunctionName = "LNF.CommonTools.BillingDataProcessStep4.PopulateFieldsFromHistory",
+                            CustomData = $"ClientID = {cid}, Period = {period}"
+                        };
+
                         exp.LogException();
                     }
                 }
@@ -754,22 +747,19 @@ namespace LNF.CommonTools
 
         private static bool GetIsNewFacultyUser(DateTime period, int clientId)
         {
-            using (var dba = DA.Current.GetAdapter())
+            var args = new
             {
-                var args = new
-                {
-                    Action = "GetManagerOrgIDNewFaculty",
-                    sDate = period,
-                    eDate = period.AddMonths(1),
-                    ClientID = clientId
-                };
+                Action = "GetManagerOrgIDNewFaculty",
+                sDate = period,
+                eDate = period.AddMonths(1),
+                ClientID = clientId
+            };
 
-                using (IDataReader reader = dba.ApplyParameters(args).ExecuteReader("ClientManager_Select"))
-                {
-                    bool result = reader.Read();
-                    reader.Close();
-                    return result;
-                }
+            using (IDataReader reader = DA.Command().Param(args).ExecuteReader("dbo.ClientManager_Select"))
+            {
+                bool result = reader.Read();
+                reader.Close();
+                return result;
             }
         }
 
@@ -815,40 +805,28 @@ namespace LNF.CommonTools
             else return Convert.ToDateTime(dr[type]);
         }
 
-        private static bool IsNewFiscalYear(DateTime Period, DateTime LastUsedDate)
-        {
-            return false;
-        }
-
         private static DataTable GetFirstSubsidyDateTable(int clientId = 0)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.SelectCommand
-                    .AddParameter("@Action", "GetAllActiveStartDate")
-                    .AddParameterIf("@ClientID", clientId > 0, clientId);
-
-                return dba.FillDataTable("ClientOrg_Select");
-            }
+            return DA.Command()
+                .Param("Action", "GetAllActiveStartDate")
+                .Param("ClientID", clientId > 0, clientId)
+                .FillDataTable("dbo.ClientOrg_Select");
         }
 
         private static DataTable GetLastUsedDateFromTieredSubsidyBilling(DateTime period, int clientId = 0)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.SelectCommand
-                    .AddParameter("@Action", "GetLastUsedStartingDate")
-                    .AddParameter("@Period", period)
-                    .AddParameterIf("@ClientID", clientId > 0, clientId);
-
-                return dba.FillDataTable("TieredSubsidyBilling_Select");
-            }
+            return DA.Command()
+                .Param("Action", "GetLastUsedStartingDate")
+                .Param("Period", period)
+                .Param("ClientID", clientId > 0, clientId)
+                .FillDataTable("TieredSubsidyBilling_Select");
         }
 
         //Get Misc Charge
         private static double GetMiscSumPerClient(DataTable dt, int clientId, string subType)
         {
-            DataRow[] drs = dt.Select(string.Format("SUBType = '{0}' AND ClientID = {1}", subType, clientId));
+            DataRow[] drs = dt.Select($"SUBType = '{subType}' AND ClientID = {clientId}");
+
             if (drs.Length > 0)
                 return drs.First().Field<double>("MiscCost");
             else
@@ -857,15 +835,11 @@ namespace LNF.CommonTools
 
         private static DataSet GetNecessaryTables(DateTime period, int clientId = 0)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.SelectCommand
-                    .AddParameter("@Action", "PopulateTieredSubsidyBilling")
-                    .AddParameter("@Period", period)
-                    .AddParameterIf("@ClientID", clientId > 0, clientId);
-
-                return dba.FillDataSet("TieredSubsidyBilling_Select");
-            }
+            return DA.Command()
+                .Param("Action", "PopulateTieredSubsidyBilling")
+                .Param("Period", period)
+                .Param("ClientID", clientId > 0, clientId)
+                .FillDataSet("dbo.TieredSubsidyBilling_Select");
         }
 
     }

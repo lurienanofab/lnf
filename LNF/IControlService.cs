@@ -6,8 +6,8 @@ namespace LNF
 {
     public interface IControlService
     {
-        Task<BlockResponse> GetBlockState(Block block);
-        Task<PointResponse> SetPointState(Point point, bool state, uint duration);
-        Task<PointResponse> Cancel(Point point);
+        BlockResponse GetBlockState(Block block);
+        PointResponse SetPointState(Point point, bool state, uint duration);
+        PointResponse Cancel(Point point);
     }
 }

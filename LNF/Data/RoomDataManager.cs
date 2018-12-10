@@ -13,7 +13,7 @@ namespace LNF.Data
         {
             var ca = Session
                 .Query<ClientAccountInfo>()
-                .FirstOrDefault(x => x.ClientID == item.Client.ClientID && x.AccountID == item.Account.AccountID);
+                .FirstOrDefault(x => x.ClientID == item.ClientID && x.AccountID == item.AccountID);
 
             if (ca == null) return string.Empty;
 

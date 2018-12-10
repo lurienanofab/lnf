@@ -168,22 +168,6 @@ namespace LNF.Reporting
             return join;
         }
 
-        [Obsolete("DO NOT USE")]
-        public static IEnumerable<ManagerUsageSummaryItem> GetManagerUsageSummaryItems(DateTime period, bool includeRemote)
-        {
-            var logs = ClientManagerLog.SelectByPeriod(period, period.AddMonths(1));
-
-            var charges = ManagerUsageCharge.SelectByPeriod(period, includeRemote);
-
-            var join = logs.LeftJoin(
-                inner: charges,
-                outerKeySelector: o => new { o.ManagerClientID, o.UserClientID, o.AccountID },
-                innerKeySelector: i => new { i.ManagerClientID, i.UserClientID, i.AccountID },
-                resultSelector: (o, i) => ManagerUsageSummaryItem.Create(o, i));
-
-            return join;
-        }
-
         public static string GetClientName(string lname, string fname)
         {
             return Models.Data.ClientItem.GetDisplayName(lname, fname);

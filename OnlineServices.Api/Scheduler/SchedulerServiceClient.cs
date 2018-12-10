@@ -1,37 +1,36 @@
 ﻿using LNF.Models.Data;
 using LNF.Models.Scheduler;
-using System.Configuration;
-using System.Threading.Tasks;
+using LNF.Models.Scheduler.Service;
 
 namespace OnlineServices.Api.Scheduler
 {
     public class SchedulerServiceClient : ApiClient
     {
-        public SchedulerServiceClient() : base(ConfigurationManager.AppSettings["ApiHost"]) { }
+        public SchedulerServiceClient() : base(GetApiBaseUrl()) { }
 
-        public async Task<bool> RunFiveMinuteTask()
+        public FiveMinuteTaskResult RunFiveMinuteTask()
         {
-            return await Get<bool>("scheduler/service/task-5min");
+            return Get<FiveMinuteTaskResult>("webapi/scheduler/service/task-5min");
         }
 
-        public async Task<bool> RunDailyTask()
+        public DailyTaskResult RunDailyTask()
         {
-            return await Get<bool>("scheduler/service/task-daily");
+            return Get<DailyTaskResult>("webapi/scheduler/service/task-daily");
         }
 
-        public async Task<bool> RunMonthlyTask()
+        public MonthlyTaskResult RunMonthlyTask()
         {
-            return await Get<bool>("scheduler/service/task-monthly");
+            return Get<MonthlyTaskResult>("webapi/scheduler/service/task-monthly");
         }
 
-        public async Task<DataFeedModel<ExpiringCard>> GetExpiringCards()
+        public DataFeedModel<ExpiringCard> GetExpiringCards()
         {
-            return await Get<DataFeedModel<ExpiringCard>>("scheduler/service/expiring-cards");
+            return Get<DataFeedModel<ExpiringCard>>("webapi/scheduler/service/expiring-cards");
         }
 
-        public async Task<int> SendExpiringCardsEmail()
+        public int SendExpiringCardsEmail()
         {
-            return await Get<int>("scheduler/service/expiring-cards/email");
+            return Get<int>("webapi/scheduler/service/expiring-cards/email");
         }
     }
 }

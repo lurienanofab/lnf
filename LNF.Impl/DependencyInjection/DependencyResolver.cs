@@ -8,10 +8,18 @@ using LNF.Impl.Email;
 using LNF.Impl.Encryption;
 using LNF.Impl.Logging;
 using LNF.Impl.ModelFactory;
-using LNF.Impl.PhysicalAccess;
 using LNF.Impl.Serialization;
+using LNF.Models;
+using LNF.Models.Billing;
+using LNF.Models.Billing.Process;
+using LNF.Models.Billing.Reports;
 using LNF.Repository;
 using LNF.Scheduler;
+using OnlineServices.Api.Billing;
+using OnlineServices.Api.Data;
+using OnlineServices.Api.PhysicalAccess;
+using OnlineServices.Api.Scheduler;
+using OnlineServices.Api.Worker;
 using StructureMap;
 using System;
 
@@ -40,26 +48,48 @@ namespace LNF.Impl.DependencyInjection
                 _.For<IControlService>().Singleton().Use<WagoControlService>();
                 _.For<IEncryptionService>().Singleton().Use<EncryptionService>();
                 _.For<ISerializationService>().Singleton().Use<SerializationService>();
-                _.For<IPhysicalAccessService>().Singleton().Use<ProwatchPhysicalAccessService>();
+
+                _.For<IDataService>().Singleton().Use<DataClient>();
+
+                _.For<IBillingApi>().Singleton().Use<BillingApi>();
+                _.For<LNF.Models.Billing.IDefaultClient>().Singleton().Use<OnlineServices.Api.Billing.DefaultClient>();
+                _.For<IAccountSubsidyClient>().Singleton().Use<AccountSubsidyClient>();
+                _.For<IProcessClient>().Singleton().Use<ProcessClient>();
+                _.For<IReportClient>().Singleton().Use<ReportClient>();
+                _.For<IToolClient>().Singleton().Use<ToolClient>();
+                _.For<IRoomClient>().Singleton().Use<RoomClient>();
+                _.For<IStoreClient>().Singleton().Use<StoreClient>();
+
+                _.For<IPhysicalAccessService>().Singleton().Use<PhysicalAccessClient>();
+                _.For<ISchedulerService>().Singleton().Use<SchedulerClient>();
+                _.For<IWorkerService>().Singleton().Use<WorkerClient>();
+
                 _.For<IModelFactory>().Singleton().Use<ValueInjecterModelFactory>();
 
                 _.For<IAccountManager>().Singleton().Use<AccountManager>();
                 _.For<IChargeTypeManager>().Singleton().Use<ChargeTypeManager>();
                 _.For<IClientManager>().Singleton().Use<ClientManager>();
-                _.For<IOrgManager>().Singleton().Use<OrgManager>();
                 _.For<IClientOrgManager>().Singleton().Use<ClientOrgManager>();
+                _.For<IClientRemoteManager>().Singleton().Use<ClientRemoteManager>();
+                _.For<IOrgManager>().Singleton().Use<OrgManager>();
                 _.For<IActiveDataItemManager>().Singleton().Use<ActiveDataItemManager>();
                 _.For<ICostManager>().Singleton().Use<CostManager>();
                 _.For<IDryBoxManager>().Singleton().Use<DryBoxManager>();
 
                 _.For<IBillingTypeManager>().Singleton().Use<BillingTypeManager>();
                 _.For<IToolBillingManager>().Singleton().Use<ToolBillingManager>();
+                _.For<IApportionmentManager>().Singleton().Use<ApportionmentManager>();
 
                 _.For<IReservationManager>().Singleton().Use<ReservationManager>();
+                _.For<IReservationInviteeManager>().Singleton().Use<ReservationInviteeManager>();
                 _.For<IResourceManager>().Singleton().Use<ResourceManager>();
                 _.For<IEmailManager>().Singleton().Use<EmailManager>();
+                _.For<IProcessInfoManager>().Singleton().Use<ProcessInfoManager>();
 
+                _.For<IAdministrativeHelper>().Singleton().Use<AdministrativeHelper>();
+                _.For<IReadToolDataManager>().Singleton().Use<ReadToolDataManager>();
                 _.For<IReadRoomDataManager>().Singleton().Use<ReadRoomDataManager>();
+                _.For<IReadStoreDataManager>().Singleton().Use<ReadStoreDataManager>();
 
                 _.For<IDependencyResolver>().Singleton().Use(this);
             });

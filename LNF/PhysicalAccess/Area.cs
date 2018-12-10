@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LNF.PhysicalAccess
 {
-    public class Area
+    public class zArea
     {
         public string ID { get; set; }
         public string Name { get; set; }

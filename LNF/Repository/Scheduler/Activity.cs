@@ -25,5 +25,7 @@ namespace LNF.Repository.Scheduler
         {
             return DA.Current.Query<ReservationRecurrence>().Where(x => x.Activity.ActivityID == ActivityID);
         }
+
+        public virtual bool IsRepair => !Editable;
     }
 }

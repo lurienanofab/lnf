@@ -9,24 +9,19 @@ namespace LNF.Models.Billing.Process
     public class BillingProcessDataCommand : IProcessCommand
     {
         /// <summary>
-        /// Indicates which command to execute. Allowed values: [room|tool|store]
+        /// Indicates which command to execute. Allowed values: [room|tool|store].
         /// </summary>
         public BillingCategory BillingCategory { get; set; }
 
         /// <summary>
-        /// The ClientID for which to run the process. Can be 0 for all clients
+        /// The ClientID for which to run the process. Can be 0 for all clients.
         /// </summary>
         public int ClientID { get; set; }
 
         /// <summary>
-        /// The start of the date range
+        /// The period to process.
         /// </summary>
-        public DateTime StartPeriod { get; set; }
-
-        /// <summary>
-        /// The end of the date range
-        /// </summary>
-        public DateTime EndPeriod { get; set; }
+        public DateTime Period { get; set; }
 
         /// <summary>
         /// The record id for which to run the process. This will either be a RoomID, ResourceID, or ItemID depending on Command. Can be 0 for all records.

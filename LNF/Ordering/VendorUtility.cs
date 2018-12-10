@@ -56,13 +56,6 @@ namespace LNF.Ordering
             return v;
         }
 
-        public static DataTable GetClientsWithVendors()
-        {
-            using (var adap = DA.Current.GetAdapter())
-            {
-                adap.AddParameter("@Action", "GetClientsWithVendors");
-                return adap.FillDataTable("IOF.dbo.spVendor_Select");
-            }
-        }
+        public static DataTable GetClientsWithVendors() => DA.Command().Param("Action", "GetClientsWithVendors").FillDataTable("IOF.dbo.spVendor_Select");
     }
 }

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository;
-using LNF.Logging;
+﻿using LNF.Repository;
+using System;
 
 namespace LNF.CommonTools
 {
@@ -13,49 +9,27 @@ namespace LNF.CommonTools
     {
         public static int PopulateRoomBillingByOrg(DateTime period, int clientId = 0)
         {
-            int result = 0;
-
-            using (LogTaskTimer.Start("BillingDataProcessStep3.PopulateRoomBillingByOrg", "period = '{0:yyyy-MM-dd}', ClientID = {1}, result = {2}", () => new object[] { period, clientId, result }))
-            {
-                using (var dba = DA.Current.GetAdapter())
-                {
-                    result = dba
-                        .AddParameter("@Action", "PopulateRoomBillingByOrg")
-                        .AddParameter("@Period", period)
-                        .AddParameterIf("@ClientID", clientId > 0, clientId)
-                        .ExecuteNonQuery("RoomBillingByRoomOrg_Select");
-                    return result;
-                }
-            }
+            return DA.Command()
+                .Param("Action", "PopulateRoomBillingByOrg")
+                .Param("Period", period)
+                .Param("ClientID", clientId > 0, clientId)
+                .ExecuteNonQuery("dbo.RoomBillingByRoomOrg_Select").Value;
         }
 
         public static int PopulateToolBillingByOrg(DateTime period, int clientId = 0)
         {
-            int count = 0;
-
-            using (LogTaskTimer.Start("BillingDataProcessStep3.PopulateToolBillingByOrg", "period = '{0:yyyy-MM-dd}', clientId = {1}, count = {2}", () => new object[] { period, clientId, count }))
-            using (var dba = DA.Current.GetAdapter())
-            {
-                count = dba.SelectCommand
-                    .AddParameter("@Action", "PopulateToolBillingByOrg")
-                    .AddParameter("@Period", period)
-                    .AddParameterIf("@ClientID", clientId > 0, clientId)
-                    .ExecuteNonQuery("ToolBillingByToolOrg_Select");
-
-                return count;
-            }
+            return DA.Command()
+                .Param("Action", "PopulateToolBillingByOrg")
+                .Param("Period", period)
+                .Param("ClientID", clientId > 0, clientId)
+                .ExecuteNonQuery("dbo.ToolBillingByToolOrg_Select").Value;
         }
 
         public static int PopulateStoreBillingByOrg(DateTime period)
         {
-            int count = 0;
-
-            using (LogTaskTimer.Start("BillingDataProcessStep3.PopulateStoreBillingByOrg", "period = '{0:yyyy-MM-dd}', count = {1}", () => new object[] { period, count }))
-            using (var dba = DA.Current.GetAdapter())
-            {
-                count = dba.SelectCommand.ApplyParameters(new { Action = "PopulateStoreBillingByOrg", Period = period }).ExecuteNonQuery("StoreBillingByItemOrg_Select");
-                return count;
-            }
+            return DA.Command()
+                .Param(new { Action = "PopulateStoreBillingByOrg", Period = period })
+                .ExecuteNonQuery("dbo.StoreBillingByItemOrg_Select").Value;
         }
     }
 }

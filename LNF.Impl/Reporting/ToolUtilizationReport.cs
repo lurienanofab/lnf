@@ -95,15 +95,11 @@ namespace LNF.Impl.Reporting
 
         public DataTable GetToolUtilizationData()
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                return dba.CommandTypeText().ApplyParameters(new
-                {
-                    StartPeriod = Criteria.Period,
-                    EndPeriod = Criteria.Period.AddMonths(Criteria.GetValue("monthCount", 1)),
-                    IncludeForgiven = Criteria.GetValue("includeForgiven", false)
-                }).FillDataTable("SELECT * FROM Reporting.dbo.udf_ToolUtilizationReport(@StartPeriod, @EndPeriod, @IncludeForgiven)");
-            }
+            return DA.Command(CommandType.Text)
+                .Param("StartPeriod", Criteria.Period)
+                .Param("EndPeriod", Criteria.Period.AddMonths(Criteria.GetValue("monthCount", 1)))
+                .Param("IncludeForgiven", Criteria.GetValue("includeForgiven", false))
+                .FillDataTable("SELECT * FROM Reporting.dbo.udf_ToolUtilizationReport(@StartPeriod, @EndPeriod, @IncludeForgiven)");
         }
 
         public string[] GetProcTechNames(IList<ProcessTech> list)
@@ -156,28 +152,35 @@ namespace LNF.Impl.Reporting
         public ArrayList GetColumns()
         {
             if (headers == null) GetResources();
-            ArrayList columns = new ArrayList();
-            columns.Add(new { sTitle = "ResourceID", bVisible = false });
-            columns.Add(new { sTitle = "ProcessTechID", bVisible = false });
-            columns.Add(new { sTitle = "LabID", bVisible = false });
-            columns.Add(new { sTitle = "Resource" });
-            columns.Add(new { sTitle = "Process Tech" });
+
+            ArrayList columns = new ArrayList
+            {
+                new { sTitle = "ResourceID", bVisible = false },
+                new { sTitle = "ProcessTechID", bVisible = false },
+                new { sTitle = "LabID", bVisible = false },
+                new { sTitle = "Resource" },
+                new { sTitle = "Process Tech" }
+            };
+
             foreach (ActivityData act in headers)
             {
                 columns.Add(new { sTitle = act.ActivityName, sClass = "numeric-column" });
             }
+
             columns.Add(new { sTitle = "Total", sClass = "numeric-column" });
+
             return columns;
         }
 
         public object GetSetupData(DataTable table)
         {
             ArrayList columns = GetColumns();
+
             return new
             {
                 aoColumns = columns,
                 activities = headers,
-                procTechs = procTechs,
+                procTechs,
                 tableColumns = columns.Count - 3,
                 dataColumns = columns.Count
             };
@@ -195,7 +198,7 @@ namespace LNF.Impl.Reporting
             {
                 foreach (ActivityData a in r.Activities)
                 {
-                    DataRow[] drows = table.Select(string.Format("ResourceID = {0} AND ActivityID = {1}", r.ResourceID, a.ActivityID));
+                    DataRow[] drows = table.Select($"ResourceID = {r.ResourceID} AND ActivityID = {a.ActivityID}");
                     if (drows.Length > 0)
                     {
                         DataRow dr = drows[0];
@@ -242,12 +245,15 @@ namespace LNF.Impl.Reporting
 
             public string[] ToArray(string statsBasedOn)
             {
-                List<string> list = new List<string>();
-                list.Add(ResourceID.ToString());
-                list.Add(ProcessTechID.ToString());
-                list.Add(LabID.ToString());
-                list.Add(ResourceName);
-                list.Add(ProcessTechName);
+                List<string> list = new List<string>
+                {
+                    ResourceID.ToString(),
+                    ProcessTechID.ToString(),
+                    LabID.ToString(),
+                    ResourceName,
+                    ProcessTechName
+                };
+
                 switch (statsBasedOn)
                 {
                     case "charged":
@@ -260,7 +266,9 @@ namespace LNF.Impl.Reporting
                         list.AddRange(Activities.Select(x => x.ActDuration.ToString("#0.000")).ToArray());
                         break;
                 }
+
                 list.Add(GetTotal(statsBasedOn).ToString("#0.000"));
+
                 return list.ToArray();
             }
         }

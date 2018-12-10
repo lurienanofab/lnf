@@ -1,5 +1,5 @@
 ﻿using LNF.Billing;
-using LNF.Logging;
+using LNF.Models.Billing.Process;
 using LNF.Repository;
 using LNF.Repository.Billing;
 using LNF.Repository.Data;
@@ -29,468 +29,471 @@ namespace LNF.CommonTools
     //This class will popuate the RoomBilling, ToolBilling, StoreBilling and all associated temporary tables
     public static class BillingDataProcessStep1
     {
-        public static IBillingTypeManager BillingTypeManager => DA.Use<IBillingTypeManager>();
-        public static IToolBillingManager ToolBillingManager => DA.Use<IToolBillingManager>();
+        public static IBillingTypeManager BillingTypeManager => ServiceProvider.Current.Use<IBillingTypeManager>();
+        public static IToolBillingManager ToolBillingManager => ServiceProvider.Current.Use<IToolBillingManager>();
 
         #region Room Billing
-        private const string FOR_PARENT_ROOMS = "ForParentRooms";
+        public const string FOR_PARENT_ROOMS = "ForParentRooms";
 
         ///<summary>
         ///The main process that loads data into the RoomBilling table.
         ///Note: This table is called RoomApportionmentInDaysMonthly.
         ///</summary>
-        public static void PopulateRoomBilling(DateTime period, int clientId, bool isTemp)
+        public static PopulateRoomBillingProcessResult PopulateRoomBilling(DateTime period, int clientId, bool isTemp)
         {
-            bool useParentRooms = bool.Parse(ConfigurationManager.AppSettings["UseParentRooms"]);
+            var result = new PopulateRoomBillingProcessResult
+            {
+                UseParentRooms = bool.Parse(Utility.GetRequiredAppSetting("UseParentRooms")),
 
-            int count = 0;
-
-            //Before saving to DB, we have to delete the old data in the same period
-            //This must be done first because PopulateRoomBilling is now a two step process
-            count = DeleteRoomBillingData(period, clientId, isTemp);
+                //Before saving to DB, we have to delete the old data in the same period
+                //This must be done first because PopulateRoomBilling is now a two step process
+                RowsDeleted = DeleteRoomBillingData(period, clientId, isTemp)
+            };
 
             DataSet ds;
             DataTable dt;
 
-            ds = GetDataForRoomBilling(period);
+            ds = GetRoomData(period);
             dt = LoadRoomBilling(ds, period, clientId, isTemp);
-            count = SaveRoomBillingData(dt, isTemp);
+            result.RowsExtracted = dt.Rows.Count;
+            result.RowsLoaded = SaveRoomBillingData(dt, isTemp);
 
-            if (useParentRooms)
+            if (result.UseParentRooms)
             {
-                ds = GetDataForRoomBilling(period, FOR_PARENT_ROOMS);
+                ds = GetRoomData(period, FOR_PARENT_ROOMS);
                 dt = LoadRoomBilling(ds, period, clientId, isTemp);
-                count = SaveRoomBillingData(dt, isTemp);
+                result.RowsExtractedForParentRooms = dt.Rows.Count;
+                result.RowsLoadedForParentRooms = SaveRoomBillingData(dt, isTemp);
             }
+
+            return result;
         }
 
         public static DataTable LoadRoomBilling(DataSet dsSource, DateTime period, int clientId, bool isTemp)
         {
-            int count = 0;
+            //Step 1: Get users and rooms for this period and loop through each of them
+            //Step 1.1: Get all the necessary data from database to save the round trip cost to DB connection
+            //The code below will get a total of 11 tables
+            DataTable dtUser = dsSource.Tables[0]; //all users who used the lab
+            DataTable dtRoom = dsSource.Tables[1]; //all rooms we can bill in this period
+            DataTable dtAccount = dsSource.Tables[2]; //all active accounts for each user in table #0
+            DataTable dtRoomDay = dsSource.Tables[3]; //RoomDataDayView data - aggreate based on daily data of room usage
+            DataTable dtRoomMonth = dsSource.Tables[4]; //RoomDataMonthView data - aggregate based on monthly data of room usage
+            DataTable dtToolDayByAcct = dsSource.Tables[5]; //ToolDataDayView - get to know accounts used for tool
+            DataTable dtDefault = dsSource.Tables[6]; //Default apportionment values
+            DataTable dtAccountsUsedInTool = dsSource.Tables[7]; //Accounts used in tool usage (Including remote processing accounts)
+            DataTable dtRoomCost = dsSource.Tables[8]; //Room Cost table for this period
+            DataTable dtRoomDataClean = dsSource.Tables[9]; //RoomDataClean group by clientID and roomID. This shows correct entries for NAP room
+            DataTable dtResult = dsSource.Tables[10]; //RoomApportionmentInDaysMonthly empty datatable
+            DataTable dtUserApportionData = dsSource.Tables[11]; //RoomBillingUserApportionData for this period
+            DataTable dtToolUsageData = dsSource.Tables[12]; //ToolData used for grower/observer 
+            DataTable dtClientRemote = dsSource.Tables[13]; //ClientRemote table to check if user is remote processing
 
-            using (var timer = LogTaskTimer.Start("BillingDataProcessStep1.LoadRoomBilling", "period = '{0:yyyy-MM-dd}', clientId = {1}, isTemp = {2}, count = {3}", () => new object[] { period, clientId, isTemp, count }))
+            dtResult.Columns.Add("Percentage", typeof(double)); //add this temporary column for convenience in calculating proper ChargeDays value, this will not be pushed to DB
+            dtResult.Columns["Entries"].DefaultValue = 0;
+            dtResult.Columns["Entries"].AllowDBNull = false;
+
+            dtAccount.Columns.Add("IsGrowerObserver", typeof(bool), string.Format("BillingTypeID = {0}", (int)BillingType.Grower_Observer));
+
+            int cid = 0;
+            int rid = 0;
+            int accountId = 0;
+            int billingTypeId = 0;
+            decimal physicalDays = 0;
+            decimal accountDays = 0;
+            decimal chargeDays = 0;
+            decimal entries = 0;
+            decimal hours = 0;
+            decimal totalEntries = 0;
+            decimal totalHours = 0;
+            double totalMonthlyRoomCharge = 0;
+            double defaultPercentage = 0;
+            int numberOfAccountsPerClient = 0;
+
+            //loop through each user and for each room
+            DataRow[] userRows;
+            if (clientId == 0)
+                userRows = dtUser.Select("1 = 1");
+            else
+                userRows = dtUser.Select($"ClientID = {clientId}");
+
+            foreach (DataRow urow in userRows)
             {
-                //Step 1: Get users and rooms for this period and loop through each of them
-                //Step 1.1: Get all the necessary data from database to save the round trip cost to DB connection
-                //The code below will get a total of 11 tables
-                DataTable dtUser = dsSource.Tables[0]; //all users who used the lab
-                DataTable dtRoom = dsSource.Tables[1]; //all rooms we can bill in this period
-                DataTable dtAccount = dsSource.Tables[2]; //all active accounts for each user in table #0
-                DataTable dtRoomDay = dsSource.Tables[3]; //RoomDataDayView data - aggreate based on daily data of room usage
-                DataTable dtRoomMonth = dsSource.Tables[4]; //RoomDataMonthView data - aggregate based on monthly data of room usage
-                DataTable dtToolDayByAcct = dsSource.Tables[5]; //ToolDataDayView - get to know accounts used for tool
-                DataTable dtDefault = dsSource.Tables[6]; //Default apportionment values
-                DataTable dtAccountsUsedInTool = dsSource.Tables[7]; //Accounts used in tool usage (Including remote processing accounts)
-                DataTable dtRoomCost = dsSource.Tables[8]; //Room Cost table for this period
-                DataTable dtRoomDataClean = dsSource.Tables[9]; //RoomDataClean group by clientID and roomID. This shows correct entries for NAP room
-                DataTable dtResult = dsSource.Tables[10]; //RoomApportionmentInDaysMonthly empty datatable
-                DataTable dtUserApportionData = dsSource.Tables[11]; //RoomBillingUserApportionData for this period
-                DataTable dtToolUsageData = dsSource.Tables[12]; //ToolData used for grower/observer 
-                DataTable dtClientRemote = dsSource.Tables[13]; //ClientRemote table to check if user is remote processing
+                cid = urow.Field<int>("ClientID");
+                DataRow[] drowsAccountOriginal = dtAccount.Select($"ClientID = {cid}");
 
-                dtResult.Columns.Add("Percentage", typeof(double)); //add this temporary column for convenience in calculating proper ChargeDays value, this will not be pushed to DB
-                dtResult.Columns["Entries"].DefaultValue = 0;
-                dtResult.Columns["Entries"].AllowDBNull = false;
+                numberOfAccountsPerClient = drowsAccountOriginal.Length;
 
-                dtAccount.Columns.Add("IsGrowerObserver", typeof(bool), string.Format("BillingTypeID = {0}", (int)BillingType.Grower_Observer));
-
-                int cid = 0;
-                int roomId = 0;
-                int accountId = 0;
-                int billingTypeId = 0;
-                decimal physicalDays = 0;
-                decimal accountDays = 0;
-                decimal chargeDays = 0;
-                decimal entries = 0;
-                decimal hours = 0;
-                decimal totalEntries = 0;
-                decimal totalHours = 0;
-                double totalMonthlyRoomCharge = 0;
-                double defaultPercentage = 0;
-                int numberOfAccountsPerClient = 0;
-
-                //loop through each user and for each room
-                DataRow[] userRows;
-                if (clientId == 0)
-                    userRows = dtUser.Select("1 = 1");
-                else
-                    userRows = dtUser.Select(string.Format("ClientID = {0}", clientId));
-
-                foreach (DataRow urow in userRows)
+                foreach (DataRow rrow in dtRoom.Rows)
                 {
-                    cid = urow.Field<int>("ClientID");
-                    DataRow[] drowsAccountOriginal = dtAccount.Select(string.Format("ClientID = {0}", cid));
+                    rid = rrow.Field<int>("RoomID");
+                    DataRow[] rowsRoomMonth = dtRoomMonth.Select($"ClientID = {cid} AND RoomID = {rid}");
 
-                    numberOfAccountsPerClient = drowsAccountOriginal.Length;
-
-                    foreach (DataRow rrow in dtRoom.Rows)
+                    if (rowsRoomMonth.Length > 0)
                     {
-                        roomId = rrow.Field<int>("RoomID");
-                        DataRow[] rowsRoomMonth = dtRoomMonth.Select(string.Format("ClientID = {0} AND RoomID = {1}", cid, roomId));
+                        physicalDays = rowsRoomMonth[0].Field<int>("PhysicalDays");
+                        totalHours = Convert.ToDecimal(rowsRoomMonth[0].Field<double>("TotalHoursPerMonth"));
 
-                        if (rowsRoomMonth.Length > 0)
+                        //hard code the roomID here.  No better alternative [really??]
+                        int[] napRooms = { 2, 4 };
+                        if (napRooms.Contains(rid))
                         {
-                            physicalDays = rowsRoomMonth[0].Field<int>("PhysicalDays");
-                            totalHours = Convert.ToDecimal(rowsRoomMonth[0].Field<double>("TotalHoursPerMonth"));
-
-                            //hard code the roomID here.  No better alternative [really??]
-                            int[] napRooms = { 2, 4 };
-                            if (napRooms.Contains(roomId))
-                            {
-                                DataRow[] rowsRoomClean = dtRoomDataClean.Select(string.Format("ClientID = {0} AND RoomID = {1}", cid, roomId));
+                            DataRow[] rowsRoomClean = dtRoomDataClean.Select($"ClientID = {cid} AND RoomID = {rid}");
+                            if (rowsRoomClean.Length == 0)
+                                totalEntries = 0; // how is this possible?
+                            else
                                 totalEntries = rowsRoomClean[0].Field<int>("TotalEntriesForNAPRoom");
+                        }
+                        else
+                            totalEntries = Convert.ToDecimal(rowsRoomMonth[0].Field<double>("TotalEntriesPerMonth"));
+
+                        //2009-07-21 remote processing accounts need to be added as well. Remote processing is room specific,
+                        //  so we have to use RoomID as a filter and allows remote accounts based on the room
+                        DataRow[] rowsUsedAccountInTool = dtAccountsUsedInTool.Select($"ClientID = {cid} AND RoomID = {rid}");
+                        List<int> remoteAccounts = new List<int>();
+                        foreach (DataRow dr in rowsUsedAccountInTool)
+                        {
+                            bool isFound = false;
+                            foreach (DataRow ar in drowsAccountOriginal)
+                            {
+                                if (Convert.ToInt32(ar["AccountID"]) == Convert.ToInt32(dr["AccountID"]))
+                                {
+                                    isFound = true;
+                                    break;
+                                }
+                            }
+
+                            if (!isFound)
+                            {
+                                //not found, so this is probably a remote processing account, we should add it to dtAccount
+                                DataRow ndr = dtAccount.NewRow();
+                                ndr["AccountID"] = dr["AccountID"];
+                                ndr["ClientID"] = cid;
+                                ndr["OrgID"] = dr["OrgID"];
+                                ndr["ChargeTypeID"] = dr["ChargeTypeID"];
+
+                                int aid = dr.Field<int>("AccountID");
+                                DataRow[] drsClientRemote = dtClientRemote.Select($"ClientID = {cid} AND AccountID = {aid}");
+
+                                if (drsClientRemote.Length > 0)
+                                    ndr["BillingTypeID"] = BillingType.Remote;
+                                else
+                                    ndr["BillingTypeID"] = BillingType.RegularException;
+
+                                dtAccount.Rows.Add(ndr);
+
+                                remoteAccounts.Add(dr.Field<int>("AccountID"));
+                            }
+                        }
+
+                        //we might have new remote accounts added, so we have to regenerate all the rows with this client
+                        // [2017-11-01 jg] need to have any Grower/Observer orgs at the end because physical days will be set to zero, so do them last
+                        DataRow[] drowsAccountWithRemote = dtAccount.Select(string.Format("ClientID = {0}", cid), "IsGrowerObserver ASC, OrgID ASC, AccountID ASC");
+                        numberOfAccountsPerClient = drowsAccountWithRemote.Length;
+
+                        //This is used to distinguish different orgs so we can do apportionment later on
+                        List<int> orgsPerClient = new List<int>();
+
+                        // [2015-12-01 jg] We are currently not handling the case of mulitple orgs when at least one is grower/observer billing
+                        // type. Sandrine said that this is not required and would take too much effort to implement. We sould consider it a rule
+                        // that a grower/observer will only have one org. If there is more than one org then physicalDays gets set to zero for the
+                        // grower/observer org which means the next org will also be zero regardless of which billing type or if there is tool
+                        // usage. So the current logic below only works for grower/observers if they have only one org, therefore an exception
+                        // is thrown if this is not the case.
+                        bool isGrowerObserver = drowsAccountWithRemote.Any(x => x.Field<int>("BillingTypeID") == BillingType.Grower_Observer);
+                        int numberOfOrgs = drowsAccountWithRemote.Select(x => x.Field<int>("OrgID")).Distinct().Count();
+
+                        //if (isGrowerObserver && numberOfOrgs > 1)
+                        //    throw new InvalidOperationException(string.Format("A grower/observer has multiple orgs but this is not allowed. [Period = {0:yyyy-MM-dd}, ClientID = {1}, RoomID = {2}]", period, cid, roomId));
+
+                        foreach (DataRow arow in drowsAccountWithRemote)
+                        {
+                            int orgId = arow.Field<int>("OrgID");
+
+                            if (!orgsPerClient.Contains(orgId))
+                                orgsPerClient.Add(orgId);
+
+                            accountId = arow.Field<int>("AccountID");
+                            billingTypeId = arow.Field<int>("BillingTypeID");
+
+                            // At this point, we have right physicalDays value (account in full month of partial month),
+                            // now we need to get the accoutDays, which is not affected by the life time of accounts association
+                            DataRow[] rowsToolDay = dtToolDayByAcct.Select(string.Format("ClientID = {0} AND RoomID = {1} AND AccountID = {2}", cid, rid, accountId));
+
+                            if (rowsToolDay.Length == 1)
+                            {
+                                //user has use this account for x amount of days in tool reservations
+                                accountDays = rowsToolDay.First().Field<int>("AccountDays");
                             }
                             else
-                                totalEntries = Convert.ToDecimal(rowsRoomMonth[0].Field<double>("TotalEntriesPerMonth"));
-
-                            //2009-07-21 remote processing accounts need to be added as well. Remote processing is room specific,
-                            //  so we have to use RoomID as a filter and allows remote accounts based on the room
-                            DataRow[] rowsUsedAccountInTool = dtAccountsUsedInTool.Select(string.Format("ClientID = {0} AND RoomID = {1}", cid, roomId));
-                            List<int> remoteAccounts = new List<int>();
-                            foreach (DataRow dr in rowsUsedAccountInTool)
                             {
-                                bool isFound = false;
-                                foreach (DataRow ar in drowsAccountOriginal)
+                                //user never make reservation on tools using this account
+                                accountDays = 0;
+                            }
+
+                            // Case 1: for people who has only one account
+                            if (numberOfAccountsPerClient == 1)
+                            {
+                                chargeDays = physicalDays; //we shouldn't use modifiedPhysicalDays here because we have to charge everything on this account if only account is disabled
+                                entries = totalEntries;
+                                hours = totalHours;
+                            }
+                            else
+                            {
+                                // Multiple accounts during this period
+
+                                chargeDays = (accountDays > physicalDays) ? physicalDays : accountDays;
+
+                                // [2015-12-01 jg] It is possible for physicalDays to be zero at this point if the user is a grower/observer and
+                                // only has one org with multiple accounts, and has room usage but no tool usage. In this case physicalDays will
+                                // be set to zero in the Grower/Observer check below (on the first iteration).
+
+                                entries = 0;
+                                hours = 0;
+
+                                if (physicalDays > 0)
                                 {
-                                    if (Convert.ToInt32(ar["AccountID"]) == Convert.ToInt32(dr["AccountID"]))
-                                    {
-                                        isFound = true;
-                                        break;
-                                    }
+                                    entries = physicalDays == 0 ? 0 : totalEntries * (chargeDays / physicalDays);
+                                    hours = physicalDays == 0 ? 0 : totalHours * (chargeDays / physicalDays);
                                 }
 
-                                if (!isFound)
+                                // Get default apportion value for this client/room/account
+                                DataRow[] rowDefaultApportion = dtDefault.Select(string.Format("ClientID = {0} AND RoomID = {1} AND AccountID = {2}", cid, rid, accountId));
+                                if (rowDefaultApportion.Length == 1)
+                                    defaultPercentage = Convert.ToDouble(rowDefaultApportion[0]["Percentage"]) / 100D;
+                                else
                                 {
-                                    //not found, so this is probably a remote processing account, we should add it to dtAccount
-                                    DataRow ndr = dtAccount.NewRow();
-                                    ndr["AccountID"] = dr["AccountID"];
-                                    ndr["ClientID"] = cid;
-                                    ndr["OrgID"] = dr["OrgID"];
-                                    ndr["ChargeTypeID"] = dr["ChargeTypeID"];
-
-                                    DataRow[] drsClientRemote = dtClientRemote.Select(string.Format("ClientID = {0} AND AccountID = {1}", cid, dr["AccountID"]));
-
-                                    if (drsClientRemote.Length > 0)
-                                        ndr["BillingTypeID"] = BillingType.Remote;
-                                    else
-                                        ndr["BillingTypeID"] = BillingType.RegularException;
-
-                                    dtAccount.Rows.Add(ndr);
-
-                                    remoteAccounts.Add(dr.Field<int>("AccountID"));
+                                    // No default value, so we have to treat it as zero always
+                                    // either this is a new account added to user in this period
+                                    // or the user has not done any default apportionment before.
+                                    defaultPercentage = 0;
                                 }
                             }
 
-                            //we might have new remote accounts added, so we have to regenerate all the rows with this client
-                            // [2017-11-01 jg] need to have any Grower/Observer orgs at the end because physical days will be set to zero, so do them last
-                            DataRow[] drowsAccountWithRemote = dtAccount.Select(string.Format("ClientID = {0}", cid), "IsGrowerObserver ASC, OrgID ASC, AccountID ASC");
-                            numberOfAccountsPerClient = drowsAccountWithRemote.Length;
+                            DataRow newRow = dtResult.NewRow();
+                            newRow["Period"] = period;
+                            newRow["ClientID"] = cid;
+                            newRow["RoomID"] = rid;
+                            newRow["AccountID"] = accountId;
+                            newRow["OrgID"] = arow["OrgID"];
+                            newRow["ChargeTypeID"] = arow["ChargeTypeID"];
+                            newRow["BillingTypeID"] = billingTypeId;
 
-                            //This is used to distinguish different orgs so we can do apportionment later on
-                            List<int> orgsPerClient = new List<int>();
+                            // Grower/Observer would have different physical days
 
-                            // [2015-12-01 jg] We are currently not handling the case of mulitple orgs when at least one is grower/observer billing
-                            // type. Sandrine said that this is not required and would take too much effort to implement. We sould consider it a rule
-                            // that a grower/observer will only have one org. If there is more than one org then physicalDays gets set to zero for the
-                            // grower/observer org which means the next org will also be zero regardless of which billing type or if there is tool
-                            // usage. So the current logic below only works for grower/observers if they have only one org, therefore an exception
-                            // is thrown if this is not the case.
-                            bool isGrowerObserver = drowsAccountWithRemote.Any(x => x.Field<int>("BillingTypeID") == BillingType.Grower_Observer);
-                            int numberOfOrgs = drowsAccountWithRemote.Select(x => x.Field<int>("OrgID")).Distinct().Count();
+                            // [2013-05-14 jg] Removed AccountDays > 0. On May 23, 2012 I added this but I'm not sure why. I did not
+                            // comment the code or add a note in subversion. I'm removing this now because it causes problems with
+                            // Grower/Observer charges. A Grower/Observer who enters the lab but has no tool usage is still charged
+                            // because AccountDays = 0 in this case. Therefore the code inside the if never executes (i.e. PhysicalDays
+                            // and ChargeDays are never set to 0).
 
-                            //if (isGrowerObserver && numberOfOrgs > 1)
-                            //    throw new InvalidOperationException(string.Format("A grower/observer has multiple orgs but this is not allowed. [Period = {0:yyyy-MM-dd}, ClientID = {1}, RoomID = {2}]", period, cid, roomId));
-
-                            foreach (DataRow arow in drowsAccountWithRemote)
+                            //if (BillingTypeID == BillingType.GetID("Grower/Observer") && AccountDays > 0) //<- removed AccountDays > 0
+                            if (billingTypeId == BillingType.Grower_Observer)
                             {
-                                int orgId = arow.Field<int>("OrgID");
-
-                                if (!orgsPerClient.Contains(orgId))
-                                    orgsPerClient.Add(orgId);
-
-                                accountId = arow.Field<int>("AccountID");
-                                billingTypeId = arow.Field<int>("BillingTypeID");
-
-                                // At this point, we have right physicalDays value (account in full month of partial month),
-                                // now we need to get the accoutDays, which is not affected by the life time of accounts association
-                                DataRow[] rowsToolDay = dtToolDayByAcct.Select(string.Format("ClientID = {0} AND RoomID = {1} AND AccountID = {2}", cid, roomId, accountId));
-
-                                if (rowsToolDay.Length == 1)
+                                DataRow[] rowsToolUsageData = dtToolUsageData.Select(string.Format("ClientID = {0} AND RoomID = {1}", cid, rid));
+                                if (rowsToolUsageData.Length > 0)
                                 {
-                                    //user has use this account for x amount of days in tool reservations
-                                    accountDays = rowsToolDay.First().Field<int>("AccountDays");
+                                    physicalDays = rowsToolUsageData[0].Field<int>("PhysicalDays");
+                                    chargeDays = physicalDays;
                                 }
                                 else
                                 {
-                                    //user never make reservation on tools using this account
-                                    accountDays = 0;
+                                    //2010-08 for Organics bay, we always charge no matter what
+                                    if (rid != (int)Rooms.OrganicsBay)
+                                    {
+                                        // if there are mulitple accounts these will be zero on the next iteration, don't divide by zero!
+                                        physicalDays = 0;
+                                        chargeDays = 0;
+                                    }
                                 }
+                            }
 
-                                // Case 1: for people who has only one account
-                                if (numberOfAccountsPerClient == 1)
+                            newRow["PhysicalDays"] = physicalDays;
+                            newRow["ChargeDays"] = chargeDays;
+                            newRow["AccountDays"] = accountDays;
+                            newRow["Entries"] = entries;
+                            newRow["Hours"] = hours;
+                            newRow["isDefault"] = true;
+                            newRow["MonthlyRoomCharge"] = totalMonthlyRoomCharge; //this is always zero
+
+                            // We store the rate, it's for historical data integrity reason, since we know rate changes over time
+                            DataRow[] costrows = dtRoomCost.Select(string.Format("ChargeTypeID = {0} AND RecordID = {1}", arow["ChargeTypeID"], rid));
+                            newRow["RoomRate"] = costrows[0]["MulVal"];
+                            newRow["EntryRate"] = costrows[0]["AddVal"];
+
+                            //temporary column
+                            newRow["Percentage"] = defaultPercentage;
+                            dtResult.Rows.Add(newRow);
+
+                        } //end of account table loop (drowsAccountWithRemote)
+
+                        //delete all the remote accounts again because the next room needs clean data
+                        foreach (int remoteAccountId in remoteAccounts)
+                        {
+                            DataRow[] drowsAccountRemote = dtAccount.Select(string.Format("ClientID = {0} AND AccountID = {1}", cid, remoteAccountId));
+                            drowsAccountRemote[0].Delete();
+                        }
+
+                        remoteAccounts.Clear();
+
+                        //Apportionment value optimization for multiple accounts users
+                        if (numberOfAccountsPerClient > 1)
+                        {
+                            decimal offDays = 0;
+
+                            DataRow[] resultRows = dtResult.Select(string.Format("ClientID = {0} AND RoomID = {1}", cid, rid));
+
+                            //We have to see if there are data in RoomBillingUserApportionData.  if we do, we must use those values
+                            foreach (DataRow drow in resultRows)
+                            {
+                                DataRow[] userDataRows = dtUserApportionData.Select(string.Format("ClientID = {0} AND RoomID = {1} AND AccountID = {2}", cid, rid, drow["AccountID"]));
+                                if (userDataRows.Length == 1)
+                                    drow["ChargeDays"] = userDataRows[0]["ChargeDays"];
+                            }
+
+                            int totalChargeDays = Convert.ToInt32(dtResult.Compute("SUM(ChargeDays)", string.Format("ClientID = {0} AND RoomID = {1}", cid, rid)));
+                            int totalPhysicalDays = Convert.ToInt32(dtResult.Compute("SUM(PhysicalDays)", string.Format("", cid, rid)));
+                            offDays = physicalDays - totalChargeDays;
+
+                            if (offDays > 0) //we cannot allow ChargeDays be less than Physical Days
+                            {
+                                //since we know we need to add more days to ChargeDays at this moment, so we have to find out the proper distribution
+                                //of days on current accounts.  We find out the real percentage among all accounts.  Then we divide individual account
+                                //with this real Total Percentage
+                                decimal realTotalPercentage = Convert.ToDecimal(dtResult.Compute("SUM(Percentage)", string.Format("ClientID = {0} AND RoomID = {1}", cid, rid)));
+
+                                if (realTotalPercentage <= 0)
                                 {
-                                    chargeDays = physicalDays; //we shouldn't use modifiedPhysicalDays here because we have to charge everything on this account if only account is disabled
-                                    entries = totalEntries;
-                                    hours = totalHours;
+                                    //divide equally, it means no default apportion on any of accounts
+                                    foreach (DataRow drow in resultRows)
+                                    {
+                                        drow["ChargeDays"] = drow.Field<decimal>("ChargeDays") + offDays / resultRows.Length;
+                                    }
                                 }
                                 else
                                 {
-                                    // Multiple accounts during this period
-
-                                    chargeDays = (accountDays > physicalDays) ? physicalDays : accountDays;
-
-                                    // [2015-12-01 jg] It is possible for physicalDays to be zero at this point if the user is a grower/observer and
-                                    // only has one org with multiple accounts, and has room usage but no tool usage. In this case physicalDays will
-                                    // be set to zero in the Grower/Observer check below (on the first iteration).
-
-                                    entries = 0;
-                                    hours = 0;
-
-                                    if (physicalDays > 0)
+                                    foreach (DataRow drow in resultRows)
                                     {
-                                        entries = physicalDays == 0 ? 0 : totalEntries * (chargeDays / physicalDays);
-                                        hours = physicalDays == 0 ? 0 : totalHours * (chargeDays / physicalDays);
-                                    }
-
-                                    // Get default apportion value for this client/room/account
-                                    DataRow[] rowDefaultApportion = dtDefault.Select(string.Format("ClientID = {0} AND RoomID = {1} AND AccountID = {2}", cid, roomId, accountId));
-                                    if (rowDefaultApportion.Length == 1)
-                                        defaultPercentage = Convert.ToDouble(rowDefaultApportion[0]["Percentage"]) / 100D;
-                                    else
-                                    {
-                                        // No default value, so we have to treat it as zero always
-                                        // either this is a new account added to user in this period
-                                        // or the user has not done any default apportionment before.
-                                        defaultPercentage = 0;
+                                        //We can only add days to non-zero accounts, so percentage zero accounts are skipped
+                                        decimal pct = Convert.ToDecimal(drow.Field<double>("Percentage"));
+                                        if (pct > 0)
+                                            drow["ChargeDays"] = drow.Field<decimal>("ChargeDays") + (offDays * (pct / realTotalPercentage));
                                     }
                                 }
+                            }
+                            else if (offDays < 0)
+                            {
+                                //Chargedays are more than physical days
 
-                                DataRow newRow = dtResult.NewRow();
-                                newRow["Period"] = period;
-                                newRow["ClientID"] = cid;
-                                newRow["RoomID"] = roomId;
-                                newRow["AccountID"] = accountId;
-                                newRow["OrgID"] = arow["OrgID"];
-                                newRow["ChargeTypeID"] = arow["ChargeTypeID"];
-                                newRow["BillingTypeID"] = billingTypeId;
-
-                                // Grower/Observer would have different physical days
-
-                                // [2013-05-14 jg] Removed AccountDays > 0. On May 23, 2012 I added this but I'm not sure why. I did not
-                                // comment the code or add a note in subversion. I'm removing this now because it causes problems with
-                                // Grower/Observer charges. A Grower/Observer who enters the lab but has no tool usage is still charged
-                                // because AccountDays = 0 in this case. Therefore the code inside the if never executes (i.e. PhysicalDays
-                                // and ChargeDays are never set to 0).
-
-                                //if (BillingTypeID == BillingType.GetID("Grower/Observer") && AccountDays > 0) //<- removed AccountDays > 0
-                                if (billingTypeId == BillingType.Grower_Observer)
+                                //Now we have to check each org and make sure no single org pays more than the physical days
+                                foreach (int orgId in orgsPerClient)
                                 {
-                                    DataRow[] rowsToolUsageData = dtToolUsageData.Select(string.Format("ClientID = {0} AND RoomID = {1}", cid, roomId));
-                                    if (rowsToolUsageData.Length > 0)
+                                    int totalChargeDaysPerOrg = Convert.ToInt32(dtResult.Compute("SUM(ChargeDays)", string.Format("ClientID = {0} AND RoomID = {1} AND OrgID = {2}", cid, rid, orgId)));
+                                    offDays = physicalDays - totalChargeDaysPerOrg;
+
+                                    if (offDays < 0)
                                     {
-                                        physicalDays = rowsToolUsageData[0].Field<int>("PhysicalDays");
-                                        chargeDays = physicalDays;
-                                    }
-                                    else
-                                    {
-                                        //2010-08 for Organics bay, we always charge no matter what
-                                        if (roomId != (int)Rooms.OrganicsBay)
+                                        //We have to reduce the offDays
+                                        resultRows = dtResult.Select(string.Format("ClientID = {0} AND RoomID = {1} AND OrgID = {2}", cid, rid, orgId));
+                                        decimal TotalPercentage = Convert.ToDecimal(dtResult.Compute("SUM(Percentage)", string.Format("ClientID = {0} AND RoomID = {1} AND OrgID = {2}", cid, rid, orgId)));
+
+                                        if (TotalPercentage > 0)
                                         {
-                                            // if there are mulitple accounts these will be zero on the next iteration, don't divide by zero!
-                                            physicalDays = 0;
-                                            chargeDays = 0;
+                                            foreach (DataRow frow in resultRows)
+                                            {
+                                                decimal pct = Convert.ToDecimal(frow.Field<double>("Percentage"));
+                                                if (pct > 0)
+                                                {
+                                                    frow["ChargeDays"] = frow.Field<decimal>("ChargeDays") - (offDays * -1) * (pct / TotalPercentage);
+
+                                                    if (frow.Field<decimal>("ChargeDays") < 0)
+                                                        frow["ChargeDays"] = 0;
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            //divide equally, since there is no more clue
+                                            //first, we need to find out how many rows have data
+                                            int numOfRowsHaveData = 0;
+                                            foreach (DataRow frow in resultRows)
+                                            {
+                                                if (Convert.ToDouble(frow["ChargeDays"]) > 0)
+                                                    numOfRowsHaveData += 1;
+                                            }
+
+                                            decimal leftover = 0;
+                                            foreach (DataRow frow in resultRows)
+                                            {
+                                                if (Convert.ToDouble(frow["ChargeDays"]) > 0)
+                                                {
+                                                    frow["ChargeDays"] = frow.Field<decimal>("ChargeDays") - (offDays * -1) / numOfRowsHaveData;
+                                                    frow["ChargeDays"] = frow.Field<decimal>("ChargeDays") - leftover;
+                                                    leftover = 0;
+                                                    if (Convert.ToDouble(frow["ChargeDays"]) < 0)
+                                                    {
+                                                        leftover = frow.Field<decimal>("ChargeDays") * -1;
+                                                        frow["ChargeDays"] = 0;
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
-
-                                newRow["PhysicalDays"] = physicalDays;
-                                newRow["ChargeDays"] = chargeDays;
-                                newRow["AccountDays"] = accountDays;
-                                newRow["Entries"] = entries;
-                                newRow["Hours"] = hours;
-                                newRow["isDefault"] = true;
-                                newRow["MonthlyRoomCharge"] = totalMonthlyRoomCharge; //this is always zero
-
-                                // We store the rate, it's for historical data integrity reason, since we know rate changes over time
-                                DataRow[] costrows = dtRoomCost.Select(string.Format("ChargeTypeID = {0} AND RecordID = {1}", arow["ChargeTypeID"], roomId));
-                                newRow["RoomRate"] = costrows[0]["MulVal"];
-                                newRow["EntryRate"] = costrows[0]["AddVal"];
-
-                                //temporary column
-                                newRow["Percentage"] = defaultPercentage;
-                                dtResult.Rows.Add(newRow);
-
-                            } //end of account table loop (drowsAccountWithRemote)
-
-                            //delete all the remote accounts again because the next room needs clean data
-                            foreach (int remoteAccountId in remoteAccounts)
-                            {
-                                DataRow[] drowsAccountRemote = dtAccount.Select(string.Format("ClientID = {0} AND AccountID = {1}", cid, remoteAccountId));
-                                drowsAccountRemote[0].Delete();
                             }
-                            remoteAccounts.Clear();
 
-                            //Apportionment value optimization for multiple accounts users
-                            if (numberOfAccountsPerClient > 1)
+                            //Entries and Hours re-calculation - the idea here is both are apportioned according to the ChargeDays, so we cannot do anything about Entries until ChargeDays are correct
+                            totalChargeDays = Convert.ToInt32(dtResult.Compute("SUM(ChargeDays)", string.Format("ClientID = {0} AND RoomID = {1}", cid, rid)));
+                            decimal finalPercentage = 0;
+
+                            foreach (DataRow drow in resultRows)
                             {
-                                decimal offDays = 0;
+                                //Users can now apportion room entries so get any previously saved data
+                                DataRow[] userDataRows = dtUserApportionData.Select(string.Format("ClientID = {0} AND RoomID = {1} AND AccountID = {2}", cid, rid, drow["AccountID"]));
 
-                                DataRow[] resultRows = dtResult.Select(string.Format("ClientID = {0} AND RoomID = {1}", cid, roomId));
-
-                                //We have to see if there are data in RoomBillingUserApportionData.  if we do, we must use those values
-                                foreach (DataRow drow in resultRows)
+                                if (totalChargeDays > 0)
                                 {
-                                    DataRow[] userDataRows = dtUserApportionData.Select(string.Format("ClientID = {0} AND RoomID = {1} AND AccountID = {2}", cid, roomId, drow["AccountID"]));
+                                    finalPercentage = drow.Field<decimal>("ChargeDays") / totalChargeDays;
+
                                     if (userDataRows.Length == 1)
-                                        drow["ChargeDays"] = userDataRows[0]["ChargeDays"];
-                                }
-
-                                int totalChargeDays = Convert.ToInt32(dtResult.Compute("SUM(ChargeDays)", string.Format("ClientID = {0} AND RoomID = {1}", cid, roomId)));
-                                int totalPhysicalDays = Convert.ToInt32(dtResult.Compute("SUM(PhysicalDays)", string.Format("", cid, roomId)));
-                                offDays = physicalDays - totalChargeDays;
-
-                                if (offDays > 0) //we cannot allow ChargeDays be less than Physical Days
-                                {
-                                    //since we know we need to add more days to ChargeDays at this moment, so we have to find out the proper distribution
-                                    //of days on current accounts.  We find out the real percentage among all accounts.  Then we divide individual account
-                                    //with this real Total Percentage
-                                    decimal realTotalPercentage = Convert.ToDecimal(dtResult.Compute("SUM(Percentage)", string.Format("ClientID = {0} AND RoomID = {1}", cid, roomId)));
-
-                                    if (realTotalPercentage <= 0)
                                     {
-                                        //divide equally, it means no default apportion on any of accounts
-                                        foreach (DataRow drow in resultRows)
-                                        {
-                                            drow["ChargeDays"] = drow.Field<decimal>("ChargeDays") + offDays / resultRows.Length;
-                                        }
+                                        drow.SetField("Entries", userDataRows.First().Field<double?>("Entries"));
                                     }
                                     else
-                                    {
-                                        foreach (DataRow drow in resultRows)
-                                        {
-                                            //We can only add days to non-zero accounts, so percentage zero accounts are skipped
-                                            decimal pct = Convert.ToDecimal(drow.Field<double>("Percentage"));
-                                            if (pct > 0)
-                                                drow["ChargeDays"] = drow.Field<decimal>("ChargeDays") + (offDays * (pct / realTotalPercentage));
-                                        }
-                                    }
+                                        drow.SetField("Entries", totalEntries * finalPercentage);
+
+                                    drow.SetField("Hours", totalHours * finalPercentage);
                                 }
-                                else if (offDays < 0)
+                                else
                                 {
-                                    //Chargedays are more than physical days
-
-                                    //Now we have to check each org and make sure no single org pays more than the physical days
-                                    foreach (int orgId in orgsPerClient)
+                                    if (drow.Field<int>("BillingTypeID") == BillingType.Grower_Observer)
                                     {
-                                        int totalChargeDaysPerOrg = Convert.ToInt32(dtResult.Compute("SUM(ChargeDays)", string.Format("ClientID = {0} AND RoomID = {1} AND OrgID = {2}", cid, roomId, orgId)));
-                                        offDays = physicalDays - totalChargeDaysPerOrg;
-
-                                        if (offDays < 0)
-                                        {
-                                            //We have to reduce the offDays
-                                            resultRows = dtResult.Select(string.Format("ClientID = {0} AND RoomID = {1} AND OrgID = {2}", cid, roomId, orgId));
-                                            decimal TotalPercentage = Convert.ToDecimal(dtResult.Compute("SUM(Percentage)", string.Format("ClientID = {0} AND RoomID = {1} AND OrgID = {2}", cid, roomId, orgId)));
-
-                                            if (TotalPercentage > 0)
-                                            {
-                                                foreach (DataRow frow in resultRows)
-                                                {
-                                                    decimal pct = Convert.ToDecimal(frow.Field<double>("Percentage"));
-                                                    if (pct > 0)
-                                                    {
-                                                        frow["ChargeDays"] = frow.Field<decimal>("ChargeDays") - (offDays * -1) * (pct / TotalPercentage);
-
-                                                        if (frow.Field<decimal>("ChargeDays") < 0)
-                                                            frow["ChargeDays"] = 0;
-                                                    }
-                                                }
-                                            }
-                                            else
-                                            {
-                                                //divide equally, since there is no more clue
-                                                //first, we need to find out how many rows have data
-                                                int numOfRowsHaveData = 0;
-                                                foreach (DataRow frow in resultRows)
-                                                {
-                                                    if (Convert.ToDouble(frow["ChargeDays"]) > 0)
-                                                        numOfRowsHaveData += 1;
-                                                }
-
-                                                decimal leftover = 0;
-                                                foreach (DataRow frow in resultRows)
-                                                {
-                                                    if (Convert.ToDouble(frow["ChargeDays"]) > 0)
-                                                    {
-                                                        frow["ChargeDays"] = frow.Field<decimal>("ChargeDays") - (offDays * -1) / numOfRowsHaveData;
-                                                        frow["ChargeDays"] = frow.Field<decimal>("ChargeDays") - leftover;
-                                                        leftover = 0;
-                                                        if (Convert.ToDouble(frow["ChargeDays"]) < 0)
-                                                        {
-                                                            leftover = frow.Field<decimal>("ChargeDays") * -1;
-                                                            frow["ChargeDays"] = 0;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                //Entries and Hours re-calculation - the idea here is both are apportioned according to the ChargeDays, so we cannot do anything about Entries until ChargeDays are correct
-                                totalChargeDays = Convert.ToInt32(dtResult.Compute("SUM(ChargeDays)", string.Format("ClientID = {0} AND RoomID = {1}", cid, roomId)));
-                                decimal finalPercentage = 0;
-
-                                foreach (DataRow drow in resultRows)
-                                {
-                                    //Users can now apportion room entries so get any previously saved data
-                                    DataRow[] userDataRows = dtUserApportionData.Select(string.Format("ClientID = {0} AND RoomID = {1} AND AccountID = {2}", cid, roomId, drow["AccountID"]));
-
-                                    if (totalChargeDays > 0)
-                                    {
-                                        finalPercentage = drow.Field<decimal>("ChargeDays") / totalChargeDays;
-
+                                        //It's possible to have zero charge days for observer/growser
                                         if (userDataRows.Length == 1)
-                                        {
-                                            drow.SetField("Entries", userDataRows.First().Field<double?>("Entries"));
-                                        }
+                                            drow.SetField("Entries", userDataRows.First().Field<double>("Entries"));
                                         else
-                                            drow.SetField("Entries", totalEntries * finalPercentage);
+                                            drow.SetField("Entries", totalEntries / resultRows.Length);
 
-                                        drow.SetField("Hours", totalHours * finalPercentage);
+                                        drow.SetField("Hours", totalHours / resultRows.Length);
                                     }
                                     else
                                     {
-                                        if (drow.Field<int>("BillingTypeID") == BillingType.Grower_Observer)
-                                        {
-                                            //It's possible to have zero charge days for observer/growser
-                                            if (userDataRows.Length == 1)
-                                                drow.SetField("Entries", userDataRows.First().Field<double>("Entries"));
-                                            else
-                                                drow.SetField("Entries", totalEntries / resultRows.Length);
+                                        //It's possible to have zero charge days for observer/grower
+                                        drow.SetField("Entries", 0);
+                                        drow.SetField("Hours", 0);
 
-                                            drow.SetField("Hours", totalHours / resultRows.Length);
-                                        }
-                                        else
-                                        {
-                                            //It's possible to have zero charge days for observer/grower
-                                            drow.SetField("Entries", 0);
-                                            drow.SetField("Hours", 0);
-
-                                            ExceptionManager exp = new ExceptionManager { TimeStamp = DateTime.Now, ExpName = "User has zero charge days", AppName = typeof(BillingDataProcessStep1).Assembly.GetName().Name, FunctionName = "CommonTools-PopulateRoomBilling" };
-                                            exp.CustomData = string.Format("ClientID = {0}, Period = '{1}'", cid, period);
-                                            exp.LogException();
-                                        }
+                                        ExceptionManager exp = new ExceptionManager { TimeStamp = DateTime.Now, ExpName = "User has zero charge days", AppName = typeof(BillingDataProcessStep1).Assembly.GetName().Name, FunctionName = "CommonTools-PopulateRoomBilling" };
+                                        exp.CustomData = string.Format("ClientID = {0}, Period = '{1}'", cid, period);
+                                        exp.LogException();
                                     }
                                 }
-                            } //if accounts per client > 1
-                        } //if this room is being used by the user
-                    } //end of room table loop
-                } //end of user table loop
+                            }
+                        } //if accounts per client > 1
+                    } //if this room is being used by the user
+                } //end of room table loop
+            } //end of user table loop
 
-                count = dtResult.Rows.Count;
-
-                return dtResult;
-            }
+            return dtResult;
         }
 
         #region Possible replacement code for RoomBilling
@@ -501,72 +504,69 @@ namespace LNF.CommonTools
         {
             int count = 0;
 
-            using (LogTaskTimer.Start("BillingDataProcessStep1.PopulateRoomBillingParentRooms", "period = '{0:yyyy-MM-dd}', isTemp = {1}, clientId = {2}, delete = {3}, count = {4}", () => new object[] { period, isTemp, clientId, delete, count }))
+            Room[] parents = DA.Current.Query<Room>().Where(x => x.ParentID == 0 && x.Billable && x.Active).ToArray();
+
+            List<IRoomBilling> parentRoomBilling = new List<IRoomBilling>();
+
+            List<IRoomBilling> temp;
+
+            foreach (Room p in parents)
             {
-                Room[] parents = DA.Current.Query<Room>().Where(x => x.ParentID == 0 && x.Billable && x.Active).ToArray();
+                int[] children = DA.Current.Query<Room>().Where(x => x.ParentID == p.RoomID).Select(x => x.RoomID).ToArray();
 
-                List<IRoomBilling> parentRoomBilling = new List<IRoomBilling>();
-
-                List<IRoomBilling> temp;
-
-                foreach (Room p in parents)
+                if (children.Length > 0)
                 {
-                    int[] children = DA.Current.Query<Room>().Where(x => x.ParentID == p.RoomID).Select(x => x.RoomID).ToArray();
-
-                    if (children.Length > 0)
+                    if (delete)
                     {
-                        if (delete)
-                        {
-                            //delete existing rows
-                            IRoomBilling[] existing = GetExistingRoomBilling(period, isTemp, p.RoomID);
-                            DA.Current.Delete(existing);
-                        }
+                        //delete existing rows
+                        IRoomBilling[] existing = GetExistingRoomBilling(period, isTemp, p.RoomID);
+                        DA.Current.Delete(existing);
+                    }
 
-                        IRoomBilling[] roomBilling;
+                    IRoomBilling[] roomBilling;
 
-                        if (isTemp)
-                        {
-                            if (clientId == 0)
-                                roomBilling = DA.Current.Query<RoomBillingTemp>().Where(x => x.Period == period && children.Contains(x.RoomID)).ToArray();
-                            else
-                                roomBilling = DA.Current.Query<RoomBillingTemp>().Where(x => x.Period == period && x.ClientID == clientId && children.Contains(x.RoomID)).ToArray();
-                        }
+                    if (isTemp)
+                    {
+                        if (clientId == 0)
+                            roomBilling = DA.Current.Query<RoomBillingTemp>().Where(x => x.Period == period && children.Contains(x.RoomID)).ToArray();
                         else
+                            roomBilling = DA.Current.Query<RoomBillingTemp>().Where(x => x.Period == period && x.ClientID == clientId && children.Contains(x.RoomID)).ToArray();
+                    }
+                    else
+                    {
+                        if (clientId == 0)
+                            roomBilling = DA.Current.Query<RoomBilling>().Where(x => x.Period == period && children.Contains(x.RoomID)).ToArray();
+                        else
+                            roomBilling = DA.Current.Query<RoomBilling>().Where(x => x.Period == period && x.ClientID == clientId && children.Contains(x.RoomID)).ToArray();
+                    }
+
+                    int[] clients = roomBilling.Select(x => x.ClientID).Distinct().ToArray();
+
+                    foreach (int c in clients)
+                    {
+                        temp = new List<IRoomBilling>();
+                        Client client = DA.Current.Single<Client>(c);
+                        int[] accounts = roomBilling.Where(x => x.ClientID == client.ClientID).Select(x => x.AccountID).Distinct().ToArray();
+
+                        foreach (int a in accounts)
                         {
-                            if (clientId == 0)
-                                roomBilling = DA.Current.Query<RoomBilling>().Where(x => x.Period == period && children.Contains(x.RoomID)).ToArray();
-                            else
-                                roomBilling = DA.Current.Query<RoomBilling>().Where(x => x.Period == period && x.ClientID == clientId && children.Contains(x.RoomID)).ToArray();
+                            BillingType bt = DA.Current.Single<BillingType>(roomBilling.First(x => x.ClientID == c && x.AccountID == a).BillingTypeID);
+                            temp.Add(GetRoomBilling(p, client, DA.Current.Single<Account>(a), bt, period, isTemp));
                         }
 
-                        int[] clients = roomBilling.Select(x => x.ClientID).Distinct().ToArray();
-
-                        foreach (int c in clients)
+                        if (temp.Count > 0)
                         {
-                            temp = new List<IRoomBilling>();
-                            Client client = DA.Current.Single<Client>(c);
-                            int[] accounts = roomBilling.Where(x => x.ClientID == client.ClientID).Select(x => x.AccountID).Distinct().ToArray();
-
-                            foreach (int a in accounts)
-                            {
-                                BillingType bt = DA.Current.Single<BillingType>(roomBilling.First(x => x.ClientID == c && x.AccountID == a).BillingTypeID);
-                                temp.Add(GetRoomBilling(p, client, DA.Current.Single<Account>(a), bt, period, isTemp));
-                            }
-
-                            if (temp.Count > 0)
-                            {
-                                //amounts need to be distrubuted between the user's accounts
-                                DistributeRoomBillingAmounts(temp, p, client, period, isTemp);
-                                parentRoomBilling.AddRange(temp);
-                            }
+                            //amounts need to be distrubuted between the user's accounts
+                            DistributeRoomBillingAmounts(temp, p, client, period, isTemp);
+                            parentRoomBilling.AddRange(temp);
                         }
                     }
                 }
-
-                DA.Current.Insert(parentRoomBilling);
-
-                count = parentRoomBilling.Count;
             }
+
+            DA.Current.Insert(parentRoomBilling);
+
+            count = parentRoomBilling.Count;
         }
 
         private static IRoomBilling[] GetExistingRoomBilling(DateTime period, bool isTemp, int roomId)
@@ -634,11 +634,11 @@ namespace LNF.CommonTools
             //note: these amounts are all independent of Account
 
             RoomData[] roomData = DA.Current.Query<RoomData>()
-                .Where(x => x.Period == period && x.Client == client && x.Room.ParentID == room.RoomID || x.Room.RoomID == room.RoomID).ToArray();
+                .Where(x => x.Period == period && x.ClientID == client.ClientID && x.ParentID == room.RoomID || x.RoomID == room.RoomID).ToArray();
 
             int physicalDays = roomData.Select(x => x.EvtDate).Distinct().Count();
-            decimal entries = roomData.Sum(x => x.Entries);
-            decimal hours = roomData.Sum(x => x.Hours);
+            decimal entries = Convert.ToDecimal(roomData.Sum(x => x.Entries));
+            decimal hours = Convert.ToDecimal(roomData.Sum(x => x.Hours));
 
             return new RoomBillingAmounts(physicalDays, entries, hours);
         }
@@ -696,16 +696,14 @@ namespace LNF.CommonTools
         /// <summary>
         /// Get all the necessary tables to do the monthly apportionment processing
         /// </summary>
-        public static DataSet GetDataForRoomBilling(DateTime period, string option = null)
+        public static DataSet GetRoomData(DateTime period, string option = null)
         {
             //Don't pass clientId here, always return everything even if we are only running this for one client.
             //This is better than modifying the stored procedure.
 
-            using (var timer = LogTaskTimer.Start("BillingDataProcessStep1.GetDataForRoomBilling", "period = '{0:yyyy-MM-dd}', option = {1}", () => new object[] { period, option }))
-            using (var dba = DA.Current.GetAdapter())
-            {
-                return dba.ApplyParameters(new { Period = period, Option = option }).FillDataSet("RoomApportionmentInDaysMonthly_Populate");
-            }
+            return DA.Command()
+                .Param(new { Period = period, Option = option })
+                .FillDataSet("dbo.RoomApportionmentInDaysMonthly_Populate");
         }
 
         /// <summary>
@@ -713,119 +711,106 @@ namespace LNF.CommonTools
         /// </summary>
         private static DataTable GetApportionmentTableSchema()
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba.ApplyParameters(new { Action = "ForApportion", Period = DateTime.Now, ClientID = -1, RoomID = -1 }).FillDataTable("RoomApportionmentInDaysMonthly_Select");
+            return DA.Command()
+                .Param(new { Action = "ForApportion", Period = DateTime.Now, ClientID = -1, RoomID = -1 })
+                .FillDataTable("dbo.RoomApportionmentInDaysMonthly_Select");
         }
 
         public static int DeleteRoomBillingData(DateTime period, int clientId, bool temp)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                string sp = (temp) ? "RoomBillingTemp_Delete" : "RoomApportionmentInDaysMonthly_Delete";
+            string sp = (temp) ? "RoomBillingTemp_Delete" : "RoomApportionmentInDaysMonthly_Delete";
 
-                object parameters;
+            object parameters;
 
-                if (clientId == 0)
-                    parameters = new { Action = "DeleteCurrentRange", Period = period };
-                else
-                    parameters = new { Action = "DeleteCurrentRange", Period = period, ClientID = clientId };
+            if (clientId == 0)
+                parameters = new { Action = "DeleteCurrentRange", Period = period };
+            else
+                parameters = new { Action = "DeleteCurrentRange", Period = period, ClientID = clientId };
 
-                return dba.SelectCommand
-                    .ApplyParameters(parameters)
-                    .ExecuteNonQuery(sp);
-            }
+            return DA.Command().Param(parameters).ExecuteNonQuery(sp).Value;
         }
 
         public static int SaveRoomBillingData(DataTable dtIn, bool temp)
         {
-            int result = 0;
+            int count = 0;
 
             //Store data back to DB
             if (dtIn.Rows.Count > 0)
             {
-                using (var dba = DA.Current.GetAdapter())
+                //Insert prepration - it's necessary because we may have to add new account that is a remote account
+
+                var sp = (temp) ? "RoomBillingTemp_Insert" : "RoomApportionmentInDaysMonthly_Insert";
+
+                count = DA.Command().Update(dtIn, x =>
                 {
-                    //Insert prepration - it's necessary because we may have to add new account that is a remote account
-                    dba.InsertCommand
-                        .AddParameter("@Period", SqlDbType.DateTime)
-                        .AddParameter("@ClientID", SqlDbType.Int)
-                        .AddParameter("@RoomID", SqlDbType.Int)
-                        .AddParameter("@AccountID", SqlDbType.Int)
-                        .AddParameter("@ChargeTypeID", SqlDbType.Int)
-                        .AddParameter("@BillingTypeID", SqlDbType.Int)
-                        .AddParameter("@OrgID", SqlDbType.Int)
-                        .AddParameter("@ChargeDays", SqlDbType.Float)
-                        .AddParameter("@PhysicalDays", SqlDbType.Float)
-                        .AddParameter("@AccountDays", SqlDbType.Float)
-                        .AddParameter("@Entries", SqlDbType.Float)
-                        .AddParameter("@Hours", SqlDbType.Float)
-                        .AddParameter("@isDefault", SqlDbType.Bit)
-                        .AddParameter("@RoomRate", SqlDbType.Float)
-                        .AddParameter("@EntryRate", SqlDbType.Float)
-                        .AddParameter("@MonthlyRoomCharge", SqlDbType.Float);
+                    x.Insert.SetCommandText(sp);
+                    x.Insert.AddParameter("Period", SqlDbType.DateTime);
+                    x.Insert.AddParameter("ClientID", SqlDbType.Int);
+                    x.Insert.AddParameter("RoomID", SqlDbType.Int);
+                    x.Insert.AddParameter("AccountID", SqlDbType.Int);
+                    x.Insert.AddParameter("ChargeTypeID", SqlDbType.Int);
+                    x.Insert.AddParameter("BillingTypeID", SqlDbType.Int);
+                    x.Insert.AddParameter("OrgID", SqlDbType.Int);
+                    x.Insert.AddParameter("ChargeDays", SqlDbType.Float);
+                    x.Insert.AddParameter("PhysicalDays", SqlDbType.Float);
+                    x.Insert.AddParameter("AccountDays", SqlDbType.Float);
+                    x.Insert.AddParameter("Entries", SqlDbType.Float);
+                    x.Insert.AddParameter("Hours", SqlDbType.Float);
+                    x.Insert.AddParameter("isDefault", SqlDbType.Bit);
+                    x.Insert.AddParameter("RoomRate", SqlDbType.Float);
+                    x.Insert.AddParameter("EntryRate", SqlDbType.Float);
+                    x.Insert.AddParameter("MonthlyRoomCharge", SqlDbType.Float);
+                });
 
-                    string sp = (temp) ? "RoomBillingTemp_Insert" : "RoomApportionmentInDaysMonthly_Insert";
+                bool debug = !string.IsNullOrEmpty(ConfigurationManager.AppSettings["Debug"]) ? Convert.ToBoolean(ConfigurationManager.AppSettings["Debug"]) : false;
 
-                    bool debug = false;
-
-                    result = dba.UpdateDataTable(dtIn, sp);
-
-                    if (result >= 0)
-                    {
-                        if (debug)
-                            ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveRoomBillingData(DataTable dtIn, bool temp)", string.Format("Processing Apportionment Successful - saving to database - {0} [{1}]", sp, DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
-                    }
+                if (debug)
+                {
+                    if (count >= 0)
+                        ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveRoomBillingData", $"Processing Apportionment Successful - saving to database - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
                     else
-                    {
-                        if (debug)
-                            ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveRoomBillingData(DataTable dtIn, bool temp)", string.Format("Error in Processing Apportionment - saving to database - {0} [{1}]", sp, DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
-                    }
+                        ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveRoomBillingData", $"Error in Processing Apportionment - saving to database - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
                 }
             }
 
-            return result;
+            return count;
         }
         #endregion
 
         #region ToolBilling
-        public static void PopulateToolBilling(DateTime period, int clientId, bool isTemp)
+        public static PopulateToolBillingProcessResult PopulateToolBilling(DateTime period, int clientId, bool isTemp)
         {
-            int rowsSelectedFromToolData = 0;
-            int rowsDeletedFromToolBilling = 0;
-            int rowsInsertedIntoToolBilling = 0;
+            var result = new PopulateToolBillingProcessResult();
 
-            using (LogTaskTimer.Start("BillingDataProcessStep1.PopulateToolBilling", "period = '{0:yyyy-MM-dd}', clientId = {1}, isTemp = {2}, rowsSelectedFromToolData = {3}, rowsDeletedFromToolBilling = {4}, rowsInsertedIntoToolBilling = {5}", () => new object[] { period, clientId, isTemp, rowsSelectedFromToolData, rowsDeletedFromToolBilling, rowsInsertedIntoToolBilling }))
-            {
-                IToolBilling[] source = GetToolData(period, clientId, 0, isTemp);
+            IToolBilling[] source = GetToolData(period, clientId, 0, isTemp);
 
-                rowsSelectedFromToolData = source.Length;
+            result.RowsExtracted = source.Length;
 
-                foreach (IToolBilling tb in source)
-                    CalculateToolBillingCharges(tb, isTemp);
+            foreach (IToolBilling tb in source)
+                CalculateToolBillingCharges(tb, isTemp);
 
-                //Delete appropriate data
-                rowsDeletedFromToolBilling = DeleteToolBillingData(period, isTemp, clientId);
+            //Delete appropriate data
+            result.RowsDeleted = DeleteToolBillingData(period, isTemp, clientId);
 
-                //Insert new rows
-                rowsInsertedIntoToolBilling = InsertToolBillingData(source, isTemp);
-            }
+            //Insert new rows
+            result.RowsLoaded = InsertToolBillingData(source, isTemp);
+
+            return result;
         }
 
         public static IToolBilling[] GetToolData(DateTime period, int clientId, int reservationId, bool isTemp)
         {
-            IToolBilling[] source;
-
             // Must use a DataTable here because the stored proc returns new ToolBilling rows, without ToolBillingID, which causes problems
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.AddParameter("@Action", "ForToolBilling");
-                dba.AddParameter("@Period", period);
-                dba.AddParameterIf("@ClientID", clientId > 0, clientId);
-                dba.AddParameterIf("@ReservationID", reservationId > 0, reservationId);
-                DataTable dt = dba.FillDataTable("Billing.dbo.ToolData_Select");
-                source = ToolBillingUtility.CreateToolBillingFromDataTable(dt, isTemp).ToArray();
-                return source;
-            }
+            var dt = DA.Command()
+                .Param("Action", "ForToolBilling")
+                .Param("Period", period)
+                .Param("ClientID", clientId > 0, clientId)
+                .Param("ReservationID", reservationId > 0, reservationId)
+                .FillDataTable("Billing.dbo.ToolData_Select");
+
+            var source = ToolBillingUtility.CreateToolBillingFromDataTable(dt, isTemp).ToArray();
+
+            return source;
         }
 
         public static void CalculateToolBillingCharges(IToolBilling tb, bool isTemp)
@@ -838,21 +823,19 @@ namespace LNF.CommonTools
         //Get source data from ToolData
         private static DataSet GetNecessaryDataTablesForToolUsage(DateTime period)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba.ApplyParameters(new { Action = "ForToolBillingGeneration", Period = period }).FillDataSet("ToolData_Select");
+            return DA.Command()
+                .Param(new { Action = "ForToolBillingGeneration", Period = period })
+                .FillDataSet("dbo.ToolData_Select");
         }
 
         private static int DeleteToolBillingData(DateTime period, bool temp, int clientId = 0)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                string sp = (temp) ? "ToolBillingTemp_Delete" : "ToolBilling_Delete";
-                return dba.SelectCommand
-                    .AddParameter("@Action", "DeleteCurrentRange")
-                    .AddParameter("@Period", period)
-                    .AddParameterIf("@ClientID", clientId > 0, clientId)
-                    .ExecuteNonQuery(sp);
-            }
+            string sp = (temp) ? "ToolBillingTemp_Delete" : "ToolBilling_Delete";
+            return DA.Command()
+                .Param("Action", "DeleteCurrentRange")
+                .Param("Period", period)
+                .Param("ClientID", clientId > 0, clientId)
+                .ExecuteNonQuery(sp).Value;
         }
 
         private static int InsertToolBillingData(IEnumerable<IToolBilling> items, bool isTemp)
@@ -868,108 +851,106 @@ namespace LNF.CommonTools
         #endregion
 
         #region StoreBilling
-        public static void PopulateStoreBilling(DateTime period, bool temp)
+        public static PopulateStoreBillingProcessResult PopulateStoreBilling(DateTime period, bool temp)
         {
-            int rowsSelectedFromSource = 0;
-            int rowsDeletedFromStoreBilling = 0;
-            int rowsInsertedIntoStoreBilling = 0;
+            var result = new PopulateStoreBillingProcessResult();
 
-            using (LogTaskTimer.Start("BillingDataProcessStep1.PopulateStoreBilling", "period = '{0:yyyy-MM-dd}', temp = {1}, rowsSelectedFromSource = {2}, rowsDeletedFromStoreBilling = {3}, rowsInsertedIntoStoreBilling = {4}", () => new object[] { period, temp, rowsSelectedFromSource, rowsDeletedFromStoreBilling, rowsInsertedIntoStoreBilling }))
+            var dt = GetStoreData(period);
+
+            result.RowsExtracted = dt.Rows.Count;
+
+            //Delete appropriate data
+            result.RowsDeleted = DeleteStoreBillingData(period, temp);
+
+            //Save to ToolBilling Table
+            result.RowsLoaded = SaveStoreBillingData(dt, temp);
+
+            return result;
+        }
+
+        public static DataTable GetStoreData(DateTime period)
+        {
+            //Get data from ToolData table
+            DataSet dsRaw = GetNecessaryDataTablesForStoreUsage(period);
+            DataTable dtSource = dsRaw.Tables[0];
+            DataTable dtNew = dsRaw.Tables[1];
+            DataTable dtCost = dsRaw.Tables[2];
+
+            //Add data to new table
+            DataRow newRow;
+            int chargeTypeId;
+
+            foreach (DataRow row in dtSource.Rows)
             {
-                //Get data from ToolData table
-                DataSet dsRaw = GetNecessaryDataTablesForStoreUsage(period);
-                DataTable dtSource = dsRaw.Tables[0];
-                DataTable dtNew = dsRaw.Tables[1];
-                DataTable dtCost = dsRaw.Tables[2];
+                chargeTypeId = Convert.ToInt32(row["ChargeTypeID"]);
 
-                //Add data to new table
-                DataRow newRow;
-                int chargeTypeId;
+                newRow = dtNew.NewRow();
 
-                rowsSelectedFromSource = dtSource.Rows.Count;
+                newRow["Period"] = row["Period"];
+                newRow["ClientID"] = row["ClientID"];
+                newRow["AccountID"] = row["AccountID"];
+                newRow["ChargeTypeID"] = chargeTypeId;
+                newRow["ItemID"] = row["ItemID"];
+                newRow["StatusChangeDate"] = row["StatusChangeDate"];
+                newRow["Quantity"] = row["Quantity"];
+                newRow["UnitCost"] = row["UnitCost"];
+                newRow["CategoryID"] = row["CategoryID"];
 
-                foreach (DataRow row in dtSource.Rows)
-                {
-                    chargeTypeId = Convert.ToInt32(row["ChargeTypeID"]);
+                DataRow[] temprows = dtCost.Select(string.Format("ChargeTypeID = {0}", chargeTypeId));
+                newRow["CostMultiplier"] = temprows[0]["MulVal"];
+                Array.Clear(temprows, 0, temprows.Length);
 
-                    newRow = dtNew.NewRow();
-
-                    newRow["Period"] = row["Period"];
-                    newRow["ClientID"] = row["ClientID"];
-                    newRow["AccountID"] = row["AccountID"];
-                    newRow["ChargeTypeID"] = chargeTypeId;
-                    newRow["ItemID"] = row["ItemID"];
-                    newRow["StatusChangeDate"] = row["StatusChangeDate"];
-                    newRow["Quantity"] = row["Quantity"];
-                    newRow["UnitCost"] = row["UnitCost"];
-                    newRow["CategoryID"] = row["CategoryID"];
-
-                    DataRow[] temprows = dtCost.Select(string.Format("ChargeTypeID = {0}", chargeTypeId));
-                    newRow["CostMultiplier"] = temprows[0]["MulVal"];
-                    Array.Clear(temprows, 0, temprows.Length);
-
-                    dtNew.Rows.Add(newRow);
-                }
-
-                //Delete appropriate data
-                rowsDeletedFromStoreBilling = DeleteStoreBillingData(period, temp);
-
-                //Save to ToolBilling Table
-                rowsInsertedIntoStoreBilling = SaveStoreBillingData(dtNew, temp);
+                dtNew.Rows.Add(newRow);
             }
+
+            return dtNew;
         }
 
         private static DataSet GetNecessaryDataTablesForStoreUsage(DateTime period)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba.ApplyParameters(new { Action = "ForStoreBillingGeneration", Period = period }).FillDataSet("StoreData_Select");
+            return DA.Command()
+                .Param(new { Action = "ForStoreBillingGeneration", Period = period })
+                .FillDataSet("dbo.StoreData_Select");
         }
 
         private static int DeleteStoreBillingData(DateTime period, bool temp)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                string sp = (temp) ? "StoreBillingTemp_Delete" : "StoreBilling_Delete";
-                return dba.SelectCommand.ApplyParameters(new { Period = period }).ExecuteNonQuery(sp);
-            }
+            string sp = (temp) ? "StoreBillingTemp_Delete" : "StoreBilling_Delete";
+            return DA.Command().Param(new { Period = period }).ExecuteNonQuery(sp).Value;
         }
 
         private static int SaveStoreBillingData(DataTable dtIn, bool temp)
         {
-            using (var dba = DA.Current.GetAdapter())
+            //Insert prepration - it's necessary because we may have to add new account that is a remote account
+
+            string sp = (temp) ? "StoreBillingTemp_Insert" : "StoreBilling_Insert";
+
+            int count = DA.Command().Update(dtIn, x =>
             {
-                //Insert prepration - it's necessary because we may have to add new account that is a remote account
-                dba.InsertCommand
-                    .AddParameter("@Period", SqlDbType.DateTime)
-                    .AddParameter("@ClientID", SqlDbType.Int)
-                    .AddParameter("@AccountID", SqlDbType.Int)
-                    .AddParameter("@ChargeTypeID", SqlDbType.Int)
-                    .AddParameter("@ItemID", SqlDbType.Int)
-                    .AddParameter("@StatusChangeDate", SqlDbType.DateTime)
-                    .AddParameter("@Quantity", SqlDbType.Float)
-                    .AddParameter("@UnitCost", SqlDbType.Float)
-                    .AddParameter("@CategoryID", SqlDbType.Int)
-                    .AddParameter("@CostMultiplier", SqlDbType.Float);
+                x.Insert.SetCommandText(sp);
+                x.Insert.AddParameter("Period", SqlDbType.DateTime);
+                x.Insert.AddParameter("ClientID", SqlDbType.Int);
+                x.Insert.AddParameter("AccountID", SqlDbType.Int);
+                x.Insert.AddParameter("ChargeTypeID", SqlDbType.Int);
+                x.Insert.AddParameter("ItemID", SqlDbType.Int);
+                x.Insert.AddParameter("StatusChangeDate", SqlDbType.DateTime);
+                x.Insert.AddParameter("Quantity", SqlDbType.Float);
+                x.Insert.AddParameter("UnitCost", SqlDbType.Float);
+                x.Insert.AddParameter("CategoryID", SqlDbType.Int);
+                x.Insert.AddParameter("CostMultiplier", SqlDbType.Float);
+            });
 
-                string sp = (temp) ? "StoreBillingTemp_Insert" : "StoreBilling_Insert";
+            bool debug = !string.IsNullOrEmpty(ConfigurationManager.AppSettings["Debug"]) ? Convert.ToBoolean(ConfigurationManager.AppSettings["Debug"]) : false;
 
-                bool debug = false;
-
-                int count = dba.UpdateDataTable(dtIn, sp);
-
+            if (debug)
+            {
                 if (count >= 0)
-                {
-                    if (debug)
-                        ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveStoreBillingData(DataTable dtIn, bool temp)", string.Format("Processing StoreBilling Successful - saving to database - {0} [{1}]", sp, DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
-                }
+                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveStoreBillingData", $"Processing StoreBilling Successful - saving to database - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
                 else
-                {
-                    if (debug)
-                        ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveStoreBillingData(DataTable dtIn, bool temp)", string.Format("Error in Processing StoreBilling - saving to database portion failed - {0} [{1}]", sp, DateTime.Now), string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
-                }
-
-                return count;
+                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveStoreBillingData", $"Error in Processing StoreBilling - saving to database portion failed - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
             }
+
+            return count;
         }
 
         private static DataTable CreateToolBillingTable()
@@ -1087,5 +1068,4 @@ namespace LNF.CommonTools
         }
         #endregion
     }
-
 }

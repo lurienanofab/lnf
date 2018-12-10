@@ -30,11 +30,6 @@ namespace LNF.Web.Content
             get { return (LNFPage)base.Page; }
         }
 
-        //public DropDownMenu Menu
-        //{
-        //    get { return _Menu; }
-        //}
-
         public Authorization Authorization
         {
             get { return _Authorization; }
@@ -44,28 +39,6 @@ namespace LNF.Web.Content
         {
             get { return Page.CurrentUser; }
         }
-
-        //private void CreateMenu()
-        //{
-        //    _Menu.ID = "DropDownMenu1";
-        //    _Menu.CssClass = "menu-nav";
-
-        //    _Menu.LogoImageUrl = GetStaticUrl("images/lnfbanner.jpg");
-
-        //    _Menu.DataSource = SiteMenu.Create(CurrentUser);
-        //    _Menu.DataBind();
-
-        //    DropDownMenuItem parent;
-
-        //    StringBuilder sb = new StringBuilder();
-        //    string DisplayName = (string.IsNullOrEmpty(WebContext.Current.DisplayName)) ? "[unknown]" : WebContext.Current.DisplayName;
-        //    sb.AppendLine("<div>Current User: " + DisplayName + "</div>");
-        //    sb.AppendLine("<div id=\"jclock\"></div>");
-        //    parent = new DropDownMenuItem(sb.ToString());
-        //    parent.CssClass = "menu-clock";
-        //    parent.Enabled = false;
-        //    _Menu.Items.Add(parent);
-        //}
 
         protected virtual void InitAuthorization()
         {

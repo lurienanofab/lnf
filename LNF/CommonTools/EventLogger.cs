@@ -1,5 +1,6 @@
 ﻿using LNF.Repository;
 using System;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -29,25 +30,20 @@ namespace LNF.CommonTools
                 EventLog.CreateEventSource(Source, Log);
 
             objEventLog.Source = Source;
-            objEventLog.WriteEntry(Message, EventLogEntryType.Information, 1, (short)1);
+            objEventLog.WriteEntry(Message, EventLogEntryType.Information, 1, 1);
         }
 
         public static void WriteToSystemLog(int clientId, Guid messageGuid, LogMessageTypes messageType, string message)
         {
-            using (var dba = DA.Current.GetAdapter())
+            string sql = "INSERT SystemLog (ClientID, LogMessageGUID, LogMessageDateTime, LogMessageType, LogMessageText) VALUES (@ClientID, @LogMessageGUID, GETDATE(), @LogMessageType, @LogMessageText)";
+
+            DA.Command(CommandType.Text).Param(new
             {
-                string sql = "INSERT SystemLog (ClientID, LogMessageGUID, LogMessageDateTime, LogMessageType, LogMessageText) VALUES (@ClientID, @LogMessageGUID, GETDATE(), @LogMessageType, @LogMessageText)";
-                dba.SelectCommand
-                    .ApplyParameters(new
-                    {
-                        ClientID = (clientId > 0) ? (object)clientId : DBNull.Value,
-                        LogMessageGUID = messageGuid,
-                        LogMessageType = EventLogger.LogMessageTypeToString(messageType),
-                        LogMessageText = message
-                    })
-                    .CommandTypeText()
-                    .ExecuteNonQuery(sql);
-            }
+                ClientID = Utility.DBNullIf(clientId, clientId == 0),
+                LogMessageGUID = messageGuid,
+                LogMessageType = LogMessageTypeToString(messageType),
+                LogMessageText = message
+            }).ExecuteNonQuery(sql);
         }
 
         public static void WriteToHTML(string message)

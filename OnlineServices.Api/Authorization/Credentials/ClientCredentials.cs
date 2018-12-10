@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Net.Http;
-
-namespace OnlineServices.Api.Authorization.Credentials
+﻿namespace OnlineServices.Api.Authorization.Credentials
 {
     public class ClientCredentials : CredentialBase
     {

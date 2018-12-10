@@ -17,9 +17,9 @@ namespace LNF.Impl.Email
         private MailMessage _mailMessage;
         private Message _message;
 
-        protected IClientManager ClientManager => DA.Use<IClientManager>();
+        protected IClientManager ClientManager => ServiceProvider.Current.Use<IClientManager>();
 
-        public static IClientOrgManager ClientOrgManager => DA.Use<IClientOrgManager>();
+        public static IClientOrgManager ClientOrgManager => ServiceProvider.Current.Use<IClientOrgManager>();
 
         public int ClientID { get { return _ClientID; } }
 

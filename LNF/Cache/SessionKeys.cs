@@ -7,9 +7,6 @@ namespace LNF.Cache
         public static readonly string CurrentUser = "CurrentUser";
 
         public static readonly string Cache = "Cache";
-        public static readonly string IsKiosk = "IsKiosk";
-        public static readonly string IsOnKiosk = "IsOnKiosk";
-        public static readonly string ClientLabs = "ClientLabs";
         public static readonly string ErrorID = "ErrorID";
 
         public static readonly string Date = "Date";

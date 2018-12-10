@@ -1,5 +1,4 @@
-﻿using LNF.Repository;
-using System;
+﻿using System;
 
 namespace LNF.Repository.Billing
 {
@@ -52,5 +51,8 @@ namespace LNF.Repository.Billing
         decimal UsageFeeFiftyPercent { get; set; }
         bool IsTemp { get; }
         decimal GetTotalCharge();
+        TimeSpan ActivatedUsed();
+        TimeSpan ActivatedUnused();
+        TimeSpan UnstartedUnused();
     }
 }

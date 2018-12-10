@@ -8,24 +8,20 @@ namespace LNF.Email
     {
         public static DataTable GetAllInvalidEmailAddresses()
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.AddParameter("@Action", "SelectAll");
-                return dba.FillDataTable("InvalidEmailList_Select");
-            }
+            return DA.Command()
+                .Param("Action", "SelectAll")
+                .FillDataTable("dbo.InvalidEmailList_Select");
         }
 
         public static DataTable GetInvalidEmailListFiltering()
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.AddParameter("@Action", "SelectFiltering");
-                DataTable dt = dba.FillDataTable("InvalidEmailList_Select");
+            var dt = DA.Command()
+                .Param("Action", "SelectFiltering")
+                .FillDataTable("dbo.InvalidEmailList_Select");
 
-                dt.PrimaryKey = new[] { dt.Columns["EmailID"] };
+            dt.PrimaryKey = new[] { dt.Columns["EmailID"] };
 
-                return dt;
-            }
+            return dt;
         }
     }
 }

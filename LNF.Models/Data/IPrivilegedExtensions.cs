@@ -7,6 +7,7 @@ namespace LNF.Models.Data
     {
         public static bool HasPriv(this IPrivileged item, string privType)
         {
+            if (item == null) return false;
             ClientPrivilege cp = (ClientPrivilege)Enum.Parse(typeof(ClientPrivilege), privType, true);
             return item.HasPriv(cp);
         }
@@ -44,7 +45,7 @@ namespace LNF.Models.Data
 
         public static string[] Roles(this IPrivileged item)
         {
-            return item.Privs.ToString().Split(',').Select(x => x.Trim()).ToArray();
+            return ClientPrivilegeUtility.GetRoles(item.Privs);
         }
 
         public static bool IsInRole(this IPrivileged item, string role)

@@ -117,7 +117,7 @@ namespace LNF.Reporting
         public string GetAttributes(object htmlAttributes)
         {
             if (htmlAttributes == null) return string.Empty;
-            IDictionary<string, object> attrs = RepositoryUtility.ObjectToDictionary(htmlAttributes);
+            IDictionary<string, object> attrs = Utility.ObjectToDictionary(htmlAttributes);
             string attributes = string.Empty;
             foreach (KeyValuePair<string, object> kvp in attrs)
             {

@@ -36,7 +36,7 @@ namespace LNF
 
         public static QueryParameters Create(object obj)
         {
-            IDictionary<string, object> dict = RepositoryUtility.ObjectToDictionary(obj);
+            IDictionary<string, object> dict = Utility.ObjectToDictionary(obj);
             return Create(dict);
         }
 

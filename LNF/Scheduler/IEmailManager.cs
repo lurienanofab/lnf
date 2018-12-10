@@ -1,4 +1,5 @@
-﻿using LNF.Repository;
+﻿using LNF.Models.Scheduler;
+using LNF.Repository;
 using LNF.Repository.Scheduler;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace LNF.Scheduler
         void EmailOnCanceledByResource(Reservation rsv);
         void EmailOnForgiveCharge(Reservation rsv, double forgiveAmount, bool sendToUser, int clientId);
         void EmailOnInvited(Reservation rsv, IEnumerable<ReservationInviteeItem> invitees, ReservationModificationType modificationType = ReservationModificationType.Created);
-        int EmailOnOpenReservations(int resourceId, DateTime startDate, DateTime endDate);
+        EmailOnOpenReservationsProcessResult EmailOnOpenReservations(int resourceId, DateTime startDate, DateTime endDate);
         void EmailOnOpenSlot(int resourceId, DateTime beginDateTime, DateTime endDateTime, EmailNotify notifyType, int reservationId);
         void EmailOnPracticeRes(Reservation rsv, string inviteeName);
         void EmailOnSaveHistory(Reservation rsv, bool updateCharges, bool updateAccount, bool updateNotes, bool sendToUser);

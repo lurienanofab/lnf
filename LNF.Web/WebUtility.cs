@@ -1,8 +1,12 @@
-﻿using System;
+﻿using LNF.CommonTools;
+using RestSharp;
+using RestSharp.Authenticators;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.Mvc;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -135,8 +139,7 @@ namespace LNF.Web
             var body = new HtmlGenericControl("div");
             body.Attributes.Add("class", "modal-body");
 
-            var p = new HtmlGenericControl("p");
-            p.InnerHtml = text;
+            var p = new HtmlGenericControl("p") { InnerHtml = text };
             body.Controls.Add(p);
 
             var footer = new HtmlGenericControl("div");
@@ -220,6 +223,37 @@ namespace LNF.Web
             //strMouseover += ");";
             //Control.Attributes.Add("onmouseover", strMouseover);
             //Control.Attributes.Add("onmouseout", "return nd();");
+        }
+
+        /// <summary>
+        /// Gets the site menu html for a particular user from a web service.
+        /// </summary>
+        public static IHtmlString GetSiteMenu(int clientId)
+        {
+            // Why get the html from an ajax service?
+            //  Because then there is one place where the menu is generated and can be used in different projects
+            //  without having to copy and paste a partial view cshtml file resulting in a bunch of copies that
+            //  can't be easily changed globally, or deal with hard to maintain html generation code. This method
+            //  allows for maintaining a single cshtml partial view which is the best scenario.
+
+            var host = Utility.GetRequiredAppSetting("ApiBaseUrl");
+            var username = Utility.GetRequiredAppSetting("BasicAuthUsername");
+            var password = Utility.GetRequiredAppSetting("BasicAuthPassword");
+
+            var rc = new RestClient(host)
+            {
+                Authenticator = new HttpBasicAuthenticator(username, password)
+            };
+
+            var request = new RestRequest("webapi/data/ajax/menu");
+            request.AddParameter("clientId", clientId);
+
+            var response = rc.Execute(request);
+
+            if (response.IsSuccessful)
+                return new HtmlString(response.Content);
+            else
+                return new HtmlString(string.Format("SiteMenu Error: [{0}] {1}", (int)response.StatusCode, response.StatusDescription));
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Owin;
+﻿using LNF.Impl.DependencyInjection.Web;
+using Owin;
 using System.Web.Http;
 
 namespace LNF.WebApi
@@ -9,6 +10,8 @@ namespace LNF.WebApi
 
         public virtual void Configuration(IAppBuilder app)
         {
+            ServiceProvider.Current = IOC.Resolver.GetInstance<ServiceProvider>();
+
             // Data Access setup
             app.Use(async (ctx, next) =>
             {

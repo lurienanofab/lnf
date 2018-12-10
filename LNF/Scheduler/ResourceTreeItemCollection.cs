@@ -128,7 +128,7 @@ namespace LNF.Scheduler
         {
             var result = _items.FirstOrDefault(x => x.ResourceID == resourceId);
             if (result == null)
-                throw new Exception($"Could not find a resource with ResourceID {resourceId}. [Count = {Count}, ClientID = {CacheManager.Current.CurrentUser.ClientID}]");
+                throw new Exception($"Could not find a resource with ResourceID {resourceId}.");
             return result;
         }
 
@@ -136,7 +136,7 @@ namespace LNF.Scheduler
         {
             var result = Buildings().FirstOrDefault(x => x.BuildingID == buildingId);
             if (result == null)
-                throw new Exception($"Could not find a building with BuildingID {buildingId}. [Count = {Count}, ClientID = {CacheManager.Current.CurrentUser.ClientID}]");
+                throw new Exception($"Could not find a building with BuildingID {buildingId}.");
             return result;
         }
 
@@ -144,7 +144,7 @@ namespace LNF.Scheduler
         {
             var result = Labs().FirstOrDefault(x => x.LabID == labId);
             if (result == null)
-                throw new Exception($"Could not find a lab with LabID {labId}. [Count = {Count}, ClientID = {CacheManager.Current.CurrentUser.ClientID}]");
+                throw new Exception($"Could not find a lab with LabID {labId}.");
             return result;
         }
 
@@ -152,7 +152,7 @@ namespace LNF.Scheduler
         {
             var result = ProcessTechs().FirstOrDefault(x => x.ProcessTechID == procTechId);
             if (result == null)
-                throw new Exception($"Could not find a process tech with ProcessTechID {procTechId}. [Count = {Count}, ClientID = {CacheManager.Current.CurrentUser.ClientID}]");
+                throw new Exception($"Could not find a process tech with ProcessTechID {procTechId}.");
             return result;
         }
 

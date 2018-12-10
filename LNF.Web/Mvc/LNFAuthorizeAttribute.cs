@@ -13,7 +13,7 @@ namespace LNF.Web.Mvc
 {
     public class LNFAuthorizeAttribute : AuthorizeAttribute
     {
-        protected IClientManager ClientManager => DA.Use<IClientManager>();
+        protected IClientManager ClientManager => ServiceProvider.Current.Use<IClientManager>();
 
         public Type ModelType { get; set; }
         public ClientPrivilege RequiredPrivilege { get; set; }

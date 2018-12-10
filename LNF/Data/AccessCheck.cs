@@ -1,5 +1,5 @@
 ﻿using LNF.Models.Data;
-using LNF.PhysicalAccess;
+using LNF.Models.PhysicalAccess;
 using LNF.Repository;
 using LNF.Repository.Data;
 using System;
@@ -11,12 +11,12 @@ namespace LNF.Data
     public class AccessCheck
     {
         public ISession Session { get; }
-        public Client Client { get; private set; }
-        public bool IsActive { get { return Client.Active; } }
+        public ClientItem Client { get; private set; }
+        public bool IsActive { get { return Client.ClientActive; } }
         public bool HasPhysicalAccessPriv { get { return Client.HasPriv(ClientPrivilege.PhysicalAccess); } }
         public bool HasLabUserPriv { get { return Client.HasPriv(ClientPrivilege.LabUser); } }
         public bool HasStoreUserPriv { get { return Client.HasPriv(ClientPrivilege.StoreUser); } }
-        public bool HasActiveAccounts { get { return DA.Use<IClientManager>().GetActiveAccountCount(Client.ClientID) > 0; } }
+        public bool HasActiveAccounts { get { return ServiceProvider.Current.Use<IClientManager>().GetActiveAccountCount(Client.ClientID) > 0; } }
 
         /// <summary>
         /// The reason why access can or cannot be enabled. Set by calling CanEnableAccess()
@@ -25,7 +25,7 @@ namespace LNF.Data
 
         private AccessCheck() { }
 
-        public static AccessCheck Create(Client c)
+        public static AccessCheck Create(ClientItem c)
         {
             AccessCheck result = new AccessCheck()
             {
@@ -70,7 +70,7 @@ namespace LNF.Data
 
         public IEnumerable<Badge> GetBadges()
         {
-            return ServiceProvider.Current.PhysicalAccess.GetBadge(Client);
+            return ServiceProvider.Current.PhysicalAccess.GetBadge(Client.ClientID);
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace LNF.Data
         public bool AllowReenable()
         {
             GlobalCost gc = Session.Query<GlobalCost>().FirstOrDefault();
-            bool result = ServiceProvider.Current.PhysicalAccess.AllowReenable(Client.ClientID, gc.AccessToOld);
+            bool result = ServiceProvider.Current.PhysicalAccess.GetAllowReenable(Client.ClientID, gc.AccessToOld);
             return result;
         }
 

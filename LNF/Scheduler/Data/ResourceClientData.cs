@@ -18,18 +18,15 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectAvailClients(int resourceId)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                ClientPrivilege p = ClientPrivilege.LabUser | ClientPrivilege.Staff;
+            ClientPrivilege p = ClientPrivilege.LabUser | ClientPrivilege.Staff;
 
-                DataTable dt = dba
-                    .ApplyParameters(new { Action = "SelectAvailClients", ResourceID = resourceId, Privs = (int)p })
-                    .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
+            var dt = DA.Command()
+                .Param(new { Action = "SelectAvailClients", ResourceID = resourceId, Privs = (int)p })
+                .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
 
-                dt.PrimaryKey = new[] { dt.Columns["ClientID"] };
+            dt.PrimaryKey = new[] { dt.Columns["ClientID"] };
 
-                return dt;
-            }
+            return dt;
         }
 
         /// <summary>
@@ -37,10 +34,10 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectByResource(int resourceId)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba
-                    .ApplyParameters(new { Action = "SelectByResource", ResourceID = resourceId })
-                    .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
+            return DA.Command()
+                .Param("Action", "SelectByResource")
+                .Param("ResourceID", resourceId)
+                .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
         }
 
         /// <summary>
@@ -48,11 +45,10 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static IDataReader SelectClientList(int resourceId)
         {
-            var dba = DA.Current.GetAdapter();
-
-            return dba
-                .ApplyParameters(new { Action = "SelectClientList", ResourceID = resourceId }
-                ).ExecuteReader("sselScheduler.dbo.procResourceClientSelect");
+            return DA.Command()
+                .Param("Action", "SelectClientList")
+                .Param("ResourceID", resourceId)
+                .ExecuteReader("sselScheduler.dbo.procResourceClientSelect");
         }
 
         /// <summary>
@@ -60,29 +56,27 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectByClient(int clientId)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba
-                    .ApplyParameters(new { Action = "SelectByClient", ClientID = clientId })
-                    .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
+            return DA.Command()
+                .Param("Action", "SelectByClient")
+                .Param("ClientID", clientId)
+                .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
         }
 
         /// <summary>
         /// Returns all resource clients that the current client may view reserv histories of
         /// </summary>
-        public static DataTable SelectReservHistoryClient(int clientId)
+        public static DataTable SelectReservationHistoryClient(IPrivileged client)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                if (CacheManager.Current.CurrentUser.HasPriv(ClientPrivilege.Administrator | ClientPrivilege.Developer))
-                    dba.SelectCommand.AddParameter("@Action", "SelectAll");
-                else
-                {
-                    dba.SelectCommand.AddParameter("@Action", "SelectByEngineer");
-                    dba.SelectCommand.AddParameter("@ClientID", clientId);
-                }
+            //var hasPriv = client.HasPriv(ClientPrivilege.Staff | ClientPrivilege.Administrator | ClientPrivilege.Developer);
 
-                return dba.FillDataTable("sselScheduler.dbo.procResourceClientSelect");
-            }
+            // allow everyone to see other users history
+            var hasPriv = true;
+
+            var dt = DA.Command(CommandType.Text)
+                .Param("ClientID", !hasPriv, client.ClientID, DBNull.Value)
+                .FillDataTable("SELECT ClientID, LName + ', ' + FName AS DisplayName FROM dbo.Client WHERE (Privs & 3) > 0 AND Active = 1 AND ClientID = ISNULL(@ClientID, ClientID) ORDER BY LName, FName");
+
+            return dt;
         }
 
         /// <summary>
@@ -90,10 +84,10 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectNotifyOnCancelClients(int resourceId)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba
-                    .ApplyParameters(new { Action = "SelectNotifyOnCancelClients", ResourceID = resourceId })
-                    .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
+            return DA.Command()
+                .Param("Action", "SelectNotifyOnCancelClients")
+                .Param("ResourceID", resourceId)
+                .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
         }
 
         /// <summary>
@@ -101,10 +95,10 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectNotifyOnOpeningClients(int resourceId)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba
-                    .ApplyParameters(new { Action = "SelectNotifyOnOpeningClients", ResourceID = resourceId })
-                    .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
+            return DA.Command()
+                .Param("Action", "SelectNotifyOnOpeningClients")
+                .Param("ResourceID", resourceId)
+                .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
         }
 
         /// <summary>
@@ -112,10 +106,10 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectNotifyOnPracticeRes(int resourceId)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba
-                    .ApplyParameters(new { Action = "SelectNotifyOnPracticeRes", ResourceID = resourceId })
-                    .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
+            return DA.Command()
+                .Param("Action", "SelectNotifyOnPracticeRes")
+                .Param("ResourceID", resourceId)
+                .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
         }
 
         /// <summary>
@@ -123,10 +117,8 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static IDataReader SelectResourceClient(int resourceId, int clientId)
         {
-            var dba = DA.Current.GetAdapter();
-
-            return dba
-                .ApplyParameters(new { Action = "Select", ResourceID = resourceId, ClientID = clientId })
+            return DA.Command()
+                .Param(new { Action = "Select", ResourceID = resourceId, ClientID = clientId })
                 .ExecuteReader("sselScheduler.dbo.procResourceClientSelect");
         }
 
@@ -135,10 +127,10 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectEngineers(int resourceId = -1)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba
-                    .ApplyParameters(new { Action = "SelectEngineers", ResourceID = resourceId })
-                    .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
+            return DA.Command()
+                .Param("Action", "SelectEngineers")
+                .Param("ResourceID", resourceId)
+                .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
         }
 
         /// <summary>
@@ -146,10 +138,10 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectEmails(int resourceId, int privs)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba
-                    .ApplyParameters(new { ResourceID = resourceId, Privs = privs })
-                    .FillDataTable("sselScheduler.dbo.procResourceEmailSelect");
+            return DA.Command()
+                .Param("ResourceID", resourceId)
+                .Param("Privs", privs)
+                .FillDataTable("sselScheduler.dbo.procResourceEmailSelect");
         }
 
         /// <summary>
@@ -157,54 +149,44 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static void Update(DataTable dt)
         {
-            using (var dba = DA.Current.GetAdapter())
+            DA.Command().Update(dt, x =>
             {
-                dba.InsertCommand
-                    .AddParameter("@Action", "InsertClient")
-                    .AddParameter("@ResourceClientID", SqlDbType.Int)
-                    .AddParameter("@ResourceID", SqlDbType.Int)
-                    .AddParameter("@ClientID", SqlDbType.Int)
-                    .AddParameter("@AuthLevel", SqlDbType.Int)
-                    .AddParameter("@Expiration", SqlDbType.DateTime);
+                x.Insert.SetCommandText("sselScheduler.dbo.procResourceClientInsert");
+                x.Insert.AddParameter("Action", "InsertClient");
+                x.Insert.AddParameter("ResourceClientID", SqlDbType.Int);
+                x.Insert.AddParameter("ResourceID", SqlDbType.Int);
+                x.Insert.AddParameter("ClientID", SqlDbType.Int);
+                x.Insert.AddParameter("AuthLevel", SqlDbType.Int);
+                x.Insert.AddParameter("Expiration", SqlDbType.DateTime);
 
-                dba.UpdateCommand
-                    .AddParameter("@Action", "Update")
-                    .AddParameter("@ResourceClientID", SqlDbType.Int)
-                    .AddParameter("@AuthLevel", SqlDbType.Int)
-                    .AddParameter("@Expiration", SqlDbType.DateTime);
+                x.Update.SetCommandText("sselScheduler.dbo.procResourceClientUpdate");
+                x.Update.AddParameter("Action", "Update");
+                x.Update.AddParameter("ResourceClientID", SqlDbType.Int);
+                x.Update.AddParameter("AuthLevel", SqlDbType.Int);
+                x.Update.AddParameter("Expiration", SqlDbType.DateTime);
 
-
-                dba.DeleteCommand
-                    .AddParameter("@Action", "Delete")
-                    .AddParameter("@ResourceClientID", SqlDbType.Int);
-
-                dba.UpdateDataTable(dt,
-                    "sselScheduler.dbo.procResourceClientInsert",
-                    "sselScheduler.dbo.procResourceClientUpdate",
-                    "sselScheduler.dbo.procResourceClientDelete");
-            }
+                x.Delete.SetCommandText("sselScheduler.dbo.procResourceClientDelete");
+                x.Delete.AddParameter("Action", "Delete");
+                x.Delete.AddParameter("ResourceClientID", SqlDbType.Int);
+            });
         }
 
         public static void UpdateToolEngineers(DataTable dt)
         {
-            using (var dba = DA.Current.GetAdapter())
+            DA.Command().Update(dt, x =>
             {
-                dba.InsertCommand
-                    .AddParameter("@Action", "InsertClient")
-                    .AddParameter("@ResourceClientID", SqlDbType.Int)
-                    .AddParameter("@ResourceID", SqlDbType.Int)
-                    .AddParameter("@ClientID", SqlDbType.Int)
-                    .AddParameter("@AuthLevel", ClientAuthLevel.ToolEngineer)
-                    .AddParameter("@Expiration", DBNull.Value);
+                x.Insert.SetCommandText("sselScheduler.dbo.procResourceClientInsert");
+                x.Insert.AddParameter("Action", "InsertClient");
+                x.Insert.AddParameter("ResourceClientID", SqlDbType.Int);
+                x.Insert.AddParameter("ResourceID", SqlDbType.Int);
+                x.Insert.AddParameter("ClientID", SqlDbType.Int);
+                x.Insert.AddParameter("AuthLevel", ClientAuthLevel.ToolEngineer);
+                x.Insert.AddParameter("Expiration", DBNull.Value);
 
-                dba.DeleteCommand
-                    .AddParameter("@Action", "Delete")
-                    .AddParameter("@ResourceClientID", SqlDbType.Int);
-
-                dba.UpdateDataTable(dt,
-                    insertSql: "sselScheduler.dbo.procResourceClientInsert",
-                    deleteSql: "sselScheduler.dbo.procResourceClientDelete");
-            }
+                x.Delete.SetCommandText("sselScheduler.dbo.procResourceClientDelete");
+                x.Delete.AddParameter("Action", "Delete");
+                x.Delete.AddParameter("ResourceClientID", SqlDbType.Int);
+            });
         }
 
         /// <summary>
@@ -212,10 +194,11 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static int UpdateExpiration(int resourceClientId, DateTime expirationDate)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba
-                    .ApplyParameters(new { Action = "UpdateExpiration", ResourceClientID = resourceClientId, Expiration = expirationDate })
-                    .ExecuteNonQuery("sselScheduler.dbo.procResourceClientUpdate");
+            return DA.Command()
+                .Param("Action", "UpdateExpiration")
+                .Param("ResourceClientID", resourceClientId)
+                .Param("Expiration", expirationDate)
+                .ExecuteNonQuery("sselScheduler.dbo.procResourceClientUpdate").Value;
         }
 
         /// <summary>
@@ -223,10 +206,11 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static int UpdateEmailNotify(int resourceClientId, int emailNotify)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba
-                    .ApplyParameters(new { Action = "UpdateEmailNofity", ResourceClientID = resourceClientId, EmailNotify = emailNotify })
-                    .ExecuteNonQuery("sselScheduler.dbo.procResourceClientUpdate");
+            return DA.Command()
+                .Param("Action", "UpdateEmailNofity")
+                .Param("ResourceClientID", resourceClientId)
+                .Param("EmailNotify", emailNotify)
+                .ExecuteNonQuery("sselScheduler.dbo.procResourceClientUpdate").Value;
         }
 
         /// <summary>
@@ -234,10 +218,11 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static int UpdatePracticeResEmailNotify(int resourceClientId, int emailNotify)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba
-                    .ApplyParameters(new { Action = "UpdatePracticeResEmailNotify", ResourceClientID = resourceClientId, EmailNotify = emailNotify })
-                    .ExecuteNonQuery("sselScheduler.dbo.procResourceClientUpdate");
+            return DA.Command()
+                .Param("Action", "UpdatePracticeResEmailNotify")
+                .Param("ResourceClientID", resourceClientId)
+                .Param("EmailNotify", emailNotify)
+                .ExecuteNonQuery("sselScheduler.dbo.procResourceClientUpdate").Value;
         }
     }
 }

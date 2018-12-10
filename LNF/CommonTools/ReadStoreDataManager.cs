@@ -9,72 +9,47 @@ namespace LNF.CommonTools
     //- Unlike room and tool, for which the cost is stored in the local DB, for the store
     //  the costs are stored remotely. Thus, when store activity is gathered, the cost will
     //  will be gathered as well.
-    public class ReadStoreDataManager
+    public class ReadStoreDataManager : ManagerBase, IReadStoreDataManager
     {
-        public enum StoreDataCleanOption
+        public ReadStoreDataManager(ISession session) : base(session) { }
+
+        public DataTable ReadStoreDataRaw(DateTime sd, DateTime ed, int clientId = 0)
         {
-            AllItems = 0,
-            RechargeItems = 1
-        }
+            var dt = new DataTable();
+            dt.Columns.Add("Quantity", typeof(double)); // make Quantity column double for dryboxes
 
-        public ReadStoreDataManager() { }
+            Command()
+                .Param("Action", "StoreDataRaw")
+                .Param("sDate", sd)
+                .Param("eDate", ed)
+                .Param("ClientID", clientId > 0, clientId)
+                .FillDataTable(dt, "dbo.sselMAS_Select");
 
-        public DataTable ReadStoreData(DateTime period, int clientId = 0, int itemId = 0)
-        {
-            using (var adap = DA.Current.GetAdapter())
-            {
-                adap.SelectCommand
-                    .AddParameter("@Action", "AggByPeriod")
-                    .AddParameter("@Period", period)
-                    .AddParameterIf("@ClientID", clientId > 0, clientId)
-                    .AddParameterIf("@ItemID", itemId > 0, itemId);
-
-                var dt = adap.FillDataTable("StoreData_Select");
-                dt.TableName = "StoreUsage";
-
-                return dt;
-            }
+            return dt;
         }
 
         //Making AllItems true for all items is logical.
         //However, in the SP, we need to pass in a 0 for all items.
-        public DataTable ReadStoreDataClean(StoreDataCleanOption option, DateTime sd, DateTime ed, int clientId = 0, int itemId = 0)
+        public DataTable ReadStoreDataClean(DateTime sd, DateTime ed, int clientId = 0, int itemId = 0, StoreDataCleanOption option = StoreDataCleanOption.AllItems)
         {
-            //need to use DA.Current.GetAdapter() because of DryBox data
-            using (var adap = DA.Current.GetAdapter())
-            {
-                adap.SelectCommand
-                    .AddParameter("@Action", "ByClient")
-                    .AddParameter("@sDate", sd)
-                    .AddParameter("@eDate", ed)
-                    .AddParameter("@AllItems", (int)option)
-                    .AddParameterIf("@ClientID", clientId > 0, clientId)
-                    .AddParameterIf("@ItemID", itemId > 0, itemId);
-
-                return adap.FillDataTable("StoreDataClean_Select");
-            }
+            return Command()
+                .Param("Action", "ByClient")
+                .Param("sDate", sd)
+                .Param("eDate", ed)
+                .Param("AllItems", (int)option)
+                .Param("ClientID", clientId > 0, clientId)
+                .Param("ItemID", itemId > 0, itemId)
+                .FillDataTable("dbo.StoreDataClean_Select");
         }
 
-        public DataTable ReadStoreDataFiltered(DateTime sd, DateTime ed, int clientId = 0)
+        public DataTable ReadStoreData(DateTime period, int clientId = 0, int itemId = 0)
         {
-            //Cannot imagine what sort of cleaning would be needed, but for consistency...
-            //Instead of calling StoreDataRaw once per client, pass ClientID=0 for all clients.
-            return ReadStoreDataRaw(sd, ed, clientId);
-        }
-
-        public DataTable ReadStoreDataRaw(DateTime sd, DateTime ed, int clientId = 0)
-        {
-            //need to use DA.Current.GetAdapter() because of DryBox data
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.SelectCommand
-                    .AddParameter("@Action", "StoreDataRaw")
-                    .AddParameter("@sDate", sd)
-                    .AddParameter("@eDate", ed)
-                    .AddParameterIf("@ClientID", clientId > 0, clientId);
-
-                return dba.FillDataTable("sselMAS_Select");
-            }
+            return Command()
+                .Param("Action", "AggByPeriod")
+                .Param("Period", period)
+                .Param("ClientID", clientId > 0, clientId)
+                .Param("ItemID", itemId > 0, itemId)
+                .FillDataTable("dbo.StoreData_Select");
         }
     }
 }

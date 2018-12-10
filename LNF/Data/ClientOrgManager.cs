@@ -9,7 +9,14 @@ namespace LNF.Data
 {
     public class ClientOrgManager : ManagerBase, IClientOrgManager
     {
-        public ClientOrgManager(ISession session) : base(session) { }
+        protected IClientManager ClientManager { get; }
+        protected IActiveDataItemManager ActiveDataItemManager { get; }
+
+        public ClientOrgManager(ISession session, IClientManager clientManager, IActiveDataItemManager activeDataItemManager) : base(session)
+        {
+            ClientManager = ClientManager;
+            ActiveDataItemManager = activeDataItemManager;
+        }
 
         public BillingType GetBillingType(ClientOrg item)
         {
@@ -32,13 +39,13 @@ namespace LNF.Data
         {
             // when we disable a ClientOrg we might have to also disable the Client and/or disable physical access
 
-            DA.Use<IActiveDataItemManager>().Disable(item); // normal disable of ClientOrg
+            ActiveDataItemManager.Disable(item); // normal disable of ClientOrg
 
             // first check for other active ClientOrgs, this one won't be included because it was just disabled
-            bool otherActive = DA.Use<IClientManager>().ClientOrgs(item.Client).Any(x => x.Active);
+            bool otherActive = ClientManager.ClientOrgs(item.Client).Any(x => x.Active);
 
             if (!otherActive)
-                DA.Use<IActiveDataItemManager>().Disable(item.Client);
+                ActiveDataItemManager.Disable(item.Client);
 
             // be sure to check physical access after this
         }

@@ -1,3 +1,4 @@
+using LNF.CommonTools;
 using System;
 
 namespace LNF.Repository.Data
@@ -41,7 +42,7 @@ namespace LNF.Repository.Data
         /// <returns>True if the item was active during the date range, otherwise false</returns>
         public virtual bool IsOverlapped(DateTime startDate, DateTime endDate)
         {
-            return RepositoryUtility.IsOverlapped(EnableDate, DisableDate, startDate, endDate);
+            return Utility.Overlap(EnableDate, DisableDate, startDate, endDate);
         }
     }
 }

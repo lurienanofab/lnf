@@ -10,10 +10,12 @@ namespace LNF.Impl.Mappings.Data
             Schema("sselData.dbo");
             Id(x => x.RoomDataID);
             Map(x => x.Period);
-            References(x => x.Client);
-            References(x => x.Room);
+            Map(x => x.ClientID);
+            Map(x => x.RoomID);
+            Map(x => x.ParentID);
+            Map(x => x.PassbackRoom);
             Map(x => x.EvtDate);
-            References(x => x.Account);
+            Map(x => x.AccountID);
             Map(x => x.Entries);
             Map(x => x.Hours);
             Map(x => x.Days);

@@ -7,8 +7,8 @@ namespace LNF.Impl.ModelFactory.Injections
 {
     public class ClientInjection : ExtendedKnownSourceInjection<Client>
     {
-        protected IClientManager ClientManager => DA.Use<IClientManager>();
-        protected IClientOrgManager ClientOrgManager => DA.Use<IClientOrgManager>();
+        protected IClientManager ClientManager => ServiceProvider.Current.Use<IClientManager>();
+        protected IClientOrgManager ClientOrgManager => ServiceProvider.Current.Use<IClientOrgManager>();
 
         protected override void SetTarget(object target, Client obj)
         {

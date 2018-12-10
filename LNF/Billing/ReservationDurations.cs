@@ -34,8 +34,8 @@ namespace LNF.Billing
                 range.Clear();
 
                 /**********
-                    * each priority group much be mutually exclusive, i.e. no single reservation should
-                      be in two groups, and all reservation must be included across all groups
+                    * each priority group must be mutually exclusive, i.e. no single reservation should
+                      be in two groups, and all reservations must be included across all groups
 
                     * "started normal" means started on or after the scheduled start time
 

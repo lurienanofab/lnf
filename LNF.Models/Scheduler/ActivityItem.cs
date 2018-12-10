@@ -17,5 +17,6 @@
         public string Description { get; set; }
         public bool IsActive { get; set; }
         public bool IsFacilityDownTime { get; set; }
+        public bool IsRepair => !Editable;
     }
 }

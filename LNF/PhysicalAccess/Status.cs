@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LNF.PhysicalAccess
 {
-    public enum Status
+    public enum zStatus
     {
         Unknown = 0,
         Active = 1,

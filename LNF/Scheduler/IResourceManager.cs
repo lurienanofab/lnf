@@ -4,7 +4,6 @@ using LNF.Repository.Scheduler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace LNF.Scheduler
 {
@@ -12,8 +11,8 @@ namespace LNF.Scheduler
     {
         IQueryable<Resource> SelectActive();
         IQueryable<Resource> SelectByLab(int? labId);
-        Task<string> GetInterlockStatus(ResourceItem item);
-        DateTime GetNextGranularity(ResourceItem item, DateTime actualTime, NextGranDir granDir);
+        string GetInterlockStatus(ResourceItem item);
+        DateTime GetNextGranularity(ResourceItem item, DateTime actualTime, GranularityDirection granDir);
         IQueryable<ReservationRecurrence> GetReservationRecurrences(ResourceItem item);
         Resource GetResource(ResourceItem item);
         IQueryable<ResourceActivityAuth> GetResourceActivityAuths(ResourceItem item);

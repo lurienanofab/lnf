@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net.Http;
+﻿using RestSharp;
 
 namespace OnlineServices.Api.Authorization.Credentials
 {
     public interface ICredentials
     {
-        HttpContent CreateContent();
+        void ApplyParameters(IRestRequest req);
     }
 }

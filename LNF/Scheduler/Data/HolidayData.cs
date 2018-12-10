@@ -14,16 +14,14 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectHolidays(DateTime now)
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba
-                    .MapSchema()
-                    .ApplyParameters(new { Action = "Check", sDate = now.AddDays(-14) })
-                    .FillDataTable("Holiday_Select");
+            return DA.Command()
+                .MapSchema()
+                .Param(new { Action = "Check", sDate = now.AddDays(-14) })
+                .FillDataTable("dbo.Holiday_Select");
         }
         public static bool IsHoliday(DateTime now)
         {
-            using (var dba = DA.Current.GetAdapter())
-            using (var reader = dba.ApplyParameters(new { Action = "IsHoliday", sDate = now }).ExecuteReader("Holiday_Select"))
+            using (var reader = DA.Command().Param(new { Action = "IsHoliday", sDate = now }).ExecuteReader("dbo.Holiday_Select"))
                 return reader.Read();
         }
     }

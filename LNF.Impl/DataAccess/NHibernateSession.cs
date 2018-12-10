@@ -635,9 +635,12 @@ namespace LNF.Impl.DataAccess
 
             session.Transaction.Enlist(cmd);
 
-            _bcp = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, cmd.Transaction)
+            SqlBulkCopyOptions options = SqlBulkCopyOptions.TableLock;
+
+            _bcp = new SqlBulkCopy(conn, options, cmd.Transaction)
             {
-                DestinationTableName = destinationTableName
+                DestinationTableName = destinationTableName,
+                BatchSize = 5000
             };
         }
 
@@ -654,6 +657,11 @@ namespace LNF.Impl.DataAccess
         public void WriteToServer(DataTable dt)
         {
             _bcp.WriteToServer(dt);
+        }
+
+        public void WriteToServer(DataTable dt, DataRowState state)
+        {
+            _bcp.WriteToServer(dt, state);
         }
 
         public void Dispose()

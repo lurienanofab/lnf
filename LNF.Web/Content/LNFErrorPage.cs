@@ -47,31 +47,25 @@ namespace LNF.Web.Content
 
         private void LogError(Exception ex)
         {
-            this.SetErrorID(null);
+            SetErrorID(null);
             if (ex == null) return;
             string errorId = string.Empty;
-            string errorMsg = this.GetErrorMessage(ex);
-            int clientId = this.GetClientID();
-            string clientName = this.GetDisplayName();
+            string errorMsg = GetErrorMessage(ex);
+            int clientId = GetClientID();
+            string clientName = GetDisplayName();
             string filePath = Request.Url.ToString();
 
-            using (SQLDBAccess dba = new SQLDBAccess("cnSselData"))
-            {
-                errorId = dba
-                    .AddParameter("@Action", "Set")
-                    .AddParameterIf("@ErrorMsg", !string.IsNullOrEmpty(errorMsg), errorMsg)
-                    .AddParameterIf("@ClientID", clientId > 0, clientId)
-                    .AddParameterIf("@ClientName", !string.IsNullOrEmpty(clientName), clientName)
-                    .AddParameterIf("@FilePath", !string.IsNullOrEmpty(filePath), filePath)
-                    .ExecuteScalar<string>("PassError_Select");
+            errorId = DA.Command()
+                .Param("Action", "Set")
+                .Param("ErrorMsg", !string.IsNullOrEmpty(errorMsg), errorMsg)
+                .Param("ClientID", clientId > 0, clientId)
+                .Param("ClientName", !string.IsNullOrEmpty(clientName), clientName)
+                .Param("FilePath", !string.IsNullOrEmpty(filePath), filePath)
+                .ExecuteScalar<string>("dbo.PassError_Select");
 
-                EventLogger.WriteToSystemLog(
-                    clientId,
-                    ((errorId == string.Empty) ? Guid.NewGuid() : new Guid(errorId)),
-                    CommonTools.EventLogger.LogMessageTypes.Error,
-                    errorMsg
-                );
-            }
+            var msgId = ((errorId == string.Empty) ? Guid.NewGuid() : new Guid(errorId));
+
+            EventLogger.WriteToSystemLog(clientId, msgId, EventLogger.LogMessageTypes.Error, errorMsg);
 
             if (errorId != string.Empty)
                 SetErrorID(errorId);
@@ -137,14 +131,7 @@ namespace LNF.Web.Content
 
         private string GetAppName()
         {
-            try
-            {
-                return Request.QueryString["AppName"];
-            }
-            catch
-            {
-                return string.Empty;
-            }
+            return Request.QueryString["AppName"];
         }
 
         private string DevEmails()
@@ -156,7 +143,7 @@ namespace LNF.Web.Content
         {
             SendButton.Enabled = false;
 
-            string emails = this.DevEmails();
+            string emails = DevEmails();
             string errorMsg = string.Empty;
             int clientId = 0;
             DateTime errorTime = DateTime.MinValue;
@@ -165,45 +152,48 @@ namespace LNF.Web.Content
             if (GetErrorID() != null)
             {
                 Guid errorId = new Guid(GetErrorID().ToString());
-                using (SQLDBAccess dba = new SQLDBAccess("cnSselData"))
+
+                var dt = DA.Command()
+                    .Param("Action", "Get")
+                    .Param("ErrorID", errorId)
+                    .FillDataTable("dbo.PassError_Select");
+
+                if (dt.Rows.Count > 0)
                 {
-                    DataTable dt = dba.ApplyParameters(new { Action = "Get", ErrorID = errorId }).FillDataTable("PassError_Select");
-                    if (dt.Rows.Count > 0)
-                    {
-                        DataRow dr = dt.Rows[0];
-                        errorMsg = dr["ErrorMsg"].ToString();
-                        errorTime = Convert.ToDateTime(dr["ErrorTime"]);
-                    }
+                    DataRow dr = dt.Rows[0];
+                    errorMsg = dr["ErrorMsg"].ToString();
+                    errorTime = Convert.ToDateTime(dr["ErrorTime"]);
                 }
 
-                string DisplayName = (string.IsNullOrEmpty(this.GetDisplayName()) ? "Unknown" : this.GetDisplayName());
+                string temp = GetDisplayName();
+                string displayName = (string.IsNullOrEmpty(temp) ? "Unknown" : temp);
 
-                emailMsg += "Application error message from: " + DisplayName + "<br />";
+                emailMsg += $"Application error message from: {displayName}<br />";
 
                 if (errorTime.Equals(DateTime.MinValue))
                     emailMsg += "Error time not available.<br />";
                 else
-                    emailMsg += "Error time: " + errorTime.ToString("dd-MMM-yyyy hh:mm:ss:fff") + "<br />";
+                    emailMsg += $"Error time: {errorTime:dd-MMM-yyyy hh:mm:ss:fff}<br />";
 
                 if (clientId == 0)
                     emailMsg += "<br />";
                 else
-                    emailMsg += " (" + this.GetClientID().ToString() + ")<br />";
+                    emailMsg += $" ({GetClientID()})<br />";
 
                 if (DescriptionTextBox.Text.Trim().Length == 0)
                     emailMsg += "No user entered description.<br /><br />";
                 else
-                    emailMsg += "User entered description: " + DescriptionTextBox.Text + "<br /><br />";
+                    emailMsg += $"User entered description: {DescriptionTextBox.Text}<br /><br />";
 
                 if (string.IsNullOrEmpty(errorMsg))
                     emailMsg += "Error message not available.<br />";
                 else
-                    emailMsg += "Error message details:<br />" + errorMsg;
+                    emailMsg += $"Error message details:<br />{errorMsg}";
 
                 string EmailSubject = "Application Error : ";
 
-                if (!string.IsNullOrEmpty(this.GetAppName()))
-                    EmailSubject += this.GetAppName();
+                if (!string.IsNullOrEmpty(GetAppName()))
+                    EmailSubject += GetAppName();
 
                 if (!string.IsNullOrEmpty(emails))
                 {

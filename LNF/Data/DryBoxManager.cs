@@ -2,6 +2,7 @@
 using LNF.Repository.Data;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace LNF.Data
@@ -27,12 +28,6 @@ namespace LNF.Data
                 return null;
 
             return dba.ClientAccount.Active && dba.ClientAccount.ClientOrg.Active;
-        }
-
-        public ClientAccountInfo GetClientAccountInfo(DryBoxAssignmentLog item)
-        {
-            ClientAccountInfo result = Session.Query<ClientAccountInfo>().FirstOrDefault(x => x.ClientAccountID == item.ClientAccount.ClientAccountID);
-            return result;
         }
 
         public DryBoxAssignment Request(DryBox db, ClientAccount ca)
@@ -156,6 +151,29 @@ namespace LNF.Data
         public bool HasDryBox(ClientOrg item)
         {
             return GetDryBoxClientAccount(item) != null;
+        }
+
+        public DataSet ReadDryBoxData(DateTime sd, DateTime ed, int clientId = 0)
+        {
+            var ds = Command()
+                .Param("Action", "ForStoreDataClean")
+                .Param("sDate", sd)
+                .Param("eDate", ed)
+                .Param("ClientID", clientId > 0, clientId)
+                .FillDataSet("dbo.DryBoxAssignmentLog_Select");
+
+            // Four tables are returned:
+            //      0) DryBoxAssignment
+            //      1) DryBoxItem
+            //      2) Price
+            //      3) ClientAccount
+
+            ds.Tables[0].TableName = "DryBoxAssignment";
+            ds.Tables[1].TableName = "DryBoxItem";
+            ds.Tables[2].TableName = "Price";
+            ds.Tables[3].TableName = "ClientAccount";
+
+            return ds;
         }
     }
 }

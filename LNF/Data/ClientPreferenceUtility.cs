@@ -11,7 +11,7 @@ namespace LNF.Data
 {
     public static class ClientPreferenceUtility
     {
-        public static IClientManager ClientManager => DA.Use<IClientManager>();
+        public static IClientManager ClientManager => ServiceProvider.Current.Use<IClientManager>();
 
         public static ClientPreference Find(int clientId, string app)
         {

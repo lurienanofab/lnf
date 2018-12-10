@@ -16,7 +16,6 @@ namespace LNF.Billing
         IList<ToolDataRaw> DataRaw(DateTime period, IEnumerable<Reservation> reservations);
         IList<ToolBilling> ForSUBReport(DateTime StartPeriod, DateTime EndPeriod, ref IList<SubLineItem> lineItems);
         int MinimumDaysForApportionment(ClientOrg co, Room r, DateTime period);
-        IList<ToolDataClean> PopulateToolDataClean(DateTime period, IList<Reservation> reservations);
         decimal RatePeriodCharge(IToolBilling item, decimal duration);
         IEnumerable<IToolBilling> SelectToolBilling(DateTime period);
         IEnumerable<IToolBilling> SelectToolBilling(DateTime period, int clientId);

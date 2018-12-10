@@ -1,16 +1,14 @@
 ﻿using LNF.Models.Data;
-using System.Configuration;
-using System.Threading.Tasks;
 
 namespace OnlineServices.Api.Data
 {
     public class FeedClient : ApiClient
     {
-        public FeedClient() : base(ConfigurationManager.AppSettings["FeedHost"]) { }
+        public FeedClient() : base(GetApiBaseUrl()) { }
 
-        public async Task<DataFeedModel<T>> GetDataFeedResult<T>(string feed)
+        public DataFeedModel<T> GetDataFeedResult<T>(string feed)
         {
-            var result = await Get<DataFeedModel<T>>(feed + "/json");
+            var result = Get<DataFeedModel<T>>("data/feed/{feed}/json", UrlSegments(new { feed }));
             return result;
         }
     }

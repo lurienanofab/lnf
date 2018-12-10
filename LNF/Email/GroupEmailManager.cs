@@ -20,36 +20,29 @@ namespace LNF.Email
         #region "Helper functions to populate email groups available"
         public static DataTable GetAllPrivileges()
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba.FillDataTable("Priv_Select");
+            return DA.Command().FillDataTable("dbo.Priv_Select");
         }
 
         public static DataTable GetAllCommunities()
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba.FillDataTable("Community_Select");
+            return DA.Command().FillDataTable("dbo.Community_Select");
         }
 
         public static DataTable GetAllActiveManagers()
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba.ApplyParameters(new { Action = "GetAllActive" }).FillDataTable("ClientManager_Select");
+            return DA.Command().Param("Action", "GetAllActive").FillDataTable("dbo.ClientManager_Select");
         }
 
         public static DataTable GetAllActiveAreas()
         {
-            using (var dba = DA.Current.GetAdapter())
-                return dba.CommandTypeText().FillDataTable("SELECT AreaID, AreaName FROM v_Area");
+            return DA.Command(CommandType.Text).FillDataTable("SELECT AreaID, AreaName FROM v_Area");
         }
 
         public static DataView GetAllActiveTools()
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                DataView dv = dba.ApplyParameters(new { Action = "SelectAll" }).FillDataTable("sselScheduler.dbo.procResourceSelect").DefaultView;
-                dv.Sort = "ResourceName";
-                return dv;
-            }
+            DataView dv = DA.Command().Param("Action", "SelectAll").FillDataTable("sselScheduler.dbo.procResourceSelect").DefaultView;
+            dv.Sort = "ResourceName";
+            return dv;
         }
         #endregion
 
@@ -59,11 +52,12 @@ namespace LNF.Email
             if (privs == 0)
                 return new List<MassEmailRecipient>();
 
-            using (var dba = DA.Current.GetAdapter())
-            {
-                DataTable dt = dba.ApplyParameters(new { Action = "GetEmailsByPrivilege", Privs = privs }).FillDataTable("ClientOrg_Select");
-                return FilterEmails(dt);
-            }
+            var dt = DA.Command()
+                .Param("Action", "GetEmailsByPrivilege")
+                .Param("Privs", privs)
+                .FillDataTable("dbo.ClientOrg_Select");
+
+            return FilterEmails(dt);
         }
 
         public static IList<MassEmailRecipient> GetEmailListByCommunity(int flag)
@@ -71,62 +65,57 @@ namespace LNF.Email
             if (flag == 0)
                 return new List<MassEmailRecipient>();
 
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.AddParameter("@Action", "GetEmailsByCommunity");
-                dba.AddParameter("@Communities", flag);
-                DataTable dt = dba.FillDataTable("ClientOrg_Select");
-                return FilterEmails(dt);
-            }
+            var dt = DA.Command()
+                .Param("Action", "GetEmailsByCommunity")
+                .Param("Communities", flag)
+                .FillDataTable("dbo.ClientOrg_Select");
+
+            return FilterEmails(dt);
         }
 
         public static IList<MassEmailRecipient> GetEmailListByManagerID(int managerId)
         {
-            using (var dba = DA.Current.GetAdapter())
+            var dt = DA.Command()
+                .Param("Action", "GetEmailsByManager")
+                .Param("ClientID", managerId)
+                .FillDataTable("dbo.ClientOrg_Select");
+
+            if (dt.Select($"ClientID = {managerId}").Length == 0)
             {
-                dba.AddParameter("@Action", "GetEmailsByManager");
-                dba.AddParameter("@ClientID", managerId);
-                DataTable dt = dba.FillDataTable("ClientOrg_Select");
+                DataRow emailRow = GetEmailAddrByClientID(managerId);
 
-                if (dt.Select(string.Format("ClientID = {0}", managerId)).Length == 0)
+                if (emailRow != null)
                 {
-                    DataRow emailRow = GetEmailAddrByClientID(managerId);
-
-                    if (emailRow != null)
-                    {
-                        var ndr = dt.NewRow();
-                        ndr["ClientOrgID"] = emailRow["ClientOrgID"];
-                        ndr["DisplayName"] = emailRow["DisplayName"];
-                        ndr["Email"] = emailRow["Email"];
-                        ndr["IsStaff"] = 0; //isStaff column is needed because we have to check it in the last stage right before sending out email
-                        dt.Rows.Add(ndr);
-                    }
+                    var ndr = dt.NewRow();
+                    ndr["ClientOrgID"] = emailRow["ClientOrgID"];
+                    ndr["DisplayName"] = emailRow["DisplayName"];
+                    ndr["Email"] = emailRow["Email"];
+                    ndr["IsStaff"] = 0; //isStaff column is needed because we have to check it in the last stage right before sending out email
+                    dt.Rows.Add(ndr);
                 }
-
-                return FilterEmails(dt);
             }
+
+            return FilterEmails(dt);
         }
 
         public static IList<MassEmailRecipient> GetEmailListByTools(int[] multipleResourceIds)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.AddParameter("@Action", "SelectByMultipleResourceIDs");
-                dba.AddParameter("@MultipleResourceIDs", string.Join(",", multipleResourceIds));
-                DataTable dt = dba.FillDataTable("sselScheduler.dbo.procResourceClientSelect");
-                return FilterEmails(dt);
-            }
+            var dt = DA.Command()
+                .Param("Action", "SelectByMultipleResourceIDs")
+                .Param("MultipleResourceIDs", string.Join(",", multipleResourceIds))
+                .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
+
+            return FilterEmails(dt);
         }
 
         public static IList<MassEmailRecipient> GetEmailListByInLab(int[] areas)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.AddParameter("@Action", "GetEmailsByInLab");
-                dba.AddParameter("@Areas", GetAreasXml(areas));
-                DataTable dt = dba.FillDataTable("ClientOrg_Select");
-                return FilterEmails(dt);
-            }
+            var dt = DA.Command()
+                .Param("Action", "GetEmailsByInLab")
+                .Param("Areas", GetAreasXml(areas))
+                .FillDataTable("dbo.ClientOrg_Select");
+
+            return FilterEmails(dt);
         }
 
         private static string GetAreasXml(int[] areas)
@@ -139,7 +128,7 @@ namespace LNF.Email
             XElement xel = XElement.Parse(root);
 
             foreach (int a in areas)
-                xel.Add(XElement.Parse(string.Format("<id>{0}</id>", a)));
+                xel.Add(XElement.Parse($"<id>{a}</id>"));
 
             return xel.ToString();
         }
@@ -150,17 +139,15 @@ namespace LNF.Email
         /// </summary>
         public static DataRow GetEmailAddrByClientID(int ClientID)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                dba.AddParameter("@Action", "GetEmails");
-                dba.AddParameter("@ClientID", ClientID);
-                DataTable dt = dba.FillDataTable("Client_Select");
+            var dt = DA.Command()
+                .Param("Action", "GetEmails")
+                .Param("ClientID", ClientID)
+                .FillDataTable("dbo.Client_Select");
 
-                if (dt.Rows.Count > 0)
-                    return dt.Rows[0];
-                else
-                    return null;
-            }
+            if (dt.Rows.Count > 0)
+                return dt.Rows[0];
+
+            return null;
         }
 
         /// <summary>
@@ -320,7 +307,7 @@ namespace LNF.Email
                     result = string.Join(", ", CacheManager.Current.ResourceTree().Resources().Where(x => email.GetCriteria<ByTool>().SelectedResourceIDs.Contains(x.ResourceID)).ToList().Select(x => x.ResourceName));
                     break;
                 case "lab":
-                    result = string.Join(", ", DA.Current.Query<Area>().Where(x => email.GetCriteria<ByLab>().SelectedLabs.Contains(x.AreaID)).ToList().Select(x => x.AreaName));
+                    result = string.Join(", ", DA.Current.Query<PhysicalAccessArea>().Where(x => email.GetCriteria<ByLab>().SelectedLabs.Contains(x.AreaID)).ToList().Select(x => x.AreaName));
                     break;
                 default: //privilege
                     result = string.Join(", ", PrivUtility.GetPrivTypes((ClientPrivilege)email.GetCriteria<ByPrivilege>().SelectedPrivileges));

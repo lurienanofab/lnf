@@ -1,4 +1,6 @@
 ﻿using LNF.Hooks;
+using LNF.Models;
+using LNF.Models.Billing;
 using LNF.Repository;
 using System;
 using System.Configuration;
@@ -7,32 +9,34 @@ namespace LNF
 {
     public class ServiceProvider
     {
-        public IContext Context { get; }
-        public IDataAccessService DataAccess { get; }
-        public ILogService Log { get; }
-        public IEmailService Email { get; }
-        public IControlService Control { get; }
-        public IEncryptionService Encryption { get; }
-        public ISerializationService Serialization { get; }
-        public IPhysicalAccessService PhysicalAccess { get; }
-        public IModelFactory ModelFactory { get; }
-        public IDependencyResolver Resolver {get;}
+        private IDependencyResolver _resolver;
 
-        public ServiceProvider(IContext context, IDataAccessService dataAccess, ILogService log, IEmailService email, IControlService control, IEncryptionService encryption, ISerializationService serialization, IPhysicalAccessService physicalAccess, IModelFactory modelFactory, IDependencyResolver resolver)
+        public IContext Context => Use<IContext>();
+        public IDataAccessService DataAccess => Use<IDataAccessService>();
+        public ILogService Log => Use<ILogService>();
+        public IEmailService Email => Use<IEmailService>();
+        public IControlService Control => Use<IControlService>();
+        public IEncryptionService Encryption => Use<IEncryptionService>();
+        public ISerializationService Serialization => Use<ISerializationService>();
+
+        public IDataService Data => Use<IDataService>();
+        public IBillingApi Billing => Use<IBillingApi>();
+        public IPhysicalAccessService PhysicalAccess => Use<IPhysicalAccessService>();
+        public ISchedulerService Scheduler => Use<ISchedulerService>();
+        public IWorkerService Worker => Use<IWorkerService>();
+
+        public IModelFactory ModelFactory => Use<IModelFactory>();
+
+        public ServiceProvider(IDependencyResolver resolver)
         {
-            Context = context;
-            DataAccess = dataAccess;
-            Log = log;
-            Email = email;
-            Control = control;
-            Encryption = encryption;
-            Serialization = serialization;
-            PhysicalAccess = physicalAccess;
-            ModelFactory = modelFactory;
-            Resolver = resolver;
+            _resolver = resolver;
         }
 
         public static ServiceProvider Current { get; set; }
+
+        public T Use<T>() => _resolver.GetInstance<T>();
+
+        public void BuildUp(object target) => _resolver.BuildUp(target);
 
         public bool IsProduction()
         {

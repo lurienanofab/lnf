@@ -9,15 +9,32 @@ namespace LNF.CommonTools
     {
         private DbProviderFactory _factory;
 
-        public DbConnection Connection { get; }
-        public DbTransaction Transaction { get; }
+        public DbConnection Connection { get; private set; }
+        public DbTransaction Transaction { get; private set; }
 
-        public SQLDBAccess(string key)
+        public static SQLDBAccess Create(string key)
+        {
+            var result = new SQLDBAccess();
+            result.Configure(key);
+            return result;
+        }
+
+        private SQLDBAccess() { }
+
+        [System.Obsolete]
+        public SQLDBAccess(string key) : this()
+        {
+            Configure(key);
+        }
+
+        private void Configure(string key)
         {
             _factory = DbProviderFactories.GetFactory("System.Data.SqlClient");
+
             Connection = _factory.CreateConnection();
             Connection.ConnectionString = ConfigurationManager.ConnectionStrings[key].ConnectionString;
             Connection.Open();
+
             Transaction = Connection.BeginTransaction();
 
             SelectCommand = CreateCommand();

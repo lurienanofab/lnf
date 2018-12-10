@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace LNF.Models.Data
+﻿namespace LNF.Models.Data
 {
     public class RoomItem
     {

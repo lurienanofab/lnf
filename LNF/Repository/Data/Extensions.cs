@@ -6,67 +6,17 @@ namespace LNF.Repository.Data
 {
     public static class Extensions
     {
-        public static ClientItem GetClientItem(this ClientOrgInfoBase item)
+        public static ClientItem CreateClientItem(this ClientOrgInfoBase item)
         {
             if (item == null) return null;
-            return new ClientItem()
-            {
-                ClientID = item.ClientID,
-                UserName = item.UserName,
-                FName = item.FName,
-                MName = item.MName,
-                LName = item.LName,
-                DemCitizenID = item.DemCitizenID,
-                DemCitizenName = item.DemCitizenName,
-                DemGenderID = item.DemGenderID,
-                DemGenderName = item.DemGenderName,
-                DemRaceID = item.DemRaceID,
-                DemRaceName = item.DemRaceName,
-                DemEthnicID = item.DemEthnicID,
-                DemEthnicName = item.DemEthnicName,
-                DemDisabilityID = item.DemDisabilityID,
-                DemDisabilityName = item.DemDisabilityName,
-                Privs = item.Privs,
-                Communities = item.Communities,
-                TechnicalInterestID = item.TechnicalInterestID,
-                TechnicalInterestName = item.TechnicalInterestName,
-                IsChecked = item.IsChecked,
-                IsSafetyTest = item.IsSafetyTest,
-                ClientActive = item.ClientActive,
-                ClientOrgID = item.ClientOrgID,
-                Phone = item.Phone,
-                Email = item.Email,
-                IsManager = item.IsManager,
-                IsFinManager = item.IsFinManager,
-                SubsidyStartDate = item.SubsidyStartDate,
-                NewFacultyStartDate = item.NewFacultyStartDate,
-                ClientAddressID = item.ClientAddressID,
-                DepartmentID = item.DepartmentID,
-                DepartmentName = item.DepartmentName,
-                RoleID = item.RoleID,
-                RoleName = item.RoleName,
-                ClientOrgActive = item.ClientOrgActive,
-                OrgID = item.OrgID,
-                OrgName = item.OrgName,
-                DefClientAddressID = item.DefClientAddressID,
-                DefBillAddressID = item.DefBillAddressID,
-                DefShipAddressID = item.DefShipAddressID,
-                NNINOrg = item.NNINOrg,
-                PrimaryOrg = item.PrimaryOrg,
-                OrgActive = item.OrgActive,
-                OrgTypeID = item.OrgTypeID,
-                OrgTypeName = item.OrgTypeName,
-                ChargeTypeID = item.ChargeTypeID,
-                ChargeTypeName = item.ChargeTypeName,
-                ChargeTypeAccountID = item.ChargeTypeAccountID,
-                MaxChargeTypeID = item.MaxChargeTypeID,
-                MaxChargeTypeName = item.MaxChargeTypeName,
-                EmailRank = item.EmailRank
-            };
+            var list = new List<ClientOrgInfoBase> { item };
+            return CreateClientItems(list.AsQueryable()).FirstOrDefault();
         }
 
-        public static IEnumerable<ClientItem> GetClientItems(this IQueryable<ClientOrgInfoBase> query)
+        public static IEnumerable<ClientItem> CreateClientItems(this IQueryable<ClientOrgInfoBase> query)
         {
+            if (query == null) return null;
+
             return query.Select(x => new ClientItem()
             {
                 ClientID = x.ClientID,
@@ -75,15 +25,10 @@ namespace LNF.Repository.Data
                 MName = x.MName,
                 LName = x.LName,
                 DemCitizenID = x.DemCitizenID,
-                DemCitizenName = x.DemCitizenName,
                 DemGenderID = x.DemGenderID,
-                DemGenderName = x.DemGenderName,
                 DemRaceID = x.DemRaceID,
-                DemRaceName = x.DemRaceName,
                 DemEthnicID = x.DemEthnicID,
-                DemEthnicName = x.DemEthnicName,
                 DemDisabilityID = x.DemDisabilityID,
-                DemDisabilityName = x.DemDisabilityName,
                 Privs = x.Privs,
                 Communities = x.Communities,
                 TechnicalInterestID = x.TechnicalInterestID,
@@ -120,7 +65,7 @@ namespace LNF.Repository.Data
                 MaxChargeTypeID = x.MaxChargeTypeID,
                 MaxChargeTypeName = x.MaxChargeTypeName,
                 EmailRank = x.EmailRank
-            });
+            }).ToList();
         }
 
         public static MenuItem GetMenuItem(this Menu item)

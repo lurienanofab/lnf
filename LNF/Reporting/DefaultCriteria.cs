@@ -19,7 +19,7 @@ namespace LNF.Reporting
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
-        protected IActiveDataItemManager ActiveDataItemManager => DA.Use<IActiveDataItemManager>();
+        protected IActiveDataItemManager ActiveDataItemManager => ServiceProvider.Current.Use<IActiveDataItemManager>();
 
         public DefaultCriteria()
         {

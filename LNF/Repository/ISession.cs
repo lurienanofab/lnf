@@ -52,6 +52,8 @@ namespace LNF.Repository
 
         /// <summary>
         /// Inserts a new database record if it does not already exist, or updates an existing record. Works on unattached entities.
+        /// Also if an entity is modified this must be called so that any subsequent queries that are affected by the modification
+        /// will return the exepected results.
         /// </summary>
         void SaveOrUpdate(IDataItem item);
 
@@ -263,5 +265,6 @@ namespace LNF.Repository
         void AddColumnMapping(string sourceColumn, string destinationColumn);
         void AddColumnMapping(string columnName);
         void WriteToServer(DataTable dt);
+        void WriteToServer(DataTable dt, DataRowState state);
     }
 }

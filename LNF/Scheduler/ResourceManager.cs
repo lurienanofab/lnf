@@ -3,14 +3,12 @@ using LNF.Data;
 using LNF.Models.Data;
 using LNF.Models.Scheduler;
 using LNF.Repository;
-using LNF.Repository.Data;
 using LNF.Repository.Scheduler;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace LNF.Scheduler
 {
@@ -51,7 +49,7 @@ namespace LNF.Scheduler
 
             int[] defaultLabs = { 1, 9 };
 
-            if (ConfigurationManager.AppSettings["DefaultLabs"] != null)
+            if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["DefaultLabs"]))
                 defaultLabs = ConfigurationManager.AppSettings["DefaultLabs"].Split(',').Select(int.Parse).ToArray();
 
             IQueryable<Resource> query;
@@ -128,13 +126,13 @@ namespace LNF.Scheduler
             return ResourceCost.CreateResourceCosts(costs);
         }
 
-        public async Task<string> GetInterlockStatus(ResourceItem item)
+        public string GetInterlockStatus(ResourceItem item)
         {
             DataTable dt = new DataTable();
             dt.Columns.Add("ResourceID", typeof(int));
             dt.Columns.Add("InterlockStatus", typeof(string));
             dt.Rows.Add(item.ResourceID, string.Empty);
-            await WagoInterlock.AllToolStatus(dt);
+            WagoInterlock.AllToolStatus(dt);
             DataRow dr = dt.Select(string.Format("ResourceID = {0}", item.ResourceID)).FirstOrDefault();
             string result = dr["InterlockStatus"].ToString();
             return result;
@@ -146,7 +144,7 @@ namespace LNF.Scheduler
         /// <param name="actualTime">The point in time to determine the next or previous granularity</param>
         /// <param name="granDir">The direction (next or pervious) to search in</param>
         /// <returns>The DateTime value of the next or previous granularity</returns>
-        public DateTime GetNextGranularity(ResourceItem item, DateTime actualTime, NextGranDir granDir)
+        public DateTime GetNextGranularity(ResourceItem item, DateTime actualTime, GranularityDirection granDir)
         {
             return ResourceUtility.GetNextGranularity(item.Granularity, item.Offset, actualTime, granDir);
         }

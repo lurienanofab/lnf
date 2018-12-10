@@ -10,36 +10,31 @@ namespace LNF.CommonTools
 
     public static class DataTableManager
     {
-        public static void Update(string[] types, bool isDailyImport = true)
+        public static void Update(string[] types)
         {
             DateTime now = DateTime.Now;
 
             //this function runs daily
-            DateTime eDate = now.Date; //00:00 of current day
+            DateTime period = now.FirstOfMonth(); //00:00 of current day
 
             WriteData wd = new WriteData();
 
             //First, update tables
-            wd.UpdateTables(types, 0, 0, eDate, UpdateDataType.DataClean | UpdateDataType.Data, true, isDailyImport);
+            wd.UpdateTables(types, UpdateDataType.DataClean | UpdateDataType.Data, period, 0);
 
             //the daily update DOES produce correct data
             //however, if a change was made since the update, it needs to be caught 
             if (Utility.IsFirstBusinessDay(now))
             {
-                DateTime sDate = new DateTime(eDate.AddMonths(-1).Year, eDate.AddMonths(-1).Month, 1);
-                eDate = sDate.AddMonths(1);
-                Finalize(sDate, eDate);
+                Finalize(period.AddMonths(-1));
             }
         }
 
-        public static void Finalize(DateTime sd, DateTime ed)
+        public static void Finalize(DateTime period)
         {
-            using (LogTaskTimer.Start("DataTableManager.Finalize", "Finalizing data tables (room, tool, store). From {0:yyyy-MM-dd} to {1:yyyy-MM-dd}", () => new object[] { sd, ed }))
-            { 
-                WriteToolDataManager.Create(sd, ed).WriteToolData();
-                WriteRoomDataManager.Create(sd, ed).WriteRoomData();
-                WriteStoreDataManager.Create(sd, ed).WriteStoreData();
-            }
+            new WriteToolDataProcess(period).Start();
+            new WriteRoomDataProcess(period).Start();
+            new WriteStoreDataProcess(period).Start();
         }
     }
 }

@@ -1,7 +1,5 @@
-﻿using LNF.Data;
-using LNF.Models.Data;
+﻿using LNF.Models.Data;
 using LNF.Repository;
-using LNF.Repository.Data;
 using LNF.Repository.Scheduler;
 using LNF.Scheduler;
 using System;
@@ -19,6 +17,8 @@ namespace LNF.Billing
         //public DateTime EndDate { get; private set; }
         public DateRange Range { get; }
         public IEnumerable<Reservation> Reservations { get; }
+
+        public ReservationDateRange(DateTime period) : this(0, period, period.AddMonths(1)) { }
 
         public ReservationDateRange(DateTime sd, DateTime ed) : this(0, sd, ed) { }
 
@@ -191,7 +191,7 @@ namespace LNF.Billing
 
         private IEnumerable<Reservation> GetReservations(int resourceId)
         {
-            var costs = DA.Use<ICostManager>().FindToolCosts(resourceId, Range.EndDate).Model<CostItem>();
+            var costs = ServiceProvider.Current.Data.GetResourceCosts(resourceId, Range.EndDate);
 
             IQueryable<ReservationInfo> query = null;
 
@@ -226,7 +226,7 @@ namespace LNF.Billing
                 LastModifiedOn = x.LastModifiedOn,
                 IsCancelledBeforeCutoff = x.IsCancelledBeforeCutoff(),
                 ChargeMultiplier = x.ChargeMultiplier,
-                Cost = ResourceCost.CreateResourceCosts(costs.Where(c => c.ChargeTypeID == x.ChargeTypeID)).FirstOrDefault()
+                Cost = ResourceCost.CreateResourceCosts(costs.Where(c => (c.RecordID == x.ResourceID || c.RecordID == 0) && c.ChargeTypeID == x.ChargeTypeID)).FirstOrDefault()
             }).ToList();
 
             return result;

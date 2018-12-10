@@ -5,14 +5,14 @@ namespace LNF.WebApi
 {
     public static class WebApiUtility
     {
-        public static Uri GetApiHost()
+        public static Uri GetApiBaseUrl()
         {
-            string apiHost = ConfigurationManager.AppSettings["ApiHost"];
+            string host = ConfigurationManager.AppSettings["ApiBaseUrl"];
 
-            if (string.IsNullOrEmpty(apiHost))
-                throw new InvalidOperationException("Missing appSetting: ApiHost");
+            if (string.IsNullOrEmpty(host))
+                throw new InvalidOperationException("Missing appSetting: ApiBaseUrl");
 
-            return new Uri(apiHost);
+            return new Uri(host);
         }
     }
 }

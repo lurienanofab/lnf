@@ -6,7 +6,7 @@ namespace LNF.Impl.ModelFactory.Injections
 {
     public class AccountInjection : ExtendedKnownSourceInjection<Account>
     {
-        protected IAccountManager AccountManager => DA.Use<IAccountManager>();
+        protected IAccountManager AccountManager => ServiceProvider.Current.Use<IAccountManager>();
 
         protected override void SetTarget(object target, Account obj)
         {

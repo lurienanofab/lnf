@@ -10,7 +10,7 @@ namespace LNF.Reporting
 {
     public static class ClientItemUtility
     {
-        public static IActiveDataItemManager ActiveDataItemManager => DA.Use<IActiveDataItemManager>();
+        public static IActiveDataItemManager ActiveDataItemManager => ServiceProvider.Current.Use<IActiveDataItemManager>();
 
         public static IEnumerable<ReportingClientItem> SelectCurrentActiveClients()
         {

@@ -138,7 +138,7 @@ namespace LNF.Billing
 
         public void Update(Client client, DateTime period)
         {
-            bool isTemp = RepositoryUtility.IsCurrentPeriod(period);
+            bool isTemp = Utility.IsCurrentPeriod(period);
             BillingDataProcessStep1.PopulateToolBilling(period, client.ClientID, isTemp);
             BillingDataProcessStep1.PopulateRoomBilling(period, client.ClientID, isTemp);
         }
@@ -380,7 +380,7 @@ namespace LNF.Billing
         public IList<BillingType> GetAllBillingTypes()
         {
             if (_allBillingTypes == null)
-                _allBillingTypes = DA.Current.Query<BillingType>().ToList();
+                _allBillingTypes = Session.Query<BillingType>().ToList();
             return _allBillingTypes;
         }
 

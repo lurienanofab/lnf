@@ -1,3 +1,4 @@
+using LNF.CommonTools;
 using LNF.Repository.Data;
 using LNF.Scheduler;
 using System;
@@ -123,7 +124,7 @@ namespace LNF.Repository.Scheduler
         {
             DateTime d = ((ActualEndDateTime == null) ? EndDateTime : ActualEndDateTime.Value).Date;
             DateTime period = new DateTime(d.Year, d.Month, 1);
-            return RepositoryUtility.IsCurrentPeriod(period);
+            return Utility.IsCurrentPeriod(period);
         }
 
         public virtual DateTime GetBeginDateTime()
@@ -154,18 +155,13 @@ namespace LNF.Repository.Scheduler
             //CORRECTION
             //(StartA < EndB) and (EndA > StartB) because the range StartB to EndB is also exclusive
 
-            return RepositoryUtility.IsOverlapped(BeginDateTime, EndDateTime, sdate, edate)
-                || (ActualBeginDateTime.HasValue ? RepositoryUtility.IsOverlapped(ActualBeginDateTime.Value, ActualEndDateTime, sdate, edate) : false);
+            return Utility.Overlap(BeginDateTime, EndDateTime, sdate, edate)
+                || (ActualBeginDateTime.HasValue ? Utility.Overlap(ActualBeginDateTime.Value, ActualEndDateTime, sdate, edate) : false);
         }
 
         public virtual bool IsRecurring()
         {
             return RecurrenceID.HasValue && RecurrenceID.Value > 0;
-        }
-
-        public virtual bool IsInLab(string kioskIp)
-        {
-            return KioskUtility.ClientInLab(Resource.ProcessTech.Lab.LabID, Client.ClientID, kioskIp);
         }
     }
 }

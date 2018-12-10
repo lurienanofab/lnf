@@ -157,11 +157,11 @@ namespace LNF.Data
                     if (dr.Table.Columns.Contains("InvoiceLine2"))
                         acct.InvoiceLine2 = (dr["InvoiceLine2"] == DBNull.Value) ? null : dr["InvoiceLine2"].ToString();
                     if (dr.Table.Columns.Contains("PoEndDate"))
-                        acct.PoEndDate = Utility.ConvertObjectToNullableDateTime(dr["PoEndDate"]);
+                        acct.PoEndDate = Utility.ConvertToNullableDateTime(dr["PoEndDate"]);
                     if (dr.Table.Columns.Contains("PoInitialFunds"))
-                        acct.PoInitialFunds = Utility.ConvertObjectToNullableDecimal(dr["PoInitialFunds"]);
+                        acct.PoInitialFunds = Utility.ConvertToNullableDouble(dr["PoInitialFunds"]);
                     if (dr.Table.Columns.Contains("PoRemainingFunds"))
-                        acct.PoRemainingFunds = Utility.ConvertObjectToNullableDecimal(dr["PoRemainingFunds"]);
+                        acct.PoRemainingFunds = Utility.ConvertToNullableDouble(dr["PoRemainingFunds"]);
                     if (dr.Table.Columns.Contains("Active"))
                         acct.Active = (dr["Active"] == DBNull.Value) ? false : Convert.ToBoolean(dr["Active"]);
                     result.Add(acct);

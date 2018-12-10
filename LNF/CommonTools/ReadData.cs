@@ -1,28 +1,15 @@
-﻿using LNF.Data;
-using LNF.Repository;
+﻿using LNF.Repository;
 
 namespace LNF.CommonTools
 {
     public static class ReadData
     {
-        public static IReadRoomDataManager Room
-        {
-            get { return DA.Use<IReadRoomDataManager>(); }
-        }
+        public static IReadRoomDataManager Room => ServiceProvider.Current.Use<IReadRoomDataManager>();
 
-        public static ReadToolDataManager Tool
-        {
-            get { return new ReadToolDataManager(); }
-        }
+        public static IReadToolDataManager Tool => ServiceProvider.Current.Use<IReadToolDataManager>();
 
-        public static ReadStoreDataManager Store
-        {
-            get { return new ReadStoreDataManager(); }
-        }
+        public static IReadStoreDataManager Store => ServiceProvider.Current.Use<IReadStoreDataManager>();
 
-        public static ReadMiscDataManager Misc
-        {
-            get { return new ReadMiscDataManager(); }
-        }
+        public static IReadMiscDataManager Misc => ServiceProvider.Current.Use<IReadMiscDataManager>();
     }
 }

@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Inventory;
 
 namespace LNF.Impl.Mappings.Inventory
 {
-    public class InventoryItemMap : ClassMap<InventoryItem>
+    internal class InventoryItemMap : ClassMap<InventoryItem>
     {
-        public InventoryItemMap()
+        internal InventoryItemMap()
         {
             Schema("InventoryControl.dbo");
             Table("v_InventoryItems");
@@ -32,7 +28,6 @@ namespace LNF.Impl.Mappings.Inventory
             Map(x => x.SearchKeyWords);
             Map(x => x.ItemIsPopular);
             Map(x => x.MaxStockQuantity);
-            Map(x => x.ItemInventoryTypeID);
             Map(x => x.CheckOutCategoryID);
             Map(x => x.IsPopular);
             Map(x => x.IsCheckOutItem);

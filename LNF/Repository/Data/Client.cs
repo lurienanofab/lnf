@@ -96,6 +96,11 @@ namespace LNF.Repository.Data
             get { return ClientItem.GetDisplayName(LName, FName); }
         }
 
+        public override string ToString()
+        {
+            return DisplayName;
+        }
+
         /// <summary>
         /// Gets the record id used in the ActiveLog
         /// </summary>
@@ -144,7 +149,7 @@ namespace LNF.Repository.Data
         /// <returns>True if the password is correct, otherwise false.</returns>
         public virtual bool CheckPassword(string password)
         {
-            return DA.Use<IClientManager>().CheckPassword(ClientID, password);
+            return ServiceProvider.Current.Use<IClientManager>().CheckPassword(ClientID, password);
         }
 
         /// <summary>
@@ -155,7 +160,7 @@ namespace LNF.Repository.Data
         /// <returns>The number of rows updated.</returns>
         public virtual int SetPassword(string password)
         {
-            return DA.Use<IClientManager>().SetPassword(ClientID, password);
+            return ServiceProvider.Current.Use<IClientManager>().SetPassword(ClientID, password);
         }
 
         /// <summary>

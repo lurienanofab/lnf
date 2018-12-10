@@ -19,7 +19,8 @@ namespace LNF.Repository
 
         public static IList<T> Model<T>(this IEnumerable<IDataItem> items)
         {
-            return items.Select(x => x.Model<T>()).ToList();
+            var list = items.ToList();
+            return list.Select(x => x.Model<T>()).ToList();
         }
     }
 }

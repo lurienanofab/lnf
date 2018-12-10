@@ -63,7 +63,8 @@ namespace LNF.Data
         public IEnumerable<Cost> FindToolCosts(int resourceId, DateTime? cutoff)
         {
             string[] tables = new[] { "ToolCost", "ToolOvertimeCost" };
-            return FindCosts(tables, cutoff, resourceId);
+            var result =  FindCosts(tables, cutoff, resourceId).ToList();
+            return result;
         }
 
         public IEnumerable<Cost> FindAuxiliaryCosts(string table, DateTime? cutoff, int? chargeTypeId)

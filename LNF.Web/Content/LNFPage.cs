@@ -1,5 +1,4 @@
-﻿using LNF.Cache;
-using LNF.Data;
+﻿using LNF.Data;
 using LNF.Models.Data;
 using System.IO;
 using System.Web.UI;
@@ -16,9 +15,9 @@ namespace LNF.Web.Content
 
         public new LNFPage Page => (LNFPage)base.Page;
 
-        public ClientItem CurrentUser => CacheManager.Current.CurrentUser;
+        public ClientItem CurrentUser => Context.CurrentUser();
 
-        protected bool HasPriv(ClientPrivilege privs) => CurrentUser.HasPriv(privs);
+        public bool HasPriv(ClientPrivilege privs) => CurrentUser.HasPriv(privs);
 
         public System.Web.UI.Control FindControlRecursive(string id) => WebUtility.FindControlRecursive(this, id);
     }

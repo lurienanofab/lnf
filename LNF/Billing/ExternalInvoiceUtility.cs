@@ -30,22 +30,22 @@ namespace LNF.Billing
 
         public static string GetToolDescription(DataRow dr)
         {
-            return string.Format("Tool - {0}", Utility.Left(dr.Field<string>("DisplayName"), 35));
+            return string.Format("Tool - {0}", Utility.Clip(dr.Field<string>("DisplayName"), 35));
         }
 
         public static string GetRoomDescription(DataRow dr)
         {
-            return string.Format("Room - {0}", Utility.Left(dr.Field<string>("DisplayName"), 35));
+            return string.Format("Room - {0}", Utility.Clip(dr.Field<string>("DisplayName"), 35));
         }
 
         public static string GetStoreDescription(DataRow dr)
         {
-            return string.Format("Store - {0}", Utility.Left(dr.Field<string>("DisplayName"), 35));
+            return string.Format("Store - {0}", Utility.Clip(dr.Field<string>("DisplayName"), 35));
         }
 
         public static string GetMiscDescription(DataRow dr)
         {
-            return Utility.Left(dr.Field<string>("Description") + " " + dr.Field<string>("DisplayName"), 49);
+            return Utility.Clip(dr.Field<string>("Description") + " " + dr.Field<string>("DisplayName"), 49);
         }
     }
 }

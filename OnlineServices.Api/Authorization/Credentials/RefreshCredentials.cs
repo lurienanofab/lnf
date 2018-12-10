@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Net.Http;
 
 namespace OnlineServices.Api.Authorization.Credentials
 {
@@ -17,7 +16,7 @@ namespace OnlineServices.Api.Authorization.Credentials
             get { return "refresh_token"; }
         }
 
-        protected override void AddPostData(IDictionary<string, string> postData)
+        protected override void AddPostData(IDictionary<string, object> postData)
         {
             postData.Add("refresh_token", RefreshToken);
         }

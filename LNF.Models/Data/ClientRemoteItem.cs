@@ -9,6 +9,5 @@
         public string RemoteDisplayName { get; set; }
         public int AccountID { get; set; }
         public string AccountName { get; set; }
-        public bool Active { get; set; }
     }
 }

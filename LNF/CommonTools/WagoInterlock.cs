@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace LNF.CommonTools
 {
@@ -26,14 +25,14 @@ namespace LNF.CommonTools
     public static class WagoInterlock
     {
         // Turn On/Off the points that are associated with the resource
-        public static async Task ToggleInterlock(int resourceId, bool state, uint duration)
+        public static void ToggleInterlock(int resourceId, bool state, uint duration)
         {
             ActionInstance inst = ActionInstanceUtility.Find(ActionType.Interlock, resourceId);
 
             if (inst != null)
-                await ServiceProvider.Current.Control.SetPointState(inst.GetPoint(), state, duration);
+                ServiceProvider.Current.Control.SetPointState(inst.GetPoint(), state, duration);
             else
-                throw new ArgumentException(string.Format("No resource was found with ResourceID {0}", resourceId), "resourceId");
+                throw new ArgumentException($"No resource was found with ResourceID {resourceId}", "resourceId");
         }
 
         public static void ByPass(int actionId, uint duration)
@@ -45,7 +44,7 @@ namespace LNF.CommonTools
         }
 
         // Get Block data
-        public static async Task<InterlockData> GetInterlockData(int resourceId, ActionType action = ActionType.Interlock, string username = "", string password = "")
+        public static InterlockData GetInterlockData(int resourceId, ActionType action = ActionType.Interlock, string username = "", string password = "")
         {
             ActionInstance inst = ActionInstanceUtility.Find(action, resourceId);
 
@@ -63,7 +62,7 @@ namespace LNF.CommonTools
             try
             {
                 blockId = point.Block.BlockID;
-                BlockResponse resp = await ServiceProvider.Current.Control.GetBlockState(point.Block);
+                BlockResponse resp = ServiceProvider.Current.Control.GetBlockState(point.Block);
                 blockState = resp.BlockState;
 
                 if (blockState == null)
@@ -77,7 +76,7 @@ namespace LNF.CommonTools
             return new InterlockData(blockId, blockState, message);
         }
 
-        public static async Task AllToolStatus(DataTable dtToolStatus)
+        public static void AllToolStatus(DataTable dtToolStatus)
         {
             DataRow row = null;
 
@@ -142,7 +141,7 @@ namespace LNF.CommonTools
                             //We try to get returned data
                             try
                             {
-                                BlockResponse resp = await ServiceProvider.Current.Control.GetBlockState(blocks.First(x => x.BlockID == blockId));
+                                BlockResponse resp = ServiceProvider.Current.Control.GetBlockState(blocks.First(x => x.BlockID == blockId));
                                 blockState = resp.EnsureSuccess().BlockState;
                             }
                             catch (Exception ex)
@@ -178,10 +177,10 @@ namespace LNF.CommonTools
             }
         }
 
-        public static async Task<BlockState> GetBlockState(int blockId)
+        public static BlockState GetBlockState(int blockId)
         {
             Block block = DA.Current.Query<Block>().First(x => x.BlockID == blockId);
-            BlockResponse resp = await ServiceProvider.Current.Control.GetBlockState(block);
+            BlockResponse resp = ServiceProvider.Current.Control.GetBlockState(block);
             return resp.EnsureSuccess().BlockState;
         }
 
@@ -192,7 +191,7 @@ namespace LNF.CommonTools
             return ps.State;
         }
 
-        public static async Task<bool> GetPointState(int resourceId)
+        public static bool GetPointState(int resourceId)
         {
             ActionInstance inst = ActionInstanceUtility.Find(ActionType.Interlock, resourceId);
 
@@ -201,7 +200,7 @@ namespace LNF.CommonTools
 
             Point p = inst.GetPoint();
 
-            var bs = await GetBlockState(p.Block.BlockID);
+            var bs = GetBlockState(p.Block.BlockID);
 
             return GetPointState(p.PointID, bs);
         }

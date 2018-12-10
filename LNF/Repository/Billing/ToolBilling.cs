@@ -62,6 +62,25 @@ namespace LNF.Repository.Billing
             // period - much easier to manage.
             return UsageFeeCharged + OverTimePenaltyFee + BookingFee + UncancelledPenaltyFee + ReservationFee2;
         }
+
+        public virtual TimeSpan ActivatedUsed()
+        {
+            // if a reservation is started IsCancelledBeforeAllowedTime must be false, right?
+            decimal activatedUsed = (IsStarted && !IsCancelledBeforeAllowedTime) ? (ActDuration - OverTime) : 0;
+            return TimeSpan.FromMinutes((double)activatedUsed);
+        }
+
+        public virtual TimeSpan ActivatedUnused()
+        {
+            decimal activatedUnused = (IsStarted && !IsCancelledBeforeAllowedTime) ? Math.Max(ChargeDuration - ActDuration, 0) : 0;
+            return TimeSpan.FromMinutes((double)activatedUnused);
+        }
+
+        public virtual TimeSpan UnstartedUnused()
+        {
+            decimal unstartedUnused = (!IsStarted && !IsCancelledBeforeAllowedTime) ? ChargeDuration : 0;
+            return TimeSpan.FromMinutes((double)unstartedUnused);
+        }
     }
 
     public class ToolBilling : ToolBillingBase

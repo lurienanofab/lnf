@@ -1,4 +1,4 @@
-﻿using LNF.PhysicalAccess;
+﻿using LNF.Models.PhysicalAccess;
 using LNF.Repository;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace LNF.Feedback
 
             if (group == ClientGroup.InLab)
             {
-                IEnumerable<Badge> inlab = ServiceProvider.Current.PhysicalAccess.CurrentlyInArea();
+                IEnumerable<Badge> inlab = ServiceProvider.Current.PhysicalAccess.GetCurrentlyInArea("all");
                 query = inlab.Select(x => new FeedbackClientItem()
                 {
                     ClientID = x.ClientID,
@@ -33,33 +33,30 @@ namespace LNF.Feedback
             }
             else
             {
-                using (var dba = DA.Current.GetAdapter())
+                DataTable dt = null;
+                switch (group)
                 {
-                    DataTable dt = null;
-                    switch (group)
-                    {
-                        case ClientGroup.All:
-                            dt = dba.ApplyParameters(new { Action = "ByAll", sdate = sd, edate = ed }).FillDataTable("Feedback.dbo.FeedbackClient_Select");
-                            break;
-                        case ClientGroup.External:
-                            dt = dba.ApplyParameters(new { Action = "ByExternal", sdate = sd, edate = ed }).FillDataTable("Feedback.dbo.FeedbackClient_Select");
-                            break;
-                        case ClientGroup.Internal:
-                            dt = dba.ApplyParameters(new { Action = "ByInternal", sdate = sd, edate = ed }).FillDataTable("Feedback.dbo.FeedbackClient_Select");
-                            break;
-                        case ClientGroup.Staff:
-                            dt = dba.ApplyParameters(new { Action = "ByStaff", sdate = sd, edate = ed }).FillDataTable("Feedback.dbo.FeedbackClient_Select");
-                            break;
-                    }
+                    case ClientGroup.All:
+                        dt = DA.Command().Param(new { Action = "ByAll", sdate = sd, edate = ed }).FillDataTable("Feedback.dbo.FeedbackClient_Select");
+                        break;
+                    case ClientGroup.External:
+                        dt = DA.Command().Param(new { Action = "ByExternal", sdate = sd, edate = ed }).FillDataTable("Feedback.dbo.FeedbackClient_Select");
+                        break;
+                    case ClientGroup.Internal:
+                        dt = DA.Command().Param(new { Action = "ByInternal", sdate = sd, edate = ed }).FillDataTable("Feedback.dbo.FeedbackClient_Select");
+                        break;
+                    case ClientGroup.Staff:
+                        dt = DA.Command().Param(new { Action = "ByStaff", sdate = sd, edate = ed }).FillDataTable("Feedback.dbo.FeedbackClient_Select");
+                        break;
+                }
 
-                    if (dt != null)
+                if (dt != null)
+                {
+                    query = dt.AsEnumerable().Select(x => new FeedbackClientItem()
                     {
-                        query = dt.AsEnumerable().Select(x => new FeedbackClientItem()
-                        {
-                            ClientID = x.Field<int>("ClientID"),
-                            DisplayName = x.Field<string>("DisplayName")
-                        });
-                    }
+                        ClientID = x.Field<int>("ClientID"),
+                        DisplayName = x.Field<string>("DisplayName")
+                    });
                 }
             }
 

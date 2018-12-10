@@ -19,7 +19,7 @@ namespace LNF.Impl.DataAccess
 
         private DbCommand GetCommand()
         {
-            var result = session.Connection.CreateCommand() as DbCommand;
+            var result = session.Connection.CreateCommand();
             result.CommandType = CommandType.StoredProcedure;
             session.Transaction.Enlist(result);
             return result;

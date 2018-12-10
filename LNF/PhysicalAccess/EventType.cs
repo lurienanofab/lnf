@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LNF.PhysicalAccess
 {
-    public enum EventType
+    public enum zEventType
     {
         Grant,
         In,

@@ -1,4 +1,3 @@
-using LNF.CommonTools;
 using LNF.Repository;
 using System.Data;
 
@@ -14,36 +13,32 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectByResource(int resourceId)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                var dt = dba
-                    .ApplyParameters(new { Action = "SelectByResource", ResourceID = resourceId })
-                    .FillDataTable("sselScheduler.dbo.procProcessInfoLineSelect");
+            var dt = DA.Command()
+                .Param("Action", "SelectByResource")
+                .Param("ResourceID", resourceId)
+                .FillDataTable("sselScheduler.dbo.procProcessInfoLineSelect");
 
-                dt.Columns["ProcessInfoLineID"].AutoIncrement = true;
-                dt.Columns["ProcessInfoLineID"].AutoIncrementSeed = 1;
-                dt.Columns["ProcessInfoLineID"].AutoIncrementStep = 1;
-                dt.PrimaryKey = new[] { dt.Columns["ProcessInfoLineID"] };
+            dt.Columns["ProcessInfoLineID"].AutoIncrement = true;
+            dt.Columns["ProcessInfoLineID"].AutoIncrementSeed = 1;
+            dt.Columns["ProcessInfoLineID"].AutoIncrementStep = 1;
+            dt.PrimaryKey = new[] { dt.Columns["ProcessInfoLineID"] };
 
-                return dt;
-            }
+            return dt;
         }
 
         public static DataTable SelectByProcessInfo(int processInfoId)
         {
-            using (var dba = DA.Current.GetAdapter())
-            {
-                var dt = dba
-                    .ApplyParameters(new { Action = "SelectByProcessInfo", ProcessInfoID = processInfoId })
-                    .FillDataTable("sselScheduler.dbo.procProcessInfoLineSelect");
+            var dt = DA.Command()
+                .Param("Action", "SelectByProcessInfo")
+                .Param("ProcessInfoID", processInfoId)
+                .FillDataTable("sselScheduler.dbo.procProcessInfoLineSelect");
 
-                dt.Columns["ProcessInfoLineID"].AutoIncrement = true;
-                dt.Columns["ProcessInfoLineID"].AutoIncrementSeed = 1;
-                dt.Columns["ProcessInfoLineID"].AutoIncrementStep = 1;
-                dt.PrimaryKey = new[] { dt.Columns["ProcessInfoLineID"] };
+            dt.Columns["ProcessInfoLineID"].AutoIncrement = true;
+            dt.Columns["ProcessInfoLineID"].AutoIncrementSeed = 1;
+            dt.Columns["ProcessInfoLineID"].AutoIncrementStep = 1;
+            dt.PrimaryKey = new[] { dt.Columns["ProcessInfoLineID"] };
 
-                return dt;
-            }
+            return dt;
         }
 
         /// <summary>
@@ -51,28 +46,24 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static void Update(DataTable dt)
         {
-            using (var dba = DA.Current.GetAdapter())
+            DA.Command().Update(dt, x =>
             {
-                dba.InsertCommand
-                    .AddParameter("@ProcessInfoLineID", SqlDbType.Int, ParameterDirection.Output)
-                    .AddParameter("@ProcessInfoID", SqlDbType.Int)
-                    .AddParameter("@Param", SqlDbType.NVarChar, 50)
-                    .AddParameter("@MinValue", SqlDbType.Float)
-                    .AddParameter("@MaxValue", SqlDbType.Float);
+                x.Insert.SetCommandText("sselScheduler.dbo.procProcessInfoLineInsert");
+                x.Insert.AddParameter("ProcessInfoLineID", SqlDbType.Int, ParameterDirection.Output);
+                x.Insert.AddParameter("ProcessInfoID", SqlDbType.Int);
+                x.Insert.AddParameter("Param", SqlDbType.NVarChar, 50);
+                x.Insert.AddParameter("MinValue", SqlDbType.Float);
+                x.Insert.AddParameter("MaxValue", SqlDbType.Float);
 
-                dba.UpdateCommand
-                    .AddParameter("@ProcessInfoLineID", SqlDbType.Int)
-                    .AddParameter("@Param", SqlDbType.NVarChar, 50)
-                    .AddParameter("@MinValue", SqlDbType.Float)
-                    .AddParameter("@MaxValue", SqlDbType.Float);
+                x.Update.SetCommandText("sselScheduler.dbo.procProcessInfoLineUpdate");
+                x.Update.AddParameter("ProcessInfoLineID", SqlDbType.Int);
+                x.Update.AddParameter("Param", SqlDbType.NVarChar, 50);
+                x.Update.AddParameter("MinValue", SqlDbType.Float);
+                x.Update.AddParameter("MaxValue", SqlDbType.Float);
 
-                dba.DeleteCommand.AddParameter("@ProcessInfoLineID", SqlDbType.Int);
-
-                dba.UpdateDataTable(dt,
-                    "sselScheduler.dbo.procProcessInfoLineInsert",
-                    "sselScheduler.dbo.procProcessInfoLineUpdate",
-                    "sselScheduler.dbo.procProcessInfoLineDelete");
-            }
+                x.Delete.SetCommandText("sselScheduler.dbo.procProcessInfoLineDelete");
+                x.Delete.AddParameter("ProcessInfoLineID", SqlDbType.Int);
+            });
         }
     }
 }

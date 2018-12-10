@@ -19,6 +19,8 @@ namespace LNF.Data
 {
     public static class DataFeedUtility
     {
+        public static DataCommand ReadOnlyCommand(CommandType type = CommandType.StoredProcedure) => DataCommand.Create(() => SQLDBAccess.Create("cnSselDataReadOnly"), type);
+
         public static bool CanEditFeed()
         {
             return CacheManager.Current.CurrentUser.HasPriv(ClientPrivilege.Developer | ClientPrivilege.Administrator);
@@ -46,8 +48,8 @@ namespace LNF.Data
 
         public static DataTable GetDataTable(string alias, object parameters)
         {
-            string query = GetQueryString(parameters);
-            string url = string.Format("http://ssel-sched.eecs.umich.edu/data/feed/{0}/xml/{1}", alias, query);
+            string query = Utility.GetQueryString(parameters);
+            string url = $"http://ssel-sched.eecs.umich.edu/data/feed/{alias}/xml/{query}";
             DataSet ds = new DataSet();
             ds.ReadXml(url);
             DataTable dt = ds.Tables[0];
@@ -57,8 +59,8 @@ namespace LNF.Data
         public static string GetCSV(string alias, object parameters, string host = "ssel-sched.eecs.umich.edu")
         {
             string result = string.Empty;
-            string query = GetQueryString(parameters);
-            string url = string.Format("http://{0}/data/feed/{1}/csv/{2}", host, alias, query);
+            string query = Utility.GetQueryString(parameters);
+            string url = $"http://{host}/data/feed/{alias}/csv/{query}";
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
             using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
             using (StreamReader reader = new StreamReader(resp.GetResponseStream()))
@@ -91,25 +93,6 @@ namespace LNF.Data
             return result;
         }
 
-        public static string GetQueryString(object parameters)
-        {
-            string result = string.Empty;
-            if (parameters != null)
-            {
-                IDictionary<string, object> dictionary = RepositoryUtility.ObjectToDictionary(parameters);
-                string amp = "?";
-                if (dictionary.Count > 0)
-                {
-                    foreach (KeyValuePair<string, object> kvp in dictionary)
-                    {
-                        result += amp + kvp.Key + "=" + kvp.Value.ToString();
-                        amp = "&";
-                    }
-                }
-            }
-            return result;
-        }
-
         public static DataSet ExecuteQuery(DataFeed feed, Parameters parameters = null)
         {
             DataSet ds = new DataSet();
@@ -125,29 +108,22 @@ namespace LNF.Data
 
             if (feed.FeedType == DataFeedType.SQL)
             {
-                using (SQLDBAccess dba = new SQLDBAccess("cnSselDataReadOnly"))
+                var command = ReadOnlyCommand(CommandType.Text);
+
+                if (parameters != null)
                 {
-                    if (parameters != null)
-                    {
-                        sql = parameters.Replace(sql);
-                        dba.SelectCommand.ApplyParameters(parameters);
-                    }
-                    
-                    dba.SelectCommand.CommandType = CommandType.Text;
-
-                    ds = dba.FillDataSet(sql);
-
-                    if (ds.Tables.Count > 0)
-                        ds.Tables[0].TableName = "default";
-
-                    //dt = dba.FillDataTable(sql, commandType: CommandType.Text);
-                    //dt.TableName = "default";
-                    //ds.Tables.Add(dt);
+                    sql = parameters.Replace(sql);
+                    command.Param(parameters);
                 }
+
+                command.FillDataSet(ds, sql);
+
+                if (ds.Tables.Count > 0)
+                    ds.Tables[0].TableName = "default";
             }
             else
             {
-                Result result = ServiceProvider.Current.Resolver.GetInstance<IScriptingService>().Run(feed.FeedQuery, parameters);
+                Result result = ServiceProvider.Current.Use<IScriptingService>().Run(feed.FeedQuery, parameters);
                 if (result.Exception != null)
                     throw result.Exception;
                 foreach (var kvp in result.DataSet)
@@ -374,7 +350,7 @@ namespace LNF.Data
                 sb.AppendLine("<tr>");
                 foreach (DataColumn dc in dt.Columns)
                 {
-                    sb.AppendLine(string.Format("<th>{0}</th>", dc.ColumnName));
+                    sb.AppendLine($"<th>{dc.ColumnName}</th>");
                 }
                 sb.AppendLine("</tr>");
                 sb.AppendLine("</thead>");
@@ -384,7 +360,7 @@ namespace LNF.Data
                     sb.AppendLine("<tr>");
                     foreach (DataColumn dc in dt.Columns)
                     {
-                        sb.AppendLine(string.Format("<td>{0}</td>", dr[dc.ColumnName].ToString()));
+                        sb.AppendLine($"<td>{dr[dc.ColumnName]}</td>");
                     }
                     sb.AppendLine("</tr>");
                 }
@@ -441,8 +417,8 @@ namespace LNF.Data
                         ID = feed.FeedID,
                         GUID = feed.FeedGUID,
                         Name = ds.DataSetName,
-                        Private = feed.Private,
-                        Active = feed.Active,
+                        feed.Private,
+                        feed.Active,
                         Data = data
                     };
                 }

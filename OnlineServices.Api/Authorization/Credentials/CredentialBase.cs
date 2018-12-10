@@ -1,7 +1,6 @@
-﻿using System;
+﻿using RestSharp;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Net.Http;
 
 namespace OnlineServices.Api.Authorization.Credentials
 {
@@ -18,23 +17,25 @@ namespace OnlineServices.Api.Authorization.Credentials
             _audienceSecret = ConfigurationManager.AppSettings["as:AudienceSecret"];
         }
 
-        protected virtual void AddPostData(IDictionary<string, string> postData)
+        protected virtual void AddPostData(IDictionary<string, object> postData)
         {
-            // Override to add additional post data
+            // when overridden allow postdata to be added
         }
 
-        public HttpContent CreateContent()
+        public void ApplyParameters(IRestRequest req)
         {
-            IDictionary<string, string> postData = new Dictionary<string, string>();
+            req.AddParameter("client_id", _audienceId);
+            req.AddParameter("client_secret", _audienceSecret);
+            req.AddParameter("grant_type", GrantType);
 
-            postData.Add("client_id", _audienceId);
-            postData.Add("client_secret", _audienceSecret);
-            postData.Add("grant_type", GrantType);
+            var dict = new Dictionary<string, object>();
+            AddPostData(dict);
 
-            AddPostData(postData);
-
-            HttpContent result = new FormUrlEncodedContent(postData);
-            return result;
+            if (dict.Count > 0)
+            {
+                foreach (var kvp in dict)
+                    req.AddParameter(kvp.Key, kvp.Value);
+            }
         }
     }
 }

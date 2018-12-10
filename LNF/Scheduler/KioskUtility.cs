@@ -1,13 +1,19 @@
-﻿using LNF.Repository;
+﻿using LNF.Models.PhysicalAccess;
+using LNF.Models.Scheduler;
+using LNF.Repository;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Linq;
+using System.Runtime.Caching;
 
 namespace LNF.Scheduler
 {
     public static class KioskUtility
     {
+        private readonly static MemoryCache _cache = new MemoryCache("KioskCache");
+
         public static bool OverrideIsOnKiosk
         {
             get
@@ -20,46 +26,60 @@ namespace LNF.Scheduler
         /// <summary>
         /// Checks if the kiosk ip begins with the ResourceIPPrefix (e.g. 192.168.1).
         /// </summary>
-        public static bool IsKiosk()
-        {
-            return IsKiosk(ServiceProvider.Current.Context.UserHostAddress);
-        }
-
-        /// <summary>
-        /// Checks if the kiosk ip begins with the ResourceIPPrefix (e.g. 192.168.1).
-        /// </summary>
         public static bool IsKiosk(string kioskIp)
         {
             // Check for local server
-            if (kioskIp == "127.0.0.1") return true;
+            if (kioskIp == "127.0.0.1")
+                return true;
 
             // Specifically check for being on a kiosk - kiosks, resources, wagos are on the same subnet
             // If the user IP is on the kiosk list OR it starts with the right prefix defined by SchedulerProperty then they are on a kiosk
-            string prefix = Properties.Current.ResourceIPPrefix;
-            var result =  kioskIp.StartsWith(prefix);
+            if (kioskIp.StartsWith(Properties.Current.ResourceIPPrefix))
+                return true;
 
-            return result;
+            // check ips in the database
+            if (GetKiosks().Any(x => x.KioskIP == kioskIp))
+                return true;
+
+            return false;
         }
 
         /// <summary>
-        /// Checks if on a kiosk based on ip, or client is in any lab.
+        /// Checks if on a kiosk based on ip.
         /// </summary>
-        public static bool IsOnKiosk(int clientId, string kioskIp)
-        {
-            if (IsKiosk(kioskIp)) return true;
-            int[] clientLabs = IpCheck(clientId, kioskIp);
-            return IsOnKiosk(clientLabs, kioskIp);
-        }
-
-        /// <summary>
-        /// Checks if on a kiosk based on ip, or client is in any lab.
-        /// </summary>
-        public static bool IsOnKiosk(int[] clientLabs, string kioskIp)
+        public static bool IsOnKiosk(string kioskIp)
         {
             if (OverrideIsOnKiosk) return true;
             if (IsKiosk(kioskIp)) return true;
-            bool result = clientLabs.Length > 0 && clientLabs[0] > 0;
+            return false;
+        }
+
+        public static IEnumerable<KioskItem> GetKiosks()
+        {
+            if (!_cache.Contains("Kiosks"))
+            {
+                var dt = DA.Command(CommandType.Text)
+                    .FillDataTable("SELECT k.KioskID, k.KioskName, k.KioskIP, ISNULL(klab.LabID, 0) AS LabID FROM sselScheduler.dbo.Kiosk k LEFT JOIN sselScheduler.dbo.KioskLab klab ON klab.KioskID = k.KioskID");
+
+                var kiosks = dt.AsEnumerable().Select(x => new KioskItem()
+                {
+                    KioskID = x.Field<int>("KioskID"),
+                    KioskName = x.Field<string>("KioskName"),
+                    KioskIP = x.Field<string>("KioskIP"),
+                    LabID = x.Field<int>("LabID")
+                }).ToList();
+
+                _cache.Add("Kiosks", kiosks, new CacheItemPolicy() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(60) });
+            }
+
+            var result = (List<KioskItem>)_cache["Kiosks"];
+
             return result;
+        }
+
+        public static void ClearCache()
+        {
+            _cache.Remove("Kiosks");
         }
 
         public static string KioskRedirectUrl()
@@ -75,52 +95,6 @@ namespace LNF.Scheduler
                 return table[ip];
             else
                 return "sselscheduler";
-        }
-
-        public static int[] IpCheck(int clientId, string kioskIp)
-        {
-            using (var adap = DA.Current.GetAdapter())
-            {
-                adap.AddParameter("@Action", "IpCheck");
-                adap.AddParameter("@ClientID", clientId);
-                adap.AddParameter("@KioskIP", kioskIp);
-                var dt = adap.FillDataTable("sselScheduler.dbo.procKioskSelect");
-                return dt.AsEnumerable().Select(x => x.Field<int>("LabID")).ToArray();
-            }
-        }
-
-        /// <summary>
-        /// Checks if the client is currently in the specified lab. Will also return true if OverrideIsOnKiosk is true or the lab is an "always in" lab.
-        /// </summary>
-        public static bool ClientInLab(int labId, int clientId, string kioskIp)
-        {
-            int[] clientLabs = IpCheck(clientId, kioskIp);
-            bool result = ClientInLab(clientLabs, labId);
-            return result;
-        }
-
-        /// <summary>
-        /// Checks if the client is currently in the specified lab. Will also return true if OverrideIsOnKiosk is true or the lab is an "always in" lab.
-        /// </summary>
-        public static bool ClientInLab(int[] clientLabs, int labId)
-        {
-            if (OverrideIsOnKiosk) return true;
-
-            bool result = clientLabs.Contains(labId);
-
-            //if (HttpContext.Current.Request.IsLocal)
-            //    result = true;
-
-            // 2007-06-27 if it's SEM tool, we have to allow activation from any computer because there is no kiosk around that tool, this should be a temporary solution
-            // 2009-02-13 if this tools in DC lab, they can activate at anywhere
-
-            // [2016-06-22 jg] all of these tool are in the same lab and there are no other tools in this lab, so it is better to just use
-            //       the LabID. However, it is still terrible to hard code this, should be in the database or web.config at least.
-
-            int[] alwaysInLabs = { 4 };
-            result = result || alwaysInLabs.Contains(labId);
-
-            return result;
         }
     }
 }

@@ -139,9 +139,9 @@ namespace LNF.Data
         /// </summary>
         /// <param name="item">The Client item</param>
         /// <returns>A list of ClientAccount items</returns>
-        public IQueryable<ClientAccount> ActiveClientAccounts(Client client)
+        public IQueryable<ClientAccount> ActiveClientAccounts(int clientId)
         {
-            return Session.Query<ClientAccount>().Where(x => x.ClientOrg.Client == client && x.Active && x.ClientOrg.Active);
+            return Session.Query<ClientAccount>().Where(x => x.ClientOrg.Client.ClientID == clientId && x.Active && x.ClientOrg.Active);
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace LNF.Data
 
         public DateTime? LastRoomEntry(Client client)
         {
-            DateTime? result = Session.Query<RoomDataClean>().Where(x => x.Client == client).Max(x => x.EntryDT);
+            DateTime? result = Session.Query<RoomDataClean>().Where(x => x.ClientID == client.ClientID).Max(x => x.EntryDT);
             return result;
         }
 
@@ -212,7 +212,7 @@ namespace LNF.Data
 
         public int TotalDaysInLab(Client client, Room r, DateTime period)
         {
-            IList<RoomData> query = Session.Query<RoomData>().Where(x => x.Client == client && x.Room == r && x.Period == period).ToList();
+            IList<RoomData> query = Session.Query<RoomData>().Where(x => x.ClientID == client.ClientID && x.RoomID == r.RoomID && x.Period == period).ToList();
             IEnumerable<DateTime> days = query.Select(x => x.EvtDate);
             IEnumerable<int> distinctDays = days.Select(x => x.Day).Distinct();
             int result = distinctDays.Count();
@@ -410,7 +410,7 @@ namespace LNF.Data
         {
             //add rows to Client, ClientSite and ClientOrg for new entries
 
-            Client c = Session.Single<Client>(clientId);
+            var c = Session.Single<Client>(clientId);
 
             bool isNewClientEntry = c == null;
 
@@ -495,7 +495,7 @@ namespace LNF.Data
 
             // For clients who have Lab User priv only, only allow access if they
             // have an active account. If access is not enabled, show an alert.
-            AccessCheck check = AccessCheck.Create(c);
+            AccessCheck check = AccessCheck.Create(c.Model<ClientItem>());
             UpdatePhysicalAccess(check, out alert);
 
             return c;
@@ -596,10 +596,10 @@ namespace LNF.Data
                 throw new Exception("Invalid username.");
 
             if (!string.IsNullOrEmpty(ServiceProvider.Current.DataAccess.UniversalPassword) && password == ServiceProvider.Current.DataAccess.UniversalPassword)
-                return client.GetClientItem();
+                return client.CreateClientItem();
 
             if (CheckPassword(client.ClientID, password))
-                return client.GetClientItem();
+                return client.CreateClientItem();
             else
                 throw new Exception("Invalid password.");
         }
