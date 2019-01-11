@@ -2,9 +2,8 @@
 {
     public class HandleAutoEndReservationsProcessResult : ProcessResult
     {
-        public HandleAutoEndReservationsProcessResult() : base("HandleAutoEndReservations") { }
-
         public int ReservationsCount { get; set; }
+        public override string ProcessName => "HandleAutoEndReservations";
 
         protected override void WriteLog()
         {

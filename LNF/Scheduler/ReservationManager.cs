@@ -761,10 +761,10 @@ namespace LNF.Scheduler
         ///<summary>
         /// Ends any reservations that the reserver fails to start before the grace period had ended.
         ///</summary>
-        public EndUnstartedReservationsProcessResult EndUnstartedReservations(IEnumerable<Reservation> reservations)
+        public HandleUnstartedReservationsProcessResult HandleUnstartedReservations(IEnumerable<Reservation> reservations)
         {
             //End unstarted reservations
-            var result = new EndUnstartedReservationsProcessResult()
+            var result = new HandleUnstartedReservationsProcessResult()
             {
                 ReservationsCount = reservations.Count()
             };
@@ -828,10 +828,10 @@ namespace LNF.Scheduler
         ///<summary>
         ///Ends any repair reservations that are in the past.
         ///</summary>
-        public EndRepairReservationsProcessResult EndRepairReservations(IEnumerable<Reservation> reservations)
+        public HandleRepairReservationsProcessResult HandleRepairReservations(IEnumerable<Reservation> reservations)
         {
             //End past repair reservations
-            var result = new EndRepairReservationsProcessResult()
+            var result = new HandleRepairReservationsProcessResult()
             {
                 ReservationsCount = reservations.Count()
             };

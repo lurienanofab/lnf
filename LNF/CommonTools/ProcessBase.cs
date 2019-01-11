@@ -5,17 +5,18 @@ using System.Data;
 
 namespace LNF.CommonTools
 {
-    public abstract class ProcessBase<T> : IProcess<T> where T : ProcessResult, new()
+    public abstract class ProcessBase<T> : IProcess<T> where T : ProcessResult
     {
         protected T _result;
 
+        protected abstract T CreateResult();
+
         public virtual T Start()
         {
-            _result = new T()
-            {
-                RowsDeleted = DeleteExisting()
-            };
+            _result = CreateResult();
 
+            _result.RowsDeleted = DeleteExisting();
+           
             var dtExtract = Extract();
 
             _result.RowsExtracted = dtExtract.Rows.Count;

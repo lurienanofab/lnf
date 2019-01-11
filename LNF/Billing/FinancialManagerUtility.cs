@@ -2,6 +2,7 @@
 using LNF.Models.Billing;
 using LNF.Models.Billing.Reports;
 using LNF.Repository;
+using LNF.Repository.Data;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -21,13 +22,21 @@ namespace LNF.Billing
             return SendMonthlyUserUsageEmails(period, clientId, managerOrgId, options);
         }
 
+        private static string[] GetFinancialManagerReportRecipients()
+        {
+            var gs = DA.Current.Query<GlobalSettings>().FirstOrDefault(x => x.SettingName == "FinancialManagerReport_MonthlyEmailRecipients");
+
+            if (gs == null || string.IsNullOrEmpty(gs.SettingValue))
+                return null;
+
+            return gs.SettingValue.Split(',');
+        }
+
         public static IEnumerable<FinancialManagerReportEmail> GetMonthlyUserUsageEmails(DateTime period, int clientId, int managerOrgId, string message)
         {
             var result = new List<FinancialManagerReportEmail>();
 
-            string[] ccAddr = null;
-            if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["MonthlyFinancialEmailRecipients"]))
-                ccAddr = ConfigurationManager.AppSettings["MonthlyFinancialEmailRecipients"].Split(',');
+            string[] ccAddr = GetFinancialManagerReportRecipients();
 
             //Get managers list and associated clients info
             var dt = DA.Command()

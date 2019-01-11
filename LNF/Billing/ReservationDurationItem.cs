@@ -1,4 +1,5 @@
-﻿using LNF.Repository.Scheduler;
+﻿using LNF.Models.Scheduler;
+using LNF.Repository.Scheduler;
 using System;
 
 namespace LNF.Billing
@@ -48,19 +49,34 @@ namespace LNF.Billing
             get { return Reservation.ChargeEndDateTime - Reservation.ChargeBeginDateTime; }
         }
 
-        public TimeSpan ActivatedUsedDuration
+        public virtual TimeSpan ActivatedUsedDuration
         {
-            get { return TimeSpan.Zero; }
+            get
+            {
+                // if a reservation is started IsCancelledBeforeAllowedTime must be false, right?
+                double activatedUsed = (Reservation.IsStarted && !Reservation.IsCancelledBeforeCutoff) ? (ActualDuration.TotalMinutes - OverTimeDuration.TotalMinutes) : 0;
+                return TimeSpan.FromMinutes(activatedUsed);
+            }
         }
 
-        public TimeSpan ActivatedUnusedDuration
+        public virtual TimeSpan ActivatedUnusedDuration
         {
-            get { return TimeSpan.Zero; }
+            get
+            {
+                // if a reservation is started IsCancelledBeforeAllowedTime must be false, right?
+                double activatedUnused = (Reservation.IsStarted && !Reservation.IsCancelledBeforeCutoff) ? Math.Max(ChargeDuration.TotalMinutes - ActualDuration.TotalMinutes, 0) : 0;
+                return TimeSpan.FromMinutes(activatedUnused);
+            }
         }
 
-        public TimeSpan UnactivatedDuration
+        public virtual TimeSpan UnactivatedDuration
         {
-            get { return TimeSpan.Zero; }
+            get
+            {
+                // now it makes sense to check IsCancelledBeforeAllowedTime
+                double unstartedUnused = (!Reservation.IsStarted && !Reservation.IsCancelledBeforeCutoff) ? ChargeDuration.TotalMinutes : 0;
+                return TimeSpan.FromMinutes(unstartedUnused);
+            }
         }
 
         /// <summary>
@@ -70,8 +86,13 @@ namespace LNF.Billing
         {
             get
             {
+                // overtime is calculated in whole minutes (using floor)
                 if (Reservation.ActualEndDateTime.HasValue && Reservation.ActualEndDateTime.Value > Reservation.EndDateTime)
-                    return Reservation.ActualEndDateTime.Value - Reservation.EndDateTime;
+                {
+                    var ts = Reservation.ActualEndDateTime.Value - Reservation.EndDateTime;
+                    var minutes = Math.Floor(ts.TotalMinutes);
+                    return TimeSpan.FromMinutes(minutes);
+                }
                 else
                     return TimeSpan.Zero;
             }
@@ -91,6 +112,11 @@ namespace LNF.Billing
         public TimeSpan StandardDuration
         {
             get { return UtilizedDuration - OverTimeDuration; }
+        }
+
+        public double GetForgivenPercentage()
+        {
+            return 1 - Reservation.ChargeMultiplier;
         }
     }
 }

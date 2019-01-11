@@ -2,8 +2,8 @@
 {
     public class FiveMinuteTaskResult
     {
-        public EndRepairReservationsProcessResult EndRepairReservationsProcessResult { get; set; }
-        public EndUnstartedReservationsProcessResult EndUnstartedReservationsProcessResult { get; set; }
+        public HandleRepairReservationsProcessResult EndRepairReservationsProcessResult { get; set; }
+        public HandleUnstartedReservationsProcessResult EndUnstartedReservationsProcessResult { get; set; }
         public HandleAutoEndReservationsProcessResult HandleAutoEndReservationsProcessResult { get; set; }
     }
 }

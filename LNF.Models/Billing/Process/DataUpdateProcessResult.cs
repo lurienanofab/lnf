@@ -1,7 +1,9 @@
-﻿namespace LNF.Models.Billing.Process
+﻿using System;
+
+namespace LNF.Models.Billing.Process
 {
     public class DataUpdateProcessResult : ProcessResult
     {
-        public DataUpdateProcessResult() : base("DataUpdate") { }
+        public override string ProcessName => "DataUpdate";
     }
 }

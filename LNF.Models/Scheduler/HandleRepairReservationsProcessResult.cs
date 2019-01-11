@@ -1,10 +1,9 @@
 ﻿namespace LNF.Models.Scheduler
 {
-    public class EndRepairReservationsProcessResult : ProcessResult
+    public class HandleRepairReservationsProcessResult : ProcessResult
     {
-        public EndRepairReservationsProcessResult() : base("EndRepairReservations") { }
-
         public int ReservationsCount { get; set; }
+        public override string ProcessName => "HandleRepairReservations";
 
         protected override void WriteLog()
         {

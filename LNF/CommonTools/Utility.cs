@@ -664,6 +664,7 @@ namespace LNF.CommonTools
 
         public static T ParseEnum<T>(string value) where T : struct, IConvertible
         {
+            // this works for flag enums - e.g. value = "val1,val2,val4,..." returns "Val1, Val2, Val4, ..."
             if (!typeof(T).IsEnum)
                 throw new ArgumentException("T must be an enum");
 
@@ -673,6 +674,13 @@ namespace LNF.CommonTools
         public static string EnumName(Enum value)
         {
             return Enum.GetName(value.GetType(), value);
+        }
+
+        public static string EnumToString(Enum value, string separator = "|")
+        {
+            // The normal enum ToString() method returns "Value1, Value2, Value3, ..."
+            // This method will return "Value1|Value2|Value3..." instead.
+            return string.Join(separator, value.ToString().Split(',').Select(x => x.Trim()));
         }
 
         public static TResult GetValueOrDefault<TSource, TResult>(TSource source, Func<TSource, TResult> result, TResult defval = default(TResult))
@@ -757,12 +765,35 @@ namespace LNF.CommonTools
             return (period >= sd && period < ed);
         }
 
-        public static string GetRequiredAppSetting(string key)
+        public static string GetAppSetting(string key)
         {
             var result = ConfigurationManager.AppSettings[key];
+            return result;
+        }
+
+        public static string GetRequiredAppSetting(string key)
+        {
+            var result = GetAppSetting(key);
 
             if (string.IsNullOrEmpty(result))
                 throw new Exception($"Missing required AppSetting: {key}");
+
+            return result;
+        }
+
+        public static string GetGlobalSetting(string name)
+        {
+            var gs = DA.Current.Query<GlobalSettings>().FirstOrDefault(x => x.SettingName == name);
+            if (gs == null) return null;
+            return gs.SettingValue;
+        }
+
+        public static string GetRequiredGlobalSetting(string name)
+        {
+            var result = GetGlobalSetting(name);
+
+            if (string.IsNullOrEmpty(result))
+                throw new Exception($"Missing required GlobalSetting: {name}");
 
             return result;
         }

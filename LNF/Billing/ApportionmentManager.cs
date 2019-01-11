@@ -43,14 +43,22 @@ namespace LNF.Billing
                 .List<ApportionmentClient>();
         }
 
+        private string[] GetApportionmentReminderRecipients()
+        {
+            var gs = Session.Query<GlobalSettings>().FirstOrDefault(x => x.SettingName == "ApportionmentReminder_MonthlyEmailRecipients");
+
+            if (gs == null || string.IsNullOrEmpty(gs.SettingValue))
+                return null;
+
+            return gs.SettingValue.Split(',');
+        }
+
         public IEnumerable<UserApportionmentReportEmail> GetMonthlyApportionmentEmails(DateTime period, string message = null)
         {
             var result = new List<UserApportionmentReportEmail>();
 
-            string[] ccAddr = null;
-            if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["UserApportionmentEmailRecipients"]))
-                ccAddr = ConfigurationManager.AppSettings["UserApportionmentEmailRecipients"].Split(',');
-
+            string[] ccAddr = GetApportionmentReminderRecipients();
+            
             var query = SelectApportionmentClients(period, period.AddMonths(1));
 
             StringBuilder bodyHtml;

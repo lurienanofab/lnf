@@ -24,6 +24,16 @@ namespace LNF.CommonTools
             ItemID = itemId;
         }
 
+        protected override WriteStoreDataProcessResult CreateResult()
+        {
+            return new WriteStoreDataProcessResult
+            {
+                Period = Period,
+                ClientID = ClientID,
+                ItemID = ItemID
+            };
+        }
+
         public override int DeleteExisting()
         {
             //get rid of any non-user entered entries

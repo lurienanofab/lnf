@@ -80,6 +80,7 @@
     <Compile Include="Billing\UpdateClientBillingResult.cs" />
     <Compile Include="Data\ClientDemographics.cs" />
     <Compile Include="Billing\IBillingApi.cs" />
+    <Compile Include="Data\GlobalSettingsItem.cs" />
     <Compile Include="Data\IClientClient.cs" />
     <Compile Include="Data\IDataApi.cs" />
     <Compile Include="Data\IDefaultClient.cs" />
@@ -173,8 +174,8 @@
     <Compile Include="Scheduler\CheckExpiredClientsProcessResult.cs" />
     <Compile Include="Scheduler\CheckExpiringClientsProcessResult.cs" />
     <Compile Include="Scheduler\EmailOnOpenReservationsProcessResult.cs" />
-    <Compile Include="Scheduler\EndRepairReservationsProcessResult.cs" />
-    <Compile Include="Scheduler\EndUnstartedReservationsProcessResult.cs" />
+    <Compile Include="Scheduler\HandleRepairReservationsProcessResult.cs" />
+    <Compile Include="Scheduler\HandleUnstartedReservationsProcessResult.cs" />
     <Compile Include="Scheduler\Enums.cs" />
     <Compile Include="Scheduler\ExpiringCard.cs" />
     <Compile Include="Scheduler\HandleAutoEndReservationsProcessResult.cs" />

@@ -28,6 +28,16 @@ namespace LNF.CommonTools
 
         private DataSet _ds;
 
+        protected override WriteRoomDataCleanProcessResult CreateResult()
+        {
+            return new WriteRoomDataCleanProcessResult
+            {
+                StartDate = StartDate,
+                EndDate = EndDate,
+                ClientID = ClientID
+            };
+        }
+
         public WriteRoomDataCleanProcess(DateTime sd, DateTime ed, int clientId = 0)
         {
             StartDate = sd;

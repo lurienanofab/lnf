@@ -29,6 +29,16 @@ namespace LNF.CommonTools
         private Dictionary<int, DataRow> _map;
         private EnumerableRowCollection<DataRow> _prices;
 
+        protected override WriteStoreDataCleanProcessResult CreateResult()
+        {
+            return new WriteStoreDataCleanProcessResult
+            {
+                StartDate = StartDate,
+                EndDate = EndDate,
+                ClientID = ClientID
+            };
+        }
+
         public WriteStoreDataCleanProcess(DateTime sd, DateTime ed, int clientId = 0)
         {
             StartDate = sd;

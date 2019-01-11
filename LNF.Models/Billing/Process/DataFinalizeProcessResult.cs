@@ -1,7 +1,9 @@
-﻿namespace LNF.Models.Billing.Process
+﻿using System;
+
+namespace LNF.Models.Billing.Process
 {
     public class DataFinalizeProcessResult : ProcessResult
     {
-        public DataFinalizeProcessResult() : base("DataFinalize") { }
+        public override string ProcessName => "DataFinalize";
     }
 }

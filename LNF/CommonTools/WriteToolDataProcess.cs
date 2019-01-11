@@ -25,6 +25,16 @@ namespace LNF.CommonTools
 
         private DataSet _ds;
 
+        protected override WriteToolDataProcessResult CreateResult()
+        {
+            return new WriteToolDataProcessResult
+            {
+                Period = Period,
+                ClientID = ClientID,
+                ResourceID = ResourceID
+            };
+        }
+
         // force using the static constructor
         public WriteToolDataProcess(DateTime period, int clientId = 0, int resourceId = 0)
         {

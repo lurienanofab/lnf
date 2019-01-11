@@ -14,7 +14,12 @@ namespace LNF.CommonTools
     {
         public static PopulateSubsidyBillingProcessResult PopulateSubsidyBilling(DateTime period, int clientId = 0)
         {
-            var result = new PopulateSubsidyBillingProcessResult { Command = "subsidy" };
+            var result = new PopulateSubsidyBillingProcessResult
+            {
+                Period = period,
+                ClientID = clientId,
+                Command = "subsidy"
+            };
 
             DataSet ds = GetNecessaryTables(period, clientId);
             DataTable dtRoom = ds.Tables[0];

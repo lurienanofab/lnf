@@ -2,9 +2,8 @@
 {
     public class EmailOnOpenReservationsProcessResult : ProcessResult
     {
-        public EmailOnOpenReservationsProcessResult() : base("EmailOnOpenReservations") { }
-
         public int TotalEmailsSent { get; set; }
+        public override string ProcessName => "EmailOnOpenReservations";
 
         protected override void WriteLog()
         {

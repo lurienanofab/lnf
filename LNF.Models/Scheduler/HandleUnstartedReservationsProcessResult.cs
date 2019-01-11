@@ -1,10 +1,9 @@
 ﻿namespace LNF.Models.Scheduler
 {
-    public class EndUnstartedReservationsProcessResult : ProcessResult
+    public class HandleUnstartedReservationsProcessResult : ProcessResult
     {
-        public EndUnstartedReservationsProcessResult() : base("EndUnstartedReservations") { }
-
         public int ReservationsCount { get; set; }
+        public override string ProcessName => "HandleUnstartedReservations";
 
         protected override void WriteLog()
         {

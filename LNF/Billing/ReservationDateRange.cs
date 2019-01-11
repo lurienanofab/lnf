@@ -260,6 +260,7 @@ namespace LNF.Billing
             public bool IsCancelledBeforeCutoff { get; set; }
             public double ChargeMultiplier { get; set; }
             public ResourceCost Cost { get; set; }
+            public DateTime ActDate => ActualBeginDateTime.GetValueOrDefault(BeginDateTime).Date;
         }
 
         public struct DurationInfo

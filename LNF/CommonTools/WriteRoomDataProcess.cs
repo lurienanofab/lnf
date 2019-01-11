@@ -97,6 +97,16 @@ namespace LNF.CommonTools
 
         private DataSet _ds;
 
+        protected override WriteRoomDataProcessResult CreateResult()
+        {
+            return new WriteRoomDataProcessResult
+            {
+                Period = Period,
+                ClientID = ClientID,
+                RoomID = RoomID
+            };
+        }
+
         public WriteRoomDataProcess(DateTime period, int clientId = 0, int roomId = 0)
         {
             Period = period;

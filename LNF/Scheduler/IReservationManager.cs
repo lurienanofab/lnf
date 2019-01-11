@@ -27,9 +27,9 @@ namespace LNF.Scheduler
         HandleAutoEndReservationsProcessResult HandleAutoEndReservations(IEnumerable<Reservation> reservations);
         void EndForRepair(Reservation rsv, int? endedByClientId, int? modifiedByClientId);
         int EndPastUnstarted(Reservation rsv, DateTime endDate, int clientId);
-        EndRepairReservationsProcessResult EndRepairReservations(IEnumerable<Reservation> reservations);
+        HandleRepairReservationsProcessResult HandleRepairReservations(IEnumerable<Reservation> reservations);
         void EndReservation(int reservationId);
-        EndUnstartedReservationsProcessResult EndUnstartedReservations(IEnumerable<Reservation> reservations);
+        HandleUnstartedReservationsProcessResult HandleUnstartedReservations(IEnumerable<Reservation> reservations);
         IList<ReservationHistoryFilterItem> FilterCancelledReservations(IList<Reservation> reservations, bool includeCanceledForModification);
         Reservation FromDataRow(DataRow dr);
         ClientAuthLevel GetAuthLevel(Reservation rsv, IPrivileged client);

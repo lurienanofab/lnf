@@ -24,6 +24,16 @@ namespace LNF.CommonTools
             ClientID = clientId;
         }
 
+        protected override WriteToolDataCleanProcessResult CreateResult()
+        {
+            return new WriteToolDataCleanProcessResult
+            {
+                StartDate = StartDate,
+                EndDate = EndDate,
+                ClientID = ClientID
+            };
+        }
+
         public override int DeleteExisting()
         {
             return DA.Command()

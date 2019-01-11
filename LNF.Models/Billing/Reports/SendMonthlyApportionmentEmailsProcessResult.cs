@@ -1,11 +1,12 @@
-﻿namespace LNF.Models.Billing.Reports
+﻿using System;
+
+namespace LNF.Models.Billing.Reports
 {
     public class SendMonthlyApportionmentEmailsProcessResult : ProcessResult
     {
-        public SendMonthlyApportionmentEmailsProcessResult() : base("SendMonthlyApportionmentEmails") { }
-
         public int ApportionmentClientCount { get; set; }
         public int TotalEmailsSent { get; set; }
+        public override string ProcessName => "SendMonthlyApportionmentEmails";
 
         protected override void WriteLog()
         {
