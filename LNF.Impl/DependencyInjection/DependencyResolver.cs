@@ -4,7 +4,6 @@ using LNF.Data;
 using LNF.Impl.Control.Wago;
 using LNF.Impl.DataAccess;
 using LNF.Impl.DataAccess.Scheduler;
-using LNF.Impl.Email;
 using LNF.Impl.Encryption;
 using LNF.Impl.Logging;
 using LNF.Impl.ModelFactory;
@@ -13,10 +12,12 @@ using LNF.Models;
 using LNF.Models.Billing;
 using LNF.Models.Billing.Process;
 using LNF.Models.Billing.Reports;
+using LNF.Models.Mail;
 using LNF.Repository;
 using LNF.Scheduler;
 using OnlineServices.Api.Billing;
 using OnlineServices.Api.Data;
+using OnlineServices.Api.Mail;
 using OnlineServices.Api.PhysicalAccess;
 using OnlineServices.Api.Scheduler;
 using OnlineServices.Api.Worker;
@@ -35,7 +36,7 @@ namespace LNF.Impl.DependencyInjection
             {
                 _.AddRegistry(registry);
 
-                _.For<NHibernate.ISession>().Use(x => x.GetInstance<ISessionManager>().Session);
+                //_.For<NHibernate.ISession>().Use(x => x.GetInstance<ISessionManager>().Session);
 
                 _.For<IDataRepository>().Use<DataRepository>(); // not a singleton
                 _.For<ISchedulerRepository>().Use<SchedulerRepository>(); // not a singleton
@@ -44,21 +45,24 @@ namespace LNF.Impl.DependencyInjection
                 _.For<ISession>().Singleton().Use<NHibernateSession>();
                 _.For<IDataAccessService>().Singleton().Use<NHibernateDataAccessService>();
                 _.For<ILogService>().Singleton().Use<ServiceLogService>();
-                _.For<IEmailService>().Singleton().Use<EmailService>();
                 _.For<IControlService>().Singleton().Use<WagoControlService>();
                 _.For<IEncryptionService>().Singleton().Use<EncryptionService>();
                 _.For<ISerializationService>().Singleton().Use<SerializationService>();
 
                 _.For<IDataService>().Singleton().Use<DataClient>();
 
+                // Mail API
+                _.For<IMailApi>().Singleton().Use<MailApi>();
+
+                // Billing API
                 _.For<IBillingApi>().Singleton().Use<BillingApi>();
-                _.For<LNF.Models.Billing.IDefaultClient>().Singleton().Use<OnlineServices.Api.Billing.DefaultClient>();
                 _.For<IAccountSubsidyClient>().Singleton().Use<AccountSubsidyClient>();
                 _.For<IProcessClient>().Singleton().Use<ProcessClient>();
                 _.For<IReportClient>().Singleton().Use<ReportClient>();
                 _.For<IToolClient>().Singleton().Use<ToolClient>();
                 _.For<IRoomClient>().Singleton().Use<RoomClient>();
                 _.For<IStoreClient>().Singleton().Use<StoreClient>();
+                _.For<IMiscClient>().Singleton().Use<MiscClient>();
 
                 _.For<IPhysicalAccessService>().Singleton().Use<PhysicalAccessClient>();
                 _.For<ISchedulerService>().Singleton().Use<SchedulerClient>();

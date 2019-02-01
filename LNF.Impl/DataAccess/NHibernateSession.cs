@@ -15,14 +15,14 @@ namespace LNF.Impl.DataAccess
 {
     public class NHibernateSession : Repository.ISession
     {
-        public ISessionManager SessionManager { get; }
+        private readonly ISessionManager _sessionManager;
+
+        protected NHibernate.ISession Session => _sessionManager.Session;
 
         public NHibernateSession(ISessionManager sessionManager)
         {
-            SessionManager = sessionManager;
+            _sessionManager = sessionManager;
         }
-
-        protected NHibernate.ISession Session => SessionManager.Session;
 
         public void Insert(IEnumerable<IDataItem> items)
         {

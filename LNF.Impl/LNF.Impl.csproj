@@ -43,20 +43,20 @@
     <Reference Include="Iesi.Collections, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
       <HintPath>..\packages\Iesi.Collections.4.0.4\lib\net461\Iesi.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Bson, Version=2.7.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MongoDB.Bson.2.7.2\lib\net45\MongoDB.Bson.dll</HintPath>
+    <Reference Include="MongoDB.Bson, Version=2.7.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Bson.2.7.3\lib\net45\MongoDB.Bson.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Driver, Version=2.7.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MongoDB.Driver.2.7.2\lib\net45\MongoDB.Driver.dll</HintPath>
+    <Reference Include="MongoDB.Driver, Version=2.7.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Driver.2.7.3\lib\net45\MongoDB.Driver.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Driver.Core, Version=2.7.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MongoDB.Driver.Core.2.7.2\lib\net45\MongoDB.Driver.Core.dll</HintPath>
+    <Reference Include="MongoDB.Driver.Core, Version=2.7.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Driver.Core.2.7.3\lib\net45\MongoDB.Driver.Core.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NHibernate, Version=5.2.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
-      <HintPath>..\packages\NHibernate.5.2.2\lib\net461\NHibernate.dll</HintPath>
+      <HintPath>..\packages\NHibernate.5.2.3\lib\net461\NHibernate.dll</HintPath>
     </Reference>
     <Reference Include="Omu.ValueInjecter, Version=3.1.3.0, Culture=neutral, PublicKeyToken=5692a4ecdffbe736, processorArchitecture=MSIL">
       <HintPath>..\packages\ValueInjecter.3.1.3\lib\net45\Omu.ValueInjecter.dll</HintPath>
@@ -67,8 +67,8 @@
     <Reference Include="Remotion.Linq.EagerFetching, Version=2.2.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
       <HintPath>..\packages\Remotion.Linq.EagerFetching.2.2.0\lib\net45\Remotion.Linq.EagerFetching.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp, Version=106.6.5.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
-      <HintPath>..\packages\RestSharp.106.6.5\lib\net452\RestSharp.dll</HintPath>
+    <Reference Include="RestSharp, Version=106.6.7.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.106.6.7\lib\net452\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="StructureMap, Version=4.7.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\StructureMap.4.7.0\lib\net45\StructureMap.dll</HintPath>
@@ -102,13 +102,9 @@
     <Compile Include="DependencyInjection\Default\IOC.cs" />
     <Compile Include="DependencyInjection\DependencyResolver.cs" />
     <Compile Include="DependencyInjection\Web\IOC.cs" />
+    <Compile Include="Mappings\Billing\MiscBillingChargeMap.cs" />
     <Compile Include="Mappings\Ordering\StoreManagerReportItemMap.cs" />
     <Compile Include="Serialization\DynamicContractResolver.cs" />
-    <Compile Include="Email\EmailService.cs" />
-    <Compile Include="Email\Envelope.cs" />
-    <Compile Include="Email\Group.cs" />
-    <Compile Include="Email\GroupMember.cs" />
-    <Compile Include="Email\GroupUtility.cs" />
     <Compile Include="Encryption\EncryptionService.cs" />
     <Compile Include="Hooks\PostLoginCheckerHook.cs" />
     <Compile Include="Hooks\UniversalPasswordHook.cs" />
@@ -204,7 +200,6 @@
     <Compile Include="Mappings\Data\MenuMap.cs" />
     <Compile Include="Mappings\Data\MessengerMessageMap.cs" />
     <Compile Include="Mappings\Data\MessengerRecipientMap.cs" />
-    <Compile Include="Mappings\Data\MiscBillingChargeMap.cs" />
     <Compile Include="Mappings\Data\NewsMap.cs" />
     <Compile Include="Mappings\Data\OAuthClientApplicationMap.cs" />
     <Compile Include="Mappings\Data\OAuthClientAuthorizationMap.cs" />

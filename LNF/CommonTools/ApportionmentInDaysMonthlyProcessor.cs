@@ -1,4 +1,5 @@
-﻿using LNF.Repository;
+﻿using LNF.Models.Mail;
+using LNF.Repository;
 using LNF.Repository.Billing;
 using System;
 using System.Collections;
@@ -443,12 +444,16 @@ namespace LNF.CommonTools
 
             bool debug = !string.IsNullOrEmpty(ConfigurationManager.AppSettings["Debug"]) ? Convert.ToBoolean(ConfigurationManager.AppSettings["Debug"]) : false;
 
-            if (debug && ServiceProvider.Current.Email != null)
+            if (debug && ServiceProvider.Current.Mail != null)
             {
+                string subj;
+
                 if (count >= 0)
-                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.ApportionmentInDaysMonthlyProcessor.SaveNewApportionDatatoDB", $"Processing Apportionment Successful - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                    subj = $"Processing Apportionment Successful - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]";
                 else
-                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.ApportionmentInDaysMonthlyProcessor.SaveNewApportionDatatoDB", $"Error in Processing Apportionment - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                    subj = $"Error in Processing Apportionment - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]";
+
+                SendEmail.SendDeveloperEmail("LNF.CommonTools.ApportionmentInDaysMonthlyProcessor.SaveNewApportionDatatoDB", subj);
             }
         }
 

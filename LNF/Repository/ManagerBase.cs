@@ -5,7 +5,7 @@ namespace LNF.Repository
     public abstract class ManagerBase : IManager
     {
         public ISession Session { get; }
-        public DataCommand Command(CommandType type = CommandType.StoredProcedure) => DataCommand.Create(Session.GetAdapter, type);
+        public DataCommandBase Command(CommandType type = CommandType.StoredProcedure) => DA.Command(type);
 
         public ManagerBase(ISession session)
         {

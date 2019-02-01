@@ -769,10 +769,14 @@ namespace LNF.CommonTools
 
                 if (debug)
                 {
+                    string subj;
+
                     if (count >= 0)
-                        ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveRoomBillingData", $"Processing Apportionment Successful - saving to database - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                        subj = $"Processing Apportionment Successful - saving to database - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]";
                     else
-                        ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveRoomBillingData", $"Error in Processing Apportionment - saving to database - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                        subj = $"Error in Processing Apportionment - saving to database - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]";
+
+                    SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep1.SaveRoomBillingData", subj);
                 }
             }
 
@@ -956,10 +960,14 @@ namespace LNF.CommonTools
 
             if (debug)
             {
+                string subj;
+
                 if (count >= 0)
-                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveStoreBillingData", $"Processing StoreBilling Successful - saving to database - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                    subj = $"Processing StoreBilling Successful - saving to database - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]";
                 else
-                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep1.SaveStoreBillingData", $"Error in Processing StoreBilling - saving to database portion failed - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                    subj = $"Error in Processing StoreBilling - saving to database portion failed - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]";
+
+                SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep1.SaveStoreBillingData", subj);
             }
 
             return count;

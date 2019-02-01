@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Billing;
-using LNF.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {
-    public abstract class RoomBillingClassMap<T> : ClassMap<T> where T : IRoomBilling
+    internal abstract class RoomBillingClassMap<T> : ClassMap<T> where T : IRoomBilling
     {
-        public RoomBillingClassMap()
+        internal RoomBillingClassMap()
         {
             Schema("sselData.dbo");
             Map(x => x.Period);
@@ -34,9 +29,9 @@ namespace LNF.Impl.Mappings.Billing
         }
     }
 
-    public class RoomBillingMap : RoomBillingClassMap<RoomBilling>
+    internal class RoomBillingMap : RoomBillingClassMap<RoomBilling>
     {
-        public RoomBillingMap()
+        internal RoomBillingMap()
         {
             Table("RoomApportionmentInDaysMonthly");
             Id(x => x.RoomBillingID, "AppID");
@@ -44,9 +39,9 @@ namespace LNF.Impl.Mappings.Billing
         }
     }
 
-    public class RoomBillingTempMap : RoomBillingClassMap<RoomBillingTemp>
+    internal class RoomBillingTempMap : RoomBillingClassMap<RoomBillingTemp>
     {
-        public RoomBillingTempMap()
+        internal RoomBillingTempMap()
         {
             Table("RoomBillingTemp");
             Id(x => x.RoomBillingID);

@@ -1,11 +1,9 @@
 ﻿using LNF.CommonTools;
-using LNF.Models.Billing;
 using LNF.Models.Billing.Reports;
 using LNF.Repository;
 using LNF.Repository.Data;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Linq;
 using System.Text;
@@ -52,6 +50,8 @@ namespace LNF.Billing
 
             StringBuilder bodyHtml;
 
+            string companyName = Utility.GetGlobalSetting("CompanyName");
+
             foreach (int moid in managerOrgIds)
             {
                 bodyHtml = new StringBuilder();
@@ -68,13 +68,13 @@ namespace LNF.Billing
                 if (!string.IsNullOrEmpty(message))
                     bodyHtml.AppendLine($"<p>{message}</p>");
 
-                bodyHtml.AppendLine($"<p>Below are a list of {ServiceProvider.Current.Email.CompanyName} lab users who have incurred charges during {period:M/yyyy} and the active accounts for that user (shortcode / P/G). You are receiving this email because our records indicate that you are associated with these accounts.</p>");
+                bodyHtml.AppendLine($"<p>Below are a list of {companyName} lab users who have incurred charges during {period:M/yyyy} and the active accounts for that user (shortcode / P/G). You are receiving this email because our records indicate that you are associated with these accounts.</p>");
                 bodyHtml.AppendLine("<p>Exact charges are still pending and may depend on data entries from the lab users themselves.</p>");
                 bodyHtml.AppendLine("<ol>");
                 bodyHtml.AppendLine("<li>If the person in charge of, or reconciling the account is not copied to this email, please send me his/her contact information.</li>");
                 bodyHtml.AppendLine("<li>Please review users and accounts and let me know if any change is needed.</li>");
                 bodyHtml.AppendLine("<li>If a user has access to multiple accounts, please let me know how charges should be distributed between these accounts.</li>");
-                bodyHtml.AppendLine($"<li>As a reminder, there is more detailed information about the charging system in {ServiceProvider.Current.Email.CompanyName} Online Services (<a href=\"http://ssel-sched.eecs.umich.edu/sselonline\">http://ssel-sched.eecs.umich.edu/sselonline</a>).</li>");
+                bodyHtml.AppendLine($"<li>As a reminder, there is more detailed information about the charging system in {companyName} Online Services (<a href=\"http://ssel-sched.eecs.umich.edu/sselonline\">http://ssel-sched.eecs.umich.edu/sselonline</a>).</li>");
                 bodyHtml.AppendLine("</ol>");
 
                 StringBuilder table = new StringBuilder();
@@ -94,7 +94,7 @@ namespace LNF.Billing
                 bodyHtml.AppendLine("</body>");
                 bodyHtml.AppendLine("</html>");
 
-                string subj = $"{ServiceProvider.Current.Email.CompanyName} Charges - {period:M/yyyy} [Manager: {managerName}]";
+                string subj = $"{companyName} Charges - {period:M/yyyy} [Manager: {managerName}]";
 
                 result.Add(new FinancialManagerReportEmail
                 {
@@ -151,7 +151,7 @@ namespace LNF.Billing
                 {
                     try
                     {
-                        ServiceProvider.Current.Email.SendMessage(0, "LNF.Billing.FinancialManagerUtility.SendMonthlyUserUsageEmails", e.Subject, e.Body, e.FromAddress, to, cc, bcc, isHtml: e.IsHtml);
+                        SendEmail.Send(0, "LNF.Billing.FinancialManagerUtility.SendMonthlyUserUsageEmails", e.Subject, e.Body, e.FromAddress, to, cc, bcc, e.IsHtml);
                         statusMessage = $"Email to {e.ToAddress} sent OK";
                         ++totalSent;
                     }

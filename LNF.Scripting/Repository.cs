@@ -1,5 +1,4 @@
-﻿using LNF.CommonTools;
-using LNF.Repository;
+﻿using LNF.Repository;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,7 +8,7 @@ namespace LNF.Scripting
 {
     public static class Repository
     {
-        public static ReadOnlyDataCommand ReadOnlyCommand(CommandType type = CommandType.StoredProcedure) => new ReadOnlyDataCommand(type);
+        public static ReadOnlyDataCommand ReadOnlyCommand(CommandType type = CommandType.StoredProcedure) => ReadOnlyDataCommand.Create(type);
 
         public static IList<IDictionary> Query(string query, Parameters parameters)
         {

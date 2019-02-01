@@ -91,7 +91,7 @@ namespace LNF.Billing
                 rb.SubsidyDiscount = rb.GetTotalCharge() * item.UserPaymentPercentage;
 
             // xxxxx Misc xxxxx
-            var miscBilling = DA.Current.Query<MiscBillingCharge>().Where(x => new[] { "Room", "Tool" }.Contains(x.SUBType) && x.Account.AccountID == item.AccountID && x.Period == period).ToArray();
+            var miscBilling = DA.Current.Query<MiscBillingCharge>().Where(x => new[] { "Room", "Tool" }.Contains(x.SubType) && x.Account.AccountID == item.AccountID && x.Period == period).ToArray();
 
             foreach (var mb in miscBilling)
                 mb.SubsidyDiscount = mb.GetTotalCost() * item.UserPaymentPercentage;

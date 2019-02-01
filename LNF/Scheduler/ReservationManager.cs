@@ -185,8 +185,8 @@ namespace LNF.Scheduler
 
                     if (rsv.BeginDateTime < granStartTime)
                     {
-                        string body = string.Format("Unable to create a reservation. BeginDateTime is in the past.\n--------------------\nClient: {0} [{1}]\nResource: {2} [{3}]\nBeginDateTime: {4:yyyy-MM-dd HH:mm:ss}\nEndDateTime: {5:yyyy-MM-dd HH:mm:ss}", rsv.Client.DisplayName, rsv.Client.ClientID, rsv.Resource.ResourceName, rsv.Resource.ResourceID, rsv.BeginDateTime, rsv.EndDateTime);
-                        ServiceProvider.Current.Email.SendMessage(CacheManager.Current.CurrentUser.ClientID, "LNF.Repository.Scheduler.Reservation.CanCreateCheck()", "Create reservation failed", body, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                        string body = string.Format("Unable to create a reservation. BeginDateTime is in the past.\n--------------------\nClient: {0} [{1}]\nResource: {2} [{3}]\nBeginDateTime: {4:yyyy-MM-dd HH:mm:ss}\nEndDateTime: {5:yyyy-MM-dd HH:mm:ss}\nCurrentUser.ClientID: {6}", rsv.Client.DisplayName, rsv.Client.ClientID, rsv.Resource.ResourceName, rsv.Resource.ResourceID, rsv.BeginDateTime, rsv.EndDateTime, CacheManager.Current.CurrentUser.ClientID);
+                        SendEmail.SendDeveloperEmail("LNF.Repository.Scheduler.Reservation.CanCreateCheck", "Create reservation failed", body);
                         throw new Exception("Your reservation was not created. Cannot create a reservation in the past.");
                     }
                 }
@@ -194,8 +194,8 @@ namespace LNF.Scheduler
 
             if (rsv.EndDateTime <= rsv.BeginDateTime)
             {
-                string body = string.Format("Unable to create a reservation. EndDateTime is before BeginDateTime.\n--------------------\nClient: {0} [{1}]\nResource: {2} [{3}]\nBeginDateTime: {4:yyyy-MM-dd HH:mm:ss}\nEndDateTime: {5:yyyy-MM-dd HH:mm:ss}", rsv.Client.DisplayName, rsv.Client.ClientID, rsv.Resource.ResourceName, rsv.Resource.ResourceID, rsv.BeginDateTime, rsv.EndDateTime);
-                ServiceProvider.Current.Email.SendMessage(CacheManager.Current.CurrentUser.ClientID, "LNF.Repository.Scheduler.Reservation.CanCreateCheck()", "Create reservation failed", body, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                string body = string.Format("Unable to create a reservation. EndDateTime is before BeginDateTime.\n--------------------\nClient: {0} [{1}]\nResource: {2} [{3}]\nBeginDateTime: {4:yyyy-MM-dd HH:mm:ss}\nEndDateTime: {5:yyyy-MM-dd HH:mm:ss}\nCurrentUser.ClientID: {6}", rsv.Client.DisplayName, rsv.Client.ClientID, rsv.Resource.ResourceName, rsv.Resource.ResourceID, rsv.BeginDateTime, rsv.EndDateTime, CacheManager.Current.CurrentUser.ClientID);
+                SendEmail.SendDeveloperEmail("LNF.Repository.Scheduler.Reservation.CanCreateCheck", "Create reservation failed", body);
                 throw new Exception("Your reservation was not created. Cannot create a reservation that ends before it starts.");
             }
 
@@ -213,8 +213,8 @@ namespace LNF.Scheduler
 
             if (conflict != null)
             {
-                string body = string.Format("Unable to create a reservation. There is a conflict with an existing reservation.\n--------------------\nClient: {0} [{1}]\nResource: {2} [{3}]\nBeginDateTime: {4:yyyy-MM-dd HH:mm:ss}\nEndDateTime: {5:yyyy-MM-dd HH:mm:ss}\nConflicting ReservationID: {6}", rsv.Client.DisplayName, rsv.Client.ClientID, rsv.Resource.ResourceName, rsv.Resource.ResourceID, rsv.BeginDateTime, rsv.EndDateTime, conflict.ReservationID);
-                ServiceProvider.Current.Email.SendMessage(CacheManager.Current.CurrentUser.ClientID, "LNF.Repository.Scheduler.Reservation.CanCreateCheck()", "Create reservation failed", body, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                string body = string.Format("Unable to create a reservation. There is a conflict with an existing reservation.\n--------------------\nClient: {0} [{1}]\nResource: {2} [{3}]\nBeginDateTime: {4:yyyy-MM-dd HH:mm:ss}\nEndDateTime: {5:yyyy-MM-dd HH:mm:ss}\nConflicting ReservationID: {6}\nCurrentUser.ClientID: {7}", rsv.Client.DisplayName, rsv.Client.ClientID, rsv.Resource.ResourceName, rsv.Resource.ResourceID, rsv.BeginDateTime, rsv.EndDateTime, conflict.ReservationID, CacheManager.Current.CurrentUser.ClientID);
+                SendEmail.SendDeveloperEmail("LNF.Repository.Scheduler.Reservation.CanCreateCheck", "Create reservation failed", body);
                 throw new Exception(string.Format("Your reservation was not created. There is a conflict with an existing reservation [#{0}].", conflict.ReservationID));
             }
         }

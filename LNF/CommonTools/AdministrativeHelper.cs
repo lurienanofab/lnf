@@ -1,5 +1,6 @@
 ﻿using LNF.Data;
 using LNF.Models.Data;
+using LNF.Models.Mail;
 using LNF.Repository;
 using System.Collections.Generic;
 using System.Data;
@@ -18,12 +19,7 @@ namespace LNF.CommonTools
 
         public void SendEmailToDevelopers(string subject, string body)
         {
-            if (ServiceProvider.Current.Email != null)
-            {
-                string from = "system@lnf.umich.edu";
-                IEnumerable<string> to = GetEmailListByPrivilege(ClientPrivilege.Developer);
-                ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.AdministrativeHelper.SendEmailToDevelopers(string subject, string body)", subject, body, from, to);
-            }
+            SendEmail.SendDeveloperEmail("LNF.CommonTools.AdministrativeHelper.SendEmailToDevelopers", subject, body);
         }
 
         public IEnumerable<string> GetEmailListByPrivilege(ClientPrivilege privs)

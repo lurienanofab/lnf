@@ -8,7 +8,6 @@ namespace LNF.Scheduler
 {
     public interface IEmailManager : IManager
     {
-        void EmailFromUser(string toAddr, string subject, string body, bool ccself = false, bool isHtml = false);
         void EmailOnCanceledByRepair(Reservation rsv, bool isRemoved, string state, string notes, DateTime repairEndDateTime);
         void EmailOnCanceledByResource(Reservation rsv);
         void EmailOnForgiveCharge(Reservation rsv, double forgiveAmount, bool sendToUser, int clientId);

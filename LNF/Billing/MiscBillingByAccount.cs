@@ -1,4 +1,5 @@
 ﻿using LNF.Models.Billing;
+using LNF.Repository;
 using LNF.Repository.Billing;
 using LNF.Repository.Data;
 using System;
@@ -41,28 +42,29 @@ namespace LNF.Billing
 
         private MiscBillingByAccount CreateMiscBillingByAccount(IGrouping<MiscBillingGroupByKeySelector, MiscBillingCharge> grp, BillingTypeManager mgr)
         {
-            DateTime period = grp.Key.Period;
-            Client client = grp.Key.Client;
-            Account acct = grp.Key.Account;
-            BillingType bt = mgr.GetBillingTypeByClientAndOrg(grp.Key.Period, grp.Key.Client, grp.Key.Account.Org);
-            BillingCategory bc = (BillingCategory)Enum.Parse(typeof(BillingCategory), grp.Key.SUBType, true);
-            decimal totalMisc = grp.Sum(g => g.Quantity * g.UnitCost);
+            var period = grp.Key.Period;
+            var client = grp.Key.Client;
+            var account = grp.Key.Account;
+
+            BillingType bt = mgr.GetBillingTypeByClientAndOrg(period, client, account.Org);
+            BillingCategory bc = (BillingCategory)Enum.Parse(typeof(BillingCategory), grp.Key.SubType, true);
+            decimal totalMisc = grp.Sum(g => Convert.ToDecimal(g.Quantity) * g.UnitCost);
             decimal totalSubsidy = grp.Sum(g => g.SubsidyDiscount);
 
-            return new MiscBillingByAccount(period, client, acct, bt, bc, totalMisc, totalSubsidy);
+            return new MiscBillingByAccount(period, client, account, bt, bc, totalMisc, totalSubsidy);
         }
 
         private struct MiscBillingGroupByKeySelector
         {
             public MiscBillingGroupByKeySelector(MiscBillingCharge mbc)
             {
-                SUBType = mbc.SUBType;
+                SubType = mbc.SubType;
                 Period = mbc.Period;
                 Client = mbc.Client;
                 Account = mbc.Account;
             }
 
-            public string SUBType { get; }
+            public string SubType { get; }
             public DateTime Period { get; }
             public Client Client { get; }
             public Account Account { get; }

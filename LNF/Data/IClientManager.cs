@@ -42,6 +42,7 @@ namespace LNF.Data
         Client NewClient(string username, string password, string lname, string fname, ClientPrivilege privs, bool active);
         ClientOrg PrimaryClientOrg(Client client);
         string PrimaryEmail(Client client);
+        string PrimaryEmail(ClientItem client);
         Org PrimaryOrg(Client client);
         string PrimaryPhone(Client client);
         int SetPassword(int clientId, string password);

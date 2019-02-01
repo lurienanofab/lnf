@@ -1,9 +1,9 @@
 ﻿using LNF.Cache;
 using LNF.CommonTools;
 using LNF.Data;
-using LNF.Email;
 using LNF.Helpdesk;
 using LNF.Models.Data;
+using LNF.Models.Mail;
 using LNF.Models.Scheduler;
 using LNF.Repository;
 using LNF.Repository.Scheduler;
@@ -60,7 +60,7 @@ namespace LNF.Scheduler
             var primary = ClientOrgManager.GetPrimary(client.ClientID);
 
             if (primary != null)
-            { 
+            {
                 CreateTicketResult result = service.CreateTicket
                 (
                     resourceId: res.ResourceID,
@@ -94,19 +94,8 @@ namespace LNF.Scheduler
         public static void SendHardwareIssueEmail(ResourceItem res, int clientId, string subject, string body)
         {
             body += Environment.NewLine + Environment.NewLine + "This email has been sent by the system to notify you that a hardware issue exists on this resource and availability may be affected. Do not respond to this email. Please log into the Scheduler to view or respond to this ticket.";
-
             string[] recipients = GetCcEmailsForHardwareIssue(res, clientId);
-
-            SendMessageArgs args = new SendMessageArgs()
-            {
-                ClientID = CacheManager.Current.CurrentUser.ClientID,
-                Subject = subject,
-                Body = body,
-                From = SendEmail.SystemEmail,
-                To = recipients
-            };
-
-            ServiceProvider.Current.Email.SendMessage(args);
+            SendEmail.SendSystemEmail("LNF.Scheduler.HelpdeskUtility.SendHardwareIssueEmail", subject, body, recipients);
         }
 
         public static string[] GetCcEmailsForHardwareIssue(ResourceItem resource, int clientId)

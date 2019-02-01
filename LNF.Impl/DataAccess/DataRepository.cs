@@ -8,11 +8,13 @@ namespace LNF.Impl.DataAccess
 {
     public class DataRepository : IDataRepository
     {
-        protected ISession Session { get; }
+        private readonly ISessionManager _sessionManager;
 
-        public DataRepository(ISession session)
+        protected ISession Session => _sessionManager.Session;
+
+        public DataRepository(ISessionManager sessionManager)
         {
-            Session = session;
+            _sessionManager = sessionManager;
         }
 
         public IEnumerable<Account> FindActiveAccountsInDateRange(int clientId, DateTime sd, DateTime ed)

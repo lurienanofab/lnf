@@ -35,11 +35,7 @@ namespace LNF.Impl.DataAccess
             if (q != null) throw new Exception();
             Remotion.Linq.EagerFetching.FetchManyRequest x = null;
             if (x != null) throw new Exception();
-
-            //Current = new SessionManager<T>();
         }
-
-        //public static SessionManager<T> Current { get; }
 
         public SessionManager()
         {
@@ -124,7 +120,6 @@ namespace LNF.Impl.DataAccess
         {
             if (!CurrentSessionContext.HasBind(_sessionFactory))
             {
-
                 ISession session = _sessionFactory.OpenSession();
                 CurrentSessionContext.Bind(session);
 

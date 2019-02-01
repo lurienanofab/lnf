@@ -1,4 +1,5 @@
 ﻿using LNF.Cache;
+using LNF.CommonTools;
 using LNF.Data;
 using LNF.Models.Data;
 using LNF.Web.Mvc.UI;
@@ -39,7 +40,7 @@ namespace LNF.Web.Mvc
             sb.AppendLine("<span class=\"icon-bar\"></span>");
             sb.AppendLine("<span class=\"icon-bar\"></span>");
             sb.AppendLine("</button>");
-            sb.AppendLine(string.Format("<a class=\"navbar-brand\" href=\"/\">{0}</a>", ServiceProvider.Current.Email.CompanyName));
+            sb.AppendLine(string.Format("<a class=\"navbar-brand\" href=\"/\">{0}</a>", SendEmail.CompanyName));
             sb.AppendLine("</div>");
 
             sb.AppendLine("<div class=\"collapse navbar-collapse\" id=\"bs-navbar-collapse-1\">");

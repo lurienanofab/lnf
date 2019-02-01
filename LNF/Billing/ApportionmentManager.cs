@@ -3,6 +3,7 @@ using LNF.CommonTools;
 using LNF.Data;
 using LNF.Models.Billing;
 using LNF.Models.Billing.Reports;
+using LNF.Models.Mail;
 using LNF.Repository;
 using LNF.Repository.Billing;
 using LNF.Repository.Data;
@@ -58,14 +59,16 @@ namespace LNF.Billing
             var result = new List<UserApportionmentReportEmail>();
 
             string[] ccAddr = GetApportionmentReminderRecipients();
-            
+
             var query = SelectApportionmentClients(period, period.AddMonths(1));
 
             StringBuilder bodyHtml;
 
+            var companyName = Utility.GetGlobalSetting("CompanyName");
+
             foreach (ApportionmentClient ac in query)
             {
-                string subj = $"Please apportion your {ServiceProvider.Current.Email.CompanyName} lab usage time";
+                string subj = $"Please apportion your {Utility.GetGlobalSetting("CompanyName")} lab usage time";
 
                 bodyHtml = new StringBuilder();
                 bodyHtml.AppendLine($"{ac.DisplayName}:<br /><br />");
@@ -73,7 +76,7 @@ namespace LNF.Billing
                 if (!string.IsNullOrEmpty(message))
                     bodyHtml.AppendLine($"<p>{message}</p>");
 
-                bodyHtml.AppendLine($"As can best be determined, you need to apportion your {ServiceProvider.Current.Email.CompanyName} lab time. This is necessary because you had access to multiple accounts and have entered one or more {ServiceProvider.Current.Email.CompanyName} rooms this billing period.<br /><br />");
+                bodyHtml.AppendLine($"As can best be determined, you need to apportion your {companyName} lab time. This is necessary because you had access to multiple accounts and have entered one or more {companyName} rooms this billing period.<br /><br />");
                 bodyHtml.AppendLine("This matter must be resolved by the close of the third business day of this month.");
                 bodyHtml.AppendLine("For more information about how to apportion your time, please check the “Apportionment Instructions” file in the LNF Online Services > Help > User Fees section.");
                 string[] toAddr = ac.Emails.Split(',');
@@ -104,7 +107,7 @@ namespace LNF.Billing
             //With noEmail set to true, nothing happens here. The appropriate users are selected and logged
             //but no email is actually sent. This is for testing/debugging purposes.
             var emails = GetMonthlyApportionmentEmails(period, message);
-            
+
             result.ApportionmentClientCount = emails.Count();
 
             foreach (var e in emails)
@@ -112,9 +115,7 @@ namespace LNF.Billing
                 if (e.ToAddress.Length > 0)
                 {
                     if (!noEmail)
-                    {
-                        ServiceProvider.Current.Email.SendMessage(0, "LNF.Billing.ApportionmentUtility.SendMonthlyApportionmentEmails", e.Subject, e.Body, e.FromAddress, e.ToAddress, e.CcAddress, e.BccAddress, isHtml: e.IsHtml);
-                    }
+                        SendEmail.Send(0, "LNF.Billing.ApportionmentUtility.SendMonthlyApportionmentEmails", e.Subject, e.Body, e.FromAddress, e.ToAddress, e.CcAddress, e.BccAddress, e.IsHtml);
 
                     // Always increment result even if noEmail == true so we can at least return how many emails would be sent.
                     // Note this is not incremented unless an email was found for the user, even when there are recipients included.
@@ -148,7 +149,7 @@ namespace LNF.Billing
                  + "This matter must be resolved by the close of the third business day of this month.";
 
                 if (recip.Trim().Length > 0)
-                    ServiceProvider.Current.Email.SendMessage(0, "LNF.Billing.ApportionmentUtility.CheckPassbackViolations()", subj, body, SendEmail.SystemEmail, new string[] { recip }, isHtml: true);
+                    SendEmail.SendSystemEmail("LNF.Billing.ApportionmentUtility.CheckPassbackViolations", subj, body, new[] { recip });
 
                 result.Data.Add($"Has passback violation: {recip}");
             }

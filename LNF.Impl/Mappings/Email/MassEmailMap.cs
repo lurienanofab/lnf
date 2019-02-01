@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Email;
+﻿using FluentNHibernate.Mapping;
+using LNF.Repository.Mail;
 
 namespace LNF.Impl.Mappings.Email
 {
-    public class MassEmailMap : ClassMap<MassEmail>
+    internal class MassEmailMap : ClassMap<MassEmail>
     {
-        public MassEmailMap()
+        internal MassEmailMap()
         {
             Schema("Email.dbo");
             Id(x => x.MassEmailID);

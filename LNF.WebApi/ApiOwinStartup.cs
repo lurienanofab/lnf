@@ -1,4 +1,5 @@
 ﻿using LNF.Impl.DependencyInjection.Web;
+using LNF.Repository;
 using Owin;
 using System.Web.Http;
 
@@ -15,7 +16,7 @@ namespace LNF.WebApi
             // Data Access setup
             app.Use(async (ctx, next) =>
             {
-                using (ServiceProvider.Current.DataAccess.StartUnitOfWork())
+                using (DA.StartUnitOfWork())
                     await next.Invoke();
             });
 

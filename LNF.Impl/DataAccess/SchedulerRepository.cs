@@ -8,11 +8,13 @@ namespace LNF.Impl.DataAccess.Scheduler
 {
     public class SchedulerRepository : ISchedulerRepository
     {
-        protected ISession Session { get; }
+        private readonly ISessionManager _sessionManager;
+
+        protected ISession Session => _sessionManager.Session;
         
-        public SchedulerRepository(ISession session)
+        public SchedulerRepository(ISessionManager sessionManager)
         {
-            Session = session;
+            _sessionManager = sessionManager;
         }
 
         public IEnumerable<Reservation> SelectRecentReservations(int resourceId, int? take = null)

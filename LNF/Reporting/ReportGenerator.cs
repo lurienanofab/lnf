@@ -33,8 +33,8 @@ namespace LNF.Reporting
                 OrgID = x.OrgID,
                 OrgName = x.OrgName,
                 RoomCost = x.TotalCharge,
-                MiscCarge = miscUsage.Where(z => z.SUBType == "Room" && z.Account.Org.OrgID == x.OrgID).Sum(z => (decimal?)(z.Quantity * z.UnitCost)).GetValueOrDefault(0),
-                SubsidyDiscount = x.SubsidyDiscount + miscUsage.Where(z => z.SUBType == "Room" && z.Account.Org.OrgID == x.OrgID).Sum(z => (decimal?)(z.SubsidyDiscount)).GetValueOrDefault(0),
+                MiscCarge = miscUsage.Where(z => z.SubType == "Room" && z.Account.Org.OrgID == x.OrgID).Sum(z => (decimal?)(Convert.ToDecimal(z.Quantity) * z.UnitCost)).GetValueOrDefault(0),
+                SubsidyDiscount = x.SubsidyDiscount + miscUsage.Where(z => z.SubType == "Room" && z.Account.Org.OrgID == x.OrgID).Sum(z => (decimal?)(z.SubsidyDiscount)).GetValueOrDefault(0),
             }).ToList();
 
             //result.RoomByOrg = new List<RoomByOrgItem>();

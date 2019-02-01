@@ -5,7 +5,7 @@ using System.Data;
 
 namespace LNF.CommonTools
 {
-    public abstract class ProcessBase<T> : IProcess<T> where T : ProcessResult
+    public abstract class ProcessBase<T> : IProcess<T> where T : DataProcessResult
     {
         protected T _result;
 

@@ -1,5 +1,6 @@
 ﻿using LNF.Repository;
 using System;
+using System.Data;
 
 namespace LNF.CommonTools
 {

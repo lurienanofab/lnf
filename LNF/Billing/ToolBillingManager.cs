@@ -117,7 +117,7 @@ namespace LNF.Billing
                 }
             }
 
-            IList<MiscBillingCharge> miscQuery = Session.Query<MiscBillingCharge>().Where(x => x.Period >= StartPeriod && x.Period < EndPeriod && x.SUBType == "tool" && x.Account.Org.OrgType.ChargeType.ChargeTypeID == 5).ToList();
+            IList<MiscBillingCharge> miscQuery = Session.Query<MiscBillingCharge>().Where(x => x.Period >= StartPeriod && x.Period < EndPeriod && x.SubType == "tool" && x.Account.Org.OrgType.ChargeType.ChargeTypeID == 5).ToList();
 
             foreach (MiscBillingCharge mb in miscQuery)
             {
@@ -278,7 +278,7 @@ namespace LNF.Billing
             decimal result;
 
             if (method == 1)
-            {     
+            {
                 // Method 1 was used until 2018-07-01
                 amount = Math.Round(dur * factor, 2) * rate;
                 result = Convert.ToDecimal(amount);
@@ -390,7 +390,7 @@ namespace LNF.Billing
         #endregion
 
         #region ToolDataClean
-        
+
         public int UpdateChargeMultiplierByReservationToolDataClean(Reservation rsv)
         {
             return Session.NamedQuery("UpdateChargeMultiplierToolDataClean")

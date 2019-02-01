@@ -55,8 +55,13 @@ namespace LNF.Data
         public string PrimaryEmail(Client client)
         {
             ClientInfo c = GetClientInfo(client);
-            if (c == null) return string.Empty;
-            return c.Email;
+            return PrimaryEmail(c.CreateClientItem());
+        }
+
+        public string PrimaryEmail(ClientItem client)
+        {
+            if (client == null) return string.Empty;
+            return client.Email;
         }
 
         public string PrimaryPhone(Client client)

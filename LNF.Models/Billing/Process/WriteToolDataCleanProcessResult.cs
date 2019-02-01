@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Billing.Process
 {
-    public class WriteToolDataCleanProcessResult : ProcessResult
+    public class WriteToolDataCleanProcessResult : DataProcessResult
     {
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }

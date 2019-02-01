@@ -19,7 +19,7 @@ namespace LNF.Data
 {
     public static class DataFeedUtility
     {
-        public static DataCommand ReadOnlyCommand(CommandType type = CommandType.StoredProcedure) => DataCommand.Create(() => SQLDBAccess.Create("cnSselDataReadOnly"), type);
+        public static ReadOnlyDataCommand ReadOnlyCommand(CommandType type = CommandType.StoredProcedure) => ReadOnlyDataCommand.Create(type);
 
         public static bool CanEditFeed()
         {

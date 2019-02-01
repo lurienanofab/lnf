@@ -15,7 +15,6 @@ namespace OnlineServices.Api
         protected IRestClient HttpClient;
 
         // Using Newtonsoft.Json serializer instead of RestSharp default because it's better (handles enums for example).
-        private readonly ISerializer _serializer;
 
         public ApiClient() : this(GetApiBaseUrl()) { }
 
@@ -26,16 +25,12 @@ namespace OnlineServices.Api
 
             HttpClient = new RestClient(host) { Timeout = 10 * 60 * 1000 };
 
-            var jsonNetSerializer = new JsonNetSerializer();
-
             // Override with Newtonsoft JSON Handler
-            HttpClient.AddHandler("application/json", jsonNetSerializer);
-            HttpClient.AddHandler("text/json", jsonNetSerializer);
-            HttpClient.AddHandler("text/x-json", jsonNetSerializer);
-            HttpClient.AddHandler("text/javascript", jsonNetSerializer);
-            HttpClient.AddHandler("*+json", jsonNetSerializer);
-
-            _serializer = jsonNetSerializer;
+            HttpClient.AddHandler("application/json", JsonNetDeserializer.Default);
+            HttpClient.AddHandler("text/json", JsonNetDeserializer.Default);
+            HttpClient.AddHandler("text/x-json", JsonNetDeserializer.Default);
+            HttpClient.AddHandler("text/javascript", JsonNetDeserializer.Default);
+            HttpClient.AddHandler("*+json", JsonNetDeserializer.Default);
 
             string username = ConfigurationManager.AppSettings["BasicAuthUsername"];
             string password = ConfigurationManager.AppSettings["BasicAuthPassword"];
@@ -168,7 +163,7 @@ namespace OnlineServices.Api
         protected string Post(string path, object model)
         {
             var req = CreateRestRequest(path, Method.POST);
-            req.AddJsonBody(model);
+            SetJsonContent(req, model);
             var resp = HttpClient.Execute(req);
             return Result(resp);
         }
@@ -176,7 +171,7 @@ namespace OnlineServices.Api
         protected string Post(string path, object model, ParameterCollection parameters)
         {
             var req = CreateRestRequest(path, Method.POST);
-            req.AddJsonBody(model);
+            SetJsonContent(req, model);
             ApplyParameters(req, parameters);
             var resp = HttpClient.Execute(req);
             return Result(resp);
@@ -200,7 +195,7 @@ namespace OnlineServices.Api
         protected T Post<T>(string path, object model) where T : new()
         {
             var req = CreateRestRequest(path, Method.POST);
-            req.AddJsonBody(model);
+            SetJsonContent(req, model);
             var resp = HttpClient.Execute<T>(req);
             return Result(resp);
         }
@@ -208,7 +203,7 @@ namespace OnlineServices.Api
         protected T Post<T>(string path, object model, ParameterCollection parameters) where T : new()
         {
             var req = CreateRestRequest(path, Method.POST);
-            req.AddJsonBody(model);
+            SetJsonContent(req, model);
             ApplyParameters(req, parameters);
             var resp = HttpClient.Execute<T>(req);
             return Result(resp);
@@ -232,7 +227,7 @@ namespace OnlineServices.Api
         protected async Task<string> PostAsync(string path, object model)
         {
             var req = CreateRestRequest(path, Method.POST);
-            req.AddJsonBody(model);
+            SetJsonContent(req, model);
             var resp = await HttpClient.ExecuteTaskAsync(req);
             return Result(resp);
         }
@@ -240,7 +235,7 @@ namespace OnlineServices.Api
         protected async Task<string> PostAsync(string path, object model, ParameterCollection parameters)
         {
             var req = CreateRestRequest(path, Method.POST);
-            req.AddJsonBody(model);
+            SetJsonContent(req, model);
             ApplyParameters(req, parameters);
             var resp = await HttpClient.ExecuteTaskAsync(req);
             return Result(resp);
@@ -264,7 +259,7 @@ namespace OnlineServices.Api
         protected async Task<T> PostAsync<T>(string path, object model)
         {
             var req = CreateRestRequest(path, Method.POST);
-            req.AddJsonBody(model);
+            SetJsonContent(req, model);
             var resp = await HttpClient.ExecuteTaskAsync<T>(req);
             return Result(resp);
         }
@@ -272,7 +267,7 @@ namespace OnlineServices.Api
         protected async Task<T> PostAsync<T>(string path, object model, ParameterCollection parameters)
         {
             var req = CreateRestRequest(path, Method.POST);
-            req.AddJsonBody(model);
+            SetJsonContent(req, model);
             ApplyParameters(req, parameters);
             var resp = await HttpClient.ExecuteTaskAsync<T>(req);
             return Result(resp);
@@ -281,7 +276,7 @@ namespace OnlineServices.Api
         protected bool Put(string path, object model)
         {
             var req = CreateRestRequest(path, Method.PUT);
-            req.AddJsonBody(model);
+            SetJsonContent(req, model);
             var resp = HttpClient.Execute<bool>(req);
             return Result(resp);
         }
@@ -297,7 +292,7 @@ namespace OnlineServices.Api
         protected bool Put(string path, object model, ParameterCollection parameters)
         {
             var req = CreateRestRequest(path, Method.PUT);
-            req.AddJsonBody(model);
+            SetJsonContent(req, model);
             ApplyParameters(req, parameters);
             var resp = HttpClient.Execute<bool>(req);
             return Result(resp);
@@ -306,7 +301,7 @@ namespace OnlineServices.Api
         protected async Task<bool> PutAsync(string path, object model)
         {
             var req = CreateRestRequest(path, Method.PUT);
-            req.AddJsonBody(model);
+            SetJsonContent(req, model);
             var resp = await HttpClient.ExecuteTaskAsync<bool>(req);
             return Result(resp);
         }
@@ -322,7 +317,7 @@ namespace OnlineServices.Api
         protected async Task<bool> PutAsync(string path, object model, ParameterCollection parameters)
         {
             var req = CreateRestRequest(path, Method.PUT);
-            req.AddJsonBody(model);
+            SetJsonContent(req, model);
             ApplyParameters(req, parameters);
             var resp = await HttpClient.ExecuteTaskAsync<bool>(req);
             return Result(resp);
@@ -389,7 +384,13 @@ namespace OnlineServices.Api
 
         protected IRestRequest CreateRestRequest(string path, Method method)
         {
-            return new RestRequest(path, method) { JsonSerializer = _serializer };
+            return new RestRequest(path, method);
+        }
+
+        protected void SetJsonContent(IRestRequest req, object body)
+        {
+            req.JsonSerializer = JsonNetSerializer.Default;
+            req.AddJsonBody(body);
         }
 
         protected Parameter CreateParameter(string name, object value, ParameterType type)

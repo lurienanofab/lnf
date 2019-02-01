@@ -8,7 +8,7 @@ namespace LNF.Impl.DataAccess
 {
     public class SessionModule : IHttpModule
     {
-        private IUnitOfWork _uow;
+        private IDisposable _uow;
 
         public void Init(HttpApplication context)
         {
@@ -22,7 +22,7 @@ namespace LNF.Impl.DataAccess
             if (!ServiceProvider.Current.IsProduction())
                 Debug.WriteLine("Beginning request for {0}", HttpContext.Current.Request.Url);
 
-            _uow = ServiceProvider.Current.DataAccess.StartUnitOfWork();
+            _uow = DA.StartUnitOfWork();
         }
 
         private void CloseNHibernateSession(object sender, EventArgs e)

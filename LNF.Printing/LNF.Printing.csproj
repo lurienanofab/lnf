@@ -48,6 +48,10 @@
     <Compile Include="StorePrintManager.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\LNF.Models\LNF.Models.csproj">
+      <Project>{98c7f73d-ef9d-4a87-8b79-a1208085cfbd}</Project>
+      <Name>LNF.Models</Name>
+    </ProjectReference>
     <ProjectReference Include="..\LNF\LNF.csproj">
       <Project>{e3b73410-869b-4ba2-99ac-ad6708a27ade}</Project>
       <Name>LNF</Name>

@@ -276,6 +276,33 @@ namespace LNF.Repository.Billing
             }).ToList();
         }
 
+        /*===== Misc ============================================================================*/
+        public static MiscBillingChargeItem CreateMiscBillingChargeItem(this MiscBillingCharge item) => CreateMiscBillingChargeItems(Utility.ToQueryable(item)).FirstOrDefault();
+
+        public static IEnumerable<MiscBillingChargeItem> CreateMiscBillingChargeItems(this IQueryable<MiscBillingCharge> query)
+        {
+            if (query == null) return null;
+
+            return query.Select(x => new MiscBillingChargeItem
+            {
+                ExpID = x.ExpID,
+                ClientID = x.Client.ClientID,
+                LName = x.Client.LName,
+                FName = x.Client.FName,
+                AccountID = x.Account.AccountID,
+                AccountName = x.Account.Name,
+                ShortCode = x.Account.ShortCode,
+                SubType = x.SubType,
+                Period = x.Period,
+                ActDate = x.ActDate,
+                Description = x.Description,
+                Quantity = x.Quantity,
+                UnitCost = x.UnitCost,
+                SubsidyDiscount = x.SubsidyDiscount,
+                Active = x.Active
+            }).ToList();
+        }
+
 
         /*===== Regular Exception ===============================================================*/
         public static RegularExceptionItem CreateRegularExceptionItem(this RegularException item) => CreateRegularExceptionItems(Utility.ToQueryable(item)).FirstOrDefault();

@@ -1,6 +1,7 @@
 ﻿using LNF.Hooks;
 using LNF.Models;
 using LNF.Models.Billing;
+using LNF.Models.Mail;
 using LNF.Repository;
 using System;
 using System.Configuration;
@@ -14,13 +15,13 @@ namespace LNF
         public IContext Context => Use<IContext>();
         public IDataAccessService DataAccess => Use<IDataAccessService>();
         public ILogService Log => Use<ILogService>();
-        public IEmailService Email => Use<IEmailService>();
         public IControlService Control => Use<IControlService>();
         public IEncryptionService Encryption => Use<IEncryptionService>();
         public ISerializationService Serialization => Use<ISerializationService>();
 
         public IDataService Data => Use<IDataService>();
         public IBillingApi Billing => Use<IBillingApi>();
+        public IMailApi Mail => Use<IMailApi>();
         public IPhysicalAccessService PhysicalAccess => Use<IPhysicalAccessService>();
         public ISchedulerService Scheduler => Use<ISchedulerService>();
         public IWorkerService Worker => Use<IWorkerService>();

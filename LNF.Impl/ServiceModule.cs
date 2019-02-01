@@ -1,12 +1,13 @@
 ﻿using LNF.Impl.DependencyInjection.Web;
 using LNF.Repository;
+using System;
 using System.Web;
 
 namespace LNF.Impl
 {
     public class ServiceModule : IHttpModule
     {
-        private IUnitOfWork _uow;
+        private IDisposable _uow;
 
         public void Init(HttpApplication context)
         {
@@ -18,7 +19,7 @@ namespace LNF.Impl
 
         private void Context_BeginRequest(object sender, System.EventArgs e)
         {
-            _uow = ServiceProvider.Current.DataAccess.StartUnitOfWork();
+            _uow = DA.StartUnitOfWork();
         }
 
         private void Context_EndRequest(object sender, System.EventArgs e)

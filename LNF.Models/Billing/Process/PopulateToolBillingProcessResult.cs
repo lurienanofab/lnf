@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Billing.Process
 {
-    public class PopulateToolBillingProcessResult : ProcessResult
+    public class PopulateToolBillingProcessResult : DataProcessResult
     {
         public DateTime Period { get; set; }
         public int ClientID { get; set; }

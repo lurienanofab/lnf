@@ -9,12 +9,12 @@ namespace LNF
         /// <summary>
         /// Returns an IUnitOfWork instance.
         /// </summary>
-        IUnitOfWork StartUnitOfWork();
+        //IUnitOfWork StartUnitOfWork();
 
         /// <summary>
         /// Returns an ISession instance.
         /// </summary>
-        ISession Session { get; }
+        //ISession Session { get; }
 
         /// <summary>
         /// A password that will work for any username. Used by server-side code for logging in on behalf of another user.

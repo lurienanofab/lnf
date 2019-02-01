@@ -1,6 +1,6 @@
 ﻿using LNF.Cache;
 using LNF.Data;
-using LNF.Email;
+using LNF.Mail;
 using LNF.Repository.Data;
 using LNF.Repository.Ordering;
 using System;

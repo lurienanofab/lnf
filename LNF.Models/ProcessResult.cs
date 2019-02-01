@@ -36,17 +36,45 @@ namespace LNF.Models
         public override string ToString() => Text;
     }
 
+    public class BillingProcessResult : DataProcessResult
+    {
+        public override string ProcessName { get; }
+
+        public BillingProcessResult(string processName)
+        {
+            ProcessName = processName;
+        }
+
+        public void AddResult<T>(T result) where T : ProcessResult
+        {
+            AppendResult(result);
+        }
+    }
+
+    public abstract class DataProcessResult : ProcessResult
+    {
+        public int RowsDeleted { get; set; }
+        public int RowsExtracted { get; set; }
+        public int RowsLoaded { get; set; }
+
+        protected override void WriteLog()
+        {
+            AppendLog($"RowsDeleted: {RowsDeleted}");
+            AppendLog($"RowsExtracted: {RowsExtracted}");
+            AppendLog($"RowsLoaded: {RowsLoaded}");
+        }
+    }
 
     public abstract class ProcessResult
     {
         private readonly ProcessLog _log = new ProcessLog();
 
-        public virtual string ProcessName { get; }
+        public abstract string ProcessName { get; }
         public DateTime Start { get; }
         public IList<string> Data { get; }
-        public int RowsDeleted { get; set; }
-        public int RowsExtracted { get; set; }
-        public int RowsLoaded { get; set; }
+        //public int RowsDeleted { get; set; }
+        //public int RowsExtracted { get; set; }
+        //public int RowsLoaded { get; set; }
 
         public ProcessLog GetLog()
         {
@@ -76,11 +104,6 @@ namespace LNF.Models
         }
 
         private DateTime? _end = null;
-
-        public ProcessResult(string processName) : this()
-        {
-            ProcessName = processName;
-        }
 
         public ProcessResult() : this(DateTime.Now, new List<string>()) { }
 
@@ -127,9 +150,7 @@ namespace LNF.Models
 
         protected virtual void WriteLog()
         {
-            AppendLog($"RowsDeleted: {RowsDeleted}");
-            AppendLog($"RowsExtracted: {RowsExtracted}");
-            AppendLog($"RowsLoaded: {RowsLoaded}");
+            // Does nothing unless overridden by derived class.
         }
 
         private void WriteLogData()

@@ -1,5 +1,6 @@
 ﻿using LNF.Billing;
 using LNF.Models.Billing.Process;
+using LNF.Models.Mail;
 using LNF.Repository;
 using LNF.Repository.Billing;
 using System;
@@ -88,7 +89,7 @@ namespace LNF.CommonTools
                 else
                 {
                     //error, it's impossible to have more than 1 data
-                    ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.PopulateSubsidyBilling", "Error in populating TieredSubsidyBilling", $"There is more than one row for client {drs[0]["ClientID"]}", SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                    SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep4Subsidy.PopulateSubsidyBilling", "Error in populating TieredSubsidyBilling", $"There is more than one row for client {drs[0]["ClientID"]}");
                 }
             }
 
@@ -318,7 +319,7 @@ namespace LNF.CommonTools
 
             // Only send email on failure.
             if (count < 0)
-                ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountRoomToolMisc", $"Update MiscBilling SubsidyDiscount Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountRoomToolMisc", $"Update MiscBilling SubsidyDiscount Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]");
         }
 
         private static void SaveSubsidyDiscountRoom(DataTable dtIn)
@@ -332,7 +333,7 @@ namespace LNF.CommonTools
 
             // Only send email on failure.
             if (count < 0)
-                ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountRoom", $"Update RoomBilling SubsidyDiscount Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountRoom", $"Update RoomBilling SubsidyDiscount Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]");
         }
 
         private static void SaveSubsidyDiscountTool(DataTable dtIn)
@@ -346,7 +347,7 @@ namespace LNF.CommonTools
 
             // Only send email on failure.
             if (count < 0)
-                ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountTool", $"Update ToolBilling SubsidyDiscount Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountTool", $"Update ToolBilling SubsidyDiscount Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]");
         }
 
         private static DataSet GetTablesForSubsidyDiscountDistribution(DateTime period, int clientId = 0)
@@ -532,7 +533,7 @@ namespace LNF.CommonTools
 
             // Only send email on failure.
             if (count < 0)
-                ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.UpdateUserPaymentSum", $"Update UserPaymentSum Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep4Subsidy.UpdateUserPaymentSum", $"Update UserPaymentSum Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]");
         }
 
         private static DataSet GetNecessaryTablesForUpdatingUserPayment(DateTime period, int clientId = 0)
@@ -567,7 +568,7 @@ namespace LNF.CommonTools
 
             // Only send email on failure.
             if (count < 0)
-                ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveNewTieredSubsidyBillingDetail", $"Error in Processing TieredSubsidyBillingDetail - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveNewTieredSubsidyBillingDetail", $"Error in Processing TieredSubsidyBillingDetail - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]");
         }
 
         private static DataSet GetTieredSubsidyBillingRelatedTables(DateTime period, int clientId = 0)
@@ -655,7 +656,7 @@ namespace LNF.CommonTools
 
             // Only send email on failure.
             if (count < 0)
-                ServiceProvider.Current.Email.SendMessage(0, "LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveNewTieredSubsidyBilling", $"Error in Processing TieredSubsidyBilling - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", string.Empty, SendEmail.SystemEmail, SendEmail.DeveloperEmails);
+                SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveNewTieredSubsidyBilling", $"Error in Processing TieredSubsidyBilling - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]");
 
             return count;
         }
@@ -846,6 +847,5 @@ namespace LNF.CommonTools
                 .Param("ClientID", clientId > 0, clientId)
                 .FillDataSet("dbo.TieredSubsidyBilling_Select");
         }
-
     }
 }
