@@ -353,6 +353,7 @@
     <Compile Include="DataAccess\SessionLog.cs" />
     <Compile Include="DataAccess\SessionManager.cs" />
     <Compile Include="DataAccess\SessionModule.cs" />
+    <Compile Include="ServiceMiddleware.cs" />
     <Compile Include="ServiceModule.cs" />
     <Compile Include="Testing\NHibernateTestBase.cs" />
     <Compile Include="Testing\TestContext.cs" />
