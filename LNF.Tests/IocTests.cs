@@ -28,7 +28,7 @@ namespace LNF.Tests
 
             ServiceProvider.Current = IOC.Resolver.GetInstance<ServiceProvider>();
 
-            using (ServiceProvider.Current.DataAccess.StartUnitOfWork())
+            using (DA.StartUnitOfWork())
             {
                 var client = DA.Current.Single<Client>(1301);
                 Assert.AreEqual("jgett", client.UserName);
@@ -37,13 +37,12 @@ namespace LNF.Tests
                 Assert.AreEqual("jgett", co.Client.UserName);
             }
 
-            var svc = IOC.Resolver.GetInstance<IDataAccessService>();
-            using (svc.StartUnitOfWork())
+            using (DA.StartUnitOfWork())
             {
-                var client = svc.Session.Single<Client>(1301);
+                var client = DA.Current.Single<Client>(1301);
                 Assert.AreEqual("jgett", client.UserName);
 
-                var co = svc.Session.Query<ClientOrg>().FirstOrDefault(x => x.Client.ClientID == 1301);
+                var co = DA.Current.Query<ClientOrg>().FirstOrDefault(x => x.Client.ClientID == 1301);
                 Assert.AreEqual("jgett", co.Client.UserName);
             }
         }
@@ -64,7 +63,7 @@ namespace LNF.Tests
         {
             ServiceProvider.Current = IOC.Resolver.GetInstance<ServiceProvider>();
 
-            using (ServiceProvider.Current.DataAccess.StartUnitOfWork())
+            using (DA.StartUnitOfWork())
             {
                 var mgr = ServiceProvider.Current.Use<IActiveDataItemManager>();
                 var range = mgr.Range(DA.Current.Query<Client>().Where(x => x.ClientID == 1301),

@@ -1,19 +1,20 @@
 ﻿using LNF.Impl.DependencyInjection.Default;
 using LNF.Repository;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace LNF.Tests
 {
     [TestClass]
     public abstract class TestBase
     {
-        private IUnitOfWork _uow;
+        private IDisposable _uow;
 
         [TestInitialize]
         public void TestInitialize()
         {
             ServiceProvider.Current = IOC.Resolver.GetInstance<ServiceProvider>();
-            _uow = ServiceProvider.Current.DataAccess.StartUnitOfWork();
+            _uow = DA.StartUnitOfWork();
         }
 
         [TestCleanup]

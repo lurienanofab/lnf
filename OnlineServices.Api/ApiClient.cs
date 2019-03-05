@@ -1,11 +1,9 @@
 ﻿using RestSharp;
-using RestSharp.Serializers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace OnlineServices.Api
@@ -26,11 +24,11 @@ namespace OnlineServices.Api
             HttpClient = new RestClient(host) { Timeout = 10 * 60 * 1000 };
 
             // Override with Newtonsoft JSON Handler
-            HttpClient.AddHandler("application/json", JsonNetDeserializer.Default);
-            HttpClient.AddHandler("text/json", JsonNetDeserializer.Default);
-            HttpClient.AddHandler("text/x-json", JsonNetDeserializer.Default);
-            HttpClient.AddHandler("text/javascript", JsonNetDeserializer.Default);
-            HttpClient.AddHandler("*+json", JsonNetDeserializer.Default);
+            HttpClient.AddHandler("application/json", () => JsonNetDeserializer.Default);
+            HttpClient.AddHandler("text/json", () => JsonNetDeserializer.Default);
+            HttpClient.AddHandler("text/x-json", () => JsonNetDeserializer.Default);
+            HttpClient.AddHandler("text/javascript", () => JsonNetDeserializer.Default);
+            HttpClient.AddHandler("*+json", () => JsonNetDeserializer.Default);
 
             string username = ConfigurationManager.AppSettings["BasicAuthUsername"];
             string password = ConfigurationManager.AppSettings["BasicAuthPassword"];
