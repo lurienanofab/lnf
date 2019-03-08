@@ -840,7 +840,17 @@ namespace LNF.Repository
             if (value == null)
                 return DbType.String;
             else
-                return _typeMap[value.GetType()];
+            {
+                var key = value.GetType();
+
+                if (key == typeof(DBNull))
+                    return DbType.String;
+
+                if (_typeMap.ContainsKey(key))
+                    return _typeMap[key];
+                else
+                    throw new Exception($"Unexpected type: {key}");
+            }
         }
     }
 }

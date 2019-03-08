@@ -33,7 +33,7 @@ namespace LNF.Billing
         BillingType Find(string name);
         BillingType GetBillingType(Client client, Account account, DateTime period);
         BillingType GetBillingType(string text);
-        BillingType GetBillingTypeByClientAndOrg(DateTime period, Client client, Org org);
+        BillingType GetBillingTypeByClientAndOrg(DateTime period, Client client, Org org, IEnumerable<Holiday> holidays);
         string GetBillingTypeName(BillingType billingType);
         decimal GetLineCost(IRoomBilling item);
         decimal GetLineCost(IToolBilling item);

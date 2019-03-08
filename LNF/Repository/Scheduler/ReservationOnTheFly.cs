@@ -1,9 +1,5 @@
-using System; 
-using System.Collections.Generic; 
-using System.Text; 
-
 namespace LNF.Repository.Scheduler
-{    
+{
     public class ReservationOnTheFly : IDataItem
     {
         public ReservationOnTheFly() { }

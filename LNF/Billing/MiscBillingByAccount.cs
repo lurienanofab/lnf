@@ -29,10 +29,10 @@ namespace LNF.Billing
             TotalMiscSubsidyDiscount = totalSubsidy;
         }
 
-        public IEnumerable<MiscBillingByAccount> Create(IEnumerable<MiscBillingCharge> source, BillingTypeManager mgr)
+        public IEnumerable<MiscBillingByAccount> Create(IEnumerable<MiscBillingCharge> source, IEnumerable<Holiday> holidays, BillingTypeManager mgr)
         {
             return source.GroupBy(x => new MiscBillingGroupByKeySelector(x))
-                .Select(x => CreateMiscBillingByAccount(x, mgr))
+                .Select(x => CreateMiscBillingByAccount(x, holidays, mgr))
                 .OrderBy(x => x.Period)
                 .ThenBy(x => x.Client.ClientID)
                 .ThenBy(x => x.Account.AccountID)
@@ -40,13 +40,13 @@ namespace LNF.Billing
                 .ToArray();
         }
 
-        private MiscBillingByAccount CreateMiscBillingByAccount(IGrouping<MiscBillingGroupByKeySelector, MiscBillingCharge> grp, BillingTypeManager mgr)
+        private MiscBillingByAccount CreateMiscBillingByAccount(IGrouping<MiscBillingGroupByKeySelector, MiscBillingCharge> grp, IEnumerable<Holiday> holidays, BillingTypeManager mgr)
         {
             var period = grp.Key.Period;
             var client = grp.Key.Client;
             var account = grp.Key.Account;
 
-            BillingType bt = mgr.GetBillingTypeByClientAndOrg(period, client, account.Org);
+            BillingType bt = mgr.GetBillingTypeByClientAndOrg(period, client, account.Org, holidays);
             BillingCategory bc = (BillingCategory)Enum.Parse(typeof(BillingCategory), grp.Key.SubType, true);
             decimal totalMisc = grp.Sum(g => Convert.ToDecimal(g.Quantity) * g.UnitCost);
             decimal totalSubsidy = grp.Sum(g => g.SubsidyDiscount);

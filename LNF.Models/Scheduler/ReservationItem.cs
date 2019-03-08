@@ -11,9 +11,16 @@ namespace LNF.Models.Scheduler
         public string ResourceName { get; set; }
         public int MinCancelTime { get; set; }
         public int MinReservTime { get; set; }
+        public int GracePeriod { get; set; }
+        public bool AuthState { get; set; }
+        public int AuthDuration { get; set; }
         public int ProcessTechID { get; set; }
+        public string ProcessTechName { get; set; }
         public int LabID { get; set; }
+        public string LabName { get; set; }
+        public string LabDisplayName { get; set; }
         public int BuildingID { get; set; }
+        public string BuildingName { get; set; }
         public int ClientID { get; set; }
         public string UserName { get; set; }
         public string LName { get; set; }
@@ -22,11 +29,23 @@ namespace LNF.Models.Scheduler
         public int AccountID { get; set; }
         public string AccountName { get; set; }
         public string ShortCode { get; set; }
+        public string AccountNumber { get; set; }
+        public int OrgID { get; set; }
+        public string OrgName { get; set; }
+        public bool NNINOrg { get; set; }
+        public bool PrimaryOrg { get; set; }
+        public int OrgTypeID { get; set; }
+        public string OrgTypeName { get; set; }
+        public int ChargeTypeID { get; set; }
+        public string ChargeTypeName { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
         public int ActivityID { get; set; }
         public string ActivityName { get; set; }
         public ActivityAccountType ActivityAccountType { get; set; }
         public ClientAuthLevel StartEndAuth { get; set; }
         public bool Editable { get; set; }
+        public bool IsRepair => !Editable;
         public bool IsFacilityDownTime { get; set; }
         public DateTime BeginDateTime { get; set; }
         public DateTime EndDateTime { get; set; }
@@ -35,7 +54,11 @@ namespace LNF.Models.Scheduler
         public DateTime ChargeBeginDateTime { get; set; }
         public DateTime ChargeEndDateTime { get; set; }
         public int? ClientIDBegin { get; set; }
+        public string ClientBeginLName { get; set; }
+        public string ClientBeginFName { get; set; }
         public int? ClientIDEnd { get; set; }
+        public string ClientEndLName { get; set; }
+        public string ClientEndFName { get; set; }
         public DateTime CreatedOn { get; set; }
         public DateTime LastModifiedOn { get; set; }
         public double Duration { get; set; }
@@ -55,7 +78,7 @@ namespace LNF.Models.Scheduler
         public bool KeepAlive { get; set; }
         public DateTime? OriginalBeginDateTime { get; set; }
         public DateTime? OriginalEndDateTime { get; set; }
-        public DateTime? OriginalModifiedOn { get; set; }        
+        public DateTime? OriginalModifiedOn { get; set; }
 
         public string GetResourceDisplayName() => ResourceItem.GetDisplayName(ResourceName, ResourceID);
 
@@ -68,7 +91,7 @@ namespace LNF.Models.Scheduler
         public double Overtime() => (ActualEndDateTime != null) ? Math.Max((ActualEndDateTime.Value - EndDateTime).TotalMinutes, 0) : 0;
     }
 
-    public class ReservationWithInvitees : ReservationItem
+    public class ReservationItemWithInvitees : ReservationItem
     {
         public IEnumerable<ReservationInviteeItem> Invitees { get; set; }
     }

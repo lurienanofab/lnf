@@ -74,7 +74,7 @@ namespace LNF.Data
         /// <summary>
         /// Gets all active ClientAccounts. ClientAccounts are cached for 30 minutes.
         /// </summary>
-        public static IEnumerable<ClientAccountItem> ClientAccounts(this CacheManager cm)
+        public static IEnumerable<ClientAccountItem> zClientAccounts(this CacheManager cm)
         {
             IList<ClientAccountItem> result;
 
@@ -96,25 +96,25 @@ namespace LNF.Data
         /// <summary>
         /// Gets the active ClientAccounts for a particular client. ClientAccounts are cached for 30 minutes.
         /// </summary>
-        public static IEnumerable<ClientAccountItem> GetClientAccounts(this CacheManager cm, int clientId)
+        public static IEnumerable<ClientAccountItem> zGetClientAccounts(this CacheManager cm, int clientId)
         {
-            return cm.ClientAccounts().Where(x => x.ClientID == clientId).ToList();
+            return cm.zClientAccounts().Where(x => x.ClientID == clientId).ToList();
         }
 
         /// <summary>
         /// Gets one active ClientAccount for a particular client and account. ClientAccounts are cached for 30 minutes.
         /// </summary>
-        public static ClientAccountItem GetClientAccount(this CacheManager cm, int clientId, int accountId)
+        public static ClientAccountItem zGetClientAccount(this CacheManager cm, int clientId, int accountId)
         {
-            return cm.GetClientAccounts(clientId).FirstOrDefault(x => x.AccountID == accountId);
+            return cm.zGetClientAccounts(clientId).FirstOrDefault(x => x.AccountID == accountId);
         }
 
         /// <summary>
         /// Gets the active ClientAccounts for the current user. ClientAccounts are cached for 30 minutes.
         /// </summary>
-        public static IEnumerable<ClientAccountItem> GetCurrentUserClientAccounts(this CacheManager cm)
+        public static IEnumerable<ClientAccountItem> zGetCurrentUserClientAccounts(this CacheManager cm)
         {
-            return cm.GetClientAccounts(cm.CurrentUser.ClientID);
+            return cm.zGetClientAccounts(cm.CurrentUser.ClientID);
         }
 
         /// <summary>

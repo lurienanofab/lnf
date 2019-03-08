@@ -2,11 +2,14 @@ using LNF.CommonTools;
 using LNF.Repository.Data;
 using LNF.Scheduler;
 using System;
+using System.Linq;
 
 namespace LNF.Repository.Scheduler
 {
     public class Reservation : IDataItem
     {
+        private ClientAccountInfo _clientAccountInfo = null;
+
         public static readonly DateTime MinReservationBeginDate = new DateTime(1900, 1, 1);
         public static readonly DateTime MaxReservationEndDate = new DateTime(3000, 1, 1);
         public static readonly string DateFormat = "MM/dd/yyyy hh:mm tt";
@@ -97,6 +100,23 @@ namespace LNF.Repository.Scheduler
             return result;
         }
 
+        public virtual ClientAccountInfo GetClientAccount()
+        {
+            if (_clientAccountInfo == null)
+                _clientAccountInfo = DA.Current.Query<ClientAccountInfo>().First(x => x.ClientID == Client.ClientID && x.AccountID == Account.AccountID);
+            return _clientAccountInfo;
+        }
+
+        public virtual string GetPhone()
+        {
+            return GetClientAccount().Phone;
+        }
+
+        public virtual string GetEmail()
+        {
+            return GetClientAccount().Email;
+        }
+
         public virtual DateTime ChargeEndDateTime()
         {
             if (ActualEndDateTime == null) return EndDateTime;
@@ -162,6 +182,46 @@ namespace LNF.Repository.Scheduler
         public virtual bool IsRecurring()
         {
             return RecurrenceID.HasValue && RecurrenceID.Value > 0;
+        }
+
+        public virtual string GetClientBeginLName()
+        {
+            var c = GetClientBegin();
+            if (c == null) return string.Empty;
+            return c.LName;
+        }
+
+        public virtual string GetClientBeginFName()
+        {
+            var c = GetClientBegin();
+            if (c == null) return string.Empty;
+            return c.FName;
+        }
+
+        public virtual string GetClientEndLName()
+        {
+            var c = GetClientEnd();
+            if (c == null) return string.Empty;
+            return c.LName;
+        }
+
+        public virtual string GetClientEndFName()
+        {
+            var c = GetClientEnd();
+            if (c == null) return string.Empty;
+            return c.FName;
+        }
+
+        public virtual Client GetClientBegin()
+        {
+            if (!ClientIDBegin.HasValue) return null;
+            return DA.Current.Single<Client>(ClientIDBegin.Value);
+        }
+
+        public virtual Client GetClientEnd()
+        {
+            if (!ClientIDEnd.HasValue) return null;
+            return DA.Current.Single<Client>(ClientIDEnd.Value);
         }
     }
 }

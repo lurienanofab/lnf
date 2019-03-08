@@ -255,27 +255,6 @@ namespace LNF.Scheduler
                 EmailManager.EmailOnOpenSlot(rsv.Resource.ResourceID, currentEndDateTime, nextBeginDateTime.Value, EmailNotify.OnOpening, reservationId);
         }
 
-        public ReservationStateArgs CreateReservationStateArgs(Reservation rsv, Client client, string kioskIp)
-        {
-            // Determine Ownership
-            bool isReserver = rsv.Client.ClientID == client.ClientID;
-
-            // Determine Invition
-            bool isInvited = IsInvited(rsv.ReservationID, client.ClientID);
-
-            // Determine Authorization
-            var userAuth = GetAuthLevel(rsv, client);
-            bool isAuthorized = (userAuth & (ClientAuthLevel)rsv.Activity.StartEndAuth) > 0;
-
-            bool isBeforeMinCancelTime = (DateTime.Now <= rsv.BeginDateTime.AddMinutes(-1 * rsv.Resource.MinCancelTime));
-
-            bool inLab = PhysicalAccessUtility.ClientInLab(client.ClientID, kioskIp, rsv.Resource.ProcessTech.Lab.LabID);
-
-            var args = new ReservationStateArgs(inLab, isReserver, isInvited, isAuthorized, rsv.Activity.IsRepair, rsv.Activity.IsFacilityDownTime, isBeforeMinCancelTime, rsv.Resource.MinReservTime, rsv.BeginDateTime, rsv.EndDateTime, rsv.ActualBeginDateTime, rsv.ActualEndDateTime, userAuth);
-
-            return args;
-        }
-
         public ReservationState GetReservationState(ReservationStateArgs args)
         {
             // This is the truth table for non tool engineer 
@@ -983,33 +962,30 @@ namespace LNF.Scheduler
         /// <summary>
         /// Compose the tooltip text for the specified reservation
         /// </summary>
-        public string GetReservationToolTip(Reservation rsv, ReservationState state)
+        public string GetReservationToolTip(ReservationItem rsv, ReservationState state)
         {
             // Display Reservation info
             string toolTip = string.Empty;
 
+            string displayName = $"{rsv.LName}, {rsv.FName}";
+
             if (state == ReservationState.PastOther || state == ReservationState.PastSelf)
-                toolTip += string.Format("<div><b>Used by {0}</b></div>", rsv.Client.DisplayName);
+                toolTip += string.Format("<div><b>Used by {0}</b></div>", displayName);
             else if (state == ReservationState.Repair)
-                toolTip += string.Format("<div><b>Repaired by {0}</b></div>", rsv.Client.DisplayName);
+                toolTip += string.Format("<div><b>Repaired by {0}</b></div>", displayName);
             else
-                toolTip += string.Format("<div><b>Reserved by {0}</b></div>", rsv.Client.DisplayName);
+                toolTip += string.Format("<div><b>Reserved by {0}</b></div>", displayName);
 
             if (state == ReservationState.Other || state == ReservationState.PastOther)
             {
-                int clientId = rsv.Client.ClientID;
-                int accountId = rsv.Account.AccountID;
-                var ca = CacheManager.Current.GetClientAccount(clientId, accountId);
+                int clientId = rsv.ClientID;
+                int accountId = rsv.AccountID;
 
-                // ca is null for Remote Processing reservations because the acct does not actually belong to the client
-                if (ca != null)
-                {
-                    if (!string.IsNullOrEmpty(ca.Phone))
-                        toolTip += string.Format("<div><b>Phone: {0}</b></div>", ca.Phone);
+                if (!string.IsNullOrEmpty(rsv.Phone))
+                    toolTip += string.Format("<div><b>Phone: {0}</b></div>", rsv.Phone);
 
-                    if (!string.IsNullOrEmpty(ca.Email))
-                        toolTip += string.Format("<div><b>Email: {0}</b></div>", ca.Email);
-                }
+                if (!string.IsNullOrEmpty(rsv.Email))
+                    toolTip += string.Format("<div><b>Email: {0}</b></div>", rsv.Email);
             }
 
             // reservations in the past should have actual times, but may not - need to check for this
@@ -1100,17 +1076,14 @@ namespace LNF.Scheduler
         /// </summary>
         /// <param name="rsv">The reservation to start</param>
         /// <param name="clientId">The ClientID of the current user starting the reservation</param>
-        public void StartReservation(Reservation rsv, Client client, string kioskIp)
+        public void StartReservation(ReservationItem rsv, ReservationClientItem client)
         {
             if (rsv == null)
                 throw new ArgumentNullException("rsv", "A null Reservation object is not allowed.");
 
-            if (rsv.Resource == null)
-                throw new ArgumentNullException("rsv", "A null Resource object is not allowed.");
-
             if (rsv.IsStarted) return;
 
-            var args = CreateReservationStateArgs(rsv, client, kioskIp);
+            var args = ReservationStateArgs.Create(rsv, client);
             ReservationState state = GetReservationState(args);
 
             if (state != ReservationState.StartOnly && state != ReservationState.StartOrDelete)
@@ -1119,17 +1092,17 @@ namespace LNF.Scheduler
             bool enableInterlock = CacheManager.Current.WagoEnabled;
 
             // End Previous un-ended reservations
-            var endableRsvQuery = SelectEndableReservations(rsv.Resource.ResourceID);
+            var endableRsvQuery = SelectEndableReservations(rsv.ResourceID);
             foreach (var endableRsv in endableRsvQuery)
                 End(endableRsv, client.ClientID, client.ClientID);
 
             // Start Reservation
-            Start(rsv, client.ClientID, client.ClientID);
+            Start(rsv.ReservationID, client.ClientID, client.ClientID);
 
             // If Resource authorization type is rolling and the reserver is a regular user for the resource then reset reserver's expiration date
             int authLevel = 0, resourceClientId = 0;
 
-            using (var reader = ResourceClientData.SelectResourceClient(rsv.Resource.ResourceID, client.ClientID))
+            using (var reader = ResourceClientData.SelectResourceClient(rsv.ResourceID, client.ClientID))
             {
                 if (reader.Read())
                 {
@@ -1138,21 +1111,20 @@ namespace LNF.Scheduler
                 }
             }
 
-            var res = rsv.Resource;
-            if (res.AuthState && (authLevel == (int)ClientAuthLevel.AuthorizedUser))
+            if (rsv.AuthState && (authLevel == (int)ClientAuthLevel.AuthorizedUser))
             {
-                DateTime expiration = DateTime.Now.AddMonths(res.AuthDuration);
+                DateTime expiration = DateTime.Now.AddMonths(rsv.AuthDuration);
                 ResourceClientData.UpdateExpiration(resourceClientId, expiration);
             }
 
             // Turn Interlock On
             if (enableInterlock)
             {
-                uint duration = OnTheFlyUtility.GetStateDuration(res.ResourceID);
-                WagoInterlock.ToggleInterlock(res.ResourceID, true, duration);
-                bool interlockState = WagoInterlock.GetPointState(res.ResourceID);
+                uint duration = OnTheFlyUtility.GetStateDuration(rsv.ResourceID);
+                WagoInterlock.ToggleInterlock(rsv.ResourceID, true, duration);
+                bool interlockState = WagoInterlock.GetPointState(rsv.ResourceID);
                 if (!interlockState)
-                    throw new InvalidOperationException(string.Format("Failed to start interlock for ResourceID {0}", res.ResourceID));
+                    throw new InvalidOperationException(string.Format("Failed to start interlock for ResourceID {0}", rsv.ResourceID));
             }
         }
 
@@ -1200,10 +1172,12 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public IList<Reservation> SelectHistory(int clientId, DateTime sd, DateTime ed)
+        public IEnumerable<ReservationItem> SelectHistory(int clientId, DateTime sd, DateTime ed)
         {
-            var result = Session.Query<Reservation>()
-                .Where(x => x.Client.ClientID == clientId && (x.BeginDateTime < ed) && (x.EndDateTime > sd)).ToList();
+            var query = Session.Query<ReservationInfo>()
+                .Where(x => x.ClientID == clientId && (x.BeginDateTime < ed) && (x.EndDateTime > sd));
+
+            var result = query.CreateReservationItems();
 
             return result;
         }
@@ -1303,9 +1277,9 @@ namespace LNF.Scheduler
                 return null;
         }
 
-        public IList<ReservationHistoryFilterItem> FilterCancelledReservations(IList<Reservation> reservations, bool includeCanceledForModification)
+        public IEnumerable<ReservationHistoryFilterItem> FilterCancelledReservations(IEnumerable<ReservationItem> reservations, bool includeCanceledForModification)
         {
-            if (reservations == null || reservations.Count == 0)
+            if (reservations == null || reservations.Count() == 0)
                 return new List<ReservationHistoryFilterItem>();
 
             int minReservationId = reservations.Min(x => x.ReservationID);
@@ -1313,7 +1287,7 @@ namespace LNF.Scheduler
             IList<ReservationHistory> hist = Session.Query<ReservationHistory>().Where(x => x.LinkedReservationID.HasValue && x.LinkedReservationID.Value >= minReservationId && x.UserAction == ReservationHistory.INSERT_FOR_MODIFICATION).ToList();
             IList<ReservationHistoryFilterItem> result = new List<ReservationHistoryFilterItem>();
 
-            foreach (Reservation rsv in reservations)
+            foreach (ReservationItem rsv in reservations)
             {
                 bool isCanceledForModification = hist.Any(x => x.LinkedReservationID.HasValue && x.LinkedReservationID.Value == rsv.ReservationID);
 
@@ -1385,10 +1359,9 @@ namespace LNF.Scheduler
             return (maxAlloc - reserved).TotalMinutes;
         }
 
-        public ClientAuthLevel GetAuthLevel(Reservation rsv, IPrivileged client)
+        public IEnumerable<ResourceClientItem> GetResourceClients(int resourceId)
         {
-            var resourceClients = Session.Query<ResourceClient>().Where(x => x.Resource.ResourceID == rsv.Resource.ResourceID).ToList();
-            return GetAuthLevel(resourceClients, client);
+            return Session.Query<ResourceClientInfo>().Where(x => x.ResourceID == resourceId).CreateResourceClientItems();
         }
 
         public ClientAuthLevel GetAuthLevel(IEnumerable<IAuthorized> resourceClients, IPrivileged client)
@@ -1568,7 +1541,7 @@ namespace LNF.Scheduler
             return Session.Query<ReservationInvitee>().Any(x => x.Reservation.ReservationID == reservationId && x.Invitee.ClientID == clientId);
         }
 
-        public void Start(Reservation rsv, int? startedByClientId, int? modifiedByClientId)
+        private void Start(int reservationId, int? startedByClientId, int? modifiedByClientId)
         {
             // This is all that happens in procReservationUpdate @Action = 'Start'
 
@@ -1577,6 +1550,8 @@ namespace LNF.Scheduler
             //    ClientIDBegin = @ClientID,
             //    IsStarted = 1		
             //WHERE ReservationID = @ReservationID
+
+            Reservation rsv = DA.Current.Single<Reservation>(reservationId);
 
             rsv.ActualBeginDateTime = DateTime.Now;
             rsv.ClientIDBegin = startedByClientId;

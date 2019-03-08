@@ -1,9 +1,6 @@
-﻿using LNF.Cache;
-using LNF.Models.Data;
-using LNF.Scheduler;
+﻿using LNF.Models.Data;
+using LNF.Models.Scheduler;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace LNF.Repository.Scheduler
 {
@@ -12,13 +9,23 @@ namespace LNF.Repository.Scheduler
         public virtual int ReservationID { get; set; }
         public virtual int ResourceID { get; set; }
         public virtual string ResourceName { get; set; }
+        public virtual int MinCancelTime { get; set; }
+        public virtual int MinReservTime { get; set; }
         public virtual int GracePeriod { get; set; }
+        public virtual bool AuthState { get; set; }
+        public virtual int AuthDuration { get; set; }
         public virtual int ProcessTechID { get; set; }
         public virtual string ProcessTechName { get; set; }
+        public virtual int LabID { get; set; }
+        public virtual string LabName { get; set; }
+        public virtual string LabDisplayName { get; set; }
+        public virtual int BuildingID { get; set; }
+        public virtual string BuildingName { get; set; }
         public virtual int ClientID { get; set; }
         public virtual string UserName { get; set; }
         public virtual string LName { get; set; }
         public virtual string FName { get; set; }
+        public virtual ClientPrivilege Privs { get; set; }
         public virtual int AccountID { get; set; }
         public virtual string AccountName { get; set; }
         public virtual string ShortCode { get; set; }
@@ -31,8 +38,15 @@ namespace LNF.Repository.Scheduler
         public virtual string OrgTypeName { get; set; }
         public virtual int ChargeTypeID { get; set; }
         public virtual string ChargeTypeName { get; set; }
+        public virtual string Phone { get; set; }
+        public virtual string Email { get; set; }
         public virtual int ActivityID { get; set; }
         public virtual string ActivityName { get; set; }
+        public virtual ActivityAccountType ActivityAccountType { get; set; }
+        public virtual ClientAuthLevel StartEndAuth { get; set; }
+        public virtual bool Editable { get; set; }
+        public virtual bool IsRepair => !Editable;
+        public virtual bool IsFacilityDownTime { get; set; }
         public virtual DateTime BeginDateTime { get; set; }
         public virtual DateTime EndDateTime { get; set; }
         public virtual DateTime? ActualBeginDateTime { get; set; }
@@ -57,7 +71,7 @@ namespace LNF.Repository.Scheduler
         public virtual bool IsActive { get; set; }
         public virtual bool IsStarted { get; set; }
         public virtual bool IsUnloaded { get; set; }
-        public virtual int RecurrenceID { get; set; }
+        public virtual int? RecurrenceID { get; set; }
         public virtual int GroupID { get; set; }
         public virtual double MaxReservedDuration { get; set; }
         public virtual DateTime? CancelledDateTime { get; set; }

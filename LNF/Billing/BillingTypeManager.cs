@@ -175,11 +175,11 @@ namespace LNF.Billing
             return GetAllBillingTypes().FirstOrDefault(x => x.BillingTypeName == name);
         }
 
-        public BillingType GetBillingTypeByClientAndOrg(DateTime period, Client client, Org org)
+        public BillingType GetBillingTypeByClientAndOrg(DateTime period, Client client, Org org, IEnumerable<Holiday> holidays)
         {
             // always add one more month for period, because we allow changes made during the current month that will take effect
             // as long as it's before the 4th business day of business
-            DateTime p = Utility.NextBusinessDay(period.AddMonths(1));
+            DateTime p = Utility.NextBusinessDay(period.AddMonths(1), holidays);
 
             var cobtLog = Session.Query<ClientOrgBillingTypeLog>().FirstOrDefault(x => x.ClientOrg.Client == client && x.ClientOrg.Org == org && x.EffDate < p && (x.DisableDate == null || x.DisableDate > p));
 

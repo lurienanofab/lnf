@@ -78,14 +78,11 @@ namespace LNF.Scheduler
 
         public static void CopyProcessInfo(int recurrenceId, Reservation rsv)
         {
-            var mostRecentRecurrence = DA.Current.Query<Reservation>()
-                .Where(x => x.RecurrenceID == recurrenceId && x.ReservationID != rsv.ReservationID)
-                .OrderByDescending(x => x.BeginDateTime)
-                .FirstOrDefault();
+            var previousRecurrence = GetPreviousRecurrence(recurrenceId, rsv.ReservationID);
 
-            if (mostRecentRecurrence != null)
+            if (previousRecurrence != null)
             {
-                var rsvProcInfos = DA.Current.Query<ReservationProcessInfo>().Where(x => x.Reservation.ReservationID == mostRecentRecurrence.ReservationID);
+                var rsvProcInfos = DA.Current.Query<ReservationProcessInfo>().Where(x => x.Reservation.ReservationID == previousRecurrence.ReservationID);
                 if (rsvProcInfos.Count() > 0)
                 {
                     foreach (var item in rsvProcInfos)
@@ -110,14 +107,11 @@ namespace LNF.Scheduler
 
         public static void CopyInvitees(int recurrenceId, Reservation rsv)
         {
-            var mostRecentRecurrence = DA.Current.Query<Reservation>()
-                .Where(x => x.RecurrenceID == recurrenceId && x.ReservationID != rsv.ReservationID)
-                .OrderByDescending(x => x.BeginDateTime)
-                .FirstOrDefault();
+            var previousRecurrence = GetPreviousRecurrence(recurrenceId, rsv.ReservationID);
 
-            if (mostRecentRecurrence != null)
+            if (previousRecurrence != null)
             {
-                var rsvInvitees = DA.Current.Query<ReservationInvitee>().Where(x => x.Reservation.ReservationID == mostRecentRecurrence.ReservationID);
+                var rsvInvitees = DA.Current.Query<ReservationInvitee>().Where(x => x.Reservation.ReservationID == previousRecurrence.ReservationID);
                 if (rsvInvitees.Count() > 0)
                 {
                     foreach (var item in rsvInvitees)
@@ -133,6 +127,16 @@ namespace LNF.Scheduler
                     }
                 }
             }
+        }
+
+        public static Reservation GetPreviousRecurrence(int recurrenceId, int reservationId)
+        {
+            var result = DA.Current.Query<Reservation>()
+                .Where(x => x.RecurrenceID == recurrenceId && x.ReservationID != reservationId)
+                .OrderByDescending(x => x.BeginDateTime)
+                .FirstOrDefault();
+
+            return result;
         }
     }
 }

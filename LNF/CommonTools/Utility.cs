@@ -311,18 +311,22 @@ namespace LNF.CommonTools
         /// <summary>
         /// Finds the next business day after the first day of the month.
         /// </summary>
-        public static DateTime NextBusinessDay(DateTime d)
+        public static DateTime NextBusinessDay(DateTime d, IEnumerable<Holiday> holidays)
         {
-            return NextBusinessDay(d, CacheManager.Current.GetBusinessDay());
+            return NextBusinessDay(d, CacheManager.Current.GetBusinessDay(), holidays);
         }
 
-        public static DateTime NextBusinessDay(DateTime d, int count)
+        /// <summary>
+        /// Finds the next business day after the first day of the month.
+        /// </summary>
+        public static DateTime NextBusinessDay(DateTime d, int count, IEnumerable<Holiday> holidays)
         {
             DateTime result = d;
             bool isHoliday;
             int dayNum = 0;
 
-            var holidays = DA.Current.Query<Holiday>().Where(x => x.HolidayDate >= result && x.HolidayDate < result.AddMonths(1)).ToList();
+            // this method gets used in a loop so pass in the holidays to avoid executing this query over and over
+            //var holidays = DA.Current.Query<Holiday>().Where(x => x.HolidayDate >= d && x.HolidayDate < d.AddMonths(1)).ToList();
 
             while (dayNum < count)
             {
@@ -338,9 +342,9 @@ namespace LNF.CommonTools
             return result;
         }
 
-        public static bool IsBeforeNextBusinessDay(DateTime d)
+        public static bool IsBeforeNextBusinessDay(DateTime d, IEnumerable<Holiday> holidays)
         {
-            var nbd = NextBusinessDay(d.FirstOfMonth());
+            var nbd = NextBusinessDay(d.FirstOfMonth(), holidays);
 
             if (d.Date < nbd)
                 return true;
@@ -348,12 +352,18 @@ namespace LNF.CommonTools
                 return false;
         }
 
-        public static bool IsFirstBusinessDay(DateTime d)
+        public static bool IsFirstBusinessDay(DateTime d, IEnumerable<Holiday> holidays)
         {
-            if (d.Date == NextBusinessDay(d))
+            if (d.Date == NextBusinessDay(d, holidays))
                 return true;
             else
                 return false;
+        }
+
+        public static IEnumerable<Holiday> GetHolidays(DateTime sd, DateTime ed)
+        {
+            var holidays = DA.Current.Query<Holiday>().Where(x => x.HolidayDate >= sd && x.HolidayDate < ed).ToList();
+            return holidays;
         }
 
         public static bool IsKiosk()

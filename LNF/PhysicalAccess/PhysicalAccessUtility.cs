@@ -5,28 +5,36 @@ using System.Linq;
 
 namespace LNF.PhysicalAccess
 {
-    public static class PhysicalAccessUtility
+    public class PhysicalAccessUtility
     {
-        public static IEnumerable<Badge> CurrentlyInLab()
-        {
-            var result = ServiceProvider.Current.PhysicalAccess.GetCurrentlyInArea("all");
-            return result;
-        }
+        private readonly int[] _alwaysInLabs = { 4 };
 
-        public static bool IsInLab(int clientId)
+        public bool IsOnKiosk { get; }
+        public IEnumerable<Badge> CurrentlyInLab { get; }
+        
+        public PhysicalAccessUtility(string kioskIp)
         {
-            return CurrentlyInLab().Any(x => x.ClientID == clientId);
+            IsOnKiosk = KioskUtility.IsOnKiosk(kioskIp);
+            CurrentlyInLab = ServiceProvider.Current.PhysicalAccess.GetCurrentlyInArea("all");
         }
 
         /// <summary>
-        /// Checks if the client is currently in any lab or is on a kiosk.
+        /// Checks if the client is physically in the lab.
         /// </summary>
-        public static bool ClientInLab(int clientId, string kioskIp)
+        public bool IsInLab(int clientId)
+        {
+            return CurrentlyInLab.Any(x => x.ClientID == clientId);
+        }
+
+        /// <summary>
+        /// Checks if the client is currently in any lab or on a kiosk.
+        /// </summary>
+        public bool ClientInLab(int clientId)
         {
             if (IsInLab(clientId))
                 return true;
 
-            if (KioskUtility.IsOnKiosk(kioskIp))
+            if (IsOnKiosk)
                 return true;
 
             // 2007-06-27 if it's SEM tool, we have to allow activation from any computer because there is no kiosk around that tool, this should be a temporary solution
@@ -37,18 +45,17 @@ namespace LNF.PhysicalAccess
         /// <summary>
         /// Checks if the client is currently in any lab, on a kiosk, or if the lab is an "always in" lab.
         /// </summary>
-        public static bool ClientInLab(int clientId, string kioskIp, int labId)
+        public bool ClientInLab(int clientId, int labId)
         {
             // 2009-02-13 if this tools in DC lab, they can activate at anywhere
 
             // [2016-06-22 jg] all of these tool are in the same lab and there are no other tools in this lab, so it is better to just use
             //       the LabID. However, it is still terrible to hard code this, should be in the database or web.config at least.
 
-            int[] alwaysInLabs = { 4 };
-            if (alwaysInLabs.Contains(labId))
+            if (_alwaysInLabs.Contains(labId))
                 return true;
 
-            if (ClientInLab(clientId, kioskIp))
+            if (ClientInLab(clientId))
                 return true;
 
             return false;

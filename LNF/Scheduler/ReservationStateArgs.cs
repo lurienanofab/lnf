@@ -43,5 +43,16 @@ namespace LNF.Scheduler
             ActualEndDateTime = actualEndDateTime;
             UserAuth = userAuth;
         }
+
+        public static ReservationStateArgs Create(ReservationItem rsv, ReservationClientItem client)
+        {
+            var isAuthorized = (client.UserAuth & rsv.StartEndAuth) > 0;
+
+            var isBeforeMinCancelTime = (DateTime.Now <= rsv.BeginDateTime.AddMinutes(-1 * rsv.MinCancelTime));
+
+            var args = new ReservationStateArgs(client.InLab, client.IsReserver, client.IsInvited, isAuthorized, rsv.IsRepair, rsv.IsFacilityDownTime, isBeforeMinCancelTime, rsv.MinReservTime, rsv.BeginDateTime, rsv.EndDateTime, rsv.ActualBeginDateTime, rsv.ActualEndDateTime, client.UserAuth);
+
+            return args;
+        }
     }
 }

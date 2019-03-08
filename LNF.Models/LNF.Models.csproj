@@ -203,6 +203,7 @@
     <Compile Include="Scheduler\ProcessInfoItem.cs" />
     <Compile Include="Scheduler\ProcessTechGroupItem.cs" />
     <Compile Include="Scheduler\ProcessTechItem.cs" />
+    <Compile Include="Scheduler\ReservationClientItem.cs" />
     <Compile Include="Scheduler\ReservationHistoryUpdate.cs" />
     <Compile Include="Scheduler\ReservationInviteeItem.cs" />
     <Compile Include="Scheduler\ReservationItem.cs" />

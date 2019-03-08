@@ -30,9 +30,9 @@ namespace LNF.Scheduler
         HandleRepairReservationsProcessResult HandleRepairReservations(IEnumerable<Reservation> reservations);
         void EndReservation(int reservationId);
         HandleUnstartedReservationsProcessResult HandleUnstartedReservations(IEnumerable<Reservation> reservations);
-        IList<ReservationHistoryFilterItem> FilterCancelledReservations(IList<Reservation> reservations, bool includeCanceledForModification);
+        IEnumerable<ReservationHistoryFilterItem> FilterCancelledReservations(IEnumerable<ReservationItem> reservations, bool includeCanceledForModification);
         Reservation FromDataRow(DataRow dr);
-        ClientAuthLevel GetAuthLevel(Reservation rsv, IPrivileged client);
+        IEnumerable<ResourceClientItem> GetResourceClients(int resourceId);
         ClientAuthLevel GetAuthLevel(IEnumerable<IAuthorized> resourceClients, IPrivileged client);
         int GetAvailableSchedMin(int resourceId, int clientId);
         IList<Reservation> GetConflictingReservations(IEnumerable<Reservation> reservations, DateTime sd, DateTime ed);
@@ -42,9 +42,9 @@ namespace LNF.Scheduler
         ReservationInProgress GetRepairReservationInProgress(int resourceId);
         string GetReservationCaption(ReservationState state);
         Reservation GetReservationForModification(Reservation rsv, ReservationDuration rd, out bool insert);
-        ReservationStateArgs CreateReservationStateArgs(Reservation rsv, Client client, string kioskIp);
+        //ReservationStateArgs CreateReservationStateArgs(ReservationInfo rsv, Client client, string kioskIp);
         ReservationState GetReservationState(ReservationStateArgs args);
-        string GetReservationToolTip(Reservation rsv, ReservationState state);
+        string GetReservationToolTip(ReservationItem rsv, ReservationState state);
         bool HandleFacilityDowntimeResrvation(Reservation rsv);
         bool HandlePracticeReservation(Reservation rsv);
         void Insert(Reservation rsv, int? modifiedByClientId);
@@ -67,7 +67,7 @@ namespace LNF.Scheduler
         IList<Reservation> SelectByResource(int resourceId, DateTime startDate, DateTime endDate, bool includeDeleted);
         IList<Reservation> SelectEndableReservations(int resourceId);
         IList<Reservation> SelectExisting(Resource resource);
-        IList<Reservation> SelectHistory(int clientId, DateTime sd, DateTime ed);
+        IEnumerable<ReservationItem> SelectHistory(int clientId, DateTime sd, DateTime ed);
         IList<Reservation> SelectHistoryToForgiveForRepair(int resourceId, DateTime sd, DateTime ed);
         DateTime? SelectLastRepairEndTime(int resourceId);
         IList<Reservation> SelectOverwrittable(int resourceId, DateTime sd, DateTime ed);
@@ -75,8 +75,8 @@ namespace LNF.Scheduler
         IList<Reservation> SelectPastUnstarted();
         double SelectReservableMinutes(int resourceId, int clientId, TimeSpan reservFence, TimeSpan maxAlloc, DateTime now);
         IList<Reservation> SelectReservationsByPeriod(DateTime period);
-        void Start(Reservation rsv, int? startedByClientId, int? modifiedByClientId);
-        void StartReservation(Reservation rsv, Client client, string kioskIp);
+        //void Start(int reservationId, int? startedByClientId, int? modifiedByClientId);
+        void StartReservation(ReservationItem rsv, ReservationClientItem client);
         void Update(Reservation rsv, int? modifiedByClientId);
         void UpdateAccount(Reservation rsv, int accountId);
         int UpdateByGroup(int groupId, DateTime sd, DateTime ed, string notes, int? modifiedByClientId);

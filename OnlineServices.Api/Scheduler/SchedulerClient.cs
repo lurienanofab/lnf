@@ -16,10 +16,10 @@ namespace OnlineServices.Api.Scheduler
             return Get<List<ReservationItem>>("webapi/scheduler/reservation", qs);
         }
 
-        public IEnumerable<ReservationWithInvitees> GetReservationsWithInvitees(DateTime sd, DateTime ed, int clientId = 0, int resourceId = 0, int activityId = 0, bool? started = null, bool? active = null)
+        public IEnumerable<ReservationItemWithInvitees> GetReservationsWithInvitees(DateTime sd, DateTime ed, int clientId = 0, int resourceId = 0, int activityId = 0, bool? started = null, bool? active = null)
         {
             var qs = GetQueryStringParametersForReservations(sd, ed, clientId, resourceId, activityId, started, active);
-            return Get<List<ReservationWithInvitees>>("webapi/scheduler/reservation/with-invitees", qs);
+            return Get<List<ReservationItemWithInvitees>>("webapi/scheduler/reservation/with-invitees", qs);
         }
 
         public ReservationItem GetReservation(int reservationId)
@@ -27,9 +27,9 @@ namespace OnlineServices.Api.Scheduler
             return Get<ReservationItem>("webapi/scheduler/reservation/{reservationId}", UrlSegments(new { reservationId }));
         }
 
-        public ReservationWithInvitees GetReservationWithInvitees(int reservationId)
+        public ReservationItemWithInvitees GetReservationWithInvitees(int reservationId)
         {
-            return Get<ReservationWithInvitees>("webapi/scheduler/reservation/{reservationId}/with-invitees", UrlSegments(new { reservationId }));
+            return Get<ReservationItemWithInvitees>("webapi/scheduler/reservation/{reservationId}/with-invitees", UrlSegments(new { reservationId }));
         }
 
         public IEnumerable<ReservationInviteeItem> GetReservationInvitees(int reservationId)

@@ -1,6 +1,8 @@
 ﻿using LNF.Models.Billing;
 using LNF.Models.Billing.Process;
+using LNF.Repository.Data;
 using System;
+using System.Collections.Generic;
 
 namespace LNF.CommonTools
 {
@@ -15,13 +17,15 @@ namespace LNF.CommonTools
             DateTime now = DateTime.Now;
             DateTime period = now.FirstOfMonth();
 
+            var holidays = Utility.GetHolidays(period, period.AddMonths(1));
+
             WriteData wd = new WriteData();
 
             var result = new DataUpdateProcessResult
             {
                 Now = now,
                 Period = period,
-                IsFirstBusinessDay = Utility.IsFirstBusinessDay(now),
+                IsFirstBusinessDay = Utility.IsFirstBusinessDay(now, holidays),
                 //First, update tables
                 UpdateTablesResult = wd.UpdateTables(types, UpdateDataType.DataClean | UpdateDataType.Data, period, 0)
             };
