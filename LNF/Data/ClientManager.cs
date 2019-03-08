@@ -144,9 +144,9 @@ namespace LNF.Data
         /// </summary>
         /// <param name="item">The Client item</param>
         /// <returns>A list of ClientAccount items</returns>
-        public IQueryable<ClientAccount> ActiveClientAccounts(int clientId)
+        public IEnumerable<ClientAccountItem> ActiveClientAccounts(int clientId)
         {
-            return Session.Query<ClientAccount>().Where(x => x.ClientOrg.Client.ClientID == clientId && x.Active && x.ClientOrg.Active);
+            return Session.Query<ClientAccountInfo>().Where(x => x.ClientID == clientId && x.Active && x.ClientOrgActive).CreateClientAccountItems();
         }
 
         /// <summary>
@@ -156,11 +156,11 @@ namespace LNF.Data
         /// <param name="sd">The start of the date range</param>
         /// <param name="ed">The end of the date range</param>
         /// <returns>A list of ClientAccount items</returns>
-        public IQueryable<ClientAccount> ActiveClientAccounts(Client client, DateTime sd, DateTime ed)
+        public IEnumerable<ClientAccountItem> ActiveClientAccounts(int clientId, DateTime sd, DateTime ed)
         {
             var query = Session.Query<ActiveLog>().Where(x => x.TableName == "ClientAccount" && (x.EnableDate < ed && (x.DisableDate == null || x.DisableDate > sd)));
-            var join = query.Join(Session.Query<ClientAccount>(), o => o.Record, i => i.ClientAccountID, (outer, inner) => inner);
-            return join.Where(x => x.ClientOrg.Client == client);
+            var join = query.Join(Session.Query<ClientAccountInfo>(), o => o.Record, i => i.ClientAccountID, (outer, inner) => inner);
+            return join.Where(x => x.ClientID == clientId).CreateClientAccountItems();
         }
 
         public IQueryable<Account> ActiveAccounts(Client client)
@@ -171,7 +171,8 @@ namespace LNF.Data
 
         public IQueryable<Account> ActiveAccounts(Client client, DateTime sd, DateTime ed)
         {
-            var result = ActiveClientAccounts(client, sd, ed).Select(x => x.Account).Distinct();
+            var accountIds = ActiveClientAccounts(client.ClientID, sd, ed).Select(x => x.AccountID).Distinct().ToArray();
+            var result = DA.Current.Query<Account>().Where(x => accountIds.Contains(x.AccountID));
             return result;
         }
 
@@ -206,12 +207,6 @@ namespace LNF.Data
         public ClientOrgInfo GetClientOrgInfo(Client client, int rank)
         {
             ClientOrgInfo result = Session.Query<ClientOrgInfo>().Where(x => x.ClientID == client.ClientID && x.EmailRank == rank).FirstOrDefault();
-            return result;
-        }
-
-        public IQueryable<ClientAccountInfo> ActiveClientAccountInfos(Client client)
-        {
-            var result = Session.Query<ClientAccountInfo>().Where(x => x.ClientID == client.ClientID && x.ClientAccountActive && x.ClientOrgActive);
             return result;
         }
 

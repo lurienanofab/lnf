@@ -32,10 +32,7 @@ namespace LNF.Repository.Data
         public virtual bool EmployeeClientActive { get; set; }
         public virtual bool HasDryBox { get; set; }
 
-        public virtual string GetAccountProject()
-        {
-            return Account.GetProject(AccountNumber);
-        }
+        public virtual string GetAccountProject() => AccountItem.GetProject(AccountNumber);
 
         public virtual bool IsAssigned()
         {

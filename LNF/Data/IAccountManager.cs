@@ -1,4 +1,5 @@
-﻿using LNF.Repository;
+﻿using LNF.Models.Data;
+using LNF.Repository;
 using LNF.Repository.Data;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace LNF.Data
         IQueryable<Account> ActiveAccounts();
         IQueryable<ClientAccount> ClientAccounts(Account item);
         IList<Account> ConvertToAccountList(DataTable dt);
-        DataTable ConvertToAccountTable(IList<Account> collection);
+        DataTable ConvertToAccountTable(IList<IAccount> collection);
         void Delete(int accountId);
         IQueryable<Account> FindByShortCode(string shortCode);
         FundingSource FundingSource(Account item);

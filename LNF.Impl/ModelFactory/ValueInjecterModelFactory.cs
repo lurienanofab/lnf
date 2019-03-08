@@ -46,7 +46,6 @@ namespace LNF.Impl.ModelFactory
             new ClientInjection(),
             new ClientInfoInjection(),
             new AccountInjection(),
-            new AccountInfoInjection(),
             new ReservationInjection()
         };
 

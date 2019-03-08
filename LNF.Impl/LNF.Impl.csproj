@@ -321,7 +321,6 @@
     <Compile Include="Mappings\Store\StoreOrderDetailMap.cs" />
     <Compile Include="Mappings\Store\StoreOrderMap.cs" />
     <Compile Include="Mappings\Store\VendorPackageMap.cs" />
-    <Compile Include="ModelFactory\Injections\AccountInfoInjection.cs" />
     <Compile Include="ModelFactory\Injections\AccountInjection.cs" />
     <Compile Include="ModelFactory\Injections\ClientInfoInjection.cs" />
     <Compile Include="ModelFactory\Injections\ClientInjection.cs" />

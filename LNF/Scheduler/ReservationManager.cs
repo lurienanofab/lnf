@@ -873,13 +873,13 @@ namespace LNF.Scheduler
         public void UpdateCharges(Reservation rsv, double chargeMultiplier)
         {
             rsv.ChargeMultiplier = chargeMultiplier;
-            AddReservationHistory("ReservationUtility", "UpdateCharges", rsv);
+            InsertReservationHistory("ReservationUtility", "UpdateCharges", rsv, CacheManager.Current.CurrentUser.ClientID);
         }
 
         public void UpdateAccount(Reservation rsv, int accountId)
         {
             rsv.Account = Session.Single<Account>(accountId);
-            AddReservationHistory("ReservationUtility", "UpdateAccount", rsv);
+            InsertReservationHistory("ReservationUtility", "UpdateAccount", rsv, CacheManager.Current.CurrentUser.ClientID);
         }
 
         public ReservationInProgress GetRepairReservationInProgress(int resourceId)
@@ -934,29 +934,6 @@ namespace LNF.Scheduler
             ).ToList();
 
             return result;
-        }
-
-        public ReservationHistory AddReservationHistory(string actionSource, string userAction, Reservation rsv, Client modifiedBy = null)
-        {
-            if (modifiedBy == null)
-                modifiedBy = Session.Single<Client>(CacheManager.Current.CurrentUser.ClientID);
-
-            ReservationHistory hist = new ReservationHistory()
-            {
-                ActionSource = actionSource,
-                UserAction = userAction,
-                Account = rsv.Account,
-                BeginDateTime = rsv.BeginDateTime,
-                ChargeMultiplier = rsv.ChargeMultiplier,
-                EndDateTime = rsv.EndDateTime,
-                ModifiedByClientID = modifiedBy.ClientID,
-                ModifiedDateTime = DateTime.Now,
-                Reservation = rsv
-            };
-
-            Session.Insert(hist);
-
-            return hist;
         }
 
         /// <summary>
@@ -1377,7 +1354,7 @@ namespace LNF.Scheduler
             return rc.AuthLevel;
         }
 
-        public ReservationHistory InsertReservationHistory(string action, string actionSource, Reservation rsv, int? modifiedByClientId = null, int? linkedReservationId = null)
+        private ReservationHistory InsertReservationHistory(string action, string actionSource, Reservation rsv, int? modifiedByClientId = null, int? linkedReservationId = null)
         {
             // procReservationHistoryInsert [note that @Reservations is a user-defined type (basically a temp table)]
 
@@ -1469,9 +1446,9 @@ namespace LNF.Scheduler
             InsertReservationHistory("WithForgive", "procReservationDelete", rsv, modifiedByClientId);
         }
 
-        public IList<ClientAccount> AvailableAccounts(ReservationItem rsv)
+        public IList<ClientAccountItem> AvailableAccounts(ReservationItem rsv)
         {
-            IList<ClientAccount> result = null;
+            IList<ClientAccountItem> result = null;
 
             DateTime sd = rsv.CreatedOn.Date;
             DateTime ed = sd.AddDays(1);
@@ -1480,7 +1457,7 @@ namespace LNF.Scheduler
             {
                 //Load reserver's accounts
                 var c = DA.Current.Single<Client>(rsv.ClientID);
-                result = ClientManager.ActiveClientAccounts(c, sd, ed).ToList();
+                result = ClientManager.ActiveClientAccounts(c.ClientID, sd, ed).ToList();
             }
 
             if (rsv.ActivityAccountType == ActivityAccountType.Invitee || rsv.ActivityAccountType == ActivityAccountType.Both)
@@ -1488,16 +1465,16 @@ namespace LNF.Scheduler
                 //Loads each of the invitee's accounts
                 foreach (ReservationInvitee ri in GetInvitees(rsv.ReservationID))
                 {
-                    IQueryable<ClientAccount> temp = ClientManager.ActiveClientAccounts(ri.Invitee, sd, ed);
+                    var temp = ClientManager.ActiveClientAccounts(ri.Invitee.ClientID, sd, ed);
 
                     if (result == null)
                         result = temp.ToList();
                     else
                     {
-                        foreach (ClientAccount t in temp)
+                        foreach (ClientAccountItem t in temp)
                         {
                             //Check if account already exists
-                            if (!result.Any(i => i.Account == t.Account))
+                            if (!result.Any(i => i.AccountID == t.AccountID))
                             {
                                 result.Add(t);
                             }

@@ -93,7 +93,7 @@ namespace LNF.Repository.Data
         /// <summary>
         /// The Account project number - a predefined segment of Number
         /// </summary>
-        public virtual string Project { get { return Account.GetProject(Number); } protected set { } }
+        public virtual string Project { get { return GetProject(); } protected set { } }
 
         /// <summary>
         /// Indictes if a Account is currently active
@@ -120,10 +120,13 @@ namespace LNF.Repository.Data
         /// Gets the full name of the account - including ShortCode, Name, and OrgName
         /// </summary>
         /// <returns>The string value of the full account name</returns>
-        public virtual string GetFullAccountName()
-        {
-            return GetFullAccountName(ShortCode, Name, Org.OrgName);
-        }
+        public virtual string GetFullAccountName() => AccountItem.GetFullAccountName(Name, ShortCode, Org.OrgName);
+
+        /// <summary>
+        /// Gets the account name with the ShortCode
+        /// </summary>
+        /// <returns>The string value of the account name with the ShortCode</returns>
+        public virtual string GetNameWithShortCode() => AccountItem.GetNameWithShortCode(Name, ShortCode);
 
         /// <summary>
         /// Gets the full name of the account - including ShortCode, Name, and OrgName
@@ -135,45 +138,29 @@ namespace LNF.Repository.Data
         }
 
         /// <summary>
-        /// Gets the account name with the ShortCode
-        /// </summary>
-        /// <returns>The string value of the account name with the ShortCode</returns>
-        public virtual string GetNameWithShortCode()
-        {
-            return Account.GetNameWithShortCode(ShortCode, Name);
-        }
-
-        /// <summary>
         /// Get the project component of an account Number
         /// </summary>
         /// <returns></returns>
-        public virtual string GetProject()
-        {
-            return Account.GetProject(Number);
-        }
-
+        public virtual string GetProject() => AccountItem.GetProject(Number);
 
         /// <summary>
         /// Gets a value indicating if the associated AccountType is the regular type
         /// </summary>
         /// <returns>True if the AccountType is regular, otherwise false</returns>
-        public virtual bool IsRegularAccountType()
-        {
-            return AccountType.AccountTypeID == 1;
-        }
+        public virtual bool IsRegularAccountType() => AccountItem.GetIsRegularAccountType(AccountType.AccountTypeID);
 
-        /// <summary>
-        /// Gets the name of the account. The name includes the account ShortCode (if applicable), account Name and OrgName.
-        /// </summary>
-        public static string GetFullAccountName(string shortcode, string accountName, string orgName)
-        {
-            string result = GetNameWithShortCode(shortcode, accountName);
+        ///// <summary>
+        ///// Gets the name of the account. The name includes the account ShortCode (if applicable), account Name and OrgName.
+        ///// </summary>
+        //public static string GetFullAccountName(string shortcode, string accountName, string orgName)
+        //{
+        //    string result = GetNameWithShortCode(shortcode, accountName);
 
-            if (!string.IsNullOrEmpty(orgName))
-                result += " (" + orgName + ")";
+        //    if (!string.IsNullOrEmpty(orgName))
+        //        result += " (" + orgName + ")";
 
-            return result.Trim();
-        }
+        //    return result.Trim();
+        //}
 
         /// <summary>
         /// Concatenates an account name and a ShortCode
@@ -181,27 +168,14 @@ namespace LNF.Repository.Data
         /// <param name="shortcode">The account ShortCode</param>
         /// <param name="accountName">The account name</param>
         /// <returns>A formatted string using the given ShortCode and account name values</returns>
-        public static string GetNameWithShortCode(string shortcode, string accountName)
-        {
-            string result = accountName;
+        //public static string GetNameWithShortCode(string shortcode, string accountName)
+        //{
+        //    string result = accountName;
 
-            if (!string.IsNullOrEmpty(shortcode.Trim()))
-                result = "[" + shortcode.Trim() + "] " + result;
+        //    if (!string.IsNullOrEmpty(shortcode.Trim()))
+        //        result = "[" + shortcode.Trim() + "] " + result;
 
-            return result.Trim();
-        }
-
-        /// <summary>
-        /// Gets the Project compoenent from an account number
-        /// </summary>
-        /// <param name="number">The account number</param>
-        /// <returns>A string value for the account Project</returns>
-        public static string GetProject(string number)
-        {
-            if (string.IsNullOrEmpty(number))
-                return string.Empty;
-
-            return number.Substring(number.Length - 7);
-        }
+        //    return result.Trim();
+        //}
     }
 }

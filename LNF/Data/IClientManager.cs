@@ -11,9 +11,10 @@ namespace LNF.Data
     {
         IQueryable<Account> ActiveAccounts(Client client);
         IQueryable<Account> ActiveAccounts(Client client, DateTime sd, DateTime ed);
-        IQueryable<ClientAccountInfo> ActiveClientAccountInfos(Client client);
-        IQueryable<ClientAccount> ActiveClientAccounts(int clientId);
-        IQueryable<ClientAccount> ActiveClientAccounts(Client client, DateTime sd, DateTime ed);
+
+        IEnumerable<ClientAccountItem> ActiveClientAccounts(int clientId);
+        IEnumerable<ClientAccountItem> ActiveClientAccounts(int client, DateTime sd, DateTime ed);
+
         IQueryable<ClientOrg> ActiveClientOrgs(Client client);
         IQueryable<ClientOrg> ActiveClientOrgs(Client client, DateTime sd, DateTime ed);
         string[] ActiveEmails(Client client);

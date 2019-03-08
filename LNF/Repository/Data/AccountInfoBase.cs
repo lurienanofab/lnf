@@ -71,7 +71,7 @@ namespace LNF.Repository.Data
         /// <summary>
         /// The Account project number - a predefined segment of Number
         /// </summary>
-        public virtual string Project { get { return Account.GetProject(Number); } }
+        public virtual string Project => AccountItem.GetProject(Number);
 
         /// <summary>
         /// Indictes if a Account is currently active

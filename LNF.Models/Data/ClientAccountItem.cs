@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Data
 {
-    public class ClientAccountItem : IPrivileged
+    public class ClientAccountItem : IPrivileged, IAccount
     {
         public int ClientAccountID { get; set; }
         public bool IsDefault { get; set; }
@@ -46,5 +46,8 @@ namespace LNF.Models.Data
         public string DisplayName { get; set; }
         public ClientPrivilege Privs { get; set; }
         public bool ClientActive { get; set; }
+        public string FullAccountName => AccountItem.GetFullAccountName(AccountName, ShortCode, OrgName);
+        public string NameWithShortCode => AccountItem.GetNameWithShortCode(AccountName, ShortCode);
+        public bool IsRegularAccountType => AccountItem.GetIsRegularAccountType(AccountTypeID);
     }
 }

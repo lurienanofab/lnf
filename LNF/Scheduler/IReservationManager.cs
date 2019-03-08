@@ -12,9 +12,9 @@ namespace LNF.Scheduler
 {
     public interface IReservationManager : IManager
     {
-        ReservationHistory AddReservationHistory(string actionSource, string userAction, Reservation rsv, Client modifiedBy = null);
-        IList<ClientAccount> AvailableAccounts(ReservationItem rsv);
+        IList<ClientAccountItem> AvailableAccounts(ReservationItem rsv);
         void CanCreateCheck(Reservation rsv);
+
         DataTable CopyReservationInviteesTable();
         DataTable CopyReservationProcessInfoTable();
         Reservation Create(Resource resource, Client client, Account account, Activity activity, DateTime beginDateTime, DateTime endDateTime, double duration, string notes, bool autoEnd, bool hasProcessInfo, bool hasInvitees, ReservationRecurrence recurrence, bool isActive, bool keepAlive, double maxReservedDuration, Client modifiedBy);
@@ -51,7 +51,6 @@ namespace LNF.Scheduler
         void InsertFacilityDownTime(Reservation rsv, int? modifiedByClientId);
         void InsertForModification(Reservation rsv, int linkedReservationId, int? modifiedByClientId);
         Reservation InsertRepair(int resourceId, int clientId, DateTime beginDateTime, DateTime endDateTime, DateTime actualBeginDateTime, string notes, int? modifiedByClientId);
-        ReservationHistory InsertReservationHistory(string action, string actionSource, Reservation rsv, int? modifiedByClientId = null, int? linkedReservationId = null);
         bool IsInvited(int reservationId, int clientId);
         bool IsStartable(DateTime now, DateTime beginDateTime, int minReservTime);
         bool IsStartable(DateTime beginDateTime, int minReservTime);

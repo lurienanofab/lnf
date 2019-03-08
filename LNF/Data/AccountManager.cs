@@ -1,4 +1,5 @@
 ﻿using LNF.CommonTools;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Billing;
 using LNF.Repository.Data;
@@ -202,14 +203,14 @@ namespace LNF.Data
             return new AccountChartFields(item);
         }
 
-        public DataTable ConvertToAccountTable(IList<Account> accounts)
+        public DataTable ConvertToAccountTable(IList<IAccount> accounts)
         {
             var dt = new DataTable();
             dt.Columns.Add("AccountID", typeof(int));
             dt.Columns.Add("Name", typeof(string));
 
-            foreach (var a in accounts.OrderBy(x => x.Name))
-                dt.Rows.Add(a.AccountID, a.Name);
+            foreach (var a in accounts.OrderBy(x => x.AccountName))
+                dt.Rows.Add(a.AccountID, a.AccountName);
 
             return dt;
         }

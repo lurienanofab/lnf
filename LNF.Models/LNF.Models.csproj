@@ -88,6 +88,7 @@
     <Compile Include="Data\ClientDemographics.cs" />
     <Compile Include="Billing\IBillingApi.cs" />
     <Compile Include="Data\GlobalSettingsItem.cs" />
+    <Compile Include="Data\IAccount.cs" />
     <Compile Include="Data\IClientClient.cs" />
     <Compile Include="Data\IDataApi.cs" />
     <Compile Include="Data\IDefaultClient.cs" />
