@@ -290,7 +290,7 @@ namespace LNF.CommonTools
 
         public override IBulkCopy CreateBulkCopy()
         {
-            IBulkCopy bcp = DA.Current.GetBulkCopy("dbo.RoomData");
+            IBulkCopy bcp = new DefaultBulkCopy("dbo.RoomData");
             bcp.AddColumnMapping("Period");
             bcp.AddColumnMapping("ClientID");
             bcp.AddColumnMapping("RoomID");

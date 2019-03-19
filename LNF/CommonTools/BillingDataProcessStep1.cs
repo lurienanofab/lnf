@@ -1052,7 +1052,7 @@ namespace LNF.CommonTools
 
         private static IBulkCopy CreateToolBillingBulkCopy(bool temp)
         {
-            IBulkCopy bcp = DA.Current.GetBulkCopy(temp ? "dbo.ToolBillingTemp" : "dbo.ToolBilling");
+            IBulkCopy bcp = new DefaultBulkCopy(temp ? "dbo.ToolBillingTemp" : "dbo.ToolBilling");
             bcp.AddColumnMapping("Period");
             bcp.AddColumnMapping("ReservationID");
             bcp.AddColumnMapping("ClientID");

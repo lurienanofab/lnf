@@ -29,7 +29,7 @@ namespace LNF.CommonTools
             Connection.ConnectionString = ConfigurationManager.ConnectionStrings[key].ConnectionString;
             Connection.Open();
 
-            Transaction = Connection.BeginTransaction();
+            Transaction = Connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
             SelectCommand = CreateCommand();
             InsertCommand = CreateCommand();

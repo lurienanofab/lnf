@@ -89,6 +89,7 @@
     <Compile Include="Cache\CacheItemNotFoundException.cs" />
     <Compile Include="Cache\MemoryCacheHackExtenstions.cs" />
     <Compile Include="CommonTools\DataTableManager.cs" />
+    <Compile Include="CommonTools\DefaultBulkCopy.cs" />
     <Compile Include="CommonTools\IProcess.cs" />
     <Compile Include="CommonTools\IReadMiscDataManager.cs" />
     <Compile Include="CommonTools\IReadStoreDataManager.cs" />

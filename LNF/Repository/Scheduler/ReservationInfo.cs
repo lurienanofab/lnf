@@ -95,18 +95,8 @@ namespace LNF.Repository.Scheduler
         public virtual DateTime? OriginalEndDateTime { get; set; }
         public virtual DateTime? OriginalModifiedOn { get; set; }
 
-        public virtual bool IsCurrentlyOutsideGracePeriod()
-        {
-            DateTime gp = BeginDateTime.AddMinutes(GracePeriod);
-            return DateTime.Now > gp;
-        }
+        public virtual bool IsCurrentlyOutsideGracePeriod => ReservationItem.IsCurrentlyOutsideGracePeriod(GracePeriod, BeginDateTime);
 
-        public virtual bool IsCancelledBeforeCutoff()
-        {
-            if (!CancelledDateTime.HasValue)
-                return false;
-            else
-                return CancelledDateTime.Value.AddHours(2) < BeginDateTime;
-        }
+        public virtual bool IsCancelledBeforeCutoff() => ReservationItem.IsCancelledBeforeCutoff(CancelledDateTime, BeginDateTime);
     }
 }

@@ -87,11 +87,6 @@ namespace LNF.Impl.DataAccess
             return new NHibernateUnitOfWorkAdapter(Session);
         }
 
-        public IBulkCopy GetBulkCopy(string destinationTableName)
-        {
-            return new NHibernateBulkCopy(Session, destinationTableName);
-        }
-
         public void Flush()
         {
             Session.Flush();
@@ -612,62 +607,6 @@ namespace LNF.Impl.DataAccess
 
             // Use Expression.Lambda to get back to strong typing
             return System.Linq.Expressions.Expression.Lambda<Func<TInput, object>>(converted, expression.Parameters);
-        }
-    }
-
-    public class NHibernateBulkCopy : IBulkCopy, IDisposable
-    {
-        private SqlBulkCopy _bcp;
-
-        public string DestinationTableName
-        {
-            get { return _bcp.DestinationTableName; }
-        }
-
-        public NHibernateBulkCopy(NHibernate.ISession session, string destinationTableName)
-        {
-            SqlConnection conn = session.Connection as SqlConnection;
-
-            if (conn == null)
-                throw new NotSupportedException("Only SqlConnection type is supported.");
-
-            var cmd = conn.CreateCommand();
-
-            session.Transaction.Enlist(cmd);
-
-            SqlBulkCopyOptions options = SqlBulkCopyOptions.TableLock;
-
-            _bcp = new SqlBulkCopy(conn, options, cmd.Transaction)
-            {
-                DestinationTableName = destinationTableName,
-                BatchSize = 5000
-            };
-        }
-
-        public void AddColumnMapping(string sourceColumn, string destinationColumn)
-        {
-            _bcp.ColumnMappings.Add(sourceColumn, destinationColumn);
-        }
-
-        public void AddColumnMapping(string columnName)
-        {
-            AddColumnMapping(columnName, columnName);
-        }
-
-        public void WriteToServer(DataTable dt)
-        {
-            _bcp.WriteToServer(dt);
-        }
-
-        public void WriteToServer(DataTable dt, DataRowState state)
-        {
-            _bcp.WriteToServer(dt, state);
-        }
-
-        public void Dispose()
-        {
-            IDisposable disposable = _bcp;
-            disposable.Dispose();
         }
     }
 }

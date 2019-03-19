@@ -62,7 +62,7 @@ namespace LNF.CommonTools
 
         public override IBulkCopy CreateBulkCopy()
         {
-            var bcp = DA.Current.GetBulkCopy("dbo.StoreData");
+            IBulkCopy bcp = new DefaultBulkCopy("dbo.StoreData");
             bcp.AddColumnMapping("Period");
             bcp.AddColumnMapping("ClientID");
             bcp.AddColumnMapping("ItemID");

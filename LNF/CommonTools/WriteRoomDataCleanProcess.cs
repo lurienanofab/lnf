@@ -178,7 +178,7 @@ namespace LNF.CommonTools
 
         public override IBulkCopy CreateBulkCopy()
         {
-            var bcp = DA.Current.GetBulkCopy("dbo.RoomDataClean");
+            IBulkCopy bcp = new DefaultBulkCopy("dbo.RoomDataClean");
             bcp.AddColumnMapping("ClientID");
             bcp.AddColumnMapping("RoomID");
             bcp.AddColumnMapping("EntryDT");

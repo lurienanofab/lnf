@@ -1,6 +1,9 @@
 ﻿using LNF.Billing;
 using LNF.Models.Billing.Process;
+using LNF.Models.Data;
+using LNF.Models.Scheduler;
 using LNF.Repository;
+using LNF.Scheduler;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -454,7 +457,10 @@ namespace LNF.CommonTools
 
             DataRow[] rows = dtToolDataClean.AsEnumerable().Where(x => x.RowState != DataRowState.Deleted).ToArray();
 
-            ReservationDateRange range = new ReservationDateRange(Period);
+            var dateRange = new ReservationDateRange.DateRange(Period);
+            var reservations = GetReservations(dateRange);
+
+            ReservationDateRange range = new ReservationDateRange(reservations, dateRange);
             ReservationDurations durations = range.CreateReservationDurations();
 
             // loop through reservations and get the TransferredDuration quantity for each
@@ -546,9 +552,51 @@ namespace LNF.CommonTools
                 .ExecuteNonQuery("dbo.ToolData_Adjust").Value;
         }
 
+        private IEnumerable<ReservationDateRange.Reservation> GetReservations(ReservationDateRange.DateRange range)
+        {
+            var costs = ServiceProvider.Current.Data.GetResourceCosts(ResourceID, range.EndDate);
+
+            var dt = DA.Command(CommandType.Text)
+                .Param("sDate", range.StartDate)
+                .Param("eDate", range.EndDate)
+                .Param("ResourceID", ResourceID > 0, ResourceID)
+                .FillDataTable("SELECT * FROM sselScheduler.dbo.v_ReservationInfo WHERE ChargeBeginDateTime < @eDate AND ChargeEndDateTime > @sDate");
+
+            var result = dt.AsEnumerable().Select(x => new ReservationDateRange.Reservation
+            {
+                ReservationID = x.Field<int>("ReservationID"),
+                ResourceID = x.Field<int>("ResourceID"),
+                ResourceName = x.Field<string>("ResourceName"),
+                ProcessTechID = x.Field<int>("ProcessTechID"),
+                ProcessTechName = x.Field<string>("ProcessTechName"),
+                ClientID = x.Field<int>("ClientID"),
+                UserName = x.Field<string>("UserName"),
+                DisplayName = ClientItem.GetDisplayName(x.Field<string>("LName"), x.Field<string>("FName")),
+                ActivityID = x.Field<int>("ActivityID"),
+                ActivityName = x.Field<string>("ActivityName"),
+                AccountID = x.Field<int>("AccountID"),
+                AccountName = x.Field<string>("AccountName"),
+                ShortCode = x.Field<string>("ShortCode"),
+                IsActive = x.Field<bool>("IsActive"),
+                IsStarted = x.Field<bool>("IsStarted"),
+                BeginDateTime = x.Field<DateTime>("BeginDateTime"),
+                EndDateTime = x.Field<DateTime>("EndDateTime"),
+                ActualBeginDateTime = x.Field<DateTime?>("ActualBeginDateTime"),
+                ActualEndDateTime = x.Field<DateTime?>("ActualEndDateTime"),
+                ChargeBeginDateTime = x.Field<DateTime>("ChargeBeginDateTime"),
+                ChargeEndDateTime = x.Field<DateTime>("ChargeEndDateTime"),
+                LastModifiedOn = x.Field<DateTime>("LastModifiedOn"),
+                IsCancelledBeforeCutoff = ReservationItem.IsCancelledBeforeCutoff(x.Field<DateTime?>("CancelledDateTime"), x.Field<DateTime>("BeginDateTime")),
+                ChargeMultiplier = x.Field<double>("ChargeMultiplier"),
+                Cost = ResourceCost.CreateResourceCosts(costs.Where(c => (c.RecordID == x.Field<int>("ResourceID") || c.RecordID == 0) && c.ChargeTypeID == x.Field<int>("ChargeTypeID"))).FirstOrDefault()
+            }).ToList();
+
+            return result;
+        }
+
         public override IBulkCopy CreateBulkCopy()
         {
-            IBulkCopy bcp = DA.Current.GetBulkCopy("dbo.ToolData");
+            IBulkCopy bcp = new DefaultBulkCopy("dbo.ToolData");
             bcp.AddColumnMapping("Period");
             bcp.AddColumnMapping("ReservationID");
             bcp.AddColumnMapping("ClientID");

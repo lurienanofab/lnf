@@ -50,7 +50,7 @@ namespace LNF.CommonTools
 
         public override IBulkCopy CreateBulkCopy()
         {
-            IBulkCopy bcp = DA.Current.GetBulkCopy("dbo.ToolDataClean");
+            IBulkCopy bcp = new DefaultBulkCopy("dbo.ToolDataClean");
             bcp.AddColumnMapping("ReservationID");
             bcp.AddColumnMapping("ClientID");
             bcp.AddColumnMapping("ResourceID");

@@ -26,14 +26,16 @@ namespace LNF.Billing
 
         public ReservationDateRange(DateRange range) : this(0, range) { }
 
-        public ReservationDateRange(int resourceId, DateRange range)
+        public ReservationDateRange(int resourceId, DateRange range) : this(GetReservations(resourceId, range), range) { }
+
+        public ReservationDateRange(IEnumerable<Reservation> reservations, DateRange range)
         {
             Range = range;
 
             int size = Convert.ToInt32(Range.Span.TotalSeconds);
             _buffer = new int[size];
 
-            Reservations = GetReservations(resourceId);
+            Reservations = reservations;
         }
 
         public void Clear()
@@ -189,16 +191,16 @@ namespace LNF.Billing
             return expanded;
         }
 
-        private IEnumerable<Reservation> GetReservations(int resourceId)
+        private static IEnumerable<Reservation> GetReservations(int resourceId, DateRange range)
         {
-            var costs = ServiceProvider.Current.Data.GetResourceCosts(resourceId, Range.EndDate);
+            var costs = ServiceProvider.Current.Data.GetResourceCosts(resourceId, range.EndDate);
 
             IQueryable<ReservationInfo> query = null;
 
             if (resourceId == 0)
-                query = DA.Current.Query<ReservationInfo>().Where(x => x.ChargeBeginDateTime < Range.EndDate && x.ChargeEndDateTime > Range.StartDate);
+                query = DA.Current.Query<ReservationInfo>().Where(x => x.ChargeBeginDateTime < range.EndDate && x.ChargeEndDateTime > range.StartDate);
             else
-                query = DA.Current.Query<ReservationInfo>().Where(x => x.ResourceID == resourceId && x.ChargeBeginDateTime < Range.EndDate && x.ChargeEndDateTime > Range.StartDate);
+                query = DA.Current.Query<ReservationInfo>().Where(x => x.ResourceID == resourceId && x.ChargeBeginDateTime < range.EndDate && x.ChargeEndDateTime > range.StartDate);
 
             var result = query.ToList().Select(x => new Reservation()
             {
@@ -313,6 +315,8 @@ namespace LNF.Billing
             public DateTime StartDate { get; }
             public DateTime EndDate { get; }
             public TimeSpan Span { get { return EndDate - StartDate; } }
+
+            public DateRange(DateTime period) : this(period, period.AddMonths(1)) { }
 
             public DateRange(DateTime sd, DateTime ed)
             {

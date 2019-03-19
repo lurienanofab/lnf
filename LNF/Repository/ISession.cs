@@ -109,8 +109,6 @@ namespace LNF.Repository
         /// </summary>
         UnitOfWorkAdapter GetAdapter();
 
-        IBulkCopy GetBulkCopy(string destinationTableName);
-
         /// <summary>
         /// Perform all pending operations on the database.
         /// </summary>

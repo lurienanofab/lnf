@@ -11,7 +11,7 @@ namespace LNF.Tests
         [TestMethod]
         public void DoesItWork()
         {
-            var dt = DefaultDataCommand.Create(CommandType.Text).Param("ClientID", 1301).FillDataTable("SELECT UserName FROM dbo.Client WHERE ClientID = @ClientID");
+            var dt = DA.Command(CommandType.Text).Param("ClientID", 1301).FillDataTable("SELECT UserName FROM dbo.Client WHERE ClientID = @ClientID");
             Assert.AreEqual(1, dt.Rows.Count);
             Assert.AreEqual("jgett", dt.Rows[0]["UserName"]);
         }

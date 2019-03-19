@@ -111,9 +111,29 @@ namespace LNF.Models.Scheduler
 
         public bool IsRunning() => IsRunning(ActualBeginDateTime, ActualEndDateTime);
 
+        public bool HasState(ResourceState state) => HasState(State, state);
+
+        public bool IsCancelledBeforeCutoff() => IsCancelledBeforeCutoff(CancelledDateTime, BeginDateTime);
+
+        public bool IsCurrentlyOutsideGracePeriod() => IsCurrentlyOutsideGracePeriod(GracePeriod, BeginDateTime);
+
         public static bool IsRunning(DateTime? actualBeginDateTime, DateTime? actualEndDateTime) => actualBeginDateTime != null && actualEndDateTime == null;
 
-        public bool HasState(ResourceState state) => State == state;
+        public static bool HasState(ResourceState s1, ResourceState s2) => s1 == s2;
+
+        public static bool IsCancelledBeforeCutoff(DateTime? cancelledDateTime, DateTime beginDateTime)
+        {
+            if (!cancelledDateTime.HasValue)
+                return false;
+            else
+                return cancelledDateTime.Value.AddHours(2) < beginDateTime;
+        }
+
+        public static bool IsCurrentlyOutsideGracePeriod(int gracePeriod, DateTime beginDateTime)
+        {
+            DateTime gp = beginDateTime.AddMinutes(gracePeriod);
+            return DateTime.Now > gp;
+        }
     }
 
     public class ReservationItemWithInvitees : ReservationItem
