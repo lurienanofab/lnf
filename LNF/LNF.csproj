@@ -463,6 +463,7 @@
     <Compile Include="Repository\Scheduler\ReservationHistory.cs" />
     <Compile Include="Repository\Scheduler\ReservationInfo.cs" />
     <Compile Include="Repository\Scheduler\ReservationInvitee.cs" />
+    <Compile Include="Repository\Scheduler\ReservationInviteeInfo.cs" />
     <Compile Include="Repository\Scheduler\ReservationLog.cs" />
     <Compile Include="Repository\Scheduler\ReservationOnTheFly.cs" />
     <Compile Include="Repository\Scheduler\ReservationProcessInfo.cs" />
@@ -493,6 +494,7 @@
     <Compile Include="Scheduler\IResourceManager.cs" />
     <Compile Include="Scheduler\IProcessInfoManager.cs" />
     <Compile Include="Scheduler\ProcessInfoManager.cs" />
+    <Compile Include="Scheduler\ReservationData.cs" />
     <Compile Include="Scheduler\ReservationInviteeManager.cs" />
     <Compile Include="Scheduler\Data\AuthLevelData.cs" />
     <Compile Include="Scheduler\Data\HolidayData.cs" />
@@ -507,12 +509,12 @@
     <Compile Include="Scheduler\ReservationGroupUtility.cs" />
     <Compile Include="Scheduler\ReservationHistoryFilterItem.cs" />
     <Compile Include="Scheduler\ReservationInProgress.cs" />
-    <Compile Include="Scheduler\ReservationInviteeItem.cs" />
     <Compile Include="Scheduler\ReservationInviteeUtility.cs" />
     <Compile Include="Scheduler\ReservationManager.cs" />
     <Compile Include="Scheduler\ReservationModificationType.cs" />
     <Compile Include="Scheduler\ReservationProcessInfoItem.cs" />
     <Compile Include="Scheduler\ReservationStateArgs.cs" />
+    <Compile Include="Scheduler\ReservationUtility.cs" />
     <Compile Include="Scheduler\ResourceClientInfoUtility.cs" />
     <Compile Include="Scheduler\ResourceCost.cs" />
     <Compile Include="Scheduler\OnTheFlyUtility.cs" />

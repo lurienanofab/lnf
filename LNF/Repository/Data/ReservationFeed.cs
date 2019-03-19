@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LNF.Models.Data;
+using System;
 
 namespace LNF.Repository.Data
 {
@@ -28,5 +29,7 @@ namespace LNF.Repository.Data
         public virtual string AccountName { get; set; }
         public virtual int OrgID { get; set; }
         public virtual string OrgName { get; set; }
+
+        public virtual string GetClientDisplayName() => ClientItem.GetDisplayName(LName, FName);
     }
 }

@@ -88,7 +88,7 @@ namespace LNF.Web.Content
         {
             try
             {
-                CacheManager.Current.ErrorID = value;
+                ContextBase.SetErrorID(value);
             }
             catch { }
         }
@@ -97,7 +97,7 @@ namespace LNF.Web.Content
         {
             try
             {
-                return CacheManager.Current.ErrorID;
+                return ContextBase.GetErrorID();
             }
             catch
             {
@@ -109,7 +109,7 @@ namespace LNF.Web.Content
         {
             try
             {
-                return CacheManager.Current.CurrentUser.ClientID;
+                return CurrentUser.ClientID;
             }
             catch
             {
@@ -121,7 +121,7 @@ namespace LNF.Web.Content
         {
             try
             {
-                return CacheManager.Current.CurrentUser.DisplayName;
+                return CurrentUser.DisplayName;
             }
             catch
             {

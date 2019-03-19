@@ -35,8 +35,9 @@ namespace LNF.Models.Scheduler
         public int ReservFence { get; set; }
         public int MaxAlloc { get; set; }
         public int MinCancelTime { get; set; }
-        public int AutoEnd { get; set; }
+        public int ResourceAutoEnd { get; set; }
         public int UnloadTime { get; set; }
+        public int OTFSchedTime { get; set; }
         public int Granularity { get; set; }
         public int Offset { get; set; }
         public bool IsReady { get; set; }
@@ -70,41 +71,6 @@ namespace LNF.Models.Scheduler
         public DateTime? Expiration { get; set; }
         public int? EmailNotify { get; set; }
         public int? PracticeResEmailNotify { get; set; }
-
-        public ResourceItem GetResourceItem()
-        {
-            return new ResourceItem()
-            {
-                ResourceID = ResourceID,
-                ResourceName = ResourceName,
-                BuildingID = BuildingID,
-                BuildingName = BuildingName,
-                LabID = LabID,
-                LabName = LabName,
-                LabDisplayName = LabDisplayName,
-                ProcessTechID = ProcessTechID,
-                ProcessTechName = ProcessTechName,
-                ResourceDescription = ResourceDescription,
-                Granularity = TimeSpan.FromMinutes(Granularity),
-                ReservFence = TimeSpan.FromMinutes(ReservFence),
-                MinReservTime = TimeSpan.FromMinutes(MinReservTime),
-                MaxReservTime = TimeSpan.FromMinutes(MaxReservTime),
-                MaxAlloc = TimeSpan.FromMinutes(MaxAlloc),
-                Offset = TimeSpan.FromHours(Offset),
-                GracePeriod = TimeSpan.FromMinutes(GracePeriod),
-                AutoEnd = TimeSpan.FromMinutes(AutoEnd),
-                MinCancelTime = TimeSpan.FromMinutes(MinCancelTime),
-                UnloadTime = TimeSpan.FromMinutes(UnloadTime),
-                AuthDuration = AuthDuration,
-                AuthState = AuthState,
-                IsSchedulable = IsSchedulable,
-                State = State,
-                StateNotes = StateNotes,
-                IsReady = IsReady,
-                ResourceIsActive = ResourceIsActive,
-                HelpdeskEmail = HelpdeskEmail,
-                WikiPageUrl = WikiPageUrl
-            };
-        }
+        public bool HasState(ResourceState state) => State == state;
     }
 }

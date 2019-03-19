@@ -17,7 +17,7 @@ namespace LNF.Data
 
         IQueryable<ClientOrg> ActiveClientOrgs(Client client);
         IQueryable<ClientOrg> ActiveClientOrgs(Client client, DateTime sd, DateTime ed);
-        string[] ActiveEmails(Client client);
+        string[] ActiveEmails(int clientId);
         bool CheckPassword(int clientId, string password);
         string CleanMiddleName(string raw);
         IQueryable<ClientAccount> ClientAccounts(Client client);

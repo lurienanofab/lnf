@@ -1,11 +1,14 @@
 ﻿using LNF.Cache;
 using LNF.Models.Scheduler;
 using LNF.Scheduler;
+using System.Linq;
 
 namespace LNF.Repository.Scheduler
 {
     public class ClientSetting : IDataItem
     {
+        private ResourceTreeItemCollection _resourceTree;
+
         public static readonly int DefaultBuildingID = 4;
         public static readonly int DefaultLabID = 1;
         public static readonly int DefaultDefaultView = (int)ViewType.DayView;
@@ -30,6 +33,17 @@ namespace LNF.Repository.Scheduler
         public virtual bool? EmailDeleteReserv { get; set; }
         public virtual bool? EmailInvited { get; set; }
         public virtual string AccountOrder { get; set; }
+
+        public virtual ResourceTreeItemCollection GetResourceTree()
+        {
+            if (_resourceTree == null)
+            {
+                var items = DA.Current.Query<ResourceTree>().Where(x => x.ClientID == ClientID).CreateModels<ResourceTreeItem>();
+                _resourceTree = new ResourceTreeItemCollection(items);
+            }
+
+            return _resourceTree;
+        }
 
         public virtual bool IsValid()
         {
@@ -86,9 +100,9 @@ namespace LNF.Repository.Scheduler
             int buildingId = BuildingID.GetValueOrDefault(DefaultBuildingID);
 
             if (buildingId == -1)
-                return CacheManager.Current.ResourceTree().GetBuilding(DefaultBuildingID);
+                return GetResourceTree().GetBuilding(DefaultBuildingID);
             else
-                return CacheManager.Current.ResourceTree().GetBuilding(buildingId);
+                return GetResourceTree().GetBuilding(buildingId);
         }
 
         public virtual LabItem GetLabOrDefault()
@@ -96,9 +110,9 @@ namespace LNF.Repository.Scheduler
             int labId = LabID.GetValueOrDefault(DefaultLabID);
 
             if (labId == -1)
-                return CacheManager.Current.ResourceTree().GetLab(DefaultLabID);
+                return GetResourceTree().GetLab(DefaultLabID);
             else
-                return CacheManager.Current.ResourceTree().GetLab(labId);
+                return GetResourceTree().GetLab(labId);
         }
 
         public static ClientSetting GetClientSettingOrDefault(int clientId)
@@ -116,20 +130,21 @@ namespace LNF.Repository.Scheduler
 
         public static ClientSetting CreateWithDefaultValues(int clientId)
         {
-            ClientSetting cs = new ClientSetting();
-            cs.ClientID = clientId;
-            cs.BuildingID = DefaultBuildingID;
-            cs.LabID = DefaultLabID;
-            cs.DefaultView = DefaultDefaultView;
-            cs.BeginHour = DefaultBeginHour;
-            cs.EndHour = DefaultEndHour;
-            cs.WorkDays = DefaultWorkDays;
-            cs.EmailCreateReserv = DefaultEmailCreateReserv;
-            cs.EmailModifyReserv = DefaultEmailModifyReserv;
-            cs.EmailDeleteReserv = DefaultEmailDeleteReserv;
-            cs.EmailInvited = DefaultEmailInvited;
-            cs.AccountOrder = DefaultAccountOrder;
-            return cs;
+            return new ClientSetting()
+            {
+                ClientID = clientId,
+                BuildingID = DefaultBuildingID,
+                LabID = DefaultLabID,
+                DefaultView = DefaultDefaultView,
+                BeginHour = DefaultBeginHour,
+                EndHour = DefaultEndHour,
+                WorkDays = DefaultWorkDays,
+                EmailCreateReserv = DefaultEmailCreateReserv,
+                EmailModifyReserv = DefaultEmailModifyReserv,
+                EmailDeleteReserv = DefaultEmailDeleteReserv,
+                EmailInvited = DefaultEmailInvited,
+                AccountOrder = DefaultAccountOrder
+            };
         }
     }
 }

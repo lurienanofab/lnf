@@ -19,6 +19,8 @@ namespace LNF.Web.Controls.Navigation
         private List<ButtonMenuColumn> _Columns = new List<ButtonMenuColumn>();
         private Authorization _Authorization;
 
+        public HttpContextBase ContextBase { get; }
+
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
         [NotifyParentProperty(true)]
         [PersistenceMode(PersistenceMode.InnerProperty)]
@@ -38,6 +40,11 @@ namespace LNF.Web.Controls.Navigation
             get { return HtmlTextWriterTag.Div; }
         }
 
+        public ButtonMenu()
+        {
+            ContextBase = new HttpContextWrapper(Context);
+        }
+
         protected override void AddAttributesToRender(HtmlTextWriter writer)
         {
             writer.AddAttribute("class", "button-menu");
@@ -52,8 +59,7 @@ namespace LNF.Web.Controls.Navigation
                 _Columns = new List<ButtonMenuColumn>();
                 foreach (Authorization.Group g in groups)
                 {
-                    ButtonMenuColumn bmc = new ButtonMenuColumn();
-                    bmc.Header = g.GroupName;
+                    ButtonMenuColumn bmc = new ButtonMenuColumn { Header = g.GroupName };
                 }
             }
         }
@@ -66,26 +72,22 @@ namespace LNF.Web.Controls.Navigation
             count = 0;
             foreach (ButtonMenuColumn bmc in _Columns)
             {
-                cell = new TableCell();
+                cell = new TableCell { VerticalAlign = VerticalAlign.Top };
                 cell.Style.Add("padding-right", "20px");
-                cell.VerticalAlign = VerticalAlign.Top;
 
                 foreach (ButtonMenuGroup bmg in bmc.Groups)
                 {
-                    Panel panGroup = new Panel();
-                    panGroup.CssClass = "button-group";
+                    Panel panGroup = new Panel { CssClass = "button-group" };
 
-                    System.Web.UI.HtmlControls.HtmlGenericControl div = new System.Web.UI.HtmlControls.HtmlGenericControl();
-                    div.TagName = "div";
+                    var div = new System.Web.UI.HtmlControls.HtmlGenericControl() { TagName = "div", InnerHtml = bmg.Title };
                     div.Attributes.Add("class", "button-group-header");
-                    div.InnerHtml = bmg.Title;
 
                     panGroup.Controls.Add(div);
 
                     Panel panButtons = new Panel();
                     panButtons.Style.Add("padding-top", "5px");
 
-                    DataView dv = this.DataSource.SelectAppPages(bmg.GroupID);
+                    DataView dv = DataSource.SelectAppPages(bmg.GroupID);
                     count = dv.Count;
                     foreach (DataRowView drv in dv)
                     {
@@ -136,8 +138,8 @@ namespace LNF.Web.Controls.Navigation
             {
                 if (e.CommandName == "exit")
                 {
-                    CacheManager.Current.RemoveCacheData();
-                    CacheManager.Current.AbandonSession();
+                    ContextBase.RemoveCacheData();
+                    ContextBase.Session.Abandon();
                 }
                 HttpContext.Current.Response.Redirect(arg);
             }

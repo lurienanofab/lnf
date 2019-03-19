@@ -124,7 +124,13 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public ResourceTreeItem GetResource(int resourceId)
+        public IResource GetResource(int resourceId)
+        {
+            var result = Find(resourceId);
+            return result;
+        }
+
+        public ResourceTreeItem Find(int resourceId)
         {
             var result = _items.FirstOrDefault(x => x.ResourceID == resourceId);
             if (result == null)

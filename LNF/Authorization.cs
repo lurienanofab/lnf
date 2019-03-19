@@ -1,5 +1,4 @@
-﻿using LNF.Cache;
-using LNF.CommonTools;
+﻿using LNF.CommonTools;
 using LNF.Data;
 using LNF.Models.Data;
 using System.Collections;
@@ -13,10 +12,12 @@ namespace LNF
         private DataTable _AppPages;
         private DataTable _Groups;
 
-        public ClientItem CurrentUser
+        public Authorization(IClient client)
         {
-            get { return CacheManager.Current.CurrentUser; }
+            CurrentUser = client;
         }
+
+        public IClient CurrentUser { get; }
 
         public Authorization()
         {

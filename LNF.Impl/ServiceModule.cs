@@ -9,20 +9,20 @@ namespace LNF.Impl
     {
         private IDisposable _uow;
 
-        public void Init(HttpApplication context)
+        public void Init(HttpApplication app)
         {
-            ServiceProvider.Current = IOC.Resolver.GetInstance<ServiceProvider>();
-
-            context.BeginRequest += Context_BeginRequest;
-            context.EndRequest += Context_EndRequest;
+            var ioc = new IOC();
+            ServiceProvider.Current = ioc.Resolver.GetInstance<ServiceProvider>();
+            app.BeginRequest += Context_BeginRequest;
+            app.EndRequest += Context_EndRequest;
         }
 
-        private void Context_BeginRequest(object sender, System.EventArgs e)
+        private void Context_BeginRequest(object sender, EventArgs e)
         {
             _uow = DA.StartUnitOfWork();
         }
 
-        private void Context_EndRequest(object sender, System.EventArgs e)
+        private void Context_EndRequest(object sender, EventArgs e)
         {
             _uow.Dispose();
         }

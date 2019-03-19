@@ -33,7 +33,7 @@ namespace LNF.Scheduler
             }
         }
 
-        public static void EngineerUpdate(ResourceItem model)
+        public static void EngineerUpdate(IResource model)
         {
             // procResourceUpdate @Action = 'EngineerUpdate'
 
@@ -70,21 +70,21 @@ namespace LNF.Scheduler
                 res.HourlyCost = 0;
                 res.AuthDuration = model.AuthDuration;
                 res.AuthState = model.AuthState;
-                res.ReservFence = Convert.ToInt32(model.ReservFence.TotalMinutes);
-                res.Granularity = Convert.ToInt32(model.Granularity.TotalMinutes);
-                res.Offset = Convert.ToInt32(model.Offset.TotalHours);
-                res.MinReservTime = Convert.ToInt32(model.MinReservTime.TotalMinutes);
-                res.MaxReservTime = Convert.ToInt32(model.MaxReservTime.TotalMinutes);
-                res.MaxAlloc = Convert.ToInt32(model.MaxAlloc.TotalMinutes);
-                res.MinCancelTime = Convert.ToInt32(model.MinCancelTime.TotalMinutes);
-                res.GracePeriod = Convert.ToInt32(model.GracePeriod.TotalMinutes);
-                res.AutoEnd = Convert.ToInt32(model.AutoEnd.TotalMinutes);
+                res.ReservFence = model.ReservFence;
+                res.Granularity = model.Granularity;
+                res.Offset = model.Offset;
+                res.MinReservTime = model.MinReservTime;
+                res.MaxReservTime = model.MaxReservTime;
+                res.MaxAlloc = model.MaxAlloc;
+                res.MinCancelTime = model.MinCancelTime;
+                res.GracePeriod = model.GracePeriod;
+                res.AutoEnd = model.ResourceAutoEnd;
                 res.OTFSchedTime = null;
                 res.IPAddress = null;
                 res.Description = model.ResourceDescription;
                 res.WikiPageUrl = model.WikiPageUrl;
                 res.IsReady = true;
-                res.UnloadTime = Utility.GetNullableMinutesFromTimeSpan(model.UnloadTime);
+                res.UnloadTime = Utility.GetNullableMinutesFromTimeSpan(TimeSpan.FromMinutes(model.UnloadTime));
             }
         }
 
@@ -96,8 +96,11 @@ namespace LNF.Scheduler
         /// <param name="actualTime">The point in time to determine the next or previous granularity</param>
         /// <param name="granDir">The direction (next or pervious) to search in</param>
         /// <returns>The DateTime value of the next or previous granularity</returns>
-        public static DateTime GetNextGranularity(TimeSpan granularity, TimeSpan offset, DateTime actualTime, GranularityDirection granDir)
+        public static DateTime GetNextGranularity(IResource res, DateTime actualTime, GranularityDirection granDir)
         {
+            TimeSpan granularity = TimeSpan.FromMinutes(res.Granularity);
+            TimeSpan offset = TimeSpan.FromHours(res.Offset);
+
             // get number of minutes between now and beginning of day (midnight + offset) of passed-in date
             DateTime dayBegin = new DateTime(actualTime.Year, actualTime.Month, actualTime.Day).Add(offset);
 
@@ -119,7 +122,7 @@ namespace LNF.Scheduler
         /// <param name="offset">The offset hours that specify the beginning of the day for a resource</param>
         /// <param name="startTime">The start time</param>
         /// <param name="endTime">The end time</param>
-        public static void GetTimeSlotBoundary(TimeSpan granularity, TimeSpan offset, ref DateTime startTime, ref DateTime endTime)
+        public static void GetTimeSlotBoundary(TimeSpan granularity, TimeSpan offset, ref DateTime startTime, ref DateTime endTime, bool displayDefaultHours, double defaultBeginHour, double defaultEndHour)
         {
             double resHours = 0;
             if (granularity.TotalMinutes > 60) resHours = granularity.TotalMinutes / 60D;
@@ -127,9 +130,8 @@ namespace LNF.Scheduler
             double maxEndHour = 23;
             if (offset.TotalHours > 0) maxEndHour = offset.TotalHours + 24 - resHours;
 
-            if (CacheManager.Current.DisplayDefaultHours())
+            if (displayDefaultHours)
             {
-                double defaultBeginHour = CacheManager.Current.GetClientSetting().GetBeginHourOrDefault();
                 if (defaultBeginHour < offset.TotalHours) //start time cannot be earlier than the beginning of the day
                     startTime = startTime.Add(offset);
                 else if (granularity.TotalMinutes > 60) //align to previous boundary
@@ -143,7 +145,6 @@ namespace LNF.Scheduler
                 else
                     startTime = startTime.AddHours(defaultBeginHour);
 
-                double defaultEndHour = CacheManager.Current.GetClientSetting().GetEndHourOrDefault();
                 if (defaultEndHour > maxEndHour) //start time cannot be earlier than the beginning of the day
                     endTime = endTime.AddHours(maxEndHour);
                 else if (granularity.TotalMinutes > 60) //align to next boundary

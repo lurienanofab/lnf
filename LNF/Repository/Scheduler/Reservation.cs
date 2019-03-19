@@ -1,4 +1,5 @@
 using LNF.CommonTools;
+using LNF.Models.Scheduler;
 using LNF.Repository.Data;
 using LNF.Scheduler;
 using System;
@@ -135,10 +136,7 @@ namespace LNF.Repository.Scheduler
             return Math.Max(result, 0);
         }
 
-        public virtual bool IsRunning()
-        {
-            return ActualBeginDateTime != null && ActualEndDateTime == null;
-        }
+        public virtual bool IsRunning() => ReservationItem.IsRunning(ActualBeginDateTime, ActualEndDateTime);
 
         public virtual bool InCurrentPeriod()
         {

@@ -8,18 +8,18 @@ namespace LNF.Scheduler
 {
     public interface IEmailManager : IManager
     {
-        void EmailOnCanceledByRepair(Reservation rsv, bool isRemoved, string state, string notes, DateTime repairEndDateTime);
-        void EmailOnCanceledByResource(Reservation rsv);
-        void EmailOnForgiveCharge(Reservation rsv, double forgiveAmount, bool sendToUser, int clientId);
-        void EmailOnInvited(Reservation rsv, IEnumerable<ReservationInviteeItem> invitees, ReservationModificationType modificationType = ReservationModificationType.Created);
-        EmailOnOpenReservationsProcessResult EmailOnOpenReservations(int resourceId, DateTime startDate, DateTime endDate);
-        void EmailOnOpenSlot(int resourceId, DateTime beginDateTime, DateTime endDateTime, EmailNotify notifyType, int reservationId);
-        void EmailOnPracticeRes(Reservation rsv, string inviteeName);
-        void EmailOnSaveHistory(Reservation rsv, bool updateCharges, bool updateAccount, bool updateNotes, bool sendToUser);
-        void EmailOnToolEngDelete(Reservation rsv, int toolEngClientId);
-        void EmailOnUninvited(Reservation rsv, IEnumerable<ReservationInviteeItem> invitees);
-        void EmailOnUserCreate(Reservation rsv);
-        void EmailOnUserDelete(Reservation rsv);
-        void EmailOnUserUpdate(Reservation rsv);
+        void EmailOnCanceledByRepair(ReservationItem rsv, bool isRemoved, string state, string notes, DateTime repairEndDateTime, int clientId);
+        void EmailOnCanceledByResource(ReservationItem rsv, int clientId);
+        void EmailOnForgiveCharge(ReservationItem rsv, double forgiveAmount, bool sendToUser, int clientId);
+        void EmailOnInvited(ReservationItem rsv, IEnumerable<ReservationInviteeItem> invitees, int clientId, ReservationModificationType modificationType = ReservationModificationType.Created);
+        EmailOnOpenReservationsProcessResult EmailOnOpenReservations(ReservationItem rsv, DateTime startDate, DateTime endDate);
+        void EmailOnOpenSlot(ReservationItem rsv, DateTime beginDateTime, DateTime endDateTime, EmailNotify notifyType, int clientId);
+        void EmailOnPracticeRes(ReservationItem rsv, string inviteeName, int clientId);
+        void EmailOnSaveHistory(ReservationItem rsv, bool updateCharges, bool updateAccount, bool updateNotes, bool sendToUser, int clientId);
+        void EmailOnToolEngDelete(ReservationItem rsv, int toolEngClientId, int clientId);
+        void EmailOnUninvited(ReservationItem rsv, IEnumerable<ReservationInviteeItem> invitees, int clientId);
+        void EmailOnUserCreate(ReservationItem rsv, int clientId);
+        void EmailOnUserDelete(ReservationItem rsv, int clientId);
+        void EmailOnUserUpdate(ReservationItem rsv, int clientId);
     }
 }

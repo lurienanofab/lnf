@@ -134,14 +134,22 @@ namespace LNF.Mail
         }
         #endregion
 
+        private ResourceTreeItemCollection ResourceTree { get; }
+
+        public GroupEmailManager(ResourceTreeItemCollection resourceTree)
+        {
+            ResourceTree = resourceTree;
+        }
+
+
         /// <summary>
         /// Get a particular person's email address based on his ClientID
         /// </summary>
-        public static DataRow GetEmailAddrByClientID(int ClientID)
+        public static DataRow GetEmailAddrByClientID(int clientId)
         {
             var dt = DA.Command()
                 .Param("Action", "GetEmails")
-                .Param("ClientID", ClientID)
+                .Param("ClientID", clientId)
                 .FillDataTable("dbo.Client_Select");
 
             if (dt.Rows.Count > 0)
@@ -193,7 +201,7 @@ namespace LNF.Mail
             return RecipientsFromDataTable(dtClean);
         }
 
-        public static string SendEmail(MassEmail email)
+        public string SendEmail(MassEmail email, int clientId)
         {
             try
             {
@@ -203,7 +211,7 @@ namespace LNF.Mail
 
                 SendMessageArgs args = new SendMessageArgs()
                 {
-                    ClientID = CacheManager.Current.CurrentUser.ClientID,
+                    ClientID = clientId,
                     From = email.FromAddress,
                     DisplayName = email.DisplayName,
                     Subject = email.Subject.Trim(),
@@ -291,7 +299,7 @@ namespace LNF.Mail
             }
         }
 
-        private static string GetGroup(MassEmail email)
+        private string GetGroup(MassEmail email)
         {
             string result = string.Empty;
 
@@ -304,7 +312,7 @@ namespace LNF.Mail
                     result = DA.Current.Single<Client>(email.GetCriteria<ByManager>().SelectedManagerClientID).DisplayName;
                     break;
                 case "tools":
-                    result = string.Join(", ", CacheManager.Current.ResourceTree().Resources().Where(x => email.GetCriteria<ByTool>().SelectedResourceIDs.Contains(x.ResourceID)).ToList().Select(x => x.ResourceName));
+                    result = string.Join(", ", ResourceTree.Resources().Where(x => email.GetCriteria<ByTool>().SelectedResourceIDs.Contains(x.ResourceID)).ToList().Select(x => x.ResourceName));
                     break;
                 case "lab":
                     result = string.Join(", ", DA.Current.Query<PhysicalAccessArea>().Where(x => email.GetCriteria<ByLab>().SelectedLabs.Contains(x.AreaID)).ToList().Select(x => x.AreaName));

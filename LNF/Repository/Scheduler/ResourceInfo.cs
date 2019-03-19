@@ -44,11 +44,7 @@ namespace LNF.Repository.Scheduler
         public virtual DateTime? CurrentBeginDateTime { get; set; }
         public virtual DateTime? CurrentEndDateTime { get; set; }
         public virtual string CurrentNotes { get; set; }
-
-        public virtual bool HasState(ResourceState state)
-        {
-            return State == (int)state;
-        }
+        public virtual bool HasState(ResourceState state) => State == (int)state;
 
         public virtual DateTime GetNextGranularity(DateTime actual, int dir)
         {

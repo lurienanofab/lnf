@@ -1,5 +1,4 @@
-﻿using LNF.Cache;
-using LNF.Data;
+﻿using LNF.Data;
 using LNF.Models.Data;
 using LNF.Web.Mvc.UI;
 
@@ -11,6 +10,11 @@ namespace LNF.Web.Mvc
 
         public string CurrentPage { get; set; }
         public string CurrentSubMenuItem { get; set; }
+
+        public BaseModel(ClientItem currentUser)
+        {
+            CurrentUser = currentUser;
+        }
 
         public virtual SubMenu GetSubMenu()
         {
@@ -46,13 +50,7 @@ namespace LNF.Web.Mvc
 
         public string ErrorPartial { get; set; }
 
-        public ClientItem CurrentUser
-        {
-            get
-            {
-                return CacheManager.Current.CurrentUser;
-            }
-        }
+        public ClientItem CurrentUser { get; }
 
         public void CheckAuth()
         {

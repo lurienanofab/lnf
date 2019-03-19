@@ -40,10 +40,10 @@ namespace LNF.Data
                 ActiveDataItemManager.Disable(client);
         }
 
-        public string[] ActiveEmails(Client client)
+        public string[] ActiveEmails(int clientId)
         {
             //this function returns the same result as sselData.dbo.udf_ClientEmails()
-            return Session.Query<ClientOrg>().Where(x => x.Client == client && x.Active).Select(x => x.Email).Distinct().ToArray();
+            return Session.Query<ClientOrg>().Where(x => x.Client.ClientID == clientId && x.Active).Select(x => x.Email).Distinct().ToArray();
         }
 
         public ClientInfo GetClientInfo(Client client)

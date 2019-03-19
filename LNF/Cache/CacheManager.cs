@@ -31,6 +31,7 @@ namespace LNF.Cache
         /// <summary>
         /// Gets the currently authenticated username using the current context IPrincipal user (the user loged in via Forms Authentication).
         /// </summary>
+        [Obsolete("Use HttpContextBase instead.")]
         public string GetCurrentUserName()
         {
             var user = ServiceProvider.Current.Context.User;
@@ -41,44 +42,22 @@ namespace LNF.Cache
         /// <summary>
         /// Gets all active Clients. Clients are cached for 30 minutes.
         /// </summary>
-        public IEnumerable<ClientItem> Clients()
-        {
-            IList<ClientItem> result;
-
-            var value = GetMemoryCacheValue("Clients");
-
-            if (value == null)
-            {
-                result = DA.Current.Query<ClientInfo>().Where(x => x.ClientActive).Model<ClientItem>();
-                SetMemoryCacheValue("Clients", result, DateTimeOffset.Now.Add(TimeSpan.FromSeconds(60)));
-            }
-            else
-            {
-                result = (IList<ClientItem>)value;
-            }
-
-            return result;
-        }
+        public IEnumerable<ClientItem> Clients() => GetValue("Clients", () => DA.Current.Query<ClientInfo>().Where(x => x.ClientActive).CreateModels<ClientItem>(), DateTimeOffset.Now.AddMinutes(5));
 
         /// <summary>
         /// Gets one active Client by ClientID. Clients are cached for 30 minutes.
         /// </summary>
-        public ClientItem GetClient(int clientId)
-        {
-            return Clients().FirstOrDefault(x => x.ClientID == clientId);
-        }
+        public ClientItem GetClient(int clientId) => Clients().FirstOrDefault(x => x.ClientID == clientId);
 
         /// <summary>
         /// Gets one active Client by UserName. Clients are cached for 30 minutes.
         /// </summary>
-        public ClientItem GetClient(string username)
-        {
-            return Clients().FirstOrDefault(x => x.UserName == username);
-        }
+        public ClientItem GetClient(string username) => Clients().FirstOrDefault(x => x.UserName == username);
 
         /// <summary>
         /// The currently logged in user. Returns null if no one is logged in.
         /// </summary>
+        [Obsolete("Use HttpContextBase instead.")]
         public ClientItem CurrentUser
         {
             get
@@ -92,6 +71,7 @@ namespace LNF.Cache
         /// <summary>
         /// Ensures that the current session contains data for the authenticated user.
         /// </summary>
+        [Obsolete("Use HttpContextBase instead.")]
         public ClientItem CheckSession()
         {
             ClientItem model = null;
@@ -127,6 +107,7 @@ namespace LNF.Cache
             return CheckSession(model);
         }
 
+        [Obsolete("Use HttpContextBase instead.")]
         public ClientItem CheckSession(ClientItem client)
         {
             // at this point the client object still might be null because unauthenticated requests are allowed in some cases
@@ -159,7 +140,7 @@ namespace LNF.Cache
             {
                 SessionKeys.RemoveAll();
 
-                RemoveCacheData();
+                //RemoveCacheData();
 
                 result = GetClient(username);
 
@@ -180,32 +161,13 @@ namespace LNF.Cache
 
         public bool ShowCanceledForModification => Utility.ConvertTo(ServiceProvider.Current.Context.GetAppSetting("ShowCanceledForModification"), false);
 
-        public string ErrorID
-        {
-            get { return GetSessionValue(SessionKeys.ErrorID, () => string.Empty); }
-            set { SetSessionValue(SessionKeys.ErrorID, value); }
-        }
-
-        public void RemoveCacheData()
-        {
-            RemoveSessionValue(Cache.ToString("n"));
-            RemoveSessionValue(SessionKeys.Cache);
-        }
-
-        public Guid Cache
-        {
-            get { return GetSessionValue(SessionKeys.Cache, () => Guid.NewGuid()); }
-            set { SetSessionValue(SessionKeys.Cache, value); }
-        }
-
-        public void CacheData(DataSet ds) => SetSessionValue(Cache.ToString("n"), ds);
-
-        public DataSet CacheData() => GetSessionValue<DataSet>(Cache.ToString("n"), () => null);
-
+        [Obsolete("Use HttpContextBase instead.")]
         public void AbandonSession() => ServiceProvider.Current.Context.AbandonSession();
 
+        [Obsolete("Use HttpContextBase instead.")]
         public void RemoveSessionValue(string key) => ServiceProvider.Current.Context.RemoveSessionValue(key);
 
+        [Obsolete("Use HttpContextBase instead.")]
         public T GetSessionValue<T>(string key, Func<T> defval)
         {
             object value = ServiceProvider.Current.Context.GetSessionValue(key);
@@ -225,17 +187,40 @@ namespace LNF.Cache
             return result;
         }
 
+        [Obsolete("Use HttpContextBase instead.")]
         public void SetSessionValue(string key, object value) => ServiceProvider.Current.Context.SetSessionValue(key, value);
 
+        [Obsolete("Use HttpContextBase instead.")]
         public void RemoveContextItem(string key) => ServiceProvider.Current.Context.Items.Remove(key);
 
+        [Obsolete("Use HttpContextBase instead.")]
         public T GetContextItem<T>(string key) => ServiceProvider.Current.Context.GetItem<T>(key);
 
+        [Obsolete("Use HttpContextBase instead.")]
         public void SetContextItem<T>(string key, T item) => ServiceProvider.Current.Context.SetItem(key, item);
 
-        public object GetMemoryCacheValue(string key) => _cache.Get(key);
+        public object GetValue(string key) => _cache.Get(key);
 
-        public void SetMemoryCacheValue(string key, object value, DateTimeOffset? absoluteExpiration = null, TimeSpan? slidingExpiration = null)
+        public T GetValue<T>(string key, Func<T> defval, DateTimeOffset? absoluteExpiration = null, TimeSpan? slidingExpiration = null)
+        {
+            object value = GetValue(key);
+
+            T result;
+
+            if (value == null || !(value is T))
+            {
+                result = defval();
+                SetValue(key, result, absoluteExpiration, slidingExpiration);
+            }
+            else
+            {
+                result = (T)value;
+            }
+
+            return result;
+        }
+
+        public void SetValue(string key, object value, DateTimeOffset? absoluteExpiration = null, TimeSpan? slidingExpiration = null)
         {
             _cache.Set(key, value, new CacheItemPolicy()
             {
@@ -244,14 +229,14 @@ namespace LNF.Cache
             });
         }
 
-        public object RemoveMemoryCacheValue(string key) => _cache.Remove(key);
+        public object RemoveValue(string key) => _cache.Remove(key);
 
-        public void ClearMemoryCache()
+        public void ClearCache()
         {
             _cache.Dispose();
             _cache = new MemoryCache("CacheManager");
         }
 
-        public long GetMemoryCacheGetApproximateSize() => _cache.GetApproximateSize();
+        public long GetApproximateSize() => _cache.GetApproximateSize();
     }
 }

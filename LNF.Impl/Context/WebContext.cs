@@ -13,71 +13,74 @@ namespace LNF.Impl.Context
 {
     public class WebContext : ContextBase
     {
-        public WebContext()
+        private IHttpContextFactory _httpContextFactory;
+
+        public HttpContextBase ContextBase => _httpContextFactory.Create();
+
+        public WebContext(IHttpContextFactory httpContextFactory)
         {
-            if (HttpContext.Current == null)
-                throw new NullReferenceException("HttpContext.Current");
+            _httpContextFactory = httpContextFactory ?? throw new ArgumentNullException("httpContextFactory");
         }
 
         public override object GetSessionValue(string key)
         {
-            if (HttpContext.Current.Session == null)
+            if (ContextBase.Session == null)
                 throw new InvalidOperationException("Session is null.");
 
-            return HttpContext.Current.Session[key];
+            return ContextBase.Session[key];
         }
 
         public override void SetSessionValue(string key, object obj)
         {
-            if (HttpContext.Current.Session == null)
+            if (ContextBase.Session == null)
                 throw new InvalidOperationException("Session is null.");
 
-            HttpContext.Current.Session[key] = obj;
+            ContextBase.Session[key] = obj;
         }
 
         public override void RemoveSessionValue(string key)
         {
-            if (HttpContext.Current.Session == null)
+            if (ContextBase.Session == null)
                 throw new InvalidOperationException("Session is null.");
 
-            HttpContext.Current.Session.Remove(key);
+            ContextBase.Session.Remove(key);
         }
 
         public override void AbandonSession()
         {
-            if (HttpContext.Current.Session == null)
+            if (ContextBase.Session == null)
                 throw new InvalidOperationException("Session is null.");
 
-            HttpContext.Current.Session.Abandon();
+            ContextBase.Session.Abandon();
         }
 
         public override void ClearSession()
         {
-            if (HttpContext.Current.Session == null)
+            if (ContextBase.Session == null)
                 throw new InvalidOperationException("Session is null.");
 
-            HttpContext.Current.Session.Clear();
+            ContextBase.Session.Clear();
         }
 
-        public override NameValueCollection ServerVariables => HttpContext.Current.Request.ServerVariables;
+        public override NameValueCollection ServerVariables => ContextBase.Request.ServerVariables;
 
-        public override string GetServerPath(string path) => HttpContext.Current.Server.MapPath(path);
+        public override string GetServerPath(string path) => ContextBase.Server.MapPath(path);
 
         public override string GetAbsolutePath(string virtualPath) => VirtualPathUtility.ToAbsolute(virtualPath);
 
-        public override int GetScriptTimeout() => HttpContext.Current.Server.ScriptTimeout;
+        public override int GetScriptTimeout() => ContextBase.Server.ScriptTimeout;
 
-        public override void SetScriptTimeout(int value) => HttpContext.Current.Server.ScriptTimeout = value;
+        public override void SetScriptTimeout(int value) => ContextBase.Server.ScriptTimeout = value;
 
-        public override object GetApplicationVariable(string key) => HttpContext.Current.Application[key];
+        public override object GetApplicationVariable(string key) => ContextBase.Application[key];
 
-        public override void SetApplicationVariable(string key, object value) => HttpContext.Current.Application[key] = value;
+        public override void SetApplicationVariable(string key, object value) => ContextBase.Application[key] = value;
 
-        public override Uri GetRequestUrl() => HttpContext.Current.Request.Url;
+        public override Uri GetRequestUrl() => ContextBase.Request.Url;
 
-        public override bool GetRequestIsAuthenticated() => HttpContext.Current.Request.IsAuthenticated;
+        public override bool GetRequestIsAuthenticated() => ContextBase.Request.IsAuthenticated;
 
-        public override bool GetRequestIsSecureConnection() => HttpContext.Current.Request.IsSecureConnection;
+        public override bool GetRequestIsSecureConnection() => ContextBase.Request.IsSecureConnection;
 
         public override string GetAuthCookieName() => FormsAuthentication.FormsCookieName;
 
@@ -85,36 +88,36 @@ namespace LNF.Impl.Context
 
         public override string GetAuthCookieDomain() => FormsAuthentication.CookieDomain;
 
-        public override string GetRequestUserAgent() => HttpContext.Current.Request.UserAgent;
+        public override string GetRequestUserAgent() => ContextBase.Request.UserAgent;
 
-        public override string GetRequestPhysicalApplicationPath() => HttpContext.Current.Request.PhysicalApplicationPath;
+        public override string GetRequestPhysicalApplicationPath() => ContextBase.Request.PhysicalApplicationPath;
 
-        public override object GetRequestValue(string key) => HttpContext.Current.Request[key];
+        public override object GetRequestValue(string key) => ContextBase.Request[key];
 
-        public override NameValueCollection QueryString => HttpContext.Current.Request.QueryString;
+        public override NameValueCollection QueryString => ContextBase.Request.QueryString;
 
-        public override NameValueCollection PostData => HttpContext.Current.Request.Form;
+        public override NameValueCollection PostData => ContextBase.Request.Form;
 
-        public override int GetRequestFileCount() => HttpContext.Current.Request.Files.Count;
+        public override int GetRequestFileCount() => ContextBase.Request.Files.Count;
 
-        public override int GetRequestFileContentLength(int index) => HttpContext.Current.Request.Files[index].ContentLength;
+        public override int GetRequestFileContentLength(int index) => ContextBase.Request.Files[index].ContentLength;
 
-        public override Stream GetRequestFileInputStream(int index) => HttpContext.Current.Request.Files[index].InputStream;
+        public override Stream GetRequestFileInputStream(int index) => ContextBase.Request.Files[index].InputStream;
 
-        public override IDictionary Items => HttpContext.Current.Items;
+        public override IDictionary Items => ContextBase.Items;
 
-        public override string GetRequestCookieValue(string name) => GetCookieValue(HttpContext.Current.Request.Cookies, name);
+        public override string GetRequestCookieValue(string name) => GetCookieValue(ContextBase.Request.Cookies, name);
 
         public override void SetRequestCookie(string name, string value, DateTime expires, string domain, string path, bool httpOnly, bool secure, bool shareable)
         {
-            AddOrUpdateCookie(HttpContext.Current.Request.Cookies, name, value, expires, domain, path, httpOnly, secure, shareable);
+            AddOrUpdateCookie(ContextBase.Request.Cookies, name, value, expires, domain, path, httpOnly, secure, shareable);
         }
 
-        public override string GetResponseCookieValue(string name) => GetCookieValue(HttpContext.Current.Response.Cookies, name);
+        public override string GetResponseCookieValue(string name) => GetCookieValue(ContextBase.Response.Cookies, name);
 
         public override void SetResponseCookie(string name, string value, DateTime expires, string domain, string path, bool httpOnly, bool secure, bool shareable)
         {
-            AddOrUpdateCookie(HttpContext.Current.Response.Cookies, name, value, expires, domain, path, httpOnly, secure, shareable);
+            AddOrUpdateCookie(ContextBase.Response.Cookies, name, value, expires, domain, path, httpOnly, secure, shareable);
         }
 
         private void AddOrUpdateCookie(HttpCookieCollection cookies, string name, string value, DateTime expires, string domain, string path, bool httpOnly, bool secure, bool shareable)
@@ -141,11 +144,11 @@ namespace LNF.Impl.Context
 
         public override IPrincipal User
         {
-            get { return HttpContext.Current.User; }
-            set { HttpContext.Current.User = value; }
+            get { return ContextBase.User; }
+            set { ContextBase.User = value; }
         }
 
-        public override string UserHostAddress => HttpContext.Current.Request.UserHostAddress;
+        public override string UserHostAddress => ContextBase.Request.UserHostAddress;
 
         public virtual Client LogIn(string username, string password)
         {
@@ -166,13 +169,13 @@ namespace LNF.Impl.Context
 
         public override void SignOut() => FormsAuthentication.RedirectToLoginPage();
 
-        public override void AddResponseHeader(string name, string value) => HttpContext.Current.Response.AddHeader(name, value);
+        public override void AddResponseHeader(string name, string value) => ContextBase.Response.AddHeader(name, value);
 
-        public override string GetResponseCharset() => HttpContext.Current.Response.Charset;
+        public override string GetResponseCharset() => ContextBase.Response.Charset;
 
-        public override void SetResponseCharset(string value) => HttpContext.Current.Response.Charset = value;
+        public override void SetResponseCharset(string value) => ContextBase.Response.Charset = value;
 
-        public override void Redirect(string url) => HttpContext.Current.Response.Redirect(url);
+        public override void Redirect(string url) => ContextBase.Response.Redirect(url);
 
         public override string UrlEncode(string text) => HttpUtility.UrlEncode(text);
     }

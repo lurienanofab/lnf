@@ -11,61 +11,73 @@ namespace LNF.Billing
 {
     public static class CacheManagerExtensions
     {
+        [Obsolete("Use HttpContextBase instead.")]
         public static void ItemType(this CacheManager cm, string value)
         {
             cm.SetSessionValue("ItemType", value);
         }
 
+        [Obsolete("Use HttpContextBase instead.")]
         public static string ItemType(this CacheManager cm)
         {
             return cm.GetSessionValue("ItemType", () => string.Empty);
         }
 
+        [Obsolete("Use HttpContextBase instead.")]
         public static void Exp(this CacheManager cm, string value)
         {
             cm.SetSessionValue("Exp", value);
         }
 
+        [Obsolete("Use HttpContextBase instead.")]
         public static string Exp(this CacheManager cm)
         {
             return cm.GetSessionValue("Exp", () => string.Empty);
         }
 
+        [Obsolete("Use HttpContextBase instead.")]
         public static void Updated(this CacheManager cm, bool value)
         {
             cm.SetSessionValue("Updated", value);
         }
 
+        [Obsolete("Use HttpContextBase instead.")]
         public static bool Updated(this CacheManager cm)
         {
             return cm.GetSessionValue("Updated", () => false);
         }
 
+        [Obsolete("Use HttpContextBase instead.")]
         public static void StartPeriod(this CacheManager cm, DateTime value)
         {
             cm.SetSessionValue("StartPeriod", value);
         }
 
+        [Obsolete("Use HttpContextBase instead.")]
         public static DateTime StartPeriod(this CacheManager cm)
         {
             return cm.GetSessionValue("StartPeriod", () => DateTime.Now.FirstOfMonth().AddMonths(-1));
         }
 
+        [Obsolete("Use HttpContextBase instead.")]
         public static void EndPeriod(this CacheManager cm, DateTime value)
         {
             cm.SetSessionValue("EndPeriod", value);
         }
 
+        [Obsolete("Use HttpContextBase instead.")]
         public static DateTime EndPeriod(this CacheManager cm)
         {
             return cm.GetSessionValue("EndPeriod", () => cm.StartPeriod().AddMonths(1));
         }
 
+        [Obsolete("Use HttpContextBase instead.")]
         public static void InvoiceReport(this CacheManager cm, DataSet ds)
         {
             cm.SetSessionValue("InvoiceReport", ds);
         }
 
+        [Obsolete("Use HttpContextBase instead.")]
         public static DataSet InvoiceReport(this CacheManager cm)
         {
             return cm.GetSessionValue<DataSet>("InvoiceReport", () => null);

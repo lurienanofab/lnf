@@ -1,8 +1,4 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-
-namespace LNF.Repository.Scheduler
+﻿namespace LNF.Repository.Scheduler
 {
     /*
      * The combination of (CardReaderName AND ButtonIndex) provides unique Resource

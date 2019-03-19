@@ -9,11 +9,26 @@ namespace LNF.Repository.Scheduler
         public virtual int ReservationID { get; set; }
         public virtual int ResourceID { get; set; }
         public virtual string ResourceName { get; set; }
-        public virtual int MinCancelTime { get; set; }
+        public virtual string ResourceDescription { get; set; }
+
+        public virtual int Granularity { get; set; }
+        public virtual int ReservFence { get; set; }
         public virtual int MinReservTime { get; set; }
+        public virtual int MaxReservTime { get; set; }
+        public virtual int MaxAlloc { get; set; }
+        public virtual int Offset { get; set; }
         public virtual int GracePeriod { get; set; }
+        public virtual int ResourceAutoEnd { get; set; }
+        public virtual int MinCancelTime { get; set; }
+        public virtual int UnloadTime { get; set; }
+        public virtual int OTFSchedTime { get; set; }
+        
         public virtual bool AuthState { get; set; }
         public virtual int AuthDuration { get; set; }
+        public virtual ResourceState State { get; set; }
+        public virtual bool IsSchedulable { get; set; }
+        public virtual bool ResourceIsActive { get; set; }
+        public virtual string HelpdeskEmail { get; set; }
         public virtual int ProcessTechID { get; set; }
         public virtual string ProcessTechName { get; set; }
         public virtual int LabID { get; set; }

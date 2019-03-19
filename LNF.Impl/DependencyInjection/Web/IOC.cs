@@ -5,17 +5,18 @@ using StructureMap;
 
 namespace LNF.Impl.DependencyInjection.Web
 {
-    public static class IOC
+    public class IOC
     {
-        static IOC()
+        public IDependencyResolver Resolver { get; }
+
+        public IOC()
         {
+            var ctx = new WebContext(new CurrentContextFactory());
             var reg = new Registry();
             reg.For<ISessionManager>().Singleton().Use<SessionManager<WebSessionContext>>();
-            reg.For<IContext>().Singleton().Use<WebContext>();
+            reg.For<IContext>().Singleton().Use(ctx);
 
             Resolver = new DependencyResolver(reg);
         }
-
-        public static IDependencyResolver Resolver { get; }
     }
 }

@@ -1,28 +1,33 @@
-﻿namespace LNF.Models.Scheduler
+﻿using LNF.Models.Data;
+using System;
+
+namespace LNF.Models.Scheduler
 {
     /// <summary>
     /// An invitee to a reservation
     /// </summary>
     public class ReservationInviteeItem
     {
-        /// <summary>
-        /// The id for the Reservation
-        /// </summary>
         public int ReservationID { get; set; }
-
-        /// <summary>
-        /// The id for the Client that was invited
-        /// </summary>
-        public int ClientID { get; set; }
-
-        /// <summary>
-        /// The last name of the Client who was invited
-        /// </summary>
+        public int InviteeID { get; set; }
+        public DateTime BeginDateTime { get; set; }
+        public DateTime EndDateTime { get; set; }
+        public DateTime? ActualBeginDateTime { get; set; }
+        public DateTime? ActualEndDateTime { get; set; }
+        public bool IsStarted { get; set; }
+        public bool IsActive { get; set; }
+        public int ResourceID { get; set; }
+        public string ResourceName { get; set; }
         public string LName { get; set; }
+        public string FName { get; set; }
+        public ClientPrivilege Privs { get; set; }
+        public bool Active { get; set; }
 
         /// <summary>
-        /// The first name of the Client who was invited
+        /// Indicates whether or not this invitee was removed from a reservation or not.
         /// </summary>
-        public string FName { get; set; }
+        public bool Removed { get; set; }
+
+        public string DisplayName => ClientItem.GetDisplayName(LName, FName);
     }
 }

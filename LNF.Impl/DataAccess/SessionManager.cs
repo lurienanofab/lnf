@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
-using System.Web;
 
 namespace LNF.Impl.DataAccess
 {
@@ -37,7 +36,7 @@ namespace LNF.Impl.DataAccess
             if (x != null) throw new Exception();
         }
 
-        public SessionManager()
+        public SessionManager(IContext context)
         {
             lock (_locker)
             {
@@ -52,7 +51,8 @@ namespace LNF.Impl.DataAccess
 
                 try
                 {
-                    SessionLog.AddLogMessage("RequestUri: {0}", (HttpContext.Current == null || HttpContext.Current.Request == null) ? "N/A" : HttpContext.Current.Request.Url.ToString());
+                    string requestUrl = context.GetRequestUrl().ToString();
+                    SessionLog.AddLogMessage("RequestUri: {0}", requestUrl);
                 }
                 catch (Exception ex)
                 {

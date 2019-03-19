@@ -3,6 +3,7 @@ using LNF.Repository;
 using LNF.Repository.Scheduler;
 using System;
 using System.Data;
+using LNF.Models.Scheduler;
 
 namespace LNF.Scheduler
 {
@@ -76,7 +77,7 @@ namespace LNF.Scheduler
             dtOut.Rows.Add(ndr);
         }
 
-        public static void CopyProcessInfo(int recurrenceId, Reservation rsv)
+        public static void CopyProcessInfo(int recurrenceId, ReservationItem rsv)
         {
             var previousRecurrence = GetPreviousRecurrence(recurrenceId, rsv.ReservationID);
 
@@ -92,7 +93,7 @@ namespace LNF.Scheduler
                             Active = item.Active,
                             ChargeMultiplier = item.ChargeMultiplier,
                             ProcessInfoLine = item.ProcessInfoLine,
-                            Reservation = rsv,
+                            Reservation = DA.Current.Single<Reservation>(rsv.ReservationID),
                             RunNumber = item.RunNumber,
                             Special = item.Special,
                             Value = item.Value
@@ -105,7 +106,7 @@ namespace LNF.Scheduler
             }
         }
 
-        public static void CopyInvitees(int recurrenceId, Reservation rsv)
+        public static void CopyInvitees(int recurrenceId, ReservationItem rsv)
         {
             var previousRecurrence = GetPreviousRecurrence(recurrenceId, rsv.ReservationID);
 
@@ -119,7 +120,7 @@ namespace LNF.Scheduler
                         ReservationInvitee ri = new ReservationInvitee()
                         {
                             Invitee = item.Invitee,
-                            Reservation = rsv
+                            Reservation = DA.Current.Single<Reservation>(rsv.ReservationID)
                         };
 
                         DA.Current.Insert(ri);

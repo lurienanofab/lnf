@@ -1,4 +1,6 @@
-﻿using System;
+﻿using LNF.Models.Data;
+using LNF.Models.Scheduler;
+using System;
 
 namespace LNF.Repository.Scheduler
 {
@@ -13,15 +15,15 @@ namespace LNF.Repository.Scheduler
         public virtual DateTime Timestamp { get; set; }
         public virtual string Action { get; set; }
 
-        public static AutoEndLog AddEntry(Reservation rsv, string action)
+        public static AutoEndLog AddEntry(ReservationItem item, string action)
         {
             var entry = new AutoEndLog()
             {
-                ReservationID = rsv.ReservationID,
-                ResourceID = rsv.Resource.ResourceID,
-                ResourceName = rsv.Resource.ResourceName,
-                ClientID = rsv.Client.ClientID,
-                DisplayName = rsv.Client.DisplayName,
+                ReservationID = item.ReservationID,
+                ResourceID = item.ResourceID,
+                ResourceName = item.ResourceName,
+                ClientID = item.ClientID,
+                DisplayName = item.GetClientDisplayName(),
                 Timestamp = DateTime.Now,
                 Action = action
             };

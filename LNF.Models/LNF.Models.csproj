@@ -89,6 +89,7 @@
     <Compile Include="Billing\IBillingApi.cs" />
     <Compile Include="Data\GlobalSettingsItem.cs" />
     <Compile Include="Data\IAccount.cs" />
+    <Compile Include="Data\IClient.cs" />
     <Compile Include="Data\IClientClient.cs" />
     <Compile Include="Data\IDataApi.cs" />
     <Compile Include="Data\IDefaultClient.cs" />
@@ -197,6 +198,7 @@
     <Compile Include="Scheduler\ExpiringCard.cs" />
     <Compile Include="Scheduler\HandleAutoEndReservationsProcessResult.cs" />
     <Compile Include="Scheduler\IAuthorized.cs" />
+    <Compile Include="Scheduler\IReservation.cs" />
     <Compile Include="Scheduler\IResource.cs" />
     <Compile Include="Scheduler\KioskItem.cs" />
     <Compile Include="Scheduler\LabItem.cs" />
@@ -205,6 +207,7 @@
     <Compile Include="Scheduler\ProcessTechGroupItem.cs" />
     <Compile Include="Scheduler\ProcessTechItem.cs" />
     <Compile Include="Scheduler\ReservationClientItem.cs" />
+    <Compile Include="Scheduler\ReservationHistoryItem.cs" />
     <Compile Include="Scheduler\ReservationHistoryUpdate.cs" />
     <Compile Include="Scheduler\ReservationInviteeItem.cs" />
     <Compile Include="Scheduler\ReservationItem.cs" />

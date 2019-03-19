@@ -149,11 +149,6 @@ namespace LNF.Repository.Scheduler
         /// </summary>
         public virtual string WikiPageUrl { get; set; }
 
-        public virtual IList<Reservation> InGranularityWindow()
-        {
-            return ServiceProvider.Current.Use<IReservationManager>().ReservationsInWindow(this, Granularity);
-        }
-
         public override string ToString()
         {
             return ResourceItem.GetDisplayName(ResourceName, ResourceID);

@@ -5,9 +5,6 @@ namespace LNF.Repository.Scheduler
 {
     public class ReservationHistory : IDataItem
     {
-        /*Constants*/
-        public const string INSERT_FOR_MODIFICATION = "InsertForModification";
-
         public virtual int ReservationHistoryID { get; set; }
         public virtual Reservation Reservation { get; set; }
         public virtual string UserAction { get; set; }

@@ -92,6 +92,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Context\CurrentContextFactory.cs" />
+    <Compile Include="Context\IHttpContextFactory.cs" />
     <Compile Include="DataAccess\BitwiseExpression.cs" />
     <Compile Include="Control\Wago\WagoControlService.cs" />
     <Compile Include="Conventions\BytesUserType.cs" />
@@ -101,9 +103,12 @@
     <Compile Include="DataAccess\DateProjections.cs" />
     <Compile Include="DependencyInjection\Default\IOC.cs" />
     <Compile Include="DependencyInjection\DependencyResolver.cs" />
+    <Compile Include="DependencyInjection\IIOC.cs" />
     <Compile Include="DependencyInjection\Web\IOC.cs" />
     <Compile Include="Mappings\Billing\MiscBillingChargeMap.cs" />
     <Compile Include="Mappings\Ordering\StoreManagerReportItemMap.cs" />
+    <Compile Include="Mappings\Scheduler\ReservationInviteeInfoMap.cs" />
+    <Compile Include="ModelFactory\Injections\ReservationInfoInjection.cs" />
     <Compile Include="Serialization\DynamicContractResolver.cs" />
     <Compile Include="Encryption\EncryptionService.cs" />
     <Compile Include="Hooks\PostLoginCheckerHook.cs" />
@@ -351,7 +356,6 @@
     <Compile Include="Serialization\XmlSerializer.cs" />
     <Compile Include="DataAccess\SessionLog.cs" />
     <Compile Include="DataAccess\SessionManager.cs" />
-    <Compile Include="DataAccess\SessionModule.cs" />
     <Compile Include="ServiceMiddleware.cs" />
     <Compile Include="ServiceModule.cs" />
     <Compile Include="Testing\NHibernateTestBase.cs" />

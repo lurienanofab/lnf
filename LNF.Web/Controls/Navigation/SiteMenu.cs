@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using LNF.Models.Data;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -6,6 +7,14 @@ namespace LNF.Web.Controls.Navigation
 {
     public class SiteMenu : WebControl
     {
+        public HttpContextBase ContextBase { get; }
+        public ClientItem CurrentUser => ContextBase.CurrentUser();
+
+        public SiteMenu()
+        {
+            ContextBase = new HttpContextWrapper(Context);
+        }
+
         protected override void CreateChildControls()
         {
             Controls.Add(new Literal() { Text = GetSiteMenu().ToHtmlString() });
@@ -19,8 +28,7 @@ namespace LNF.Web.Controls.Navigation
         {
             if (Context.Session["SiteMenu"] == null)
             {
-                var client = Context.CurrentUser();
-                Context.Session["SiteMenu"] = WebUtility.GetSiteMenu(client.ClientID);
+                Context.Session["SiteMenu"] = WebUtility.GetSiteMenu(CurrentUser.ClientID);
             }
 
             return new HtmlString(Context.Session["SiteMenu"].ToString());

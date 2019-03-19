@@ -1,5 +1,6 @@
 ﻿using LNF.Models.Scheduler;
 using LNF.Repository.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -36,6 +37,7 @@ namespace LNF.Repository.Scheduler
             });
         }
 
+        [Obsolete("Use Model<T>()")]
         public static ReservationItem CreateReservationItem(this Reservation item)
         {
             if (item == null) return null;
@@ -43,6 +45,7 @@ namespace LNF.Repository.Scheduler
             return CreateReservationItems(list.AsQueryable()).FirstOrDefault();
         }
 
+        [Obsolete("Use Model<T>()")]
         public static IEnumerable<ReservationItem> CreateReservationItems(this IQueryable<Reservation> query)
         {
             if (query == null) return null;
@@ -52,11 +55,16 @@ namespace LNF.Repository.Scheduler
                 ReservationID = x.ReservationID,
                 ResourceID = x.Resource.ResourceID,
                 ResourceName = x.Resource.ResourceName,
+                ResourceAutoEnd = x.Resource.AutoEnd,
                 MinCancelTime = x.Resource.MinCancelTime,
                 MinReservTime = x.Resource.MinReservTime,
+                ReservFence = x.Resource.ReservFence,
+                Granularity = x.Resource.Granularity,
+                Offset = x.Resource.Offset,
                 GracePeriod = x.Resource.GracePeriod,
                 AuthState = x.Resource.AuthState,
                 AuthDuration = x.Resource.AuthDuration,
+                State = x.Resource.State,
                 ProcessTechID = x.Resource.ProcessTech.ProcessTechID,
                 ProcessTechName = x.Resource.ProcessTech.ProcessTechName,
                 LabID = x.Resource.ProcessTech.Lab.LabID,
@@ -124,6 +132,7 @@ namespace LNF.Repository.Scheduler
             }).ToList();
         }
 
+        [Obsolete("Use CreateModel<T>()")]
         public static ReservationItem CreateReservationItem(this ReservationInfo item)
         {
             if (item == null) return null;
@@ -131,6 +140,7 @@ namespace LNF.Repository.Scheduler
             return CreateReservationItems(list.AsQueryable()).FirstOrDefault();
         }
 
+        [Obsolete("Use CreateModels<T>()")]
         public static IEnumerable<ReservationItem> CreateReservationItems(this IQueryable<ReservationInfo> query)
         {
             if (query == null) return null;
@@ -140,11 +150,16 @@ namespace LNF.Repository.Scheduler
                 ReservationID = x.ReservationID,
                 ResourceID = x.ResourceID,
                 ResourceName = x.ResourceName,
+                ResourceAutoEnd = x.ResourceAutoEnd,
                 MinCancelTime = x.MinCancelTime,
                 MinReservTime = x.MinReservTime,
+                ReservFence = x.ReservFence,
+                Granularity = x.Granularity,
+                Offset = x.Offset,
                 GracePeriod = x.GracePeriod,
                 AuthState = x.AuthState,
                 AuthDuration = x.AuthDuration,
+                State = x.State,
                 ProcessTechID = x.ProcessTechID,
                 ProcessTechName = x.ProcessTechName,
                 LabID = x.LabID,
@@ -293,27 +308,34 @@ namespace LNF.Repository.Scheduler
                 OriginalBeginDateTime = x.OriginalBeginDateTime,
                 OriginalEndDateTime = x.OriginalEndDateTime,
                 OriginalModifiedOn = x.OriginalModifiedOn,
-                Invitees = CreateReservationInviteeItems(DA.Current.Query<ReservationInvitee>().Where(i => i.Reservation.ReservationID == x.ReservationID))
+                Invitees = DA.Current.Query<ReservationInviteeInfo>().Where(i => i.ReservationID == x.ReservationID).CreateModels<ReservationInviteeItem>()
             }).ToList();
         }
 
-        public static ReservationInviteeItem CreateReservationInviteeItems(this ReservationInvitee item)
+        public static ReservationHistoryItem CreateReservationHistoryItem(this ReservationHistory item)
         {
             if (item == null) return null;
-            var list = new List<ReservationInvitee> { item };
-            return CreateReservationInviteeItems(list.AsQueryable()).FirstOrDefault();
+            var list = new List<ReservationHistory> { item };
+            return CreateReservationHistoryItems(list.AsQueryable()).FirstOrDefault();
         }
 
-        public static IEnumerable<ReservationInviteeItem> CreateReservationInviteeItems(this IQueryable<ReservationInvitee> query)
+        public static IEnumerable<ReservationHistoryItem> CreateReservationHistoryItems(this IQueryable<ReservationHistory> query)
         {
             if (query == null) return null;
 
-            return query.Select(x => new ReservationInviteeItem
+            return query.Select(x => new ReservationHistoryItem
             {
+                ReservationHistoryID = x.ReservationHistoryID,
                 ReservationID = x.Reservation.ReservationID,
-                ClientID = x.Invitee.ClientID,
-                LName = x.Invitee.LName,
-                FName = x.Invitee.FName
+                UserAction = x.UserAction,
+                LinkedReservationID = x.LinkedReservationID,
+                ActionSource = x.ActionSource,
+                ModifiedByClientID = x.ModifiedByClientID,
+                ModifiedDateTime = x.ModifiedDateTime,
+                AccountID = x.Account.AccountID,
+                BeginDateTime = x.BeginDateTime,
+                EndDateTime = x.EndDateTime,
+                ChargeMultiplier = x.ChargeMultiplier
             }).ToList();
         }
     }

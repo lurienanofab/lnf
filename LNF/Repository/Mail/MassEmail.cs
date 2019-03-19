@@ -1,6 +1,7 @@
 ﻿using LNF.Mail;
 using LNF.Mail.Criteria;
 using LNF.Repository.Data;
+using LNF.Scheduler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,7 +49,7 @@ namespace LNF.Repository.Mail
                 return ServiceProvider.Current.Serialization.Json.Deserialize<T>(RecipientCriteria);
         }
 
-        public virtual bool Send(out string message)
+        public virtual bool Send(out string message, ResourceTreeItemCollection resourceTree, int clientId)
         {
             bool result = true;
 
@@ -68,7 +69,8 @@ namespace LNF.Repository.Mail
 
             if (recipientCount + ccCount > 0)
             {
-                var sendResult = GroupEmailManager.SendEmail(this);
+                var mgr = new GroupEmailManager(resourceTree);
+                var sendResult = mgr.SendEmail(this, clientId);
 
                 if (string.IsNullOrEmpty(sendResult))
                 {

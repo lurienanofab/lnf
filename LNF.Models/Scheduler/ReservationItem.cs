@@ -4,16 +4,33 @@ using System.Collections.Generic;
 
 namespace LNF.Models.Scheduler
 {
-    public class ReservationItem : IPrivileged
+    public class ReservationItem : IPrivileged, IResource, IReservation
     {
         public int ReservationID { get; set; }
         public int ResourceID { get; set; }
         public string ResourceName { get; set; }
-        public int MinCancelTime { get; set; }
+        public string ResourceDescription { get; set; }
+
+        public int Granularity { get; set; }
+        public int ReservFence { get; set; }
         public int MinReservTime { get; set; }
+        public int MaxReservTime { get; set; }
+        public int MaxAlloc { get; set; }
+        public int Offset { get; set; }
         public int GracePeriod { get; set; }
+        public int ResourceAutoEnd { get; set; }
+        public int MinCancelTime { get; set; }
+        public int UnloadTime { get; set; }
+        public int OTFSchedTime { get; set; }
+
         public bool AuthState { get; set; }
         public int AuthDuration { get; set; }
+        public ResourceState State { get; set; }
+        public string StateNotes { get; set; }
+        public bool IsSchedulable { get; set; }
+        public bool ResourceIsActive { get; set; }
+        public string HelpdeskEmail { get; set; }
+        public string WikiPageUrl { get; set; }
         public int ProcessTechID { get; set; }
         public string ProcessTechName { get; set; }
         public int LabID { get; set; }
@@ -80,6 +97,8 @@ namespace LNF.Models.Scheduler
         public DateTime? OriginalEndDateTime { get; set; }
         public DateTime? OriginalModifiedOn { get; set; }
 
+        public string GetClientDisplayName() => ClientItem.GetDisplayName(LName, FName);
+
         public string GetResourceDisplayName() => ResourceItem.GetDisplayName(ResourceName, ResourceID);
 
         public double ReservedDuration() => (EndDateTime - BeginDateTime).TotalMinutes;
@@ -89,6 +108,12 @@ namespace LNF.Models.Scheduler
         public double ChargeDuration() => (ChargeEndDateTime - ChargeBeginDateTime).TotalMinutes;
 
         public double Overtime() => (ActualEndDateTime != null) ? Math.Max((ActualEndDateTime.Value - EndDateTime).TotalMinutes, 0) : 0;
+
+        public bool IsRunning() => IsRunning(ActualBeginDateTime, ActualEndDateTime);
+
+        public static bool IsRunning(DateTime? actualBeginDateTime, DateTime? actualEndDateTime) => actualBeginDateTime != null && actualEndDateTime == null;
+
+        public bool HasState(ResourceState state) => State == state;
     }
 
     public class ReservationItemWithInvitees : ReservationItem

@@ -21,12 +21,6 @@ namespace LNF.CommonTools
 
         private SQLDBAccess() { }
 
-        [System.Obsolete]
-        public SQLDBAccess(string key) : this()
-        {
-            Configure(key);
-        }
-
         private void Configure(string key)
         {
             _factory = DbProviderFactories.GetFactory("System.Data.SqlClient");

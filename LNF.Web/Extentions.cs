@@ -1,7 +1,10 @@
-﻿using LNF.Models.Data;
+﻿using LNF.Cache;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using Newtonsoft.Json;
+using System;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -79,7 +82,7 @@ namespace LNF.Web
 
     public static class HttpContextExtensions
     {
-        public static ClientItem CurrentUser(this HttpContext context)
+        public static ClientItem CurrentUser(this HttpContextBase context)
         {
             if (context.Items["CurrentUser"] == null)
             {
@@ -89,6 +92,49 @@ namespace LNF.Web
             var result = (ClientItem)context.Items["CurrentUser"];
 
             return result;
+        }
+
+        public static void SetErrorID(this HttpContextBase context, string value)
+        {
+            context.Session["ErrorID"] = value;
+        }
+
+        public static string GetErrorID(this HttpContextBase context)
+        {
+            if (context.Session["ErrorID"] == null)
+                return null;
+            else
+                return context.Session["ErrorID"].ToString();
+        }
+
+        public static void RemoveCacheData(this HttpContextBase context)
+        {
+            CacheManager.Current.RemoveValue(context.Cache().ToString("n"));
+            context.Session.Remove("Cache");
+        }
+
+        public static Guid Cache(this HttpContextBase context)
+        {
+            if (context.Session["Cache"] == null)
+                context.Session["Cache"] = Guid.NewGuid();
+
+            return (Guid)context.Session["Cache"];
+        }
+
+        public static void CacheData(this HttpContextBase context, DataSet ds)
+        {
+            var key = context.Cache().ToString("n");
+            CacheManager.Current.SetValue(key, ds, DateTimeOffset.Now.AddMinutes(10));
+        }
+
+        public static DataSet CacheData(this HttpContextBase context)
+        {
+            var key = context.Cache().ToString("n");
+
+            var obj = CacheManager.Current.GetValue(key);
+
+            if (obj == null) return null;
+            else return (DataSet)obj;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using LNF.CommonTools;
 using LNF.Models.Data;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 
 namespace LNF.Web.Content
@@ -9,6 +10,13 @@ namespace LNF.Web.Content
     {
         //private DropDownMenu _Menu = new DropDownMenu();
         private Authorization _Authorization = new Authorization();
+
+        public LNFMasterPage()
+        {
+            ContextBase = new HttpContextWrapper(Context);
+        }
+
+        public HttpContextBase ContextBase { get; }
 
         public virtual bool ShowMenu
         {

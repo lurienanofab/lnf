@@ -1,5 +1,4 @@
-﻿using LNF.Cache;
-using LNF.Repository;
+﻿using LNF.Repository;
 using LNF.Repository.Inventory;
 using System;
 
@@ -58,7 +57,7 @@ namespace LNF.Inventory
             return item;
         }
 
-        public static void CheckOut(this Item item, int quantity, ItemInventoryLocation itemLoc)
+        public static void CheckOut(this Item item, int quantity, ItemInventoryLocation itemLoc, int clientId)
         {
             int newqty = item.StockQuantity - quantity;
             if (item.StockQuantity != newqty)
@@ -74,7 +73,7 @@ namespace LNF.Inventory
                     UpdateDateTime = DateTime.Now,
                     UpdateAction = "CheckOut",
                     ItemInventoryLocationID = locId,
-                    ClientID = CacheManager.Current.CurrentUser.ClientID
+                    ClientID = clientId
                 };
 
                 DA.Current.Insert(iu);

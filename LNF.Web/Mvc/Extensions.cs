@@ -1,5 +1,4 @@
-﻿using LNF.Cache;
-using LNF.CommonTools;
+﻿using LNF.CommonTools;
 using LNF.Data;
 using LNF.Models.Data;
 using LNF.Web.Mvc.UI;
@@ -18,6 +17,11 @@ namespace LNF.Web.Mvc
 {
     public static class HtmlHelperExtensions
     {
+        public static ClientItem CurrentUser(this HtmlHelper helper)
+        {
+            return helper.ViewContext.HttpContext.CurrentUser();
+        }
+
         public static IHtmlString SiteMenu(this HtmlHelper helper, ClientItem client)
         {
             if (helper.ViewContext.HttpContext.Session["SiteMenu"] == null)
@@ -64,12 +68,14 @@ namespace LNF.Web.Mvc
             }
             sb.AppendLine("</ul>");
 
+            var currentUser = helper.CurrentUser();
+
             //right items
             sb.AppendLine("<ul class=\"nav navbar-nav navbar-right\">");
-            if (CacheManager.Current.CurrentUser != null)
+            if (currentUser != null)
             {
                 sb.AppendLine("<li class=\"dropdown\">");
-                sb.AppendLine(string.Format("<a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">{0} {1} <span class=\"caret\"></span></a>", CacheManager.Current.CurrentUser.FName, CacheManager.Current.CurrentUser.LName));
+                sb.AppendLine(string.Format("<a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">{0} {1} <span class=\"caret\"></span></a>", currentUser.FName, currentUser.LName));
                 sb.AppendLine("<ul class=\"dropdown-menu\" role=\"menu\">");
                 sb.AppendLine(string.Format("<li><a href=\"{0}\">Preferences</a></li>", VirtualPathUtility.ToAbsolute("~/preferences")));
                 sb.AppendLine(string.Format("<li><a href=\"{0}\">Sign Out</a></li>", ServiceProvider.Current.Context.LoginUrl));
@@ -104,7 +110,7 @@ namespace LNF.Web.Mvc
 
         public static IHtmlString PageMenuLink(this HtmlHelper helper, string linkText, string actionName, string controllerName, string currentPage, ClientPrivilege requiredPriv = 0)
         {
-            if (requiredPriv == 0 || CacheManager.Current.CurrentUser.HasPriv(requiredPriv))
+            if (requiredPriv == 0 || helper.CurrentUser().HasPriv(requiredPriv))
                 return helper.ActionLink(linkText, actionName, controllerName, null, new { @class = "nav-menu-item" + ((currentPage == controllerName) ? " nav-selected" : string.Empty) });
             else
                 return new HtmlString(string.Empty);
@@ -259,9 +265,7 @@ namespace LNF.Web.Mvc
             string id = helper.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldId(ExpressionHelper.GetExpressionText(expression));
             string name = helper.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(ExpressionHelper.GetExpressionText(expression));
 
-            OptGroupDropDownList ogddl = new OptGroupDropDownList(name, items, htmlAttributes);
-            ogddl.SelectedValue = selected_value;
-
+            OptGroupDropDownList ogddl = new OptGroupDropDownList(name, items, htmlAttributes) { SelectedValue = selected_value };
             StringBuilder sb = new StringBuilder();
             ogddl.Render(sb);
 
@@ -270,8 +274,7 @@ namespace LNF.Web.Mvc
 
         public static IHtmlString PeriodPickerFor<TModel>(this HtmlHelper<TModel> helper, Expression<Func<TModel, DateTime>> exp, int startYear = 2003, int endYear = 0, string monthFormat = "MMMM", bool autoPostback = false, object htmlAttributes = null)
         {
-            string name;
-            DateTime period = helper.EvalExpression(exp, out name);
+            DateTime period = helper.EvalExpression(exp, out string name);
             PeriodPicker picker = new PeriodPicker(name, period, startYear, endYear, monthFormat, autoPostback, htmlAttributes);
             return picker.Render();
         }
@@ -341,8 +344,7 @@ namespace LNF.Web.Mvc
 
         public static IHtmlString EmailFor<TModel, TProperty>(this HtmlHelper<TModel> helper, Expression<Func<TModel, TProperty>> expression, object htmlAttributes = null)
         {
-            string name;
-            TProperty value = helper.EvalExpression(expression, out name);
+            TProperty value = helper.EvalExpression(expression, out string name);
             return Email(helper, name, value, htmlAttributes);
         }
 
@@ -354,8 +356,7 @@ namespace LNF.Web.Mvc
 
         public static IHtmlString CalendarFor<TModel>(this HtmlHelper<TModel> helper, Expression<Func<TModel, DateTime>> expression, object htmlAttributes = null)
         {
-            string name;
-            DateTime value = helper.EvalExpression(expression, out name);
+            DateTime value = helper.EvalExpression(expression, out string name);
             return Calendar(helper, name, value, htmlAttributes);
         }
 

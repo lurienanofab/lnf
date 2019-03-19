@@ -1,5 +1,4 @@
-﻿using LNF.Cache;
-using LNF.CommonTools;
+﻿using LNF.CommonTools;
 using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
@@ -21,19 +20,19 @@ namespace LNF.Data
     {
         public static ReadOnlyDataCommand ReadOnlyCommand(CommandType type = CommandType.StoredProcedure) => ReadOnlyDataCommand.Create(type);
 
-        public static bool CanEditFeed()
+        public static bool CanEditFeed(IPrivileged client)
         {
-            return CacheManager.Current.CurrentUser.HasPriv(ClientPrivilege.Developer | ClientPrivilege.Administrator);
+            return client.HasPriv(ClientPrivilege.Developer | ClientPrivilege.Administrator);
         }
 
-        public static bool CanAddFeed()
+        public static bool CanAddFeed(IPrivileged client)
         {
-            return CacheManager.Current.CurrentUser.HasPriv(ClientPrivilege.Developer | ClientPrivilege.Administrator);
+            return client.HasPriv(ClientPrivilege.Developer | ClientPrivilege.Administrator);
         }
 
-        public static bool CanDeleteFeed()
+        public static bool CanDeleteFeed(IPrivileged client)
         {
-            return CacheManager.Current.CurrentUser.HasPriv(ClientPrivilege.Developer | ClientPrivilege.Administrator);
+            return client.HasPriv(ClientPrivilege.Developer | ClientPrivilege.Administrator);
         }
 
         public static bool CanViewFeedList()
@@ -41,9 +40,9 @@ namespace LNF.Data
             return true;
         }
 
-        public static bool CanViewInactiveFeeds()
+        public static bool CanViewInactiveFeeds(IPrivileged client)
         {
-            return CacheManager.Current.CurrentUser.HasPriv(ClientPrivilege.Developer | ClientPrivilege.Administrator);
+            return client.HasPriv(ClientPrivilege.Developer | ClientPrivilege.Administrator);
         }
 
         public static DataTable GetDataTable(string alias, object parameters)
@@ -147,11 +146,11 @@ namespace LNF.Data
             return result;
         }
 
-        public static void DeleteFeed(DataFeed feed)
+        public static void DeleteFeed(DataFeed feed, IPrivileged client)
         {
             if (feed != null)
             {
-                if (DataFeedUtility.CanDeleteFeed())
+                if (CanDeleteFeed(client))
                 {
                     feed.FeedAlias += "$DELETED$" + DateTime.Now.ToString("yyyyMMddHHmmss");
                     feed.Deleted = true;

@@ -46,7 +46,8 @@ namespace LNF.Impl.ModelFactory
             new ClientInjection(),
             new ClientInfoInjection(),
             new AccountInjection(),
-            new ReservationInjection()
+            new ReservationInjection(),
+            new ReservationInfoInjection()
         };
 
         public T Create<T>(object source)

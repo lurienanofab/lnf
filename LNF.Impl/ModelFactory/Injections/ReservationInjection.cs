@@ -1,5 +1,4 @@
-﻿using LNF.Repository;
-using LNF.Repository.Scheduler;
+﻿using LNF.Repository.Scheduler;
 using LNF.Scheduler;
 
 namespace LNF.Impl.ModelFactory.Injections
@@ -13,7 +12,7 @@ namespace LNF.Impl.ModelFactory.Injections
             SetTargetProperty(target, "ChargeBeginDateTime", obj, x => x.ChargeBeginDateTime());
             SetTargetProperty(target, "ChargeEndDateTime", obj, x => x.ChargeEndDateTime());
             SetTargetProperty(target, "ActivityAccountType", obj, x => x.Activity.AccountType);
-            SetTargetProperty(target, "Invitees", obj, x => ReservationManager.GetInvitees(x.ReservationID).Model<ReservationInviteeItem>());
+            SetTargetProperty(target, "Invitees", obj, x => ReservationManager.GetInvitees(x.ReservationID));
         }
     }
 }

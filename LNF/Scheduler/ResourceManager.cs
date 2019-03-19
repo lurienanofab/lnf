@@ -137,26 +137,5 @@ namespace LNF.Scheduler
             string result = dr["InterlockStatus"].ToString();
             return result;
         }
-
-        /// <summary>
-        /// Returns the next grain boundary in the past or future
-        /// </summary>
-        /// <param name="actualTime">The point in time to determine the next or previous granularity</param>
-        /// <param name="granDir">The direction (next or pervious) to search in</param>
-        /// <returns>The DateTime value of the next or previous granularity</returns>
-        public DateTime GetNextGranularity(ResourceItem item, DateTime actualTime, GranularityDirection granDir)
-        {
-            return ResourceUtility.GetNextGranularity(item.Granularity, item.Offset, actualTime, granDir);
-        }
-
-        /// <summary>
-        /// Sets the start and end time slot boundaries
-        /// </summary>
-        /// <param name="startTime">The start time</param>
-        /// <param name="endTime">The end time</param>
-        public void GetTimeSlotBoundary(ResourceItem item, ref DateTime startTime, ref DateTime endTime)
-        {
-            ResourceUtility.GetTimeSlotBoundary(item.Granularity, item.Offset, ref startTime, ref endTime);
-        }
     }
 }

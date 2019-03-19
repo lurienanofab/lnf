@@ -3,7 +3,7 @@ using System;
 
 namespace LNF.Models.Data
 {
-    public class ClientItem : IPrivileged
+    public class ClientItem : IClient
     {
         public int ClientID { get; set; }
         public string UserName { get; set; }

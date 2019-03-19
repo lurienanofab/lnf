@@ -4,6 +4,7 @@ using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Feedback;
 using LNF.Scheduler;
+using System;
 using System.Linq;
 
 namespace LNF.Feedback
@@ -67,9 +68,9 @@ namespace LNF.Feedback
 
     public static class NegativeIssueExtensions
     {
-        public static string GetResourceName(this NegativeIssue issue)
+        public static string GetResourceName(this NegativeIssue issue, ResourceTreeItemCollection tree)
         {
-            var res = CacheManager.Current.ResourceTree().Resources().Where(x => x.ResourceID == issue.ResourceID).FirstOrDefault();
+            var res = tree.Resources().Where(x => x.ResourceID == issue.ResourceID).FirstOrDefault();
 
             if (res != null)
                 return res.ResourceName;
