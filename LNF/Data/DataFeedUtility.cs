@@ -18,7 +18,7 @@ namespace LNF.Data
 {
     public static class DataFeedUtility
     {
-        public static ReadOnlyDataCommand ReadOnlyCommand(CommandType type = CommandType.StoredProcedure) => ReadOnlyDataCommand.Create(type);
+        public static DataCommandBase ReadOnlyCommand(CommandType type = CommandType.StoredProcedure) => ReadOnlyDataCommand.Create(type);
 
         public static bool CanEditFeed(IPrivileged client)
         {

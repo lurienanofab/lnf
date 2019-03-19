@@ -27,20 +27,21 @@ namespace LNF.Repository
         /// Create a new DataCommand instance.
         /// </summary>
         /// <param name="type">The CommandType used for selects. Also the default CommandType for updates (can be changed in Update action).</param>
-        public static DataCommandBase Command(CommandType type = CommandType.StoredProcedure) => DataCommand.Create(type);
+        public static DataCommandBase Command(CommandType type = CommandType.StoredProcedure) => DefaultDataCommand.Create(type);
 
 
         //The methods that were previously defined here have been moved to LNF.Repository.ISession
         //I think these methods should only be defined once, so now they are accessed via Current
     }
 
+    [Obsolete("Use DefaultDataCommand instead.")]
     public class DataCommand : DataCommandBase
     {
         private DataCommand(CommandType type) : base(type) { }
 
         protected override UnitOfWorkAdapter GetAdapter() => DA.Current.GetAdapter();
 
-        public static DataCommand Create(CommandType type = CommandType.StoredProcedure) => new DataCommand(type);
+        public static DataCommandBase Create(CommandType type = CommandType.StoredProcedure) => new DataCommand(type);
     }
 
     public class DefaultDataCommand : DataCommandBase
@@ -49,7 +50,7 @@ namespace LNF.Repository
 
         protected override UnitOfWorkAdapter GetAdapter() => SQLDBAccess.Create("cnSselData");
 
-        public static DefaultDataCommand Create(CommandType type = CommandType.StoredProcedure) => new DefaultDataCommand(type);
+        public static DataCommandBase Create(CommandType type = CommandType.StoredProcedure) => new DefaultDataCommand(type);
     }
 
     public class ReadOnlyDataCommand : DataCommandBase
@@ -58,7 +59,7 @@ namespace LNF.Repository
 
         protected override UnitOfWorkAdapter GetAdapter() => SQLDBAccess.Create("cnSselDataReadOnly");
 
-        public static ReadOnlyDataCommand Create(CommandType type = CommandType.StoredProcedure) => new ReadOnlyDataCommand(type);
+        public static DataCommandBase Create(CommandType type = CommandType.StoredProcedure) => new ReadOnlyDataCommand(type);
     }
 
     public abstract class DataCommandBase

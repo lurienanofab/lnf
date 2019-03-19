@@ -15,18 +15,19 @@ namespace LNF.Tests
         [TestMethod]
         public void CanGetClient()
         {
-            using (IOC.Resolver.GetInstance<IUnitOfWork>())
+            var ioc = new IOC(new ContextFactory());
+            using (ioc.Resolver.GetInstance<IUnitOfWork>())
             {
-                var session = IOC.Resolver.GetInstance<ISession>();
+                var session = ioc.Resolver.GetInstance<ISession>();
                 var client = session.Single<Client>(1301);
                 Assert.AreEqual("jgett", client.UserName);
 
-                session = IOC.Resolver.GetInstance<ISession>();
+                session = ioc.Resolver.GetInstance<ISession>();
                 var co = session.Query<ClientOrg>().FirstOrDefault(x => x.Client.ClientID == 1301);
                 Assert.AreEqual("jgett", co.Client.UserName);
             }
 
-            ServiceProvider.Current = IOC.Resolver.GetInstance<ServiceProvider>();
+            ServiceProvider.Current = ioc.Resolver.GetInstance<ServiceProvider>();
 
             using (DA.StartUnitOfWork())
             {
@@ -50,9 +51,10 @@ namespace LNF.Tests
         [TestMethod]
         public void CanSelectToolBilling()
         {
-            using (IOC.Resolver.GetInstance<IUnitOfWork>())
+            var ioc = new IOC(new ContextFactory());
+            using (ioc.Resolver.GetInstance<IUnitOfWork>())
             {
-                var repo = IOC.Resolver.GetInstance<Billing.ToolBillingManager>();
+                var repo = ioc.Resolver.GetInstance<Billing.ToolBillingManager>();
                 var results = repo.SelectToolBilling(DateTime.Parse("2017-02-01"));
                 Assert.IsTrue(results.Count() > 0);
             }
@@ -61,7 +63,8 @@ namespace LNF.Tests
         [TestMethod]
         public void CanGetRange()
         {
-            ServiceProvider.Current = IOC.Resolver.GetInstance<ServiceProvider>();
+            var ioc = new IOC(new ContextFactory());
+            ServiceProvider.Current = ioc.Resolver.GetInstance<ServiceProvider>();
 
             using (DA.StartUnitOfWork())
             {

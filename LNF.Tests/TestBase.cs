@@ -13,7 +13,8 @@ namespace LNF.Tests
         [TestInitialize]
         public void TestInitialize()
         {
-            ServiceProvider.Current = IOC.Resolver.GetInstance<ServiceProvider>();
+            var ioc = new IOC(new ContextFactory());
+            ServiceProvider.Current = ioc.Resolver.GetInstance<ServiceProvider>();
             _uow = DA.StartUnitOfWork();
         }
 
