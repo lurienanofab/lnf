@@ -1,6 +1,6 @@
 ﻿namespace LNF.Models.Data
 {
-    public class ClientRemoteItem
+    public class ClientRemoteItem : IClientRemote
     {
         public int ClientRemoteID { get; set; }
         public int ClientID { get; set; }

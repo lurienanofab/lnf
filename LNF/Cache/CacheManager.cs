@@ -2,7 +2,6 @@
 using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
-using LNF.Scheduler;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -42,23 +41,23 @@ namespace LNF.Cache
         /// <summary>
         /// Gets all active Clients. Clients are cached for 30 minutes.
         /// </summary>
-        public IEnumerable<ClientItem> Clients() => GetValue("Clients", () => DA.Current.Query<ClientInfo>().Where(x => x.ClientActive).CreateModels<ClientItem>(), DateTimeOffset.Now.AddMinutes(5));
+        public IEnumerable<IClient> Clients() => GetValue("Clients", () => DA.Current.Query<ClientInfo>().Where(x => x.ClientActive).CreateModels<ClientItem>(), DateTimeOffset.Now.AddMinutes(5));
 
         /// <summary>
         /// Gets one active Client by ClientID. Clients are cached for 30 minutes.
         /// </summary>
-        public ClientItem GetClient(int clientId) => Clients().FirstOrDefault(x => x.ClientID == clientId);
+        public IClient GetClient(int clientId) => Clients().FirstOrDefault(x => x.ClientID == clientId);
 
         /// <summary>
         /// Gets one active Client by UserName. Clients are cached for 30 minutes.
         /// </summary>
-        public ClientItem GetClient(string username) => Clients().FirstOrDefault(x => x.UserName == username);
+        public IClient GetClient(string username) => Clients().FirstOrDefault(x => x.UserName == username);
 
         /// <summary>
         /// The currently logged in user. Returns null if no one is logged in.
         /// </summary>
         [Obsolete("Use HttpContextBase instead.")]
-        public ClientItem CurrentUser
+        public IClient CurrentUser
         {
             get
             {
@@ -72,9 +71,9 @@ namespace LNF.Cache
         /// Ensures that the current session contains data for the authenticated user.
         /// </summary>
         [Obsolete("Use HttpContextBase instead.")]
-        public ClientItem CheckSession()
+        public IClient CheckSession()
         {
-            ClientItem model = null;
+            IClient model = null;
 
             if (ServiceProvider.Current.Context.User.Identity.IsAuthenticated)
             {
@@ -108,11 +107,11 @@ namespace LNF.Cache
         }
 
         [Obsolete("Use HttpContextBase instead.")]
-        public ClientItem CheckSession(ClientItem client)
+        public IClient CheckSession(IClient client)
         {
             // at this point the client object still might be null because unauthenticated requests are allowed in some cases
             // and we should now check the session UserName value (if client is null then default values will be used)
-            ClientItem result;
+            IClient result;
             bool update = false;
             string username = GetCurrentUserName();
 

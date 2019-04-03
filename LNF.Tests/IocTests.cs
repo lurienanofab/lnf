@@ -2,7 +2,6 @@
 using LNF.Impl.DependencyInjection.Default;
 using LNF.Repository;
 using LNF.Repository.Data;
-using LNF.Scheduler;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
@@ -68,8 +67,7 @@ namespace LNF.Tests
 
             using (DA.StartUnitOfWork())
             {
-                var mgr = ServiceProvider.Current.Use<IActiveDataItemManager>();
-                var range = mgr.Range(DA.Current.Query<Client>().Where(x => x.ClientID == 1301),
+                var range = ServiceProvider.Current.ActiveDataItemManager.Range(DA.Current.Query<Client>().Where(x => x.ClientID == 1301),
                     k => new ActiveLogKey("Client", k.ClientID),
                     DateTime.Parse("2018-01-01"), DateTime.Parse("2018-02-01"));
                 Assert.IsTrue(range.Count() > 0);

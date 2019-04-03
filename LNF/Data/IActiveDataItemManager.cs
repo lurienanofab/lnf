@@ -12,7 +12,7 @@ namespace LNF.Data
         IQueryable<ActiveLog> ActiveLogs(IActiveDataItem item);
         void Disable(IActiveDataItem item);
         void Enable(IActiveDataItem item);
-        IEnumerable<T> FindActive<T>(IQueryable<T> query, Expression<Func<T, int>> record, DateTime sd, DateTime ed) where T : IActiveDataItem;
+        IEnumerable<T> FindActive<T>(IQueryable<T> query, Expression<Func<T, int>> record, DateTime sd, DateTime ed, string tableName = null) where T : IDataItem;
         IEnumerable<ActiveLogItem<T>> Range<T>(IQueryable<T> list, Expression<Func<T, ActiveLogKey>> key, DateTime startDate, DateTime endDate) where T : class, IActiveDataItem;
     }
 }

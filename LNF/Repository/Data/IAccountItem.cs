@@ -20,7 +20,7 @@ namespace LNF.Repository.Data
         /// <summary>
         /// The Account number
         /// </summary>
-        string Number { get; set; }
+        string AccountNumber { get; set; }
 
         /// <summary>
         /// The Account ShortCode

@@ -1,3 +1,5 @@
+using LNF.Models.Data;
+
 namespace LNF.Repository.Data
 {
     /// <summary>

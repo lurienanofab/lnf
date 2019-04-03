@@ -7,35 +7,35 @@ using System.Linq;
 
 namespace LNF.Scheduler
 {
-    public class ReservationCollection : IEnumerable<ReservationItem>
+    public class ReservationCollection : IEnumerable<IReservation>
     {
-        private IList<ReservationItem> _items;
+        private IList<IReservation> _items;
 
-        protected IReservationManager ReservationManager { get; }
+        protected IProvider Provider { get; }
 
-        public ReservationCollection(IReservationManager reservationManager)
+        public ReservationCollection(IProvider provider)
         {
-            ReservationManager = reservationManager;
+            Provider = provider;
         }
 
-        public  IList<ReservationItem> this[DateTime date]
+        public  IList<IReservation> this[DateTime date]
         {
             get { return Find(date, true); }
         }
 
-        public void Add(ReservationItem item)
+        public void Add(IReservation item)
         {
             _items.Add(item);
         }
 
-        public IList<ReservationItem> Find(DateTime date, bool includeDeleted)
+        public IList<IReservation> Find(DateTime date, bool includeDeleted)
         {
             DateTime d = date.Date;
 
             DateTime sd = d;
             DateTime ed = d.AddDays(1);
 
-            IEnumerable<ReservationItem> result = _items.Where(x => (x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd));
+            IEnumerable<IReservation> result = _items.Where(x => (x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd));
 
             if (includeDeleted)
                 return result.ToList();
@@ -51,7 +51,7 @@ namespace LNF.Scheduler
             if (ed > Reservation.MaxReservationEndDate)
                 throw new ArgumentOutOfRangeException("ed");
 
-            _items = ReservationManager.SelectByResource(resourceId, sd, ed, true).ToList();
+            _items = Provider.ReservationManager.SelectByResource(resourceId, sd, ed, true).ToList();
         }
 
         public void SelectByProcessTech(int processTechId, DateTime sd, DateTime ed)
@@ -62,7 +62,7 @@ namespace LNF.Scheduler
             if (ed > Reservation.MaxReservationEndDate)
                 throw new ArgumentOutOfRangeException("ed");
 
-            _items = ReservationManager.SelectByProcessTech(processTechId, sd, ed, true).ToList();
+            _items = Provider.ReservationManager.SelectByProcessTech(processTechId, sd, ed, true).ToList();
         }
 
         public void SelectByClient(int clientId, DateTime sd, DateTime ed)
@@ -73,17 +73,17 @@ namespace LNF.Scheduler
             if (ed > Reservation.MaxReservationEndDate)
                 throw new ArgumentOutOfRangeException("ed");
 
-            _items = ReservationManager.SelectByClient(clientId, sd, ed, true).ToList();
+            _items = Provider.ReservationManager.SelectByClient(clientId, sd, ed, true).ToList();
         }
 
-        private IList<ReservationItem> GetItems()
+        private IList<IReservation> GetItems()
         {
             if (_items == null)
-                _items = new List<ReservationItem>();
+                _items = new List<IReservation>();
             return _items;
         }
 
-        public IEnumerator<ReservationItem> GetEnumerator()
+        public IEnumerator<IReservation> GetEnumerator()
         {
             return GetItems().GetEnumerator();
         }

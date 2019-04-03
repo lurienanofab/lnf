@@ -9,7 +9,7 @@ namespace LNF.Data
 {
     public class CostManager : ManagerBase, ICostManager
     {
-        public CostManager(ISession session) : base(session) { }
+        public CostManager(IProvider provider) : base(provider) { }
 
         /// <summary>
         /// Gets the most recent costs.

@@ -16,8 +16,6 @@ namespace LNF.Scheduler
 {
     public static class HelpdeskUtility
     {
-        public static IClientOrgManager ClientOrgManager => ServiceProvider.Current.Use<IClientOrgManager>();
-
         public static string Url
         {
             get { return ConfigurationManager.AppSettings["HelpdeskUrl"]; }
@@ -46,7 +44,7 @@ namespace LNF.Scheduler
             return new Helpdesk.Service(ApiUrl, ApiKey).SelectTicketDetail(ticketId);
         }
 
-        public static CreateTicketResult CreateTicket(ClientItem currentUser, IResource res, Reservation rsv, int clientId, string reservationText, string subjectText, string messageText, string ticketType)
+        public static CreateTicketResult CreateTicket(IClient currentUser, IResource res, Reservation rsv, int clientId, string reservationText, string subjectText, string messageText, string ticketType)
         {
             TicketPriorty pri = TicketPriortyFromString(ticketType);
 
@@ -54,7 +52,7 @@ namespace LNF.Scheduler
 
             Helpdesk.Service service = new Helpdesk.Service(ApiUrl, ApiKey);
 
-            var primary = ClientOrgManager.GetPrimary(currentUser.ClientID);
+            var primary = ServiceProvider.Current.ClientOrgManager.GetPrimary(currentUser.ClientID);
 
             if (primary != null)
             {

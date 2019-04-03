@@ -113,7 +113,7 @@ namespace LNF.Repository.Data
 
         public virtual AccountChartFields GetChartFields()
         {
-            return new AccountChartFields(this);
+            return new AccountChartFields(this.CreateModel<IAccount>());
         }
 
         /// <summary>

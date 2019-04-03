@@ -14,7 +14,7 @@ namespace LNF.CommonTools
                 Caller = caller,
                 Subject = subject,
                 Body = body,
-                From = SystemEmail,
+                From = from,
                 To = to,
                 Cc = cc,
                 Bcc = bcc,

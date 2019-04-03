@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.IO;
-using iTextSharp.text;
+﻿using iTextSharp.text;
 using iTextSharp.text.pdf;
-using LNF.Data;
-using LNF.Store;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Store;
+using LNF.Store;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace LNF.Printing
 {
@@ -133,22 +131,24 @@ namespace LNF.Printing
 
             PdfPTable innerTable = new PdfPTable(new float[] { 0.3F, 0.7F });
 
-            var mgr = ServiceProvider.Current.Use<IClientManager>();
+            var mgr = ServiceProvider.Current.Data.ClientManager;
+
+            var c = order.Client.CreateModel<IClient>();
 
             //header row
             innerTable.AddCell(HeaderCell("CUSTOMER INFO"));
 
             //first row
             innerTable.AddCell(new PdfPCell(BoldPhrase("Name:")) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
-            innerTable.AddCell(new PdfPCell(NormalPhrase(order.Client.DisplayName)) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
+            innerTable.AddCell(new PdfPCell(NormalPhrase(c.DisplayName)) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
 
             //second row
             innerTable.AddCell(new PdfPCell(BoldPhrase("Contact:")) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
-            innerTable.AddCell(new PdfPCell(NormalPhrase(mgr.PrimaryEmail(order.Client))) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
+            innerTable.AddCell(new PdfPCell(NormalPhrase(c.Email)) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
 
             //third row
             innerTable.AddCell(new PdfPCell(BoldPhrase("")) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
-            innerTable.AddCell(new PdfPCell(NormalPhrase(mgr.PrimaryPhone(order.Client))) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
+            innerTable.AddCell(new PdfPCell(NormalPhrase(c.Phone)) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
 
             //fourth row
             innerTable.AddCell(new PdfPCell(BoldPhrase("Account:")) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
@@ -213,7 +213,7 @@ namespace LNF.Printing
 
                 PdfPTable innerTable = GetDetailPageTable();
 
-                Action<PdfPTable, int, bool> appendOuterTable = (tbl, pageNum, isLast) =>
+                void appendOuterTable(PdfPTable tbl, int pageNum, bool isLast)
                 {
                     PdfPTable outerTable = new PdfPTable(1)
                     {
@@ -240,7 +240,7 @@ namespace LNF.Printing
 
                     //if (!isLast)
                     //    doc.Add(GetFooter(order, true));
-                };
+                }
 
                 foreach (StoreOrderDetail item in details)
                 {

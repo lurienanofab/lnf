@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Billing
 {
-    public class AccountSubsidyItem
+    public class AccountSubsidyItem : IAccountSubsidy
     {
         public int AccountSubsidyID { get; set; }
         public int AccountID { get; set; }

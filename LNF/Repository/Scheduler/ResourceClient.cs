@@ -12,6 +12,8 @@ namespace LNF.Repository.Scheduler
         public virtual DateTime? Expiration { get; set; }
         public virtual int? EmailNotify { get; set; }
         public virtual int? PracticeResEmailNotify { get; set; }
+        public virtual bool HasAuth(ClientAuthLevel auths) => ResourceClientItem.HasAuth(AuthLevel, auths);
+        public virtual bool IsEveryone() => ResourceClientItem.IsEveryone(ClientID);
 
         public virtual ResourceClientInfo GetResourceClientInfo()
         {

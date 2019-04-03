@@ -9,7 +9,7 @@ namespace LNF.Data
 {
     public class ActiveDataItemManager : ManagerBase, IActiveDataItemManager
     {
-        public ActiveDataItemManager(ISession session) : base(session) { }
+        public ActiveDataItemManager(IProvider provider) : base(provider) { }
 
         /// <summary>
         /// Sets Active to false and updates ActiveLog
@@ -64,9 +64,10 @@ namespace LNF.Data
             }
         }
 
-        public IEnumerable<T> FindActive<T>(IQueryable<T> query, Expression<Func<T, int>> record, DateTime sd, DateTime ed) where T : IActiveDataItem
+        public IEnumerable<T> FindActive<T>(IQueryable<T> query, Expression<Func<T, int>> record, DateTime sd, DateTime ed, string tableName = null) where T : IDataItem
         {
-            string tableName = Activator.CreateInstance<T>().TableName();
+            if (string.IsNullOrEmpty(tableName))
+                tableName = typeof(T).Name;
 
             var alogs = Session.Query<ActiveLog>();
 

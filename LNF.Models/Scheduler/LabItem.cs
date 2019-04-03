@@ -1,11 +1,8 @@
 ﻿namespace LNF.Models.Scheduler
 {
-    public class LabItem
+    public class LabItem : BuildingItem, ILab
     {
         public int LabID { get; set; }
-        public int BuildingID { get; set; }
-        public string BuildingName { get; set; }
-        public bool BuildingIsActive { get; set; }
         public string LabName { get; set; }
         public string LabDisplayName { get; set; }
         public string LabDescription { get; set; }

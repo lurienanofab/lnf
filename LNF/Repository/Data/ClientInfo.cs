@@ -8,7 +8,7 @@ namespace LNF.Repository.Data
     /// <summary>
     /// A readonly view of a Client (system user) - all related tables are joined to retrieve all information with one query
     /// </summary>
-    public class ClientInfo : ClientOrgInfoBase, IActiveDataItem
+    public class ClientInfo : ClientOrgInfoBase
     {
         // This class is identical to the base class. The difference between ClientOrgInfoBase subclasses is how they are selected from the database (different views).
 
@@ -25,22 +25,6 @@ namespace LNF.Repository.Data
         {
             var query = DA.Current.Query<ClientInfo>().Where(x => (x.Privs & priv) > 0);
             return query;
-        }
-
-        public virtual bool Active
-        {
-            get { return ClientActive; }
-            set { /* nothing to do here */ }
-        }
-
-        public virtual int Record()
-        {
-            return ClientID;
-        }
-
-        public virtual string TableName()
-        {
-            return "Client";
         }
 
         public static ClientInfo Find(string username)

@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Data
 {
-    public class CostItem
+    public class CostItem : ICost
     {
         public int CostID { get; set; }
         public int ChargeTypeID { get; set; }

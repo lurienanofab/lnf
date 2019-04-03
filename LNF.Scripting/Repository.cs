@@ -8,7 +8,7 @@ namespace LNF.Scripting
 {
     public static class Repository
     {
-        public static ReadOnlyDataCommand ReadOnlyCommand(CommandType type = CommandType.StoredProcedure) => ReadOnlyDataCommand.Create(type);
+        public static DataCommandBase ReadOnlyCommand(CommandType type = CommandType.StoredProcedure) => ReadOnlyDataCommand.Create(type);
 
         public static IList<IDictionary> Query(string query, Parameters parameters)
         {

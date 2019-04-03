@@ -23,20 +23,9 @@ namespace LNF.Repository.Scheduler
         public virtual bool ClientActive { get; set; }
         public virtual bool ResourceIsActive { get; set; }
 
-        public virtual bool HasAuth(int auths)
-        {
-            return HasAuth((ClientAuthLevel)auths);
-        }
+        public virtual bool HasAuth(ClientAuthLevel auths) => (AuthLevel & auths) > 0;
 
-        public virtual bool HasAuth(ClientAuthLevel auths)
-        {
-            return (AuthLevel & auths) > 0;
-        }
-
-        public virtual bool IsEveryone()
-        {
-            return ClientID == -1;
-        }
+        public virtual bool IsEveryone() => ClientID == -1;
 
         public virtual ResourceClient GetResourceClient()
         {

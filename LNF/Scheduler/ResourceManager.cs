@@ -1,5 +1,4 @@
 ﻿using LNF.CommonTools;
-using LNF.Data;
 using LNF.Models.Data;
 using LNF.Models.Scheduler;
 using LNF.Repository;
@@ -14,14 +13,7 @@ namespace LNF.Scheduler
 {
     public class ResourceManager : ManagerBase, IResourceManager
     {
-        protected IContext Context { get; }
-        protected ICostManager CostManager { get; }
-
-        public ResourceManager(ISession session, IContext context, ICostManager costManager) : base(session)
-        {
-            Context = context;
-            CostManager = costManager;
-        }
+        public ResourceManager(IProvider provider) : base(provider) { }
 
         public IQueryable<Resource> SelectActive()
         {
@@ -116,13 +108,13 @@ namespace LNF.Scheduler
 
         public IEnumerable<ResourceCost> GetResourceCosts(DateTime? cutoff = null)
         {
-            var costs = CostManager.FindToolCosts(cutoff).Model<CostItem>();
+            var costs = Provider.CostManager.FindToolCosts(cutoff).AsQueryable().CreateModels<CostItem>();
             return ResourceCost.CreateResourceCosts(costs);
         }
 
         public IEnumerable<ResourceCost> GetResourceCosts(ResourceItem item, DateTime? cutoff = null)
         {
-            var costs = CostManager.FindToolCosts(item.ResourceID, cutoff).Model<CostItem>();
+            var costs = Provider.CostManager.FindToolCosts(item.ResourceID, cutoff).AsQueryable().CreateModels<CostItem>();
             return ResourceCost.CreateResourceCosts(costs);
         }
 

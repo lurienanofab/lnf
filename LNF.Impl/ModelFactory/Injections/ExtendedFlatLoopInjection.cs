@@ -5,6 +5,11 @@ using System.Linq;
 
 namespace LNF.Impl.ModelFactory.Injections
 {
+    /// <summary>
+    /// Handles normal FlatLoopInjections: target.AccountActive <==> source.Account.Active
+    /// Handles target properties that match a source sub property: target.ResourceID <==> source.Resource.ResourceID
+    /// Handles target properties that match the sub property type name plus property name: target.AccountActive <==> source.Active (when type of source is Account)
+    /// </summary>
     public class ExtendedFlatLoopInjection : ValueInjection
     {
         protected override void Inject(object source, object target)

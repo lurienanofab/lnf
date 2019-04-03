@@ -1,5 +1,4 @@
-﻿using LNF.Data;
-using LNF.Help;
+﻿using LNF.Help;
 using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
@@ -21,8 +20,6 @@ namespace LNF.Feeds
         {
             public static class StaffHours
             {
-                public static IClientManager ClientManager => ServiceProvider.Current.Use<IClientManager>();
-
                 public static string GetUrl(FeedFormats format, string UserName)
                 {
                     string result = string.Empty;
@@ -93,14 +90,14 @@ namespace LNF.Feeds
                             {
                                 DateTime[] week = WeekArray(sd.LastUpdate);
                                 StaffTimeInfoCollection staffTime = new StaffTimeInfoCollection(sd.HoursXML);
-
+                                IClient c = sd.Client.CreateModel<IClient>();
                                 StaffDirectoryItem sdi = new StaffDirectoryItem()
                                 {
                                     StaffDirectoryID = sd.StaffDirectoryID,
                                     Name = sd.Client.DisplayName,
                                     Hours = staffTime.ToString(),
-                                    Email = ClientManager.PrimaryEmail(sd.Client),
-                                    Phone = ClientManager.PrimaryPhone(sd.Client),
+                                    Email = c.Email,
+                                    Phone = c.Phone,
                                     Office = sd.Office,
                                     Deleted = sd.Deleted,
                                     ReadOnly = true

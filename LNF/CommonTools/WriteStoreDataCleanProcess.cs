@@ -1,5 +1,4 @@
-﻿using LNF.Data;
-using LNF.Models.Billing.Process;
+﻿using LNF.Models.Billing.Process;
 using LNF.Repository;
 using System;
 using System.Collections.Generic;
@@ -19,7 +18,12 @@ namespace LNF.CommonTools
     {
         public static readonly int DryBoxCategoryID = 33;
 
-        public IDryBoxManager DryBoxManager => ServiceProvider.Current.Use<IDryBoxManager>();
+        public IProvider Provider { get; }
+
+        public WriteStoreDataCleanProcess(IProvider provider)
+        {
+            Provider = provider;
+        }
 
         public DateTime StartDate { get; }
         public DateTime EndDate { get; }
@@ -60,7 +64,7 @@ namespace LNF.CommonTools
             var dtStoreDataRaw = ReadData.Store.ReadStoreDataRaw(StartDate, EndDate, ClientID);
             dtStoreDataRaw.TableName = "StoreDataRaw";
 
-            _ds = DryBoxManager.ReadDryBoxData(StartDate, EndDate, ClientID);
+            _ds = Provider.DryBoxManager.ReadDryBoxData(StartDate, EndDate, ClientID);
             _ds.Tables.Add(dtStoreDataRaw);
 
             return dtStoreDataRaw;

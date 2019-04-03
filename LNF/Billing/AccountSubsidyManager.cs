@@ -1,4 +1,5 @@
-﻿using LNF.Repository;
+﻿using LNF.Models.Billing;
+using LNF.Repository;
 using LNF.Repository.Billing;
 using System;
 using System.Collections.Generic;
@@ -8,9 +9,47 @@ namespace LNF.Billing
 {
     public class AccountSubsidyManager : ManagerBase, IAccountSubsidyManager
     {
-        public AccountSubsidyManager(ISession session) : base(session) { }
+        public AccountSubsidyManager(IProvider provider) : base(provider) { }
 
-        public IEnumerable<AccountSubsidy> GetActive(DateTime sd, DateTime ed)
+        public int AddAccountSubsidy(IAccountSubsidy model)
+        {
+            var existing = Session.Query<AccountSubsidy>().Where(x => x.AccountID == model.AccountID && x.DisableDate == null);
+
+            if (existing != null && existing.Count() > 0)
+            {
+                foreach (var item in existing)
+                    item.DisableDate = model.EnableDate;
+            }
+
+            var entity = new AccountSubsidy()
+            {
+                AccountID = model.AccountID,
+                UserPaymentPercentage = model.UserPaymentPercentage,
+                CreatedDate = DateTime.Now,
+                EnableDate = model.EnableDate,
+            };
+
+            Session.Insert(entity);
+
+            return entity.AccountSubsidyID;
+        }
+
+        public bool DisableAccountSubsidy(int accountSubsidyId)
+        {
+            var entity = Session.Single<AccountSubsidy>(accountSubsidyId);
+            if (entity == null) return false;
+            entity.DisableDate = DateTime.Now.Date.AddDays(1);
+            Session.SaveOrUpdate(entity);
+            return true;
+        }
+
+        public IEnumerable<IAccountSubsidy> GetAccountSubsidy(int? accountId = null)
+        {
+            return Session.Query<AccountSubsidy>()
+                .Where(x => x.AccountID == accountId.GetValueOrDefault(x.AccountID)).CreateModels<IAccountSubsidy>();
+        }
+
+        public IEnumerable<IAccountSubsidy> GetActiveAccountSubsidy(DateTime sd, DateTime ed)
         {
             //base query
             var baseQuery = Session.Query<AccountSubsidy>()
@@ -25,7 +64,7 @@ namespace LNF.Billing
                 i => i.AccountSubsidyID,
                 (o, i) => o);
 
-            return step1.OrderBy(x => x.AccountID).ToList();
+            return step1.OrderBy(x => x.AccountID).CreateModels<IAccountSubsidy>();
         }
     }
 }

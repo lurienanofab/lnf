@@ -12,28 +12,141 @@ namespace LNF.Data
 {
     public class AccountManager : ManagerBase, IAccountManager
     {
-        protected IActiveDataItemManager ActiveDataItemManager { get; }
-        protected IChargeTypeManager ChargeTypeManager { get; }
+        public AccountManager(IProvider provider) : base(provider) { }
 
-        public AccountManager(ISession session, IActiveDataItemManager activeDataItemManager, IChargeTypeManager chargeTypeManager) : base(session)
+        public IEnumerable<IAccount> Accounts(int accountTypeId)
         {
-            ActiveDataItemManager = activeDataItemManager;
-            ChargeTypeManager = chargeTypeManager;
+            return Session.Query<AccountInfo>().Where(x => x.AccountTypeID == accountTypeId).CreateModels<IAccount>();
         }
 
-        public IQueryable<ClientAccount> ClientAccounts(Account item)
+        public IEnumerable<IAccount> ActiveAccounts()
         {
-            return Session.Query<ClientAccount>().Where(x => x.Account == item);
+            return Session.Query<AccountInfo>().Where(x => x.AccountActive).CreateModels<IAccount>();
         }
 
-        public FundingSource FundingSource(Account item)
+        public IEnumerable<IClientAccount> ClientAccounts(int accountId)
         {
-            return Session.Single<FundingSource>(item.FundingSourceID);
+            return Session.Query<ClientAccountInfo>().Where(x => x.AccountID == accountId).CreateModels<IClientAccount>();
         }
 
-        public string FundingSourceName(Account item)
+        public IList<IAccount> ConvertToAccountList(DataTable dt)
         {
-            var fs = FundingSource(item);
+            List<IAccount> result = new List<IAccount>();
+            if (dt != null)
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+                    var acct = new AccountItem();
+
+                    if (dr.Table.Columns.Contains("AccountID"))
+                        acct.AccountID = Convert.ToInt32(dr["AccountID"]);
+
+                    if (dr.Table.Columns.Contains("OrgID"))
+                    {
+                        var org = Session.Single<Org>(Convert.ToInt32(dr["OrgID"]));
+                        acct.OrgID = org.OrgID;
+                        acct.OrgName = org.OrgName;
+                    }
+
+                    if (dr.Table.Columns.Contains("Name"))
+                        acct.AccountName = (dr["Name"] == DBNull.Value) ? null : dr["Name"].ToString();
+
+                    if (dr.Table.Columns.Contains("AccountTypeID"))
+                    {
+                        var acctType = Session.Single<AccountType>(Convert.ToInt32(dr["AccountTypeID"]));
+                        acct.AccountTypeID = acctType.AccountTypeID;
+                        acct.AccountTypeName = acctType.AccountTypeName;
+                    }
+
+                    if (dr.Table.Columns.Contains("Number"))
+                        acct.AccountNumber = (dr["Number"] == DBNull.Value) ? null : dr["Number"].ToString();
+
+                    if (dr.Table.Columns.Contains("ShortCode"))
+                        acct.ShortCode = (dr["ShortCode"] == DBNull.Value) ? null : dr["ShortCode"].ToString();
+
+                    if (dr.Table.Columns.Contains("FundingSourceID"))
+                        acct.FundingSourceID = (dr["FundingSourceID"] == DBNull.Value) ? 0 : Convert.ToInt32(dr["FundingSourceID"]);
+
+                    if (dr.Table.Columns.Contains("TechnicalFieldID"))
+                        acct.TechnicalFieldID = (dr["TechnicalFieldID"] == DBNull.Value) ? 0 : Convert.ToInt32(dr["TechnicalFieldID"]);
+
+                    if (dr.Table.Columns.Contains("SpecialTopicID"))
+                        acct.SpecialTopicID = (dr["SpecialTopicID"] == DBNull.Value) ? 0 : Convert.ToInt32(dr["SpecialTopicID"]);
+
+                    if (dr.Table.Columns.Contains("BillAddressID"))
+                        acct.BillAddressID = (dr["BillAddressID"] == DBNull.Value) ? 0 : Convert.ToInt32(dr["BillAddressID"]);
+
+                    if (dr.Table.Columns.Contains("ShipAddressID"))
+                        acct.ShipAddressID = (dr["ShipAddressID"] == DBNull.Value) ? 0 : Convert.ToInt32(dr["ShipAddressID"]);
+
+                    if (dr.Table.Columns.Contains("InvoiceNumber"))
+                        acct.InvoiceNumber = (dr["InvoiceNumber"] == DBNull.Value) ? null : dr["InvoiceNumber"].ToString();
+
+                    if (dr.Table.Columns.Contains("InvoiceLine1"))
+                        acct.InvoiceLine1 = (dr["InvoiceLine1"] == DBNull.Value) ? null : dr["InvoiceLine1"].ToString();
+
+                    if (dr.Table.Columns.Contains("InvoiceLine2"))
+                        acct.InvoiceLine2 = (dr["InvoiceLine2"] == DBNull.Value) ? null : dr["InvoiceLine2"].ToString();
+
+                    if (dr.Table.Columns.Contains("PoEndDate"))
+                        acct.PoEndDate = Utility.ConvertToNullableDateTime(dr["PoEndDate"]);
+
+                    if (dr.Table.Columns.Contains("PoInitialFunds"))
+                        acct.PoInitialFunds = Utility.ConvertToNullableDouble(dr["PoInitialFunds"]);
+
+                    if (dr.Table.Columns.Contains("PoRemainingFunds"))
+                        acct.PoRemainingFunds = Utility.ConvertToNullableDouble(dr["PoRemainingFunds"]);
+
+                    if (dr.Table.Columns.Contains("Active"))
+                        acct.AccountActive = (dr["Active"] == DBNull.Value) ? false : Convert.ToBoolean(dr["Active"]);
+
+                    result.Add(acct);
+                }
+            }
+            return result;
+        }
+
+        public DataTable ConvertToAccountTable(IList<IAccount> accounts)
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("AccountID", typeof(int));
+            dt.Columns.Add("Name", typeof(string));
+
+            foreach (var a in accounts.OrderBy(x => x.AccountName))
+                dt.Rows.Add(a.AccountID, a.AccountName);
+
+            return dt;
+        }
+
+        public bool Delete(int accountId)
+        {
+            Account acct = Session.Single<Account>(accountId);
+            if (acct != null && acct.Active)
+            {
+                Provider.ActiveDataItemManager.Disable(acct);
+                return true;
+            }
+            return false;
+        }
+
+        public IEnumerable<IAccount> FindByShortCode(string shortCode)
+        {
+            return Session.Query<AccountInfo>().Where(x => x.ShortCode == shortCode).CreateModels<IAccount>();
+        }
+
+        public IEnumerable<IClientAccount> FindClientAccounts(int clientOrgId)
+        {
+            return Session.Query<ClientAccountInfo>().Where(x => x.ClientOrgID == clientOrgId).CreateModels<IClientAccount>();
+        }
+
+        public IFundingSource FundingSource(int fundingSourceId)
+        {
+            return Session.Single<FundingSource>(fundingSourceId).CreateModel<IFundingSource>();
+        }
+
+        public string FundingSourceName(IAccount acct)
+        {
+            var fs = FundingSource(acct.FundingSourceID);
 
             if (fs != null)
                 return fs.FundingSourceName;
@@ -41,144 +154,17 @@ namespace LNF.Data
                 return string.Empty;
         }
 
-        public TechnicalField TechnicalField(Account item)
-        {
-            return Session.Single<TechnicalField>(item.TechnicalFieldID);
-        }
-
-        public string TechnicalFieldName(Account item)
-        {
-            var tf = TechnicalField(item);
-
-            if (tf != null)
-                return tf.TechnicalFieldName;
-            else
-                return string.Empty;
-        }
-
-        public SpecialTopic SpecialTopic(Account item)
-        {
-            return Session.Single<SpecialTopic>(item.SpecialTopicID);
-        }
-
-        public string SpecialTopicName(Account item)
-        {
-            var st = SpecialTopic(item);
-
-            if (st != null)
-                return st.SpecialTopicName;
-            else
-                return string.Empty;
-        }
-
-        public string GetDeptRef(Account item, DateTime period)
-        {
-            //this is the Project chart field based on OrgRecharge or Org.OrgType.Account
-
-            var allOrgRecharge = Session.Query<OrgRecharge>();
-
-            var orgRecharge = allOrgRecharge.Where(x => x.Account.AccountID == item.AccountID && x.EnableDate < period.AddMonths(1) && (x.DisableDate == null || x.DisableDate > period)).OrderBy(x => x.OrgRechargeID).LastOrDefault();
-
-            if (orgRecharge != null)
-                return orgRecharge.Account.GetChartFields().Project;
-            else
-                return ChargeTypeManager.GetAccount(item.Org.OrgType.ChargeType).GetChartFields().Project;
-        }
-
-        public IQueryable<Account> ActiveAccounts()
-        {
-            return Session.Query<Account>().Where(x => x.Active);
-        }
-
-        public IQueryable<Account> FindByShortCode(string shortCode)
-        {
-            return Session.Query<Account>().Where(x => x.ShortCode == shortCode);
-        }
-
-        public IQueryable<Account> GetAllNonBillingAccounts()
+        public IEnumerable<IAccount> GetAllNonBillingAccounts()
         {
             //Account_Select @Action='GetAllNonBillingAccounts'
             int[] nonBillingAccountTypeIds = new int[] { 2, 3 };
-            var result = Session.Query<Account>().Where(x => nonBillingAccountTypeIds.Contains(x.AccountType.AccountTypeID));
+            var result = Session.Query<AccountInfo>().Where(x => nonBillingAccountTypeIds.Contains(x.AccountTypeID)).CreateModels<IAccount>();
             return result;
         }
 
-        public void Restore(int accountId)
+        public string GetChartField(IAccount acct, ChartFieldName field)
         {
-            Account acct = Session.Single<Account>(accountId);
-            if (acct != null && !acct.Active)
-            {
-                ActiveDataItemManager.Enable(acct);
-            }
-        }
-
-        public void Delete(int accountId)
-        {
-            Account acct = Session.Single<Account>(accountId);
-            if (acct != null && acct.Active)
-            {
-                ActiveDataItemManager.Disable(acct);
-            }
-        }
-
-        public IList<Account> ConvertToAccountList(DataTable dt)
-        {
-            List<Account> result = new List<Account>();
-            if (dt != null)
-            {
-                foreach (DataRow dr in dt.Rows)
-                {
-                    Account acct = new Account();
-                    if (dr.Table.Columns.Contains("AccountID"))
-                        acct.AccountID = Convert.ToInt32(dr["AccountID"]);
-                    if (dr.Table.Columns.Contains("OrgID"))
-                        acct.Org = (dr["OrgID"] == DBNull.Value) ? null : Session.Single<Org>(Convert.ToInt32(dr["OrgID"]));
-                    if (dr.Table.Columns.Contains("Name"))
-                        acct.Name = (dr["Name"] == DBNull.Value) ? null : dr["Name"].ToString();
-                    if (dr.Table.Columns.Contains("AccountTypeID"))
-                        acct.AccountType = (dr["AccountTypeID"] == DBNull.Value) ? null : Session.Single<AccountType>(Convert.ToInt32(dr["AccountTypeID"]));
-                    if (dr.Table.Columns.Contains("Number"))
-                        acct.Number = (dr["Number"] == DBNull.Value) ? null : dr["Number"].ToString();
-                    if (dr.Table.Columns.Contains("ShortCode"))
-                        acct.ShortCode = (dr["ShortCode"] == DBNull.Value) ? null : dr["ShortCode"].ToString();
-                    if (dr.Table.Columns.Contains("FundingSourceID"))
-                        acct.FundingSourceID = (dr["FundingSourceID"] == DBNull.Value) ? 0 : Convert.ToInt32(dr["FundingSourceID"]);
-                    if (dr.Table.Columns.Contains("TechnicalFieldID"))
-                        acct.TechnicalFieldID = (dr["TechnicalFieldID"] == DBNull.Value) ? 0 : Convert.ToInt32(dr["TechnicalFieldID"]);
-                    if (dr.Table.Columns.Contains("SpecialTopicID"))
-                        acct.SpecialTopicID = (dr["SpecialTopicID"] == DBNull.Value) ? 0 : Convert.ToInt32(dr["SpecialTopicID"]);
-                    if (dr.Table.Columns.Contains("BillAddressID"))
-                        acct.BillAddressID = (dr["BillAddressID"] == DBNull.Value) ? 0 : Convert.ToInt32(dr["BillAddressID"]);
-                    if (dr.Table.Columns.Contains("ShipAddressID"))
-                        acct.ShipAddressID = (dr["ShipAddressID"] == DBNull.Value) ? 0 : Convert.ToInt32(dr["ShipAddressID"]);
-                    if (dr.Table.Columns.Contains("InvoiceNumber"))
-                        acct.InvoiceNumber = (dr["InvoiceNumber"] == DBNull.Value) ? null : dr["InvoiceNumber"].ToString();
-                    if (dr.Table.Columns.Contains("InvoiceLine1"))
-                        acct.InvoiceLine1 = (dr["InvoiceLine1"] == DBNull.Value) ? null : dr["InvoiceLine1"].ToString();
-                    if (dr.Table.Columns.Contains("InvoiceLine2"))
-                        acct.InvoiceLine2 = (dr["InvoiceLine2"] == DBNull.Value) ? null : dr["InvoiceLine2"].ToString();
-                    if (dr.Table.Columns.Contains("PoEndDate"))
-                        acct.PoEndDate = Utility.ConvertToNullableDateTime(dr["PoEndDate"]);
-                    if (dr.Table.Columns.Contains("PoInitialFunds"))
-                        acct.PoInitialFunds = Utility.ConvertToNullableDouble(dr["PoInitialFunds"]);
-                    if (dr.Table.Columns.Contains("PoRemainingFunds"))
-                        acct.PoRemainingFunds = Utility.ConvertToNullableDouble(dr["PoRemainingFunds"]);
-                    if (dr.Table.Columns.Contains("Active"))
-                        acct.Active = (dr["Active"] == DBNull.Value) ? false : Convert.ToBoolean(dr["Active"]);
-                    result.Add(acct);
-                }
-            }
-            return result;
-        }
-
-        public IQueryable<Account> Accounts(AccountType item)
-        {
-            return Session.Query<Account>().Where(x => x.AccountType.AccountTypeID == item.AccountTypeID);
-        }
-
-        public string GetChartField(Account item, ChartFieldName field)
-        {
-            AccountChartFields fields = item.GetChartFields();
+            IAccountChartFields fields = GetChartFields(acct);
             switch (field)
             {
                 case ChartFieldName.Account:
@@ -198,26 +184,62 @@ namespace LNF.Data
             }
         }
 
-        public AccountChartFields GetChartFields(Account item)
+        public IAccountChartFields GetChartFields(IAccount acct)
         {
-            return new AccountChartFields(item);
+            return new AccountChartFields(acct);
         }
 
-        public DataTable ConvertToAccountTable(IList<IAccount> accounts)
+        public string GetDeptRef(IAccount acct, DateTime period)
         {
-            var dt = new DataTable();
-            dt.Columns.Add("AccountID", typeof(int));
-            dt.Columns.Add("Name", typeof(string));
+            //this is the Project chart field based on OrgRecharge or Org.OrgType.Account
 
-            foreach (var a in accounts.OrderBy(x => x.AccountName))
-                dt.Rows.Add(a.AccountID, a.AccountName);
+            var allOrgRecharge = Session.Query<OrgRecharge>();
 
-            return dt;
+            var orgRecharge = allOrgRecharge.Where(x => x.Account.AccountID == acct.AccountID && x.EnableDate < period.AddMonths(1) && (x.DisableDate == null || x.DisableDate > period)).OrderBy(x => x.OrgRechargeID).LastOrDefault();
+
+            if (orgRecharge != null)
+                return orgRecharge.Account.GetChartFields().Project;
+            else
+                return GetChartFields(acct).Project;
         }
 
-        public IQueryable<ClientAccount> FindClientAccounts(int clientOrgId)
+        public void Restore(int accountId)
         {
-            return Session.Query<ClientAccount>().Where(x => x.ClientOrg.ClientOrgID == clientOrgId);
+            Account acct = Session.Single<Account>(accountId);
+            if (acct != null && !acct.Active)
+            {
+                Provider.ActiveDataItemManager.Enable(acct);
+            }
+        }
+
+        public ISpecialTopic SpecialTopic(int specialTopicId)
+        {
+            return Session.Single<SpecialTopic>(specialTopicId).CreateModel<ISpecialTopic>();
+        }
+
+        public string SpecialTopicName(IAccount acct)
+        {
+            var st = SpecialTopic(acct.SpecialTopicID);
+
+            if (st != null)
+                return st.SpecialTopicName;
+            else
+                return string.Empty;
+        }
+
+        public ITechnicalField TechnicalField(int technicalFieldId)
+        {
+            return Session.Single<TechnicalField>(technicalFieldId).CreateModel<ITechnicalField>();
+        }
+
+        public string TechnicalFieldName(IAccount acct)
+        {
+            var tf = TechnicalField(acct.TechnicalFieldID);
+
+            if (tf != null)
+                return tf.TechnicalFieldName;
+            else
+                return string.Empty;
         }
     }
 }

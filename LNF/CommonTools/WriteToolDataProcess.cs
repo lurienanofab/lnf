@@ -586,7 +586,7 @@ namespace LNF.CommonTools
                 ChargeBeginDateTime = x.Field<DateTime>("ChargeBeginDateTime"),
                 ChargeEndDateTime = x.Field<DateTime>("ChargeEndDateTime"),
                 LastModifiedOn = x.Field<DateTime>("LastModifiedOn"),
-                IsCancelledBeforeCutoff = ReservationItem.IsCancelledBeforeCutoff(x.Field<DateTime?>("CancelledDateTime"), x.Field<DateTime>("BeginDateTime")),
+                IsCancelledBeforeCutoff = ReservationItem.GetIsCancelledBeforeCutoff(x.Field<DateTime?>("CancelledDateTime"), x.Field<DateTime>("BeginDateTime")),
                 ChargeMultiplier = x.Field<double>("ChargeMultiplier"),
                 Cost = ResourceCost.CreateResourceCosts(costs.Where(c => (c.RecordID == x.Field<int>("ResourceID") || c.RecordID == 0) && c.ChargeTypeID == x.Field<int>("ChargeTypeID"))).FirstOrDefault()
             }).ToList();

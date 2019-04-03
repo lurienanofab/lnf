@@ -44,7 +44,7 @@ namespace LNF.Scheduler
             UserAuth = userAuth;
         }
 
-        public static ReservationStateArgs Create(ReservationItem rsv, ReservationClientItem client)
+        public static ReservationStateArgs Create(IReservation rsv, ReservationClient client)
         {
             var isAuthorized = (client.UserAuth & rsv.StartEndAuth) > 0;
 

@@ -75,11 +75,11 @@ namespace LNF.Web
         {
             Uri uri = context.Request.Uri;
 
-            IUnitOfWork uow = null;
+            IDisposable uow = null;
 
             if (!IsStaticContent(uri))
             {
-                uow = ServiceProvider.Current.Use<IUnitOfWork>();
+                uow = DA.StartUnitOfWork();
             }
 
             await Next.Invoke(context);

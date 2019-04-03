@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Specialized;
 
 namespace LNF.Reporting
 {
@@ -10,9 +6,8 @@ namespace LNF.Reporting
     {
         public int ResourceID { get; set; }
 
-        public ResourceCriteria() { }
+        public ResourceCriteria(IProvider provider) : base(provider) { }
 
-        public ResourceCriteria(params NameValueCollection[] nvc)
-            : base(nvc) { }
+        public ResourceCriteria(IProvider provider, params NameValueCollection[] nvc) : base(provider, nvc) { }
     }
 }

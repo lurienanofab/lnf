@@ -1,12 +1,15 @@
 ﻿using LNF.Cache;
+using LNF.Data;
 using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Security.Principal;
 using System.Text;
 using System.Web;
 using System.Web.UI.WebControls;
@@ -80,9 +83,9 @@ namespace LNF.Web
         }
     }
 
-    public static class HttpContextExtensions
+    public static class HttpContextBaseExtensions
     {
-        public static ClientItem CurrentUser(this HttpContextBase context)
+        public static IClient CurrentUser(this HttpContextBase context)
         {
             if (context.Items["CurrentUser"] == null)
             {
@@ -92,6 +95,101 @@ namespace LNF.Web
             var result = (ClientItem)context.Items["CurrentUser"];
 
             return result;
+        }
+
+        /// <summary>
+        /// Ensures that the current session contains data for the authenticated user.
+        /// </summary>
+        public static IClient CheckSession(this HttpContextBase context)
+        {
+            IClient model = null;
+
+            if (context.User.Identity.IsAuthenticated)
+            {
+                model = context.CurrentUser();
+            }
+            else
+            {
+                // this provides a secret backdoor mechanism for logging in by providing the parameter
+                // cid in the querystring, no password required (!) - seems like a very bad idea - maybe
+                // this was a debugging thing that wasn't removed? added IsProduction check to be safe
+                if (!ServiceProvider.Current.IsProduction())
+                {
+                    var qs = context.Request.QueryString;
+                    if (qs.AllKeys.Contains("cid"))
+                    {
+                        if (int.TryParse(qs["cid"], out int cid))
+                        {
+                            model = CacheManager.Current.GetClient(cid);
+                            if (model != null)
+                            {
+                                var user = new GenericPrincipal(new GenericIdentity(model.UserName), model.Roles());
+                                context.User = user;
+                                context.Session["UserName"] = model.UserName;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return context.CheckSession(model);
+        }
+
+        public static IClient CheckSession(this HttpContextBase context, IClient client)
+        {
+            // at this point the client object still might be null because unauthenticated requests are allowed in some cases
+            // and we should now check the session UserName value (if client is null then default values will be used)
+            IClient result;
+            bool update = false;
+            string username = context.GetCurrentUserName();
+
+            // see if the session is invalid
+            if (client != null)
+            {
+                if (client.UserName != username)
+                {
+                    // the session is incorrect so reload everything
+                    update = true;
+                    result = null;
+                }
+                else
+                    result = client;
+            }
+            else
+            {
+                // there is no client probably because this request does not require authentication
+                // in this case we should set the session variables to default values (remember the session was cleared)
+                update = true;
+                result = null;
+            }
+
+            if (update)
+            {
+                context.RemoveCacheData();
+                context.RemoveAllSessionValues();
+
+                result = CacheManager.Current.GetClient(username);
+
+                context.Session[SessionKeys.CurrentUser] = result; //might be null, that's ok
+                context.Session[SessionKeys.Cache] = Guid.NewGuid().ToString("n");
+            }
+
+            // now we either have an authenticated user with matching session variables
+            // or no authentication was required and the session variables have default values
+            return result;
+        }
+
+        public static void RemoveAllSessionValues(this HttpContextBase context)
+        {
+            foreach (string key in SessionKeys.AllKeys())
+                context.Session.Remove(key);
+        }
+
+        public static string GetCurrentUserName(this HttpContextBase context)
+        {
+            var user = context.User;
+            if (user == null || user.Identity == null) return null;
+            return user.Identity.Name;
         }
 
         public static void SetErrorID(this HttpContextBase context, string value)
@@ -135,6 +233,11 @@ namespace LNF.Web
 
             if (obj == null) return null;
             else return (DataSet)obj;
+        }
+
+        public static IEnumerable<ClientItem> GetCurrentUserClientOrgs(this HttpContextBase context)
+        {
+            return CacheManager.Current.GetClientOrgs(context.CurrentUser().ClientID);
         }
     }
 }

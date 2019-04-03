@@ -12,12 +12,12 @@ namespace LNF.Billing
 {
     public static class FinancialManagerUtility
     {
-        public static SendMonthlyUserUsageEmailsProcessResult SendMonthlyFinancialReport(int clientId = 0, int managerOrgId = 0, MonthlyEmailOptions options = null)
+        public static SendMonthlyUserUsageEmailsProcessResult SendMonthlyFinancialReport(FinancialManagerReportOptions options)
         {
             DateTime lastMonth = DateTime.Now.Date.AddMonths(-1); //last month of today
             DateTime period = lastMonth.FirstOfMonth();
 
-            return SendMonthlyUserUsageEmails(period, clientId, managerOrgId, options);
+            return SendMonthlyUserUsageEmails(options);
         }
 
         private static string[] GetFinancialManagerReportRecipients()
@@ -30,7 +30,7 @@ namespace LNF.Billing
             return gs.SettingValue.Split(',');
         }
 
-        public static IEnumerable<FinancialManagerReportEmail> GetMonthlyUserUsageEmails(DateTime period, int clientId, int managerOrgId, string message)
+        public static IEnumerable<FinancialManagerReportEmail> GetMonthlyUserUsageEmails(FinancialManagerReportOptions options)
         {
             var result = new List<FinancialManagerReportEmail>();
 
@@ -38,9 +38,9 @@ namespace LNF.Billing
 
             //Get managers list and associated clients info
             var dt = DA.Command()
-                .Param("Period", period)
-                .Param("ClientID", clientId > 0, clientId)
-                .Param("ManagerOrgID", managerOrgId > 0, managerOrgId)
+                .Param("Period", options.Period)
+                .Param("ClientID", options.ClientID > 0, options.ClientID)
+                .Param("ManagerOrgID", options.ManagerOrgID > 0, options.ManagerOrgID)
                 .FillDataTable("dbo.Report_MonthlyFinacialManager");
 
             var managerOrgIds = dt.AsEnumerable()
@@ -65,10 +65,10 @@ namespace LNF.Billing
                 bodyHtml.AppendLine("<body>");
                 bodyHtml.AppendLine($"Dear {managerName},<br /><br />");
 
-                if (!string.IsNullOrEmpty(message))
-                    bodyHtml.AppendLine($"<p>{message}</p>");
+                if (!string.IsNullOrEmpty(options.Message))
+                    bodyHtml.AppendLine($"<p>{options.Message}</p>");
 
-                bodyHtml.AppendLine($"<p>Below are a list of {companyName} lab users who have incurred charges during {period:M/yyyy} and the active accounts for that user (shortcode / P/G). You are receiving this email because our records indicate that you are associated with these accounts.</p>");
+                bodyHtml.AppendLine($"<p>Below are a list of {companyName} lab users who have incurred charges during {options.Period:M/yyyy} and the active accounts for that user (shortcode / P/G). You are receiving this email because our records indicate that you are associated with these accounts.</p>");
                 bodyHtml.AppendLine("<p>Exact charges are still pending and may depend on data entries from the lab users themselves.</p>");
                 bodyHtml.AppendLine("<ol>");
                 bodyHtml.AppendLine("<li>If the person in charge of, or reconciling the account is not copied to this email, please send me his/her contact information.</li>");
@@ -94,7 +94,7 @@ namespace LNF.Billing
                 bodyHtml.AppendLine("</body>");
                 bodyHtml.AppendLine("</html>");
 
-                string subj = $"{companyName} Charges - {period:M/yyyy} [Manager: {managerName}]";
+                string subj = $"{companyName} Charges - {options.Period:M/yyyy} [Manager: {managerName}]";
 
                 result.Add(new FinancialManagerReportEmail
                 {
@@ -113,18 +113,18 @@ namespace LNF.Billing
             return result;
         }
 
-        public static SendMonthlyUserUsageEmailsProcessResult SendMonthlyUserUsageEmails(DateTime period, int clientId, int managerOrgId, MonthlyEmailOptions options)
+        public static SendMonthlyUserUsageEmailsProcessResult SendMonthlyUserUsageEmails(FinancialManagerReportOptions options)
         {
-            var result = new SendMonthlyUserUsageEmailsProcessResult();
-
             if (options == null)
-                options = new MonthlyEmailOptions();
+                throw new ArgumentNullException("options");
+
+            var result = new SendMonthlyUserUsageEmailsProcessResult();
 
             //With noEmail set to true, nothing really happens here. The appropriate users are selected and logged
             //but no email is actually sent. This is just for testing/debugging purposes.
 
             //Get managers list and associated clients info
-            var emails = GetMonthlyUserUsageEmails(period, clientId, managerOrgId, options.Message);
+            var emails = GetMonthlyUserUsageEmails(options);
 
             result.QueryCount = emails.Count();
 
@@ -152,7 +152,7 @@ namespace LNF.Billing
                     try
                     {
                         SendEmail.Send(0, "LNF.Billing.FinancialManagerUtility.SendMonthlyUserUsageEmails", e.Subject, e.Body, e.FromAddress, to, cc, bcc, e.IsHtml);
-                        statusMessage = $"Email to {e.ToAddress} sent OK";
+                        statusMessage = $"Email to {string.Join(",", e.ToAddress)} sent OK";
                         ++totalSent;
                     }
                     catch (Exception ex)
@@ -169,25 +169,6 @@ namespace LNF.Billing
             result.TotalEmailsSent = totalSent;
 
             return result;
-        }
-    }
-
-    public class MonthlyEmailOptions
-    {
-        /// <summary>
-        /// A special message to prepend to the email body. 
-        /// </summary>
-        public string Message { get; set; }
-
-        /// <summary>
-        /// Indicates if the manager should receive the email, or only addresses specified by the Recipients AppSetting value (for testing purposes).
-        /// </summary>
-        public bool IncludeManager { get; set; }
-
-        public MonthlyEmailOptions()
-        {
-            // default to true
-            IncludeManager = true;
         }
     }
 }

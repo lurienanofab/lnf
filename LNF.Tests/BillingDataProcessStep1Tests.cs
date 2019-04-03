@@ -1,11 +1,8 @@
-﻿using LNF.Billing;
-using LNF.CommonTools;
-using LNF.Impl.DependencyInjection.Default;
+﻿using LNF.CommonTools;
 using LNF.Repository;
 using LNF.Repository.Billing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Data;
 using System.Linq;
 
 namespace LNF.Tests
@@ -19,7 +16,8 @@ namespace LNF.Tests
             IToolBilling[] source = BillingDataProcessStep1.GetToolData(DateTime.Parse("2017-07-01"), 0, 761251, false);
             Assert.AreEqual(1, source.Length);
             IToolBilling tb = source[0];
-            BillingDataProcessStep1.CalculateToolBillingCharges(tb);
+            var step1 = new BillingDataProcessStep1(DateTime.Parse("2017-07-01"), ServiceProvider.Current);
+            step1.CalculateToolBillingCharges(tb);
             Assert.AreEqual(0, tb.UsageFeeCharged);
             Assert.AreEqual(6, tb.BookingFee);
         }
@@ -30,7 +28,8 @@ namespace LNF.Tests
             IToolBilling[] source = BillingDataProcessStep1.GetToolData(DateTime.Parse("2017-07-01"), 0, 761462, false);
             Assert.AreEqual(1, source.Length);
             IToolBilling tb = source[0];
-            BillingDataProcessStep1.CalculateToolBillingCharges(tb);
+            var step1 = new BillingDataProcessStep1(DateTime.Parse("2017-07-01"), ServiceProvider.Current);
+            step1.CalculateToolBillingCharges(tb);
             Assert.AreEqual(0, tb.UsageFeeCharged);
             Assert.AreEqual(5.25M, tb.BookingFee);
         }
@@ -40,8 +39,9 @@ namespace LNF.Tests
         {
             IToolBilling[] source = BillingDataProcessStep1.GetToolData(DateTime.Parse("2018-07-01"), 0, 844646, false);
             Assert.AreEqual(2, source.Length);
-            BillingDataProcessStep1.CalculateToolBillingCharges(source[0]);
-            BillingDataProcessStep1.CalculateToolBillingCharges(source[1]);
+            var step1 = new BillingDataProcessStep1(DateTime.Parse("2017-07-01"), ServiceProvider.Current);
+            step1.CalculateToolBillingCharges(source[0]);
+            step1.CalculateToolBillingCharges(source[1]);
         }
 
         [TestMethod]
@@ -50,7 +50,7 @@ namespace LNF.Tests
             IToolBilling[] source = BillingDataProcessStep1.GetToolData(DateTime.Parse("2017-07-01"), 0, 761767, false);
             Assert.AreEqual(1, source.Length);
             IToolBilling tb = source[0];
-            ServiceProvider.Current.Use<IToolBillingManager>().CalculateBookingFee(tb);
+            ServiceProvider.Current.ToolBillingManager.CalculateBookingFee(tb);
             Assert.AreEqual(0.68M, tb.BookingFee);
         }
 
@@ -59,9 +59,10 @@ namespace LNF.Tests
         {
             //IToolBilling tb = DA.Current.Query<ToolBilling>().First(x => x.ReservationID == 759293);
             IToolBilling tb = DA.Current.Query<ToolBilling>().First(x => x.ReservationID == 759305);
-            BillingDataProcessStep1.CalculateToolBillingCharges(tb);
+            var step1 = new BillingDataProcessStep1(DateTime.Now, ServiceProvider.Current);
+            step1.CalculateToolBillingCharges(tb);
             Assert.AreEqual(1M, tb.UsageFeeCharged);
-            var lineCost = ServiceProvider.Current.Use<IBillingTypeManager>().GetLineCost(tb);
+            var lineCost = ServiceProvider.Current.BillingTypeManager.GetLineCost(tb);
             Assert.AreEqual(1M, lineCost);
         }
     }

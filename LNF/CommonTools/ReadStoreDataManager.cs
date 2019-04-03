@@ -11,7 +11,7 @@ namespace LNF.CommonTools
     //  will be gathered as well.
     public class ReadStoreDataManager : ManagerBase, IReadStoreDataManager
     {
-        public ReadStoreDataManager(ISession session) : base(session) { }
+        public ReadStoreDataManager(IProvider provider) : base(provider) { }
 
         public DataTable ReadStoreDataRaw(DateTime sd, DateTime ed, int clientId = 0)
         {

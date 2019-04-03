@@ -14,12 +14,7 @@ namespace LNF.Billing
     {
         private IList<BillingType> _allBillingTypes;
 
-        protected IActiveDataItemManager ActiveDataItemManager { get; }
-
-        public BillingTypeManager(ISession session, IActiveDataItemManager activeDataItemManager) : base(session)
-        {
-            ActiveDataItemManager = activeDataItemManager;
-        }
+        public BillingTypeManager(IProvider serviceProvider) : base(serviceProvider) { }
 
         public string GetBillingTypeName(BillingType billingType)
         {
@@ -129,9 +124,9 @@ namespace LNF.Billing
             return GetBillingType(
                 client,
                 account,
-                ActiveDataItemManager.FindActive(Session.Query<ClientOrg>().Where(x => x.Client == client && x.Org == account.Org), x => x.ClientOrgID, sd, ed),
-                ActiveDataItemManager.FindActive(Session.Query<ClientAccount>().Where(x => x.ClientOrg.Client == client && x.Account == account), x => x.ClientAccountID, sd, ed),
-                ActiveDataItemManager.FindActive(Session.Query<ClientRemote>().Where(x => x.Client == client && x.Account == account), x => x.ClientRemoteID, sd, ed),
+                Provider.ActiveDataItemManager.FindActive(Session.Query<ClientOrg>().Where(x => x.Client == client && x.Org == account.Org), x => x.ClientOrgID, sd, ed),
+                Provider.ActiveDataItemManager.FindActive(Session.Query<ClientAccount>().Where(x => x.ClientOrg.Client == client && x.Account == account), x => x.ClientAccountID, sd, ed),
+                Provider.ActiveDataItemManager.FindActive(Session.Query<ClientRemote>().Where(x => x.Client == client && x.Account == account), x => x.ClientRemoteID, sd, ed),
                 ClientOrgBillingTypeLogUtility.GetActive(sd, ed).Where(x => x.ClientOrg.Client == client && x.ClientOrg.Org == account.Org).ToArray()
             );
         }
@@ -139,8 +134,9 @@ namespace LNF.Billing
         public void Update(Client client, DateTime period)
         {
             bool isTemp = Utility.IsCurrentPeriod(period);
-            BillingDataProcessStep1.PopulateToolBilling(period, client.ClientID, isTemp);
-            BillingDataProcessStep1.PopulateRoomBilling(period, client.ClientID, isTemp);
+            var step1 = new BillingDataProcessStep1(DateTime.Now, Provider);
+            step1.PopulateToolBilling(period, client.ClientID, isTemp);
+            step1.PopulateRoomBilling(period, client.ClientID, isTemp);
         }
 
         public IList<IToolBilling> SelectToolBillingData<T>(Client client, DateTime period) where T : IToolBilling

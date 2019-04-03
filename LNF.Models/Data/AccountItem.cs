@@ -2,15 +2,13 @@
 
 namespace LNF.Models.Data
 {
-    public class AccountItem : IAccount
+    public class AccountItem : OrgItem, IAccount
     {
         public int AccountID { get; set; }
-        public int OrgID { get; set; }
-        public string OrgName { get; set; }
         public int AccountTypeID { get; set; }
         public string AccountTypeName { get; set; }
         public string AccountName { get; set; }
-        public string Number { get; set; }
+        public string AccountNumber { get; set; }
         public string ShortCode { get; set; }
         public int FundingSourceID { get; set; }
         public string FundingSourceName { get; set; }
@@ -27,7 +25,7 @@ namespace LNF.Models.Data
         public decimal? PoInitialFunds { get; set; }
         public decimal? PoRemainingFunds { get; set; }
         public bool AccountActive { get; set; }
-        public string Project => GetProject(Number);
+        public string Project => GetProject(AccountNumber);
         public string NameWithShortCode => GetNameWithShortCode(AccountName, ShortCode);
         public string FullAccountName => GetFullAccountName(AccountName, ShortCode, OrgName);
         public bool IsRegularAccountType => GetIsRegularAccountType(AccountTypeID);

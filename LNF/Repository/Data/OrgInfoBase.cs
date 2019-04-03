@@ -3,7 +3,7 @@
     /// <summary>
     /// A base class for subclasses that share common Org data
     /// </summary>
-    public abstract class OrgInfoBase
+    public abstract class OrgInfoBase : IDataItem
     {
         /// <summary>
         /// The unique id of an Org

@@ -15,7 +15,7 @@ namespace LNF.Repository.Scheduler
         public virtual DateTime Timestamp { get; set; }
         public virtual string Action { get; set; }
 
-        public static AutoEndLog AddEntry(ReservationItem item, string action)
+        public static AutoEndLog AddEntry(IReservation item, string action)
         {
             var entry = new AutoEndLog()
             {
@@ -23,7 +23,7 @@ namespace LNF.Repository.Scheduler
                 ResourceID = item.ResourceID,
                 ResourceName = item.ResourceName,
                 ClientID = item.ClientID,
-                DisplayName = item.GetClientDisplayName(),
+                DisplayName = item.DisplayName,
                 Timestamp = DateTime.Now,
                 Action = action
             };

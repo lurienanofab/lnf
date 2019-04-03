@@ -1,3 +1,4 @@
+using System;
 using LNF.Data;
 using LNF.Models.Data;
 
@@ -149,7 +150,7 @@ namespace LNF.Repository.Data
         /// <returns>True if the password is correct, otherwise false.</returns>
         public virtual bool CheckPassword(string password)
         {
-            return ServiceProvider.Current.Use<IClientManager>().CheckPassword(ClientID, password);
+            return ServiceProvider.Current.Data.ClientManager.CheckPassword(ClientID, password);
         }
 
         /// <summary>
@@ -160,7 +161,7 @@ namespace LNF.Repository.Data
         /// <returns>The number of rows updated.</returns>
         public virtual int SetPassword(string password)
         {
-            return ServiceProvider.Current.Use<IClientManager>().SetPassword(ClientID, password);
+            return ServiceProvider.Current.Data.ClientManager.SetPassword(ClientID, password);
         }
 
         /// <summary>

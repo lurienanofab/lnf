@@ -9,64 +9,63 @@ namespace LNF.Scheduler
 {
     public interface IReservationManager : IManager
     {
-        IEnumerable<ClientAccountItem> AvailableAccounts(ReservationItem item);
-        void CanCreateCheck(ReservationItem item, int? modifiedByclientId);
-        DataTable CopyReservationInviteesTable();
-        DataTable CopyReservationProcessInfoTable();
-        ReservationItem CreateReservation(int resourceId, int clientId, int accountId, int activityId, DateTime beginDateTime, DateTime endDateTime, double duration, string notes, bool autoEnd, bool hasProcessInfo, bool hasInvitees, int? recurrenceId, bool isActive, bool keepAlive, double maxReservedDuration, int? modifiedByClientId);
-        void DeleteReservation(ReservationItem item, int? modifiedByClientId);
-        void DeleteAndForgive(ReservationItem item, int? modifiedByClientId);
+        IEnumerable<IClientAccount> AvailableAccounts(IReservation item);
+        IReservation CreateReservation(int resourceId, int clientId, int accountId, int activityId, DateTime beginDateTime, DateTime endDateTime, double duration, string notes, bool autoEnd, bool hasProcessInfo, bool hasInvitees, int? recurrenceId, bool isActive, bool keepAlive, double maxReservedDuration, int? modifiedByClientId);
+        void DeleteReservation(IReservation item, int? modifiedByClientId);
+        void DeleteAndForgive(IReservation item, int? modifiedByClientId);
         int DeleteByGroup(int groupId, int? modifiedByClientId);
         int DeleteByRecurrence(int recurrenceId, int? modifiedByClientId);
-        void EndReservation(ReservationItem item, int? endedByClientId, int? modifiedByClientId);
-        void EndForRepair(ReservationItem item, int? endedByClientId, int? modifiedByClientId);
-        int EndPastUnstarted(ReservationItem item, DateTime endDate, int? endedByClientId);
-        IEnumerable<ReservationHistoryFilterItem> FilterCancelledReservations(IEnumerable<ReservationItem> reservations, bool includeCanceledForModification);
-        ReservationItem FromDataRow(DataRow dr);
-        IEnumerable<ResourceClientItem> GetResourceClients(int resourceId);
+        void EndReservation(IReservation item, int? endedByClientId, int? modifiedByClientId);
+        void EndForRepair(IReservation item, int? endedByClientId, int? modifiedByClientId);
+        int EndPastUnstarted(IReservation item, DateTime endDate, int? endedByClientId);
+        IEnumerable<ReservationHistoryFilterItem> FilterCancelledReservations(IEnumerable<IReservation> reservations, bool includeCanceledForModification);
+        IReservation FromDataRow(DataRow dr);
+        IEnumerable<IResourceClient> GetResourceClients(int resourceId);
         int GetAvailableSchedMin(int resourceId, int clientId);
-        IEnumerable<ReservationItem> GetCurrentReservations();
-        IEnumerable<ReservationHistoryItem> GetHistory(int reservationId);
-        IEnumerable<ReservationInviteeItem> GetInvitees(int reservationId);
-        void InsertReservation(ReservationItem item, int? modifiedByClientId);
-        void InsertFacilityDownTime(ReservationItem item, int? modifiedByClientId);
-        void InsertForModification(ReservationItem item, int linkedReservationId, int? modifiedByClientId);
-        ReservationItem InsertRepair(int resourceId, int clientId, DateTime beginDateTime, DateTime endDateTime, DateTime actualBeginDateTime, string notes, int? modifiedByClientId);
+        IEnumerable<IReservation> GetCurrentReservations();
+        IEnumerable<IReservationHistory> GetHistory(int reservationId);
+        IEnumerable<IReservationInvitee> GetInvitees(int reservationId);
+        void InsertReservation(IReservation item, DateTime now, int? modifiedByClientId);
+        void InsertFacilityDownTime(IReservation item, DateTime now, int? modifiedByClientId);
+        void InsertForModification(IReservation item, DateTime now, int linkedReservationId, int? modifiedByClientId);
+        void CanCreateCheck(IReservation item, DateTime now, int? modifiedByclientId);
+        IReservation InsertRepair(int resourceId, int clientId, DateTime beginDateTime, DateTime endDateTime, DateTime actualBeginDateTime, string notes, int? modifiedByClientId);
         void AppendNotes(int reservationId, string notes);
         bool IsInvited(int reservationId, int clientId);
-        IEnumerable<ReservationItem> ReservationsInGranularityWindow(IResource res);
-        IEnumerable<ReservationItem> SelectAutoEnd();
-        IEnumerable<ReservationItem> SelectByClient(int clientId, DateTime startDate, DateTime endDate, bool includeDeleted);
-        IEnumerable<ReservationItem> SelectByDateRange(DateTime startDate, DateTime endDate, int clientId = 0);
-        IEnumerable<ReservationItem> SelectByGroup(int groupId);
-        IEnumerable<ReservationItem> SelectByProcessTech(int processTechId, DateTime startDate, DateTime endDate, bool includeDeleted);
-        IEnumerable<ReservationItem> SelectByResource(int resourceId, DateTime startDate, DateTime endDate, bool includeDeleted);
-        IEnumerable<ReservationItem> SelectEndableReservations(int resourceId);
-        IEnumerable<ReservationItem> SelectExisting(int resourceId);
-        IEnumerable<ReservationItem> SelectHistory(int clientId, DateTime sd, DateTime ed);
-        IEnumerable<ReservationItem> SelectHistoryToForgiveForRepair(int resourceId, DateTime sd, DateTime ed);
+        IEnumerable<IReservation> ReservationsInGranularityWindow(IResource res);
+        IEnumerable<IReservation> SelectAutoEnd();
+        IEnumerable<IReservation> SelectByClient(int clientId, DateTime startDate, DateTime endDate, bool includeDeleted);
+        IEnumerable<IReservation> SelectByDateRange(DateTime startDate, DateTime endDate, int clientId = 0);
+        IEnumerable<IReservation> SelectByGroup(int groupId);
+        IEnumerable<IReservation> SelectByProcessTech(int processTechId, DateTime startDate, DateTime endDate, bool includeDeleted);
+        IEnumerable<IReservation> SelectByResource(int resourceId, DateTime startDate, DateTime endDate, bool includeDeleted);
+        IEnumerable<IReservation> SelectEndableReservations(int resourceId);
+        IEnumerable<IReservation> SelectExisting(int resourceId);
+        IEnumerable<IReservation> SelectHistory(int clientId, DateTime sd, DateTime ed);
+        IEnumerable<IReservation> SelectHistoryToForgiveForRepair(int resourceId, DateTime sd, DateTime ed);
         DateTime? SelectLastRepairEndTime(int resourceId);
-        IEnumerable<ReservationItem> SelectOverwritable(int resourceId, DateTime sd, DateTime ed);
-        IEnumerable<ReservationItem> SelectPastEndableRepair();
-        IEnumerable<ReservationItem> SelectPastUnstarted();
+        IEnumerable<IReservation> SelectOverwritable(int resourceId, DateTime sd, DateTime ed);
+        IEnumerable<IReservation> SelectPastEndableRepair();
+        IEnumerable<IReservation> SelectPastUnstarted();
         double SelectReservableMinutes(int resourceId, int clientId, TimeSpan reservFence, TimeSpan maxAlloc, DateTime now);
-        IEnumerable<ReservationItem> SelectReservationsByPeriod(DateTime period);
-        void StartReservation(ReservationItem item, int? modifiedByClientId);
-        void UpdateReservation(ReservationItem item, int? modifiedByClientId);
+        IEnumerable<IReservation> SelectReservationsByPeriod(DateTime period);
+        void StartReservation(IReservation item, int? modifiedByClientId);
+        void UpdateReservation(IReservation item, int? modifiedByClientId);
         void UpdateAccount(int reservationId, int accountId, int? modifiedByClientId);
         int UpdateByGroup(int groupId, DateTime sd, DateTime ed, string notes, int? modifiedByClientId);
-        void UpdateCharges(ReservationItem item, double chargeMultiplier, bool applyLateChargePenalty, int? modifiedByClientId);
-        void UpdateFacilityDownTime(ReservationItem item, int? modifiedByClientId);
+        void UpdateCharges(IReservation item, double chargeMultiplier, bool applyLateChargePenalty, int? modifiedByClientId);
+        void UpdateFacilityDownTime(IReservation item, int? modifiedByClientId);
         void UpdateNotes(int reservationId, string notes);
-        ReservationItem GetReservation(int reservationId);
-        ReservationItemWithInvitees GetReservationWithInvitees(int reservationId);
+        IReservation GetReservation(int reservationId);
+        IReservationWithInvitees GetReservationWithInvitees(int reservationId);
+        IEnumerable<IReservation> GetReservations(int resourceId, DateTime sd, DateTime ed, bool? isActive = null, bool? isStarted = null);
         TimeSpan GetTimeUntilNextReservation(IResource res, int reservationId, int clientId, DateTime beginDateTime);
-        IEnumerable<ResourceItem> GetResources(IEnumerable<ReservationItem> reservations);
+        IEnumerable<IResource> GetResources(IEnumerable<IReservation> reservations);
 
         /// <summary>
         /// Updates reservation and billing data.
         /// </summary>
-        SaveReservationHistoryResult SaveReservationHistory(ReservationItem item, int accountId, double forgivenPct, string notes, bool emailClient);
+        SaveReservationHistoryResult SaveReservationHistory(IReservation item, int accountId, double forgivenPct, string notes, bool emailClient);
 
         /// <summary>
         /// Use with extreme caution! Will permanently delete a reservation from the database, along with any related invitee, process info, and history records.

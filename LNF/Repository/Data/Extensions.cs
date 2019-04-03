@@ -6,64 +6,6 @@ namespace LNF.Repository.Data
 {
     public static class Extensions
     {
-        public static ClientAccountItem CreateClientAccountItem(this ClientAccountInfo item)
-        {
-            if (item == null) return null;
-            var list = new List<ClientAccountInfo> { item };
-            return CreateClientAccountItems(list.AsQueryable()).FirstOrDefault();
-        }
-
-        public static IEnumerable<ClientAccountItem> CreateClientAccountItems(this IQueryable<ClientAccountInfo> query)
-        {
-            if (query == null) return null;
-
-            return query.Select(x => new ClientAccountItem
-            {
-                ClientAccountID = x.ClientAccountID,
-                IsDefault = x.IsDefault,
-                Manager = x.Manager,
-                ClientAccountActive = x.ClientAccountActive,
-                AccountID = x.AccountID,
-                AccountName = x.AccountName,
-                Number = x.Number,
-                ShortCode = x.ShortCode,
-                BillAddressID = x.BillAddressID,
-                ShipAddressID = x.ShipAddressID,
-                InvoiceNumber = x.InvoiceNumber,
-                InvoiceLine1 = x.InvoiceLine1,
-                InvoiceLine2 = x.InvoiceLine2,
-                PoEndDate = x.PoEndDate,
-                PoInitialFunds = x.PoInitialFunds,
-                PoRemainingFunds = x.PoRemainingFunds,
-                Project = x.Project,
-                AccountActive = x.AccountActive,
-                FundingSourceID = x.FundingSourceID,
-                FundingSourceName = x.FundingSourceName,
-                TechnicalFieldID = x.TechnicalFieldID,
-                TechnicalFieldName = x.TechnicalFieldName,
-                SpecialTopicID = x.SpecialTopicID,
-                SpecialTopicName = x.SpecialTopicName,
-                AccountTypeID = x.AccountTypeID,
-                AccountTypeName = x.AccountTypeName,
-                ClientOrgID = x.ClientOrgID,
-                Phone = x.Phone,
-                Email = x.Email,
-                IsManager = x.IsManager,
-                ClientOrgActive = x.ClientOrgActive,
-                OrgID = x.OrgID,
-                OrgName = x.OrgName,
-                OrgActive = x.OrgActive,
-                ClientID = x.ClientID,
-                UserName = x.UserName,
-                LName = x.LName,
-                MName = x.MName,
-                FName = x.FName,
-                DisplayName = x.DisplayName,
-                Privs = x.Privs,
-                ClientActive = x.ClientActive
-            }).ToList();
-        }
-
         public static ClientItem CreateClientItem(this ClientOrgInfoBase item)
         {
             if (item == null) return null;
@@ -129,7 +71,7 @@ namespace LNF.Repository.Data
         public static MenuItem GetMenuItem(this Menu item)
         {
             if (item == null) return null;
-            return item.Model<MenuItem>();
+            return item.CreateModel<MenuItem>();
         }
 
         public static GlobalSettingsItem CreateGlobalSettingsItem(this GlobalSettings item)

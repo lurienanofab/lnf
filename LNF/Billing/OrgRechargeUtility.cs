@@ -1,4 +1,4 @@
-﻿using LNF.Data;
+﻿using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Billing;
 using LNF.Repository.Data;
@@ -7,25 +7,32 @@ using System.Linq;
 
 namespace LNF.Billing
 {
-    public static class OrgRechargeUtility
+    public class OrgRechargeUtility
     {
-        public static IChargeTypeManager ChargeTypeManager => ServiceProvider.Current.Use<IChargeTypeManager>();
-
-        public static Account GetRechargeAccount(Org org, DateTime startDate, DateTime endDate)
+        public OrgRechargeUtility(DateTime now, IProvider provider)
         {
-            Account result = null;
+            Now = now;
+            Provider = provider;
+        }
+
+        public DateTime Now { get; }
+        public IProvider Provider { get; }
+
+        public IAccount GetRechargeAccount(Org org, DateTime startDate, DateTime endDate)
+        {
+            IAccount result = null;
 
             OrgRecharge or = DA.Current.Query<OrgRecharge>().FirstOrDefault(x => x.Org == org && x.EnableDate < endDate && (x.DisableDate == null || x.DisableDate.Value > startDate));
 
             if (or == null)
-                result = ChargeTypeManager.GetAccount(org.OrgType.ChargeType); //no recharge account specified for this org so use the default from ChargeType
+                result = Provider.Data.ChargeTypeManager.GetAccount(org.OrgType.ChargeType.CreateModel<IChargeType>()); //no recharge account specified for this org so use the default from ChargeType
             else
-                result = or.Account;
+                result = or.Account.CreateModel<IAccount>();
 
             return result;
         }
 
-        public static OrgRecharge Enable(Org org, Account acct)
+        public OrgRecharge Enable(Org org, Account acct)
         {
             //first get the existing entity if there is one
             OrgRecharge existing = DA.Current.Query<OrgRecharge>().FirstOrDefault(x => x.Org == org && x.DisableDate == null);
@@ -37,7 +44,7 @@ namespace LNF.Billing
                     return existing;
 
                 //disable existing
-                existing.DisableDate = DateTime.Now;
+                existing.DisableDate = Now;
             }
 
             //add a new one
@@ -45,8 +52,8 @@ namespace LNF.Billing
             {
                 Org = org,
                 Account = acct,
-                CreatedDate = DateTime.Now,
-                EnableDate = DateTime.Now,
+                CreatedDate = Now,
+                EnableDate = Now,
                 DisableDate = null
             };
 
@@ -55,9 +62,9 @@ namespace LNF.Billing
             return result;
         }
 
-        public static void Disable(OrgRecharge item)
+        public void Disable(OrgRecharge item)
         {
-            item.DisableDate = DateTime.Now;
+            item.DisableDate = Now;
         }
     }
 }

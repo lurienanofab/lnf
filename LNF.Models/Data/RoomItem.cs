@@ -1,6 +1,6 @@
 ﻿namespace LNF.Models.Data
 {
-    public class RoomItem
+    public class RoomItem : IRoom
     {
         public int RoomID { get; set; }
         public int? ParentID { get; set; }

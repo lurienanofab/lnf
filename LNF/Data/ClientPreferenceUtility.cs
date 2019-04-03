@@ -1,4 +1,5 @@
 ﻿using LNF.CommonTools;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Repository.Scheduler;
@@ -9,9 +10,14 @@ using System.Linq;
 
 namespace LNF.Data
 {
-    public static class ClientPreferenceUtility
+    public class ClientPreferenceUtility
     {
-        public static IClientManager ClientManager => ServiceProvider.Current.Use<IClientManager>();
+        public IProvider Provider { get; }
+
+        public ClientPreferenceUtility(IProvider provider)
+        {
+            Provider = provider;
+        }
 
         public static ClientPreference Find(int clientId, string app)
         {
@@ -30,20 +36,19 @@ namespace LNF.Data
             return result;
         }
 
-        public static IList<Account> OrderAccountsByUserPreference(int clientId, IEnumerable<Account> accounts = null)
+        public IList<IAccount> OrderAccountsByUserPreference(IClient client, IEnumerable<IAccount> accounts = null)
         {
             if (accounts == null)
             {
-                Client client = DA.Current.Single<Client>(clientId);
-                accounts = ClientManager.ActiveAccounts(client);
+                accounts = Provider.Data.ClientManager.ActiveAccounts(client.ClientID);
             }
 
             if (accounts == null) return null;
 
-            return OrderListByUserPreference(clientId, accounts, x => x.AccountID, x => x.Name);
+            return OrderListByUserPreference(client, accounts, x => x.AccountID, x => x.AccountName);
         }
 
-        public static IList<T> OrderListByUserPreference<T>(int clientId, IEnumerable<T> items, Func<T, int> id, Func<T, string> defaultOrder)
+        public static IList<T> OrderListByUserPreference<T>(IClient client, IEnumerable<T> items, Func<T, int> id, Func<T, string> defaultOrder)
         {
             List<T> result = new List<T>();
 
@@ -53,7 +58,7 @@ namespace LNF.Data
             string pref = string.Empty;
 
             //for now the acct order prefence is stored in sselScheduler.dbo.ClientSetting but we should move this to sselData.dbo.ClientPreference
-            ClientSetting cs = DA.Current.Query<ClientSetting>().FirstOrDefault(x => x.ClientID == clientId);
+            ClientSetting cs = DA.Current.Query<ClientSetting>().FirstOrDefault(x => x.ClientID == client.ClientID);
 
             if (null == cs)
                 return items.OrderBy(defaultOrder).ToList();

@@ -2,15 +2,15 @@
 
 namespace LNF.Models.Data
 {
-    public class ServiceLogItem
+    public class ServiceLogItem : IServiceLog
     {
-        public virtual int ServiceLogID { get; set; }
-        public virtual Guid? MessageID { get; set; }
-        public virtual string ServiceName { get; set; }
-        public virtual DateTime LogDateTime { get; set; }
-        public virtual string LogSubject { get; set; }
-        public virtual string LogLevel { get; set; }
-        public virtual string LogMessage { get; set; }
-        public virtual string Data { get; set; }
+        public int ServiceLogID { get; set; }
+        public Guid? MessageID { get; set; }
+        public string ServiceName { get; set; }
+        public DateTime LogDateTime { get; set; }
+        public string LogSubject { get; set; }
+        public string LogLevel { get; set; }
+        public string LogMessage { get; set; }
+        public string Data { get; set; }
     }
 }

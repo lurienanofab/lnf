@@ -16,7 +16,7 @@ namespace LNF.Scheduler
 
         public decimal OvertimeMultiplier { get; }
 
-        private ResourceCost(CostItem cost, CostItem overtime)
+        private ResourceCost(ICost cost, ICost overtime)
         {
             if (cost == null)
                 throw new ArgumentNullException("cost");
@@ -89,7 +89,7 @@ namespace LNF.Scheduler
         /// <summary>
         /// Creates ResourceCost objects for the given CostItem objects.
         /// </summary>
-        public static IEnumerable<ResourceCost> CreateResourceCosts(IEnumerable<CostItem> costs)
+        public static IEnumerable<ResourceCost> CreateResourceCosts(IEnumerable<ICost> costs)
         {
             if (costs == null)
                 throw new ArgumentNullException("costs");

@@ -6,7 +6,7 @@ namespace LNF.Models.Scheduler
     /// <summary>
     /// An invitee to a reservation
     /// </summary>
-    public class ReservationInviteeItem
+    public class ReservationInviteeItem : IReservationInvitee
     {
         public int ReservationID { get; set; }
         public int InviteeID { get; set; }

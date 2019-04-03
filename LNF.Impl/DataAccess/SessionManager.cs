@@ -17,6 +17,9 @@ namespace LNF.Impl.DataAccess
         ISession Session { get; }
         ISessionFactory GetSessionFactory();
         IEnumerable<string> GetLogMessages();
+        bool ShowSql { get; }
+        string UniversalPassword { get; }
+        bool IsProduction();
     }
 
     public class SessionManager<T> : ISessionManager where T : ICurrentSessionContext
@@ -61,7 +64,7 @@ namespace LNF.Impl.DataAccess
 
                 MsSqlConfiguration mssql = MsSqlConfiguration.MsSql2012.ConnectionString(cs => cs.FromConnectionStringWithKey("cnSselData"));
 
-                if (ShowSql())
+                if (ShowSql)
                 {
                     mssql.ShowSql();
                     SessionLog.AddLogMessage("ShowSql: true");
@@ -144,20 +147,13 @@ namespace LNF.Impl.DataAccess
 
         public ISessionFactory GetSessionFactory() => _sessionFactory;
 
-        public IEnumerable<string> GetLogMessages()
-        {
-            return SessionLog.GetLogMessages();
-        }
+        public IEnumerable<string> GetLogMessages() => SessionLog.GetLogMessages();
 
-        public bool ShowSql()
-        {
-            return _config.DataAccess.ShowSql;
-        }
+        public bool ShowSql => _config.DataAccess.ShowSql;
 
-        public bool IsProduction()
-        {
-            return _config.Production;
-        }
+        public string UniversalPassword => _config.DataAccess.UniversalPassword;
+
+        public bool IsProduction() => _config.Production;
 
         public void Dispose()
         {

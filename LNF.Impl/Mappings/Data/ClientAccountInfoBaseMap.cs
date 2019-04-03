@@ -12,7 +12,7 @@ namespace LNF.Impl.Mappings.Data
             Map(x => x.ClientAccountActive);
             Map(x => x.AccountID);
             Map(x => x.AccountName);
-            Map(x => x.Number);
+            Map(x => x.AccountNumber);
             Map(x => x.ShortCode);
             Map(x => x.BillAddressID);
             Map(x => x.ShipAddressID);

@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Scheduler
 {
-    public class ReservationHistoryItem
+    public class ReservationHistoryItem : IReservationHistory
     {
         public const string INSERT_FOR_MODIFICATION = "InsertForModification";
 

@@ -4,5 +4,7 @@
     {
         int ClientID { get; set; }
         ClientAuthLevel AuthLevel { get; set; }
+        bool HasAuth(ClientAuthLevel auths);
+        bool IsEveryone();
     }
 }

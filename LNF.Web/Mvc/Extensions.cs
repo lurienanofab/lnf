@@ -17,7 +17,7 @@ namespace LNF.Web.Mvc
 {
     public static class HtmlHelperExtensions
     {
-        public static ClientItem CurrentUser(this HtmlHelper helper)
+        public static IClient CurrentUser(this HtmlHelper helper)
         {
             return helper.ViewContext.HttpContext.CurrentUser();
         }

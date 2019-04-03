@@ -13,6 +13,8 @@ namespace LNF.Web.Content
             ContextBase = new HttpContextWrapper(Context);
         }
 
+        public IProvider Provider => ServiceProvider.Current;
+
         public HttpContextBase ContextBase { get; }
 
         public virtual ClientPrivilege AuthTypes => 0;
@@ -23,7 +25,7 @@ namespace LNF.Web.Content
 
         public new LNFPage Page => (LNFPage)base.Page;
 
-        public ClientItem CurrentUser => ContextBase.CurrentUser();
+        public IClient CurrentUser => ContextBase.CurrentUser();
 
         public bool HasPriv(ClientPrivilege privs) => CurrentUser.HasPriv(privs);
 

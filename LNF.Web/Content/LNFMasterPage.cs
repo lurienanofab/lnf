@@ -1,5 +1,4 @@
-﻿using LNF.CommonTools;
-using LNF.Models.Data;
+﻿using LNF.Models.Data;
 using System.Text;
 using System.Web;
 using System.Web.UI;
@@ -43,7 +42,7 @@ namespace LNF.Web.Content
             get { return _Authorization; }
         }
 
-        public ClientItem CurrentUser
+        public IClient CurrentUser
         {
             get { return Page.CurrentUser; }
         }

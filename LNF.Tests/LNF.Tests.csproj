@@ -72,6 +72,7 @@
     <Compile Include="ReadToolDataManagerTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="DataCommandTests.cs" />
+    <Compile Include="ModelFactoryTests.cs" />
     <Compile Include="WriteToolDataManagerTests.cs" />
   </ItemGroup>
   <ItemGroup>

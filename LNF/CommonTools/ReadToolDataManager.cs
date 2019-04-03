@@ -6,7 +6,7 @@ namespace LNF.CommonTools
 {
     public class ReadToolDataManager : ManagerBase, IReadToolDataManager
     {
-        public ReadToolDataManager(ISession session) : base(session) { }
+        public ReadToolDataManager(IProvider provider) : base(provider) { }
 
         public DataTable ReadToolDataRaw(DateTime sd, DateTime ed, int clientId = 0)
         {

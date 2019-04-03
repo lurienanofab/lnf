@@ -4,12 +4,13 @@ namespace LNF.Repository
 {
     public abstract class ManagerBase : IManager
     {
-        public ISession Session { get; }
+        public IProvider Provider { get; }
+        public ISession Session => Provider.DataAccess.Session;
         public DataCommandBase Command(CommandType type = CommandType.StoredProcedure) => DA.Command(type);
 
-        public ManagerBase(ISession session)
+        public ManagerBase(IProvider provider)
         {
-            Session = session;
+            Provider = provider;
         }
     }
 }

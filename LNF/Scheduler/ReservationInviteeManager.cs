@@ -10,7 +10,7 @@ namespace LNF.Scheduler
 {
     public class ReservationInviteeManager : ManagerBase, IReservationInviteeManager
     {
-        public ReservationInviteeManager(ISession session) : base(session) { }
+        public ReservationInviteeManager(IProvider provider) : base(provider) { }
 
         public IList<ReservationInvitee> ToReservationInviteeList(DataTable dt, int reservationId)
         {

@@ -89,7 +89,12 @@ namespace LNF.CommonTools
             Undefined = 99
         }
 
-        public IAdministrativeHelper AdministrativeHelper => ServiceProvider.Current.Use<IAdministrativeHelper>();
+        public IProvider Provider { get; }
+
+        public WriteRoomDataProcess(IProvider provider)
+        {
+            Provider = provider;
+        }
 
         public DateTime Period { get; }
         public int ClientID { get; }
@@ -254,7 +259,7 @@ namespace LNF.CommonTools
             } //client
 
             if (!string.IsNullOrEmpty(err))
-                AdministrativeHelper.SendEmailToDevelopers($"Error when creating Room Usage Data on {DateTime.Now:yyy-MM-dd HH:mm:ss}", err);
+                Provider.AdministrativeHelper.SendEmailToDevelopers($"Error when creating Room Usage Data on {DateTime.Now:yyy-MM-dd HH:mm:ss}", err);
 
             return dtRoomData;
         }

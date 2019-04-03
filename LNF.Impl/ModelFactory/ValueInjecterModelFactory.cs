@@ -1,60 +1,48 @@
 ﻿using LNF.Impl.ModelFactory.Injections;
-using LNF.Models.Data;
-using LNF.Models.Ordering;
-using LNF.Models.Scheduler;
 using LNF.Repository;
-using LNF.Repository.Data;
-using LNF.Repository.Ordering;
-using LNF.Repository.Scheduler;
 using Omu.ValueInjecter;
 using Omu.ValueInjecter.Injections;
 
 namespace LNF.Impl.ModelFactory
 {
-    //<lnf>
-    //  <providers>
-    //      <modelFactory type="LNF.Impl.ModelFactory.ValueInjecterModelFactory, LNF.Impl" />
-    //  </providers>
-    //</lnf>
     public class ValueInjecterModelFactory : IModelFactory
     {
-        public ValueInjecterModelFactory()
+        protected ISession Session { get; }
+
+        public ValueInjecterModelFactory(IDataAccessService service)
         {
-            //// xxxxx Data Maps
-            Mapper.AddMap<ClientAccount, ClientAccountItem>(ModelBuilder.Data.CreateClientAccountModel);
-            Mapper.AddMap<GlobalCost, GlobalCostItem>(ModelBuilder.Data.CreateGlobalCostModel);
-            Mapper.AddMap<Room, RoomItem>(ModelBuilder.Data.CreateRoomModel);
+            // xxxxx Data Maps
+            var data = new DataModelBuilder(service.Session);
+            data.AddMaps();
 
-            //// xxxxx Scheduler Maps
-            Mapper.AddMap<Building, BuildingItem>(ModelBuilder.Scheduler.CreateBuildingModel);
-            Mapper.AddMap<Lab, LabItem>(ModelBuilder.Scheduler.CreateLabModel);
-            Mapper.AddMap<ProcessTech, ProcessTechItem>(ModelBuilder.Scheduler.CreateProcessTechModel);
-            Mapper.AddMap<Resource, ResourceItem>(ModelBuilder.Scheduler.CreateResourceModel);
-            Mapper.AddMap<ResourceInfo, ResourceItem>(ModelBuilder.Scheduler.CreateResourceModel);
-            Mapper.AddMap<ProcessInfo, ProcessInfoItem>(ModelBuilder.Scheduler.CreateProcessInfoModel);
-            Mapper.AddMap<ProcessInfoLine, ProcessInfoLineItem>(ModelBuilder.Scheduler.CreateProcessInfoLineModel);
-            Mapper.AddMap<ResourceClient, ResourceClientItem>(ModelBuilder.Scheduler.CreateResourceClientModel);
+            // xxxxx Scheduler Maps
+            var scheduler = new SchedulerModelBuilder(service.Session);
+            scheduler.AddMaps();
 
-            //// xxxxx Ordering Maps
-            Mapper.AddMap<Approver, ApproverItem>(ModelBuilder.Ordering.CreateApproverModel);
+            // xxxxx Ordering Maps
+            var ordering = new OrderingModelBuilder(service.Session);
+            ordering.AddMaps();
+
+            // xxxxx Billing Maps
+            var billing = new BillingModelBuilder(service.Session);
+            billing.AddMaps();
+
+            Session = service.Session;
         }
 
         private static readonly IValueInjection[] _injections =
         {
             new ExtendedFlatLoopInjection(),
             new NullableInjection(),
-            new ClientInjection(),
-            new ClientInfoInjection(),
-            new AccountInjection(),
-            new ReservationInjection(),
-            new ReservationInfoInjection()
+            new NullableUseDefaultInjection()
         };
 
-        public T Create<T>(object source)
+        public T Create<T>(IDataItem source)
         {
             if (source == null) return default(T);
 
-            T result = Mapper.Map<T>(source);
+            // need to unproxy otherwise Mapper won't recognize the type (nhibernate proxy class)
+            T result = Mapper.Map<T>(Session.Unproxy(source));
 
             foreach (var injection in _injections)
             {

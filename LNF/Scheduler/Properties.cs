@@ -23,7 +23,7 @@ namespace LNF.Scheduler
             set { SetValue("AuthExpWarning", value); }
         }
 
-        public ClientItem Admin
+        public IClient Admin
         {
             get { return CacheManager.Current.GetClient(int.Parse(GetValue("AdminID"))); }
             set { SetValue("AdminID", value.ClientID); }
@@ -47,7 +47,7 @@ namespace LNF.Scheduler
             set { SetValue("SchedulerEmail", value); }
         }
 
-        public AccountItem LabAccount
+        public IAccount LabAccount
         {
             get { return CacheManager.Current.GetAccount(int.Parse(GetValue("LabAccountID"))); }
             set { SetValue("LabAccountID", value.AccountID); }

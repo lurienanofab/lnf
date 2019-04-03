@@ -8,7 +8,7 @@ namespace LNF.Web.Controls.Navigation
     public class SiteMenu : WebControl
     {
         public HttpContextBase ContextBase { get; }
-        public ClientItem CurrentUser => ContextBase.CurrentUser();
+        public IClient CurrentUser => ContextBase.CurrentUser();
 
         public SiteMenu()
         {

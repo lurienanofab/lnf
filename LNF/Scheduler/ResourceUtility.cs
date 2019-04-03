@@ -84,7 +84,7 @@ namespace LNF.Scheduler
                 res.Description = model.ResourceDescription;
                 res.WikiPageUrl = model.WikiPageUrl;
                 res.IsReady = true;
-                res.UnloadTime = Utility.GetNullableMinutesFromTimeSpan(TimeSpan.FromMinutes(model.UnloadTime));
+                res.UnloadTime = Utility.GetNullableMinutesFromTimeSpan(TimeSpan.FromMinutes(model.UnloadTime.GetValueOrDefault()));
             }
         }
 

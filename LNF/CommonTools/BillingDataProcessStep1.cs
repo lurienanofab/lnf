@@ -27,10 +27,19 @@ namespace LNF.CommonTools
 
     //This is the main class to process the billing information since 2009-07-01
     //This class will popuate the RoomBilling, ToolBilling, StoreBilling and all associated temporary tables
-    public static class BillingDataProcessStep1
+    public class BillingDataProcessStep1
     {
-        public static IBillingTypeManager BillingTypeManager => ServiceProvider.Current.Use<IBillingTypeManager>();
-        public static IToolBillingManager ToolBillingManager => ServiceProvider.Current.Use<IToolBillingManager>();
+        //public static IBillingTypeManager BillingTypeManager => ServiceProvider.Current.Use<IBillingTypeManager>();
+        //public static IToolBillingManager ToolBillingManager => ServiceProvider.Current.Use<IToolBillingManager>();
+
+        public BillingDataProcessStep1(DateTime now, IProvider provider)
+        {
+            Now = now;
+            ServiceProvider = provider;
+        }
+
+        public DateTime Now { get; }
+        public IProvider ServiceProvider { get; }
 
         #region Room Billing
         public const string FOR_PARENT_ROOMS = "ForParentRooms";
@@ -39,7 +48,7 @@ namespace LNF.CommonTools
         ///The main process that loads data into the RoomBilling table.
         ///Note: This table is called RoomApportionmentInDaysMonthly.
         ///</summary>
-        public static PopulateRoomBillingProcessResult PopulateRoomBilling(DateTime period, int clientId, bool temp)
+        public PopulateRoomBillingProcessResult PopulateRoomBilling(DateTime period, int clientId, bool temp)
         {
             var result = new PopulateRoomBillingProcessResult
             {
@@ -72,7 +81,7 @@ namespace LNF.CommonTools
             return result;
         }
 
-        public static DataTable LoadRoomBilling(DataSet dsSource, DateTime period, int clientId, bool temp)
+        public DataTable LoadRoomBilling(DataSet dsSource, DateTime period, int clientId, bool temp)
         {
             //Step 1: Get users and rooms for this period and loop through each of them
             //Step 1.1: Get all the necessary data from database to save the round trip cost to DB connection
@@ -485,7 +494,7 @@ namespace LNF.CommonTools
                                         drow.SetField("Entries", 0);
                                         drow.SetField("Hours", 0);
 
-                                        ExceptionManager exp = new ExceptionManager { TimeStamp = DateTime.Now, ExpName = "User has zero charge days", AppName = typeof(BillingDataProcessStep1).Assembly.GetName().Name, FunctionName = "CommonTools-PopulateRoomBilling" };
+                                        ExceptionManager exp = new ExceptionManager { TimeStamp = Now, ExpName = "User has zero charge days", AppName = typeof(BillingDataProcessStep1).Assembly.GetName().Name, FunctionName = "CommonTools-PopulateRoomBilling" };
                                         exp.CustomData = string.Format("ClientID = {0}, Period = '{1}'", cid, period);
                                         exp.LogException();
                                     }
@@ -712,10 +721,10 @@ namespace LNF.CommonTools
         /// <summary>
         /// Get the schema of Apportionment table, we don't want any data
         /// </summary>
-        private static DataTable GetApportionmentTableSchema()
+        private DataTable GetApportionmentTableSchema()
         {
             return DA.Command()
-                .Param(new { Action = "ForApportion", Period = DateTime.Now, ClientID = -1, RoomID = -1 })
+                .Param(new { Action = "ForApportion", Period = Now, ClientID = -1, RoomID = -1 })
                 .FillDataTable("dbo.RoomApportionmentInDaysMonthly_Select");
         }
 
@@ -733,7 +742,7 @@ namespace LNF.CommonTools
             return DA.Command().Param(parameters).ExecuteNonQuery(sp).Value;
         }
 
-        public static int SaveRoomBillingData(DataTable dtIn, bool temp)
+        public int SaveRoomBillingData(DataTable dtIn, bool temp)
         {
             int count = 0;
 
@@ -772,9 +781,9 @@ namespace LNF.CommonTools
                     string subj;
 
                     if (count >= 0)
-                        subj = $"Processing Apportionment Successful - saving to database - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]";
+                        subj = $"Processing Apportionment Successful - saving to database - {sp} [{Now:yyyy-MM-dd HH:mm:ss}]";
                     else
-                        subj = $"Error in Processing Apportionment - saving to database - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]";
+                        subj = $"Error in Processing Apportionment - saving to database - {sp} [{Now:yyyy-MM-dd HH:mm:ss}]";
 
                     SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep1.SaveRoomBillingData", subj);
                 }
@@ -785,7 +794,7 @@ namespace LNF.CommonTools
         #endregion
 
         #region ToolBilling
-        public static PopulateToolBillingProcessResult PopulateToolBilling(DateTime period, int clientId, bool temp)
+        public PopulateToolBillingProcessResult PopulateToolBilling(DateTime period, int clientId, bool temp)
         {
             var result = new PopulateToolBillingProcessResult
             {
@@ -825,11 +834,11 @@ namespace LNF.CommonTools
             return source;
         }
 
-        public static void CalculateToolBillingCharges(IToolBilling tb)
+        public void CalculateToolBillingCharges(IToolBilling tb)
         {
-            ToolBillingManager.CalculateReservationFee(tb);
-            ToolBillingManager.CalculateUsageFeeCharged(tb);
-            ToolBillingManager.CalculateBookingFee(tb);
+            ServiceProvider.ToolBillingManager.CalculateReservationFee(tb);
+            ServiceProvider.ToolBillingManager.CalculateUsageFeeCharged(tb);
+            ServiceProvider.ToolBillingManager.CalculateBookingFee(tb);
         }
 
         //Get source data from ToolData
@@ -863,7 +872,7 @@ namespace LNF.CommonTools
         #endregion
 
         #region StoreBilling
-        public static PopulateStoreBillingProcessResult PopulateStoreBilling(DateTime period, bool temp)
+        public PopulateStoreBillingProcessResult PopulateStoreBilling(DateTime period, bool temp)
         {
             var result = new PopulateStoreBillingProcessResult
             {
@@ -935,7 +944,7 @@ namespace LNF.CommonTools
             return DA.Command().Param(new { Period = period }).ExecuteNonQuery(sp).Value;
         }
 
-        private static int SaveStoreBillingData(DataTable dtIn, bool temp)
+        private int SaveStoreBillingData(DataTable dtIn, bool temp)
         {
             //Insert prepration - it's necessary because we may have to add new account that is a remote account
 
@@ -963,9 +972,9 @@ namespace LNF.CommonTools
                 string subj;
 
                 if (count >= 0)
-                    subj = $"Processing StoreBilling Successful - saving to database - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]";
+                    subj = $"Processing StoreBilling Successful - saving to database - {sp} [{Now:yyyy-MM-dd HH:mm:ss}]";
                 else
-                    subj = $"Error in Processing StoreBilling - saving to database portion failed - {sp} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]";
+                    subj = $"Error in Processing StoreBilling - saving to database portion failed - {sp} [{Now:yyyy-MM-dd HH:mm:ss}]";
 
                 SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep1.SaveStoreBillingData", subj);
             }

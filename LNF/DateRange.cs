@@ -24,8 +24,6 @@ namespace LNF
             EndDate = endDate;
         }
 
-        protected IActiveLogManager ActiveLogManager => ServiceProvider.Current.Use<IActiveLogManager>();
-
         public TimeSpan Span
         {
             get { return EndDate - StartDate; }

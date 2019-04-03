@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace LNF.Cache
 {
@@ -28,6 +29,7 @@ namespace LNF.Cache
                 .ToArray();
         }
 
+        [Obsolete("Use HttpContextBase.RemoveAllSessionValues() extension instead.")]
         public static void RemoveAll()
         {
             foreach (string key in AllKeys())

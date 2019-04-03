@@ -3,7 +3,7 @@ using System;
 
 namespace LNF.Models.Scheduler
 {
-    public class ResourceClientItem : IPrivileged, IAuthorized
+    public class ResourceClientItem : IResourceClient
     {
         public int ResourceClientID { get; set; }
         public int ResourceID { get; set; }
@@ -18,20 +18,13 @@ namespace LNF.Models.Scheduler
         public string DisplayName { get; set; }
         public string Email { get; set; }
         public bool ClientActive { get; set; }
+        public int AuthDuration { get; set; }
+        public bool ResourceIsActive { get; set; }
+        public bool HasAuth(ClientAuthLevel auths) => HasAuth(AuthLevel & auths);
+        public bool IsEveryone() => IsEveryone(ClientID);
 
-        public bool HasAuth(int auths)
-        {
-            return HasAuth((ClientAuthLevel)auths);
-        }
+        public static bool HasAuth(ClientAuthLevel auth1, ClientAuthLevel auth2) => (auth1 & auth2) > 0;
 
-        public bool HasAuth(ClientAuthLevel auths)
-        {
-            return (AuthLevel & auths) > 0;
-        }
-
-        public bool IsEveryone()
-        {
-            return ClientID == -1;
-        }
+        public static bool IsEveryone(int clientId) => clientId == -1;
     }
 }

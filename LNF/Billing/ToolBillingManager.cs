@@ -11,7 +11,7 @@ namespace LNF.Billing
 {
     public class ToolBillingManager : ManagerBase, IToolBillingManager
     {
-        public ToolBillingManager(ISession session) : base(session) { }
+        public ToolBillingManager(IProvider provider) : base(provider) { }
 
         #region ToolBilling
 

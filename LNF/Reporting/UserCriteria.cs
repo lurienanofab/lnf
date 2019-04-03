@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Specialized;
 
 namespace LNF.Reporting
 {
@@ -10,9 +6,8 @@ namespace LNF.Reporting
     {
         public int ClientID { get; set; }
 
-        public UserCriteria() { }
+        public UserCriteria(IProvider provider) : base(provider) { }
 
-        public UserCriteria(NameValueCollection nvc)
-            : base(nvc) { }
+        public UserCriteria(IProvider provider, NameValueCollection nvc) : base(provider, nvc) { }
     }
 }

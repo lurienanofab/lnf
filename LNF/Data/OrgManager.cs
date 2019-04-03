@@ -7,7 +7,7 @@ namespace LNF.Data
 {
     public class OrgManager : ManagerBase, IOrgManager
     {
-        public OrgManager(ISession session) : base(session) { }
+        public OrgManager(IProvider provider) : base(provider) { }
 
         public IQueryable<Account> GetAccounts(Org item)
         {

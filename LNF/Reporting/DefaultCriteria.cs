@@ -1,5 +1,4 @@
 ﻿using LNF.CommonTools;
-using LNF.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using System;
@@ -19,15 +18,15 @@ namespace LNF.Reporting
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
-        protected IActiveDataItemManager ActiveDataItemManager => ServiceProvider.Current.Use<IActiveDataItemManager>();
+        protected IProvider Provider { get; }
 
-        public DefaultCriteria()
+        public DefaultCriteria(IProvider provider)
         {
+            Provider = provider;
             parameters = new Dictionary<string, string>();
         }
 
-        public DefaultCriteria(params NameValueCollection[] nvc)
-            : this()
+        public DefaultCriteria(IProvider provider, params NameValueCollection[] nvc) : this(provider)
         {
             foreach (NameValueCollection item in nvc)
             {
@@ -52,7 +51,7 @@ namespace LNF.Reporting
 
         public IEnumerable<Client> ActiveClients()
         {
-            return ActiveDataItemManager.FindActive(DA.Current.Query<Client>(), x => x.ClientID, StartDate, EndDate);
+            return Provider.ActiveDataItemManager.FindActive(DA.Current.Query<Client>(), x => x.ClientID, StartDate, EndDate);
         }
 
         public CriteriaWriter CreateWriter(StringBuilder sb)

@@ -1,31 +1,26 @@
-﻿using LNF.Data;
+﻿using LNF.Models.Data;
 using LNF.Repository;
-using LNF.Repository.Data;
 using LNF.Repository.Ordering;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace LNF.Ordering
 {
     public class PurchaseOrderAccountManager : ManagerBase, IPurchaseOrderAccountManager
     {
-        protected IClientManager ClientManager { get; }
+        public PurchaseOrderAccountManager(IProvider provider) : base(provider) { }
 
-        public PurchaseOrderAccountManager(ISession session, IClientManager clientManager) : base(session)
+        public IEnumerable<IAccount> AvailabePurchaseOrderAccounts(IClient client)
         {
-            ClientManager = clientManager;
-        }
-
-        public IQueryable<Account> AvailabePurchaseOrderAccounts(Client client)
-        {
-            IQueryable<PurchaseOrderAccount> accounts = GetAccounts(client);
-            var activeAccounts = ClientManager.ActiveAccounts(client);
+            var accounts = GetAccounts(client);
+            var activeAccounts = Provider.Data.ClientManager.ActiveAccounts(client.ClientID);
             var result = activeAccounts.Where(acct => !accounts.Any(x => x.AccountID == acct.AccountID));
             return result;
         }
 
-        public IQueryable<PurchaseOrderAccount> GetAccounts(Client item)
+        public IEnumerable<PurchaseOrderAccount> GetAccounts(IClient item)
         {
-            return Session.Query<PurchaseOrderAccount>().Where(x => x.ClientID == item.ClientID && x.Active);
+            return Session.Query<PurchaseOrderAccount>().Where(x => x.ClientID == item.ClientID && x.Active).ToList();
         }
     }
 }

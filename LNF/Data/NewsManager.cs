@@ -8,7 +8,7 @@ namespace LNF.Data
 {
     public class NewsManager : ManagerBase, INewsManager
     {
-        public NewsManager(ISession session) : base(session) { }
+        public NewsManager(IProvider provider) : base(provider) { }
 
         /// <summary>
         /// Deletes a News item

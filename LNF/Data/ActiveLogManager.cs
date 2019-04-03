@@ -8,7 +8,7 @@ namespace LNF.Data
 {
     public class ActiveLogManager : ManagerBase, IActiveLogManager
     {
-        public ActiveLogManager(ISession session) : base(session) { }
+        public ActiveLogManager(IProvider provider) : base(provider) { }
 
         public T Item<T>(ActiveLog item) where T : IActiveDataItem
         {

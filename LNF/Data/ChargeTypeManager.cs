@@ -1,21 +1,23 @@
-﻿using LNF.Repository;
+﻿using LNF.Models.Data;
+using LNF.Repository;
 using LNF.Repository.Data;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace LNF.Data
 {
     public class ChargeTypeManager : ManagerBase, IChargeTypeManager
     {
-        public ChargeTypeManager(ISession session) : base(session) { }
+        public ChargeTypeManager(IProvider provider) : base(provider) { }
 
-        public Account GetAccount(ChargeType item)
+        public IAccount GetAccount(IChargeType chargeType)
         {
-            return Session.Single<Account>(item.AccountID);
+            return Session.Single<AccountInfo>(chargeType.AccountID).CreateModel<IAccount>();
         }
 
-        public IQueryable<OrgType> OrgTypes(ChargeType item)
+        public IEnumerable<IOrgType> OrgTypes(int chargeTypeId)
         {
-            return Session.Query<OrgType>().Where(x => x.ChargeType.ChargeTypeID == item.ChargeTypeID);
+            return Session.Query<OrgType>().Where(x => x.ChargeType.ChargeTypeID == chargeTypeId).CreateModels<IOrgType>();
         }
     }
 }

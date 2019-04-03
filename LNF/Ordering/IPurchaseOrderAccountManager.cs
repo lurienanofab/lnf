@@ -1,13 +1,13 @@
-﻿using LNF.Repository;
-using LNF.Repository.Data;
+﻿using LNF.Models.Data;
+using LNF.Repository;
 using LNF.Repository.Ordering;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace LNF.Ordering
 {
     public interface IPurchaseOrderAccountManager : IManager
     {
-        IQueryable<Account> AvailabePurchaseOrderAccounts(Client client);
-        IQueryable<PurchaseOrderAccount> GetAccounts(Client item);
+        IEnumerable<IAccount> AvailabePurchaseOrderAccounts(IClient client);
+        IEnumerable<PurchaseOrderAccount> GetAccounts(IClient item);
     }
 }

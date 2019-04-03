@@ -84,7 +84,7 @@ namespace LNF.Scheduler
         /// <summary>
         /// Gets ResourceCosts for all ChargeTypes and Resources. Cached for 24 hours.
         /// </summary>
-        public static IEnumerable<ResourceCost> ResourceCosts(this CacheManager cm) => cm.GetValue("ResourceCosts", () => ServiceProvider.Current.Use<IResourceManager>().GetResourceCosts(), DateTimeOffset.Now.AddHours(24));
+        public static IEnumerable<ResourceCost> ResourceCosts(this CacheManager cm) => cm.GetValue("ResourceCosts", () => ServiceProvider.Current.ResourceManager.GetResourceCosts(), DateTimeOffset.Now.AddHours(24));
 
         /// <summary>
         /// Gets a ResourceCost for each ChargeType for the given ResourceID.

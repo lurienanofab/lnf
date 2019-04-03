@@ -226,7 +226,7 @@ namespace LNF.Billing
                 ChargeBeginDateTime = x.ChargeBeginDateTime,
                 ChargeEndDateTime = x.ChargeEndDateTime,
                 LastModifiedOn = x.LastModifiedOn,
-                IsCancelledBeforeCutoff = x.IsCancelledBeforeCutoff(),
+                IsCancelledBeforeCutoff = x.IsCancelledBeforeCutoff,
                 ChargeMultiplier = x.ChargeMultiplier,
                 Cost = ResourceCost.CreateResourceCosts(costs.Where(c => (c.RecordID == x.ResourceID || c.RecordID == 0) && c.ChargeTypeID == x.ChargeTypeID)).FirstOrDefault()
             }).ToList();

@@ -10,8 +10,6 @@ namespace LNF.Reporting
 {
     public static class ClientItemUtility
     {
-        public static IActiveDataItemManager ActiveDataItemManager => ServiceProvider.Current.Use<IActiveDataItemManager>();
-
         public static IEnumerable<ReportingClientItem> SelectCurrentActiveClients()
         {
             var result = CreateClientItems(DA.Current.Query<ClientInfo>()
@@ -23,14 +21,14 @@ namespace LNF.Reporting
 
         public static IEnumerable<ReportingClientItem> SelectActiveClients(DateTime period)
         {
-            var query = ActiveDataItemManager.FindActive(DA.Current.Query<ClientInfo>(), x => x.ClientID, period, period.AddMonths(1)).AsQueryable();
+            var query = ServiceProvider.Current.ActiveDataItemManager.FindActive(DA.Current.Query<ClientInfo>(), x => x.ClientID, period, period.AddMonths(1), "Client").AsQueryable();
             var result = CreateClientItems(query.OrderBy(x => x.DisplayName));
             return result;
         }
 
         public static IEnumerable<ReportingClientItem> SelectActiveManagers(DateTime period)
         {
-            var managers = ActiveDataItemManager.FindActive(DA.Current.Query<ClientAccountInfo>().Where(x => x.Manager), x => x.ClientAccountID, period, period.AddMonths(1));
+            var managers = ServiceProvider.Current.ActiveDataItemManager.FindActive(DA.Current.Query<ClientAccountInfo>().Where(x => x.Manager), x => x.ClientAccountID, period, period.AddMonths(1), "ClientAccount");
 
             var items = CreateClientItems(managers.Where(x => x.EmailRank == 1).AsQueryable());
 
@@ -41,7 +39,7 @@ namespace LNF.Reporting
 
         public static ReportingClientItem GetManagerFor(int clientId, DateTime period)
         {
-            var managers = ActiveDataItemManager.FindActive(DA.Current.Query<ClientAccountInfo>().Where(x => x.Manager), x => x.ClientAccountID, period, period.AddMonths(1));
+            var managers = ServiceProvider.Current.ActiveDataItemManager.FindActive(DA.Current.Query<ClientAccountInfo>().Where(x => x.Manager), x => x.ClientAccountID, period, period.AddMonths(1));
             throw new NotImplementedException();
         }
 

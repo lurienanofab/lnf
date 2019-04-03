@@ -1,14 +1,12 @@
 ﻿using LNF.Repository;
 using LNF.Repository.Data;
 using System.Linq;
-using System;
-using System.Runtime.Caching;
 
 namespace LNF.Data
 {
     public class ClientInfoManager : ManagerBase, IClientInfoManager
     {
-        public ClientInfoManager(ISession session) : base(session) { }
+        public ClientInfoManager(IProvider provider) : base(provider) { }
 
         public IQueryable<ClientOrgInfo> ClientOrgs(ClientInfo item)
         {

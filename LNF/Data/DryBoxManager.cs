@@ -9,7 +9,7 @@ namespace LNF.Data
 {
     public class DryBoxManager : ManagerBase, IDryBoxManager
     {
-        public DryBoxManager(ISession session) : base(session) { }
+        public DryBoxManager(IProvider provider) : base(provider) { }
 
         public DryBoxAssignment CurrentAssignment(DryBox item)
         {

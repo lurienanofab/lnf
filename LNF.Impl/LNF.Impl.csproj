@@ -34,6 +34,9 @@
     <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
       <HintPath>..\packages\Antlr3.Runtime.3.5.1\lib\net40-client\Antlr3.Runtime.dll</HintPath>
     </Reference>
+    <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+      <HintPath>..\packages\Castle.Core.4.3.1\lib\net45\Castle.Core.dll</HintPath>
+    </Reference>
     <Reference Include="DnsClient, Version=1.2.0.0, Culture=neutral, PublicKeyToken=4574bb5573c51424, processorArchitecture=MSIL">
       <HintPath>..\packages\DnsClient.1.2.0\lib\net45\DnsClient.dll</HintPath>
     </Reference>
@@ -43,14 +46,17 @@
     <Reference Include="Iesi.Collections, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
       <HintPath>..\packages\Iesi.Collections.4.0.4\lib\net461\Iesi.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Bson, Version=2.7.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MongoDB.Bson.2.7.3\lib\net45\MongoDB.Bson.dll</HintPath>
+    <Reference Include="MongoDB.Bson, Version=2.8.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Bson.2.8.0\lib\net452\MongoDB.Bson.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Driver, Version=2.7.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MongoDB.Driver.2.7.3\lib\net45\MongoDB.Driver.dll</HintPath>
+    <Reference Include="MongoDB.Driver, Version=2.8.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Driver.2.8.0\lib\net452\MongoDB.Driver.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Driver.Core, Version=2.7.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MongoDB.Driver.Core.2.7.3\lib\net45\MongoDB.Driver.Core.dll</HintPath>
+    <Reference Include="MongoDB.Driver.Core, Version=2.8.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Driver.Core.2.8.0\lib\net452\MongoDB.Driver.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Moq, Version=4.10.0.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <HintPath>..\packages\Moq.4.10.1\lib\net45\Moq.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -79,7 +85,13 @@
     </Reference>
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.2\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="System.Transactions" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
@@ -102,13 +114,17 @@
     <Compile Include="DataAccess\DataRepository.cs" />
     <Compile Include="DataAccess\DateProjections.cs" />
     <Compile Include="DependencyInjection\Default\IOC.cs" />
-    <Compile Include="DependencyInjection\DependencyResolver.cs" />
+    <Compile Include="DependencyInjection\StructureMapResolver.cs" />
     <Compile Include="DependencyInjection\IIOC.cs" />
     <Compile Include="DependencyInjection\Web\IOC.cs" />
     <Compile Include="Mappings\Billing\MiscBillingChargeMap.cs" />
     <Compile Include="Mappings\Ordering\StoreManagerReportItemMap.cs" />
     <Compile Include="Mappings\Scheduler\ReservationInviteeInfoMap.cs" />
-    <Compile Include="ModelFactory\Injections\ReservationInfoInjection.cs" />
+    <Compile Include="ModelFactory\BillingModelBuilder.cs" />
+    <Compile Include="ModelFactory\DataModelBuilder.cs" />
+    <Compile Include="ModelFactory\Injections\NullableUseDefaultInjection.cs" />
+    <Compile Include="ModelFactory\OrderingModelBuilder.cs" />
+    <Compile Include="ModelFactory\SchedulerModelBuilder.cs" />
     <Compile Include="Serialization\DynamicContractResolver.cs" />
     <Compile Include="Encryption\EncryptionService.cs" />
     <Compile Include="Hooks\PostLoginCheckerHook.cs" />
@@ -326,17 +342,12 @@
     <Compile Include="Mappings\Store\StoreOrderDetailMap.cs" />
     <Compile Include="Mappings\Store\StoreOrderMap.cs" />
     <Compile Include="Mappings\Store\VendorPackageMap.cs" />
-    <Compile Include="ModelFactory\Injections\AccountInjection.cs" />
-    <Compile Include="ModelFactory\Injections\ClientInfoInjection.cs" />
-    <Compile Include="ModelFactory\Injections\ClientInjection.cs" />
     <Compile Include="ModelFactory\Injections\ExtendedFlatLoopInjection.cs" />
-    <Compile Include="ModelFactory\Injections\ExtendedKnownSourceInjection.cs" />
     <Compile Include="ModelFactory\Injections\NullableInjection.cs" />
-    <Compile Include="ModelFactory\Injections\ReservationInjection.cs" />
     <Compile Include="ModelFactory\ModelBuilder.cs" />
     <Compile Include="ModelFactory\ValueInjecterModelFactory.cs" />
     <Compile Include="Serialization\NHibernateContractResovler.cs" />
-    <Compile Include="DataAccess\NHibernateDataAccessService.cs" />
+    <Compile Include="DataAccess\NHibernateDataAccess.cs" />
     <Compile Include="DataAccess\NHibernateSession.cs" />
     <Compile Include="DataAccess\NHibernateUnitOfWork.cs" />
     <Compile Include="DataAccess\NHibernateUnitOfWorkAdapter.cs">
@@ -358,8 +369,7 @@
     <Compile Include="DataAccess\SessionManager.cs" />
     <Compile Include="ServiceMiddleware.cs" />
     <Compile Include="ServiceModule.cs" />
-    <Compile Include="Testing\NHibernateTestBase.cs" />
-    <Compile Include="Testing\TestContext.cs" />
+    <Compile Include="Testing\ContextManager.cs" />
     <Compile Include="Context\WebContext.cs" />
   </ItemGroup>
   <ItemGroup>

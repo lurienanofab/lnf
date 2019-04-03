@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Billing
 {
-    public class ToolDataItem
+    public class ToolDataItem : IToolData
     {
         public int ToolDataID { get; set; }
         public DateTime Period { get; set; }
@@ -11,6 +11,7 @@ namespace LNF.Models.Billing
         public int? RoomID { get; set; }
         public DateTime ActDate { get; set; }
         public int AccountID { get; set; }
+        public int OrgID { get; set; }
         public double Uses { get; set; }
         public double SchedDuration { get; set; }
         public double ActDuration { get; set; }

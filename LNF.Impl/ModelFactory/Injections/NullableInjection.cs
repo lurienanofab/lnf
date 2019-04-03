@@ -1,7 +1,7 @@
-﻿using LNF.Repository;
-using Omu.ValueInjecter.Injections;
+﻿using Omu.ValueInjecter.Injections;
 using System;
 using System.Linq;
+using System.Reflection;
 
 namespace LNF.Impl.ModelFactory.Injections
 {
@@ -16,7 +16,7 @@ namespace LNF.Impl.ModelFactory.Injections
             var targetType = target.GetType();
 
             // get the nullable properties from the source
-            var nullableProps = sourceType.GetProperties().Where(x => x.PropertyType.IsGenericType && x.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>));
+            var nullableProps = sourceType.GetProperties().Where(IsNullable);
 
             foreach (var sp in nullableProps)
             {
@@ -25,8 +25,7 @@ namespace LNF.Impl.ModelFactory.Injections
                 if (tp != null)
                 {
                     var underlyingType = Nullable.GetUnderlyingType(sp.PropertyType);
-                    var canAssign = underlyingType == tp.PropertyType || tp.PropertyType.IsAssignableFrom(underlyingType);
-                    if (canAssign)
+                    if (CanAssign(underlyingType, tp))
                     {
                         // only set if the nullable has a value (assume the target propety current value is the default value)
                         object value = sp.GetValue(source);
@@ -37,7 +36,7 @@ namespace LNF.Impl.ModelFactory.Injections
             }
 
             // now do the same for the target
-            nullableProps = targetType.GetProperties().Where(x => x.PropertyType.IsGenericType && x.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>));
+            nullableProps = targetType.GetProperties().Where(IsNullable);
 
             foreach (var tp in nullableProps)
             {
@@ -46,14 +45,23 @@ namespace LNF.Impl.ModelFactory.Injections
                 if (sp != null)
                 {
                     var underlyingType = Nullable.GetUnderlyingType(tp.PropertyType);
-                    var canAssign = underlyingType == sp.PropertyType || underlyingType.IsAssignableFrom(sp.PropertyType);
-                    if (canAssign)
+                    if (CanAssign(underlyingType, sp))
                     {
                         object value = sp.GetValue(source);
                         tp.SetValue(target, value);
                     }
                 }
             }
+        }
+
+        protected bool IsNullable(PropertyInfo p)
+        {
+            return p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>);
+        }
+
+        protected bool CanAssign(Type type, PropertyInfo p)
+        {
+            return type == p.PropertyType || p.PropertyType.IsAssignableFrom(type);
         }
     }
 }

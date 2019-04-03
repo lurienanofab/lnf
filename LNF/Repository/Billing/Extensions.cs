@@ -331,24 +331,5 @@ namespace LNF.Repository.Billing
                 IsTemp = x.IsTemp
             }).ToList();
         }
-
-
-        /*===== Account Subsidy =================================================================*/
-        public static AccountSubsidyItem CreateAccountSubsidyItem(this AccountSubsidy item) => CreateAccountSubsidyItems(Utility.ToQueryable(item)).FirstOrDefault();
-
-        public static IEnumerable<AccountSubsidyItem> CreateAccountSubsidyItems(this IQueryable<AccountSubsidy> query)
-        {
-            if (query == null) return null;
-
-            return query.Select(x => new AccountSubsidyItem
-            {
-                AccountSubsidyID = x.AccountSubsidyID,
-                AccountID = x.AccountID,
-                UserPaymentPercentage = x.UserPaymentPercentage,
-                CreatedDate = x.CreatedDate,
-                EnableDate = x.EnableDate,
-                DisableDate = x.DisableDate
-            }).ToList();
-        }
     }
 }

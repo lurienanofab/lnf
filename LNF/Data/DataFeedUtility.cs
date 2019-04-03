@@ -16,8 +16,15 @@ using System.Xml;
 
 namespace LNF.Data
 {
-    public static class DataFeedUtility
+    public class DataFeedUtility
     {
+        public IProvider Provider { get; }
+
+        public DataFeedUtility(IProvider provider)
+        {
+            Provider = provider;
+        }
+
         public static DataCommandBase ReadOnlyCommand(CommandType type = CommandType.StoredProcedure) => ReadOnlyDataCommand.Create(type);
 
         public static bool CanEditFeed(IPrivileged client)
@@ -92,7 +99,7 @@ namespace LNF.Data
             return result;
         }
 
-        public static DataSet ExecuteQuery(DataFeed feed, Parameters parameters = null)
+        public DataSet ExecuteQuery(DataFeed feed, Parameters parameters = null)
         {
             DataSet ds = new DataSet();
             DataTable dt = null;
@@ -122,7 +129,7 @@ namespace LNF.Data
             }
             else
             {
-                Result result = ServiceProvider.Current.Use<IScriptingService>().Run(feed.FeedQuery, parameters);
+                Result result = Provider.Scripting.Run(feed.FeedQuery, parameters);
                 if (result.Exception != null)
                     throw result.Exception;
                 foreach (var kvp in result.DataSet)
@@ -158,7 +165,7 @@ namespace LNF.Data
             }
         }
 
-        public static string CsvFeedContent(DataFeed feed, string key, Parameters parameters = null)
+        public string CsvFeedContent(DataFeed feed, string key, Parameters parameters = null)
         {
             if (string.IsNullOrEmpty(key)) key = "default";
 
@@ -187,7 +194,7 @@ namespace LNF.Data
             return sb.ToString();
         }
 
-        public static string XmlFeedContent(DataFeed feed, string key, Parameters parameters = null)
+        public string XmlFeedContent(DataFeed feed, string key, Parameters parameters = null)
         {
             DataSet ds = ExecuteQuery(feed, parameters);
             IList<DataTable> tables = GetTables(ds, key);
@@ -236,7 +243,7 @@ namespace LNF.Data
             return sw.GetStringBuilder().ToString();
         }
 
-        public static string RssFeedContent(DataFeed feed, string key, Parameters parameters = null)
+        public string RssFeedContent(DataFeed feed, string key, Parameters parameters = null)
         {
             if (string.IsNullOrEmpty(key)) key = "default";
 
@@ -320,7 +327,7 @@ namespace LNF.Data
             return sw.GetStringBuilder().ToString();
         }
 
-        public static string HtmlFeedContent(DataFeed feed, string key, string format = null, Parameters parameters = null)
+        public string HtmlFeedContent(DataFeed feed, string key, string format = null, Parameters parameters = null)
         {
             bool fullPage = (format == "table") ? false : true;
 
@@ -376,7 +383,7 @@ namespace LNF.Data
             return sb.ToString();
         }
 
-        public static string JsonFeedContent(DataFeed feed, string key, string format = null, Parameters parameters = null)
+        public string JsonFeedContent(DataFeed feed, string key, string format = null, Parameters parameters = null)
         {
             object obj = null;
 
@@ -428,7 +435,7 @@ namespace LNF.Data
             return result;
         }
 
-        public static string IcalFeedContent(DataFeed feed, string key, Parameters parameters = null)
+        public string IcalFeedContent(DataFeed feed, string key, Parameters parameters = null)
         {
             if (string.IsNullOrEmpty(key)) key = "default";
 

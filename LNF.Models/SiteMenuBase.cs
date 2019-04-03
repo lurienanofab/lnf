@@ -11,11 +11,11 @@ namespace LNF.Models
     {
         private IEnumerable<MenuItem> _items;
 
-        public ClientItem Client { get; }
+        public IClient Client { get; }
 
         public string Target { get; set; }
 
-        public SiteMenuBase(IEnumerable<MenuItem> items, ClientItem client, string target)
+        public SiteMenuBase(IEnumerable<MenuItem> items, IClient client, string target)
         {
             _items = items ?? throw new ArgumentNullException("items");
 

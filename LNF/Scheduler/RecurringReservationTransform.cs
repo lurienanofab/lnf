@@ -77,7 +77,7 @@ namespace LNF.Scheduler
             dtOut.Rows.Add(ndr);
         }
 
-        public static void CopyProcessInfo(int recurrenceId, ReservationItem rsv)
+        public static void CopyProcessInfo(int recurrenceId, IReservation rsv)
         {
             var previousRecurrence = GetPreviousRecurrence(recurrenceId, rsv.ReservationID);
 
@@ -106,7 +106,7 @@ namespace LNF.Scheduler
             }
         }
 
-        public static void CopyInvitees(int recurrenceId, ReservationItem rsv)
+        public static void CopyInvitees(int recurrenceId, IReservation rsv)
         {
             var previousRecurrence = GetPreviousRecurrence(recurrenceId, rsv.ReservationID);
 

@@ -12,17 +12,18 @@ namespace LNF.Data
     public class RoomDataCleanGenerator
     {
         private const double MAX_TIME = 8.0;
-        private IEnumerable<CostItem> _costs;
+        private IEnumerable<ICost> _costs;
 
-        protected ICostManager CostManager => ServiceProvider.Current.Use<ICostManager>();
+        protected IProvider Provider { get; }
 
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public Client Client { get; set; }
         public Room Room { get; set; }
         
-        public RoomDataCleanGenerator(DateTime startDate, DateTime endDate, Client client = null, Room room = null)
+        public RoomDataCleanGenerator(IProvider provider, DateTime startDate, DateTime endDate, Client client = null, Room room = null)
         {
+            Provider = provider;
             StartDate = startDate;
             EndDate = endDate;
             Client = client;
@@ -38,10 +39,10 @@ namespace LNF.Data
             return result;
         }
 
-        private IEnumerable<CostItem> GetCurrentCosts()
+        private IEnumerable<ICost> GetCurrentCosts()
         {
             if (_costs == null)
-                _costs = CostManager.FindCosts(new[] { "RoomCost" }, EndDate).Model<CostItem>();
+                _costs = Provider.CostManager.FindCosts(new[] { "RoomCost" }, EndDate).AsQueryable().CreateModels<ICost>();
 
             return _costs;
         }

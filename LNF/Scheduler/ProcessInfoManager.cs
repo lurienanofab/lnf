@@ -7,7 +7,7 @@ namespace LNF.Scheduler
 {
     public class ProcessInfoManager : ManagerBase, IProcessInfoManager
     {
-        public ProcessInfoManager(ISession session) : base(session) { }
+        public ProcessInfoManager(IProvider provider) : base(provider) { }
 
         public IList<Models.Scheduler.ProcessInfoItem> GetProcessInfos(int resourceId)
         {

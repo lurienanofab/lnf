@@ -6,7 +6,7 @@ namespace LNF.CommonTools
 {
     public class ReadMiscDataManager : ManagerBase, IReadMiscDataManager
     {
-        public ReadMiscDataManager(ISession session) : base(session) { }
+        public ReadMiscDataManager(IProvider provider) : base(provider) { }
 
         public DataTable ReadMiscData(DateTime period)
         {

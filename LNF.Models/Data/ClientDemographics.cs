@@ -1,6 +1,6 @@
 ﻿namespace LNF.Models.Data
 {
-    public class ClientDemographics
+    public class ClientDemographics : IClientDemographics
     {
         public int ClientID { get; set; }
         public string UserName { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace LNF.Models.Ordering
 {
-    public class ApproverItem
+    public class ApproverItem : IApprover
     {
         public int ApproverID { get; set; }
         public string ApproverDisplayName { get; set; }

@@ -24,7 +24,7 @@ namespace LNF.Hooks
 
     public class BeforeLogInHookResult : HookResult
     {
-        public ClientItem Client { get; set; }
+        public IClient Client { get; set; }
         public bool IsLoggedIn { get; set; }
     }
 }

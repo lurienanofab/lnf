@@ -16,18 +16,22 @@ namespace LNF.Data
         public bool HasPhysicalAccessPriv { get { return Client.HasPriv(ClientPrivilege.PhysicalAccess); } }
         public bool HasLabUserPriv { get { return Client.HasPriv(ClientPrivilege.LabUser); } }
         public bool HasStoreUserPriv { get { return Client.HasPriv(ClientPrivilege.StoreUser); } }
-        public bool HasActiveAccounts { get { return ServiceProvider.Current.Use<IClientManager>().GetActiveAccountCount(Client.ClientID) > 0; } }
+        public bool HasActiveAccounts { get { return Provider.Data.ClientManager.GetActiveAccountCount(Client.ClientID) > 0; } }
+        public IProvider Provider { get; }
 
         /// <summary>
         /// The reason why access can or cannot be enabled. Set by calling CanEnableAccess()
         /// </summary>
         public string Reason { get; private set; }
 
-        private AccessCheck() { }
-
-        public static AccessCheck Create(ClientItem c)
+        private AccessCheck(IProvider provider)
         {
-            AccessCheck result = new AccessCheck()
+            Provider = provider;
+        }
+
+        public static AccessCheck Create(ClientItem c, IProvider provider)
+        {
+            AccessCheck result = new AccessCheck(provider)
             {
                 Client = c,
                 Reason = null

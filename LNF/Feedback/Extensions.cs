@@ -1,10 +1,7 @@
 ﻿using LNF.Cache;
-using LNF.Data;
 using LNF.Models.Data;
-using LNF.Repository;
 using LNF.Repository.Feedback;
 using LNF.Scheduler;
-using System;
 using System.Linq;
 
 namespace LNF.Feedback
@@ -42,7 +39,7 @@ namespace LNF.Feedback
                 var client = CacheManager.Current.GetClient(issue.ClientID);
                 if (client != null)
                 {
-                    var primary = ServiceProvider.Current.Use<IClientOrgManager>().GetPrimary(client.ClientID);
+                    var primary = ServiceProvider.Current.ClientOrgManager.GetPrimary(client.ClientID);
                     if (primary != null)
                         return primary.Email;
                     else

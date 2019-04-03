@@ -10,7 +10,7 @@ namespace LNF
     public class SiteMenu : SiteMenuBase
     {
 
-        public SiteMenu(ClientItem client, string target) : base(GetMenuItems(), client, target) { }
+        public SiteMenu(IClient client, string target) : base(GetMenuItems(), client, target) { }
 
         public override bool IsKiosk()
         {
@@ -32,7 +32,7 @@ namespace LNF
             return DA.Current.Query<Menu>()
                 .Where(x => x.Active && !x.Deleted)
                 .OrderBy(x => x.SortOrder)
-                .ToList().Model<MenuItem>();
+                .CreateModels<MenuItem>();
         }
     }
 }

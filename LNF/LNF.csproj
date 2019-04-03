@@ -76,10 +76,9 @@
     <Compile Include="Billing\ExternalInvoiceLineItem.cs" />
     <Compile Include="Billing\ExternalInvoiceHeader.cs" />
     <Compile Include="Billing\ExternalInvoiceSummaryItem.cs" />
-    <Compile Include="Billing\IAccountSubsidyManager.cs" />
-    <Compile Include="Billing\IApportionmentManager.cs" />
     <Compile Include="Billing\IBillingTypeManager.cs" />
     <Compile Include="Billing\IToolBillingManager.cs" />
+    <Compile Include="Billing\ProcessManager.cs" />
     <Compile Include="Billing\ReservationDateRange.cs" />
     <Compile Include="Billing\ReservationDurationItem.cs" />
     <Compile Include="Billing\ReservationDurations.cs" />
@@ -110,12 +109,9 @@
     <Compile Include="Data\ClientOrgManager.cs" />
     <Compile Include="Data\CostManager.cs" />
     <Compile Include="Data\DryBoxManager.cs" />
-    <Compile Include="Data\IAccountManager.cs" />
     <Compile Include="Data\IActiveDataItemManager.cs" />
     <Compile Include="Data\IActiveLogManager.cs" />
-    <Compile Include="Data\IChargeTypeManager.cs" />
     <Compile Include="Data\IClientInfoManager.cs" />
-    <Compile Include="Data\IClientManager.cs" />
     <Compile Include="Data\IClientOrgManager.cs" />
     <Compile Include="Data\IClientRemoteManager.cs" />
     <Compile Include="Data\ICostManager.cs" />
@@ -128,6 +124,7 @@
     <Compile Include="Data\NewsManager.cs" />
     <Compile Include="Data\OrgManager.cs" />
     <Compile Include="Data\RoomDataManager.cs" />
+    <Compile Include="Data\RoomManager.cs" />
     <Compile Include="Data\ToolDataManager.cs" />
     <Compile Include="IDependencyResolver.cs" />
     <Compile Include="ItemNotFoundException.cs" />
@@ -347,7 +344,6 @@
     <Compile Include="Repository\Data\DryBoxAssignment.cs" />
     <Compile Include="Repository\Data\DryBoxAssignmentLog.cs" />
     <Compile Include="Repository\Data\DryBoxClient.cs" />
-    <Compile Include="Repository\Data\Enums.cs" />
     <Compile Include="Repository\Data\ErrorLog.cs" />
     <Compile Include="Repository\Data\FeedsLog.cs" />
     <Compile Include="Repository\Data\FundingSource.cs" />
@@ -445,7 +441,6 @@
     <Compile Include="Repository\Scheduler\Building.cs" />
     <Compile Include="Repository\Scheduler\ClientSetting.cs" />
     <Compile Include="Repository\Scheduler\Enums.cs" />
-    <Compile Include="Repository\Scheduler\Extensions.cs" />
     <Compile Include="Repository\Scheduler\GlobalActivityAuth.cs" />
     <Compile Include="Repository\Scheduler\Kiosk.cs" />
     <Compile Include="Repository\Scheduler\Lab.cs" />

@@ -1,5 +1,4 @@
-﻿using LNF.Data;
-using LNF.Models.PhysicalAccess;
+﻿using LNF.Models.PhysicalAccess;
 using LNF.Repository;
 using LNF.Repository.Data;
 using System;
@@ -15,12 +14,7 @@ namespace LNF.CommonTools
     //clean means read from clean table
     public class ReadRoomDataManager : ManagerBase, IReadRoomDataManager
     {
-        protected ICostManager CostManager { get; }
-
-        public ReadRoomDataManager(ISession session, ICostManager costManager) : base(session)
-        {
-            CostManager = costManager;
-        }
+        public ReadRoomDataManager(IProvider provider) : base(provider) { }
 
         //used above and in mscModTIL
         //RoomID and ClientID are passed in because this can be called from an app
@@ -57,7 +51,7 @@ namespace LNF.CommonTools
             ds.Tables.Add("clients");
             ds.Tables.Add("rooms");
 
-            List<Event> result = ServiceProvider.Current.PhysicalAccess.GetEvents(sd, ed, clientId).ToList();
+            List<Event> result = Provider.PhysicalAccess.GetEvents(sd, ed, clientId).ToList();
 
             DataTable dtRaw = ds.Tables["raw"];
             dtRaw.Columns.Add("ClientID", typeof(int));
@@ -75,7 +69,7 @@ namespace LNF.CommonTools
                 dtClients.Rows.Add(id);
 
             var rooms = Session.Query<Room>().Where(x => x.Active).ToArray()
-                .Join(CostManager.FindCosts(new[] { "RoomCost" }, ed), x => x.RoomID, y => y.RecordID, (x, y) => new
+                .Join(Provider.CostManager.FindCosts(new[] { "RoomCost" }, ed), x => x.RoomID, y => y.RecordID, (x, y) => new
                 {
                     x.RoomID,
                     x.RoomName,

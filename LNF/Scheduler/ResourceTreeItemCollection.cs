@@ -104,8 +104,8 @@ namespace LNF.Scheduler
                 ProcessTechName = x.ProcessTechName,
                 ProcessTechDescription = x.ProcessTechDescription,
                 ProcessTechIsActive = x.ProcessTechIsActive,
-                GroupID = x.ProcessTechGroupID,
-                GroupName = x.ProcessTechGroupName,
+                ProcessTechGroupID = x.ProcessTechGroupID,
+                ProcessTechGroupName = x.ProcessTechGroupName,
                 LabID = x.LabID,
                 LabName = x.LabName,
                 LabDisplayName = x.LabDisplayName,
@@ -171,7 +171,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public ClientItem GetCurrentClient(int resourceId)
+        public IClient GetCurrentClient(int resourceId)
         {
             var item = _items.FirstOrDefault(x => x.ResourceID == resourceId);
             if (item == null) return null;

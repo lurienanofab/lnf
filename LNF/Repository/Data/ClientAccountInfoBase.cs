@@ -41,7 +41,7 @@ namespace LNF.Repository.Data
         /// <summary>
         /// The Account number
         /// </summary>
-        public virtual string Number { get; set; }
+        public virtual string AccountNumber { get; set; }
 
         /// <summary>
         /// The Account ShortCode
@@ -91,7 +91,7 @@ namespace LNF.Repository.Data
         /// <summary>
         /// The Account project number - a predefined segment of Number
         /// </summary>
-        public virtual string Project => AccountItem.GetProject(Number);
+        public virtual string Project => AccountItem.GetProject(AccountNumber);
 
         /// <summary>
         /// Indictes if a Account is currently active
@@ -137,5 +137,11 @@ namespace LNF.Repository.Data
         /// The name of a ChargeType
         /// </summary>
         public virtual string AccountTypeName { get; set; }
+
+        public virtual string NameWithShortCode => AccountItem.GetNameWithShortCode(AccountName, ShortCode);
+
+        public virtual string FullAccountName => AccountItem.GetFullAccountName(AccountName, ShortCode, OrgName);
+
+        public virtual bool IsRegularAccountType => AccountItem.GetIsRegularAccountType(AccountTypeID);
     }
 }

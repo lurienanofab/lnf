@@ -1,14 +1,63 @@
-﻿using LNF.Hooks;
+﻿using LNF.Billing;
+using LNF.CommonTools;
+using LNF.Data;
+using LNF.Hooks;
 using LNF.Models;
 using LNF.Models.Billing;
+using LNF.Models.Data;
 using LNF.Models.Mail;
 using LNF.Repository;
+using LNF.Scheduler;
 using System;
 using System.Configuration;
 
 namespace LNF
 {
-    public class ServiceProvider
+    public interface IProvider
+    {
+        IContext Context { get; }
+        IDataAccessService DataAccess { get; }
+        ILogService Log { get; }
+        IControlService Control { get; }
+        IEncryptionService Encryption { get; }
+        ISerializationService Serialization { get; }
+        IScriptingService Scripting { get; }
+        IDataService Data { get; }
+        IBillingService Billing { get; }
+        IMailApi Mail { get; }
+        IPhysicalAccessService PhysicalAccess { get; }
+        ISchedulerService Scheduler { get; }
+        IWorkerService Worker { get; }
+
+        IModelFactory ModelFactory { get; }
+
+        IClientOrgManager ClientOrgManager { get; }
+        IActiveLogManager ActiveLogManager { get; }
+        IActiveDataItemManager ActiveDataItemManager { get; }
+        ICostManager CostManager { get; }
+        IDryBoxManager DryBoxManager { get; }
+
+        IToolBillingManager ToolBillingManager { get; }
+        IBillingTypeManager BillingTypeManager { get; }
+
+        ISchedulerRepository SchedulerRepository { get; }
+        IResourceManager ResourceManager { get; }
+        IReservationManager ReservationManager { get; }
+        IReservationInviteeManager ReservationInviteeManager { get; }
+        IProcessInfoManager ProcessInfoManager { get; }
+        IEmailManager EmailManager { get; }
+
+        IReadRoomDataManager ReadRoomDataManager { get; }
+        IReadToolDataManager ReadToolDataManager { get; }
+        IReadStoreDataManager ReadStoreDataManager { get; }
+        IReadMiscDataManager ReadMiscDataManager { get; }
+        IAdministrativeHelper AdministrativeHelper { get; }
+        string[] Hooks { get; }
+        void BuildUp(object target);
+        bool IsProduction();
+    }
+
+    public class ServiceProvider : IProvider
     {
         private IDependencyResolver _resolver;
 
@@ -18,13 +67,36 @@ namespace LNF
         public IControlService Control => Use<IControlService>();
         public IEncryptionService Encryption => Use<IEncryptionService>();
         public ISerializationService Serialization => Use<ISerializationService>();
+        public IScriptingService Scripting => Use<IScriptingService>();
 
         public IDataService Data => Use<IDataService>();
-        public IBillingApi Billing => Use<IBillingApi>();
+        public IBillingService Billing => Use<IBillingService>();
         public IMailApi Mail => Use<IMailApi>();
         public IPhysicalAccessService PhysicalAccess => Use<IPhysicalAccessService>();
         public ISchedulerService Scheduler => Use<ISchedulerService>();
         public IWorkerService Worker => Use<IWorkerService>();
+
+        public IClientOrgManager ClientOrgManager => Use<IClientOrgManager>();
+        public IActiveLogManager ActiveLogManager => Use<IActiveLogManager>();
+        public IActiveDataItemManager ActiveDataItemManager => Use<IActiveDataItemManager>();
+        public ICostManager CostManager => Use<ICostManager>();
+        public IDryBoxManager DryBoxManager => Use<IDryBoxManager>();
+
+        public IToolBillingManager ToolBillingManager => Use<IToolBillingManager>();
+        public IBillingTypeManager BillingTypeManager => Use<IBillingTypeManager>();
+
+        public ISchedulerRepository SchedulerRepository => Use<ISchedulerRepository>();
+        public IResourceManager ResourceManager => Use<IResourceManager>();
+        public IReservationManager ReservationManager => Use<IReservationManager>();
+        public IReservationInviteeManager ReservationInviteeManager => Use<IReservationInviteeManager>();
+        public IProcessInfoManager ProcessInfoManager => Use<IProcessInfoManager>();
+        public IEmailManager EmailManager => Use<IEmailManager>();
+
+        public IReadRoomDataManager ReadRoomDataManager => Use<IReadRoomDataManager>();
+        public IReadToolDataManager ReadToolDataManager => Use<IReadToolDataManager>();
+        public IReadStoreDataManager ReadStoreDataManager => Use<IReadStoreDataManager>();
+        public IReadMiscDataManager ReadMiscDataManager => Use<IReadMiscDataManager>();
+        public IAdministrativeHelper AdministrativeHelper => Use<IAdministrativeHelper>();
 
         public IModelFactory ModelFactory => Use<IModelFactory>();
 
@@ -33,24 +105,19 @@ namespace LNF
             _resolver = resolver;
         }
 
-        public static ServiceProvider Current { get; set; }
+        public static IProvider Current { get; set; }
 
-        public T Use<T>() => _resolver.GetInstance<T>();
+        private T Use<T>() => _resolver.GetInstance<T>();
 
         public void BuildUp(object target) => _resolver.BuildUp(target);
 
-        public bool IsProduction()
-        {
-            return GetConfigurationSection().Production;
-        }
+        public bool IsProduction() => GetConfigurationSection().Production;
 
-        public string[] Hooks { get { return HookManager.GetHookTypes(); } }
+        public string[] Hooks => HookManager.GetHookTypes();
 
         public static ServiceProviderSection GetConfigurationSection()
         {
-            ServiceProviderSection result = ConfigurationManager.GetSection("lnf/provider") as ServiceProviderSection;
-
-            if (result == null)
+            if (!(ConfigurationManager.GetSection("lnf/provider") is ServiceProviderSection result))
                 throw new InvalidOperationException("The configuration section 'lnf/provider' is missing.");
 
             return result;

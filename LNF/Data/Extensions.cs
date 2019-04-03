@@ -24,12 +24,12 @@ namespace LNF.Data
         /// <summary>
         /// Gets all active Accounts. Accounts are cached for 30 minutes.
         /// </summary>
-        public static IEnumerable<AccountItem> Accounts(this CacheManager cm) => cm.GetValue("Accounts", () => DA.Current.Query<AccountInfo>().Where(x => x.AccountActive && x.OrgActive).CreateModels<AccountItem>(), DateTimeOffset.Now.AddMinutes(30));
+        public static IEnumerable<IAccount> Accounts(this CacheManager cm) => cm.GetValue("Accounts", () => DA.Current.Query<AccountInfo>().Where(x => x.AccountActive && x.OrgActive).CreateModels<IAccount>(), DateTimeOffset.Now.AddMinutes(30));
 
         /// <summary>
         /// Gets one active Account by AccountID. Accounts are cached for 30 minutes.
         /// </summary>
-        public static AccountItem GetAccount(this CacheManager cm, int accountId) => cm.Accounts().FirstOrDefault(x => x.AccountID == accountId);
+        public static IAccount GetAccount(this CacheManager cm, int accountId) => cm.Accounts().FirstOrDefault(x => x.AccountID == accountId);
 
         /// <summary>
         /// Gets all active ClientAccounts. ClientAccounts are cached for 30 minutes.
@@ -85,9 +85,9 @@ namespace LNF.Data
         /// <summary>
         /// Gets all rooms from cache. Using MemoryCache because this data rarely changes.
         /// </summary>
-        public static IEnumerable<RoomItem> Rooms(this CacheManager cm) => cm.GetValue("Rooms", () => DA.Current.Query<Room>().CreateModels<RoomItem>(), DateTimeOffset.Now.AddDays(1));
+        public static IEnumerable<IRoom> Rooms(this CacheManager cm) => cm.GetValue("Rooms", () => DA.Current.Query<Room>().CreateModels<IRoom>(), DateTimeOffset.Now.AddDays(1));
 
-        public static RoomItem GetRoom(this CacheManager cm, int roomId) => cm.Rooms().FirstOrDefault(x => x.RoomID == roomId);
+        public static IRoom GetRoom(this CacheManager cm, int roomId) => cm.Rooms().FirstOrDefault(x => x.RoomID == roomId);
     }
 
     public static class ClientPrivilegeExtenstions

@@ -10,16 +10,7 @@ namespace LNF.Data
 {
     public class ClientRemoteManager : ManagerBase, IClientRemoteManager
     {
-        protected IActiveDataItemManager ActiveDataItemManager { get; }
-        protected IBillingTypeManager BillingTypeManager { get; }
-        protected IToolBillingManager ToolBillingManager { get; }
-
-        public ClientRemoteManager(ISession session, IActiveDataItemManager activeDataItemManager, IBillingTypeManager billingTypeManager, IToolBillingManager toolBillingManager) : base(session)
-        {
-            ActiveDataItemManager = activeDataItemManager;
-            BillingTypeManager = billingTypeManager;
-            ToolBillingManager = toolBillingManager;
-        }
+        public ClientRemoteManager(IProvider provider) : base(provider) { }
 
         public void Enable(ClientRemote item, DateTime period)
         {
@@ -60,7 +51,7 @@ namespace LNF.Data
             DateTime sd = period;
             DateTime ed = period.AddMonths(1);
             var query = Session.Query<ClientRemote>();
-            return ActiveDataItemManager.FindActive(query, x => x.ClientRemoteID, sd, ed);
+            return Provider.ActiveDataItemManager.FindActive(query, x => x.ClientRemoteID, sd, ed);
         }
 
         public ClientRemote Create(int clientId, int remoteClientId, int accountId, DateTime period, out bool success)
@@ -74,7 +65,7 @@ namespace LNF.Data
 
             //check for an existing active ClientRemote record
             var query = Session.Query<ClientRemote>().Where(x => x.Client == client && x.RemoteClient == remoteClient && x.Account == acct);
-            var existing = ActiveDataItemManager.FindActive(query, x => x.ClientRemoteID, sd, ed).FirstOrDefault();
+            var existing = Provider.ActiveDataItemManager.FindActive(query, x => x.ClientRemoteID, sd, ed).FirstOrDefault();
 
             if (existing != null)
             {
@@ -89,10 +80,10 @@ namespace LNF.Data
                 Account = acct,
             };
 
-            ActiveDataItemManager.Enable(cr);
+            Provider.ActiveDataItemManager.Enable(cr);
 
-            BillingType bt = BillingTypeManager.GetBillingType(cr.Client, cr.Account, period);
-            ToolBillingManager.UpdateBillingType(cr.Client.ClientID, cr.Account.AccountID, bt.BillingTypeID, period);
+            BillingType bt = Provider.BillingTypeManager.GetBillingType(cr.Client, cr.Account, period);
+            Provider.ToolBillingManager.UpdateBillingType(cr.Client.ClientID, cr.Account.AccountID, bt.BillingTypeID, period);
             RoomBillingUtility.UpdateBillingType(cr.Client, cr.Account, bt, period);
 
             success = true;
@@ -106,8 +97,8 @@ namespace LNF.Data
             var alogs = Session.Query<ActiveLog>().Where(x => x.TableName == "ClientRemote" && x.Record == clientRemoteId);
             Session.Delete(new[] { cr });
             Session.Delete(alogs);
-            BillingType bt = BillingTypeManager.GetBillingType(cr.Client, cr.Account, period);
-            ToolBillingManager.UpdateBillingType(cr.Client.ClientID, cr.Account.AccountID, bt.BillingTypeID, period);
+            BillingType bt = Provider.BillingTypeManager.GetBillingType(cr.Client, cr.Account, period);
+            Provider.ToolBillingManager.UpdateBillingType(cr.Client.ClientID, cr.Account.AccountID, bt.BillingTypeID, period);
             RoomBillingUtility.UpdateBillingType(cr.Client, cr.Account, bt, period);
         }
     }

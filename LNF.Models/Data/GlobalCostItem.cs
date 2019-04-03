@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Data
 {
-    public class GlobalCostItem
+    public class GlobalCostItem : IGlobalCost
     {
         // [2018-05-18 jg] I took out account name/shortcode and client displayname properties because these caused a lot of extra
         // database calls even when they aren't used. It's better to retrieve them when needed.

@@ -13,15 +13,15 @@ namespace LNF.Repository
         /// <summary>
         /// Gets an ISession instance that uses the current data access context.
         /// </summary>
-        public static ISession Current => ServiceProvider.Current.Use<ISession>();
+        public static ISession Current => ServiceProvider.Current.DataAccess.Session;
 
         /// <summary>
         /// Initiates a new current session. All subsequent data access actions (DA.Current) will be in one transaction which is committed when this instance is disposed.
         /// </summary>
         /// <returns></returns>
-        public static IDisposable StartUnitOfWork() => ServiceProvider.Current.Use<IUnitOfWork>();
+        public static IDisposable StartUnitOfWork() => ServiceProvider.Current.DataAccess.StartUnitOfWork();
 
-        public static ISchedulerRepository SchedulerRepository => ServiceProvider.Current.Use<ISchedulerRepository>();
+        public static ISchedulerRepository SchedulerRepository => ServiceProvider.Current.SchedulerRepository;
 
         /// <summary>
         /// Create a new DataCommand instance.

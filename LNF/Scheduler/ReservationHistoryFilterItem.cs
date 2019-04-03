@@ -5,7 +5,7 @@ namespace LNF.Scheduler
 {
     public class ReservationHistoryFilterItem
     {
-        public ReservationItem Reservation { get; set; }
+        public IReservation Reservation { get; set; }
         public bool IsCanceledForModification { get; set; }
     }
 }

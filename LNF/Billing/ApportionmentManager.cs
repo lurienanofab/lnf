@@ -3,13 +3,12 @@ using LNF.CommonTools;
 using LNF.Data;
 using LNF.Models.Billing;
 using LNF.Models.Billing.Reports;
-using LNF.Models.Mail;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Billing;
 using LNF.Repository.Data;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Text;
 
@@ -17,17 +16,13 @@ namespace LNF.Billing
 {
     public class ApportionmentManager : ManagerBase, IApportionmentManager
     {
-        protected IClientManager ClientManager { get; }
-
-        public ApportionmentManager(ISession session, IClientManager clientManager) : base(session)
-        {
-            ClientManager = clientManager;
-        }
+        public ApportionmentManager(IProvider serviceProvider) : base(serviceProvider) { }
 
         public void CheckClientIssues()
         {
             DateTime period = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            SendMonthlyApportionmentEmails(period);
+            var options = new UserApportionmentReportOptions { Period = period };
+            SendMonthlyApportionmentEmails(options);
         }
 
         public int PopulateRoomApportionData(DateTime period)
@@ -37,11 +32,12 @@ namespace LNF.Billing
                 .Result<int>();
         }
 
-        public IEnumerable<ApportionmentClient> SelectApportionmentClients(DateTime startDate, DateTime endDate)
+        public IEnumerable<IApportionmentClient> SelectApportionmentClients(DateTime startDate, DateTime endDate)
         {
             return Session.NamedQuery("SelectApportionmentClients")
                 .SetParameters(new { StartDate = startDate, EndDate = endDate })
-                .List<ApportionmentClient>();
+                .List<ApportionmentClient>()
+                .CreateModels<IApportionmentClient>();
         }
 
         private string[] GetApportionmentReminderRecipients()
@@ -54,27 +50,27 @@ namespace LNF.Billing
             return gs.SettingValue.Split(',');
         }
 
-        public IEnumerable<UserApportionmentReportEmail> GetMonthlyApportionmentEmails(DateTime period, string message = null)
+        public IEnumerable<UserApportionmentReportEmail> GetMonthlyApportionmentEmails(UserApportionmentReportOptions options)
         {
             var result = new List<UserApportionmentReportEmail>();
 
             string[] ccAddr = GetApportionmentReminderRecipients();
 
-            var query = SelectApportionmentClients(period, period.AddMonths(1));
+            var query = SelectApportionmentClients(options.Period, options.Period.AddMonths(1));
 
             StringBuilder bodyHtml;
 
             var companyName = Utility.GetGlobalSetting("CompanyName");
 
-            foreach (ApportionmentClient ac in query)
+            foreach (IApportionmentClient ac in query)
             {
                 string subj = $"Please apportion your {Utility.GetGlobalSetting("CompanyName")} lab usage time";
 
                 bodyHtml = new StringBuilder();
                 bodyHtml.AppendLine($"{ac.DisplayName}:<br /><br />");
 
-                if (!string.IsNullOrEmpty(message))
-                    bodyHtml.AppendLine($"<p>{message}</p>");
+                if (!string.IsNullOrEmpty(options.Message))
+                    bodyHtml.AppendLine($"<p>{options.Message}</p>");
 
                 bodyHtml.AppendLine($"As can best be determined, you need to apportion your {companyName} lab time. This is necessary because you had access to multiple accounts and have entered one or more {companyName} rooms this billing period.<br /><br />");
                 bodyHtml.AppendLine("This matter must be resolved by the close of the third business day of this month.");
@@ -100,13 +96,13 @@ namespace LNF.Billing
         /// <summary>
         /// Sends clients alerts at the beginning of the month including 1) anti-passback errors in the data, and 2) need to apportion.
         /// </summary>
-        public SendMonthlyApportionmentEmailsProcessResult SendMonthlyApportionmentEmails(DateTime period, string message = null, bool noEmail = false)
+        public SendMonthlyApportionmentEmailsProcessResult SendMonthlyApportionmentEmails(UserApportionmentReportOptions options)
         {
             var result = new SendMonthlyApportionmentEmailsProcessResult();
 
             //With noEmail set to true, nothing happens here. The appropriate users are selected and logged
             //but no email is actually sent. This is for testing/debugging purposes.
-            var emails = GetMonthlyApportionmentEmails(period, message);
+            var emails = GetMonthlyApportionmentEmails(options);
 
             result.ApportionmentClientCount = emails.Count();
 
@@ -114,7 +110,7 @@ namespace LNF.Billing
             {
                 if (e.ToAddress.Length > 0)
                 {
-                    if (!noEmail)
+                    if (!options.NoEmail)
                         SendEmail.Send(0, "LNF.Billing.ApportionmentUtility.SendMonthlyApportionmentEmails", e.Subject, e.Body, e.FromAddress, e.ToAddress, e.CcAddress, e.BccAddress, e.IsHtml);
 
                     // Always increment result even if noEmail == true so we can at least return how many emails would be sent.
@@ -134,13 +130,13 @@ namespace LNF.Billing
         {
             var result = new CheckPassbackViolationsProcessResult();
 
-            int[] clientIds = ServiceProvider.Current.PhysicalAccess.GetPassbackViolations(sd, ed).ToArray();
+            int[] clientIds = Provider.PhysicalAccess.GetPassbackViolations(sd, ed).ToArray();
             result.TotalPassbackViolations = clientIds.Length;
 
             foreach (int id in clientIds)
             {
-                Client client = Session.Single<Client>(id);
-                string recip = ClientManager.PrimaryEmail(client);
+                var client = CacheManager.Current.GetClient(id);
+                string recip = client.Email;
                 string subj = "Lab access data anomaly - please check!";
                 string body = client.DisplayName + ":<br /><br />"
                  + "There appears to have been an error with your record of entrances/exists from "
@@ -157,11 +153,11 @@ namespace LNF.Billing
             return result;
         }
 
-        public decimal GetApportionment(ClientAccount ca, Room room, DateTime period)
+        public decimal GetApportionment(IClientAccount ca, IRoom room, DateTime period)
         {
             if (ca == null) return 0;
             if (room == null) return 0;
-            RoomApportionment appor = Session.Query<RoomApportionment>().FirstOrDefault(x => x.Client == ca.ClientOrg.Client && x.Account == ca.Account && x.Room == room && x.Period == period);
+            RoomApportionment appor = Session.Query<RoomApportionment>().FirstOrDefault(x => x.Client.ClientID == ca.ClientID && x.Account.AccountID == ca.AccountID && x.Room == room && x.Period == period);
             if (appor == null) return 0;
             return appor.ChargeDays;
         }
@@ -174,37 +170,32 @@ namespace LNF.Billing
 
         public int GetMinimumDays(DateTime period, int clientId, int roomId, int orgId)
         {
-            var toolData = Session.Query<ToolData>().Where(x => x.Period == period && x.ClientID == clientId && x.IsActive).ToList();
-            var actDates = toolData.Where(x => IsInRoom(x, roomId) && IsInOrg(x, orgId)).Select(x => x.ActDate).ToList();
-            int result = actDates.Distinct().Count();
+            var query = Session.Query<ToolData>().Where(x => x.Period == period && x.ClientID == clientId && x.IsActive);
+            var toolData = query.CreateModels<IToolData>();
+            var actDates = toolData.Where(x => IsInRoom(x, roomId) && IsInOrg(x, orgId)).Select(x => x.ActDate.ToString("yyyy-MM-dd")).ToList();
+            var result = actDates.Distinct().Count();
             return result;
         }
 
-        public bool IsInOrg(ToolData td, int orgId)
+        public bool IsInOrg(IToolData td, int orgId)
         {
-            // get the account for this td
-            var a = Session.Single<Account>(td.AccountID);
-
-            if (a == null)
-                throw new Exception(string.Format("Cannot find account with AccountID {0}", td.AccountID));
-
             // check if the orgId is a.OrgID
-            return orgId == a.Org.OrgID;
+            return orgId == td.OrgID;
         }
 
-        public bool IsInRoom(ToolData td, int roomId)
+        public bool IsInRoom(IToolData td, int roomId)
         {
             // It is possible that td.RoomID is null, however this hasn't happened since Dec 2007 so it
             // probably won't happen again, but the column does allow nulls.
             if (!td.RoomID.HasValue) return false;
 
-            // Sometimes there is a room (e.g. Conference Room) with a non-null RoomID that does not 
-            // have an entry in the Room table. In this case td.RoomID != roomId.
-            if (!CacheManager.Current.Rooms().Any(x => x.RoomID == td.RoomID.Value))
-                return false;
-
             // get the room for this td
             var r = CacheManager.Current.GetRoom(td.RoomID.Value);
+
+            // Sometimes there is a room (e.g. Conference Room) with a non-null RoomID that does not 
+            // have an entry in the Room table. In this case td.RoomID != roomId.
+            if (r == null)
+                return false;
 
             // check if roomId is either r.RoomID or r.ParentID
             return roomId == r.RoomID || roomId == r.ParentID;

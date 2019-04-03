@@ -11,15 +11,13 @@ namespace LNF.Data
 {
     public static class StoreDataCleanUtility
     {
-        public static IDryBoxManager DryBoxManager => ServiceProvider.Current.Use<IDryBoxManager>();
-
         public static int LoadDryBoxBilling(DateTime sd, DateTime ed)
         {
             int result = 0;
 
             double daysInPeriod = (ed - sd).TotalDays;
 
-            IList<DryBoxAssignment> activeAssignments = DryBoxManager.ActiveAssignments(sd, ed);
+            IList<DryBoxAssignment> activeAssignments = ServiceProvider.Current.DryBoxManager.ActiveAssignments(sd, ed);
 
             if (activeAssignments.Count > 0)
             {

@@ -7,7 +7,7 @@ namespace LNF.Data
 {
     public class RoomDataManager : ManagerBase, IRoomDataManager
     {
-        public RoomDataManager(ISession session) : base(session) { }
+        public RoomDataManager(IProvider provider) : base(provider) { }
 
         public string GetEmail(RoomData item)
         {
