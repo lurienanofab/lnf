@@ -66,12 +66,12 @@ namespace OnlineServices.Api.PhysicalAccess
             return Get<List<int>>("webapi/physical-access/passback-violations", QueryStrings(new { sd = sd.ToString("yyyy-MM-dd"), ed = ed.ToString("yyyy-MM-dd") }));
         }
 
-        public int AddClient(ClientItem c)
+        public int AddClient(IClient c)
         {
             return Post<int>("webapi/physical-access/client/add", c);
         }
 
-        public int EnableAccess(ClientItem c, DateTime? expireOn = null)
+        public int EnableAccess(IClient c, DateTime? expireOn = null)
         {
             ParameterCollection parameters = null;
 
@@ -81,7 +81,7 @@ namespace OnlineServices.Api.PhysicalAccess
             return Post<int>("webapi/physical-access/client/enable", c, parameters);
         }
 
-        public int DisableAccess(ClientItem c, DateTime? expireOn = null)
+        public int DisableAccess(IClient c, DateTime? expireOn = null)
         {
             ParameterCollection parameters = null;
 

@@ -27,12 +27,12 @@ namespace LNF
             return ServiceProvider.Current.Context.GetRequestIsSecureConnection();
         }
 
-        public static IEnumerable<MenuItem> GetMenuItems()
+        public static IEnumerable<IMenu> GetMenuItems()
         {
             return DA.Current.Query<Menu>()
                 .Where(x => x.Active && !x.Deleted)
                 .OrderBy(x => x.SortOrder)
-                .CreateModels<MenuItem>();
+                .CreateModels<IMenu>();
         }
     }
 }

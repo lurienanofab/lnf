@@ -93,6 +93,7 @@
     <Compile Include="Billing\ToolDataCleanItem.cs" />
     <Compile Include="Billing\ToolDataItem.cs" />
     <Compile Include="Billing\UpdateClientBillingResult.cs" />
+    <Compile Include="Data\ChargeTypeItem.cs" />
     <Compile Include="Data\ClientDemographics.cs" />
     <Compile Include="Billing\IBillingService.cs" />
     <Compile Include="Data\GlobalSettingsItem.cs" />
@@ -114,6 +115,7 @@
     <Compile Include="Data\IDepartment.cs" />
     <Compile Include="Data\IFundingSource.cs" />
     <Compile Include="Data\IGlobalCost.cs" />
+    <Compile Include="Data\IMenu.cs" />
     <Compile Include="Data\IOrg.cs" />
     <Compile Include="Data\IOrgType.cs" />
     <Compile Include="Data\IPriv.cs" />
@@ -125,6 +127,8 @@
     <Compile Include="Data\ITechnicalField.cs" />
     <Compile Include="Data\IClientRemote.cs" />
     <Compile Include="Data\ICost.cs" />
+    <Compile Include="Data\RoleItem.cs" />
+    <Compile Include="Data\TechnicalFieldItem.cs" />
     <Compile Include="Data\Utility\AddressItem.cs" />
     <Compile Include="Data\IDataService.cs" />
     <Compile Include="Data\IDryBox.cs" />

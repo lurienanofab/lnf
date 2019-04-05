@@ -61,6 +61,16 @@ namespace LNF.Data
             return result;
         }
 
+        public static ClientPrivilege CalculatePriv(IEnumerable<IPriv> privs)
+        {
+            ClientPrivilege result = 0;
+            if (privs != null)
+            {
+                privs.Select(x => { result |= x.PrivFlag; return x; }).ToList();
+            }
+            return result;
+        }
+
         public static ClientPrivilege CalculatePriv(IEnumerable<string> privs)
         {
             ClientPrivilege result = 0;

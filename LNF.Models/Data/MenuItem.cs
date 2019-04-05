@@ -1,6 +1,6 @@
 ﻿namespace LNF.Models.Data
 {
-    public class MenuItem
+    public class MenuItem : IMenu
     {
         public int MenuID { get; set; }
         public int MenuParentID { get; set; }
@@ -14,6 +14,7 @@
         public int SortOrder { get; set; }
         public bool Active { get; set; }
         public bool Deleted { get; set; }
+        public bool IsVisible(IPrivileged c) => IsVisible(c, MenuPriv);
 
         public static bool IsVisible(IPrivileged c, int menuPriv)
         {

@@ -11,7 +11,7 @@ namespace LNF.Data
     public class AccessCheck
     {
         public ISession Session { get; }
-        public ClientItem Client { get; private set; }
+        public IClient Client { get; private set; }
         public bool IsActive { get { return Client.ClientActive; } }
         public bool HasPhysicalAccessPriv { get { return Client.HasPriv(ClientPrivilege.PhysicalAccess); } }
         public bool HasLabUserPriv { get { return Client.HasPriv(ClientPrivilege.LabUser); } }
@@ -29,7 +29,7 @@ namespace LNF.Data
             Provider = provider;
         }
 
-        public static AccessCheck Create(ClientItem c, IProvider provider)
+        public static AccessCheck Create(IClient c, IProvider provider)
         {
             AccessCheck result = new AccessCheck(provider)
             {

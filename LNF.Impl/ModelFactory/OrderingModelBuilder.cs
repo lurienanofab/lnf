@@ -14,7 +14,7 @@ namespace LNF.Impl.ModelFactory
             var approver = Session.Single<ClientInfo>(source.ApproverID);
             var client = Session.Single<ClientInfo>(source.ClientID);
 
-            var result = CreateModelFrom<ApproverItem>(source);
+            var result = MapFrom<ApproverItem>(source);
             result.ApproverDisplayName = approver != null ? approver.DisplayName : string.Empty;
             result.DisplayName = client != null ? client.DisplayName : string.Empty;
             return result;

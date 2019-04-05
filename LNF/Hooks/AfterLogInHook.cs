@@ -1,6 +1,6 @@
 ﻿using LNF.Models.Data;
-using LNF.Repository.Data;
 using LNF.Repository;
+using LNF.Repository.Data;
 
 namespace LNF.Hooks
 {
@@ -12,24 +12,16 @@ namespace LNF.Hooks
     public class AfterLogInHookContext : HookContext
     {
         private Client _client;
-        private ClientItem _LoggedInClient;
-        private bool _IsKiosk;
 
-        public ClientItem LoggedInClient
-        {
-            get { return _LoggedInClient; }
-        }
+        public IClient LoggedInClient { get; }
 
-        public bool IsKiosk
-        {
-            get { return _IsKiosk; }
-        }
+        public bool IsKiosk { get; }
 
-        public AfterLogInHookContext(ClientItem loggedInClient, bool isKiosk)
+        public AfterLogInHookContext(IClient loggedInClient, bool isKiosk)
         {
             _client = DA.Current.Single<Client>(loggedInClient.ClientID);
-            _LoggedInClient = loggedInClient;
-            _IsKiosk = isKiosk;
+            LoggedInClient = loggedInClient;
+            IsKiosk = isKiosk;
         }
 
         public bool HasTakenSafetyTest()

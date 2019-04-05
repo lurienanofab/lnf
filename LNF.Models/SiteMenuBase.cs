@@ -7,17 +7,18 @@ using System.Linq;
 
 namespace LNF.Models
 {
-    public abstract class SiteMenuBase : IEnumerable<MenuItem>
+    public abstract class SiteMenuBase : IEnumerable<IMenu>
     {
-        private IEnumerable<MenuItem> _items;
+        private IList<IMenu> _items;
 
         public IClient Client { get; }
 
         public string Target { get; set; }
 
-        public SiteMenuBase(IEnumerable<MenuItem> items, IClient client, string target)
+        public SiteMenuBase(IEnumerable<IMenu> items, IClient client, string target)
         {
-            _items = items ?? throw new ArgumentNullException("items");
+            if (items == null) throw new ArgumentNullException("items");
+            else _items = items.ToList();
 
             Client = client ?? throw new ArgumentNullException("client");
 
@@ -33,11 +34,6 @@ namespace LNF.Models
         public abstract string GetLoginUrl();
 
         public abstract bool IsSecureConnection();
-
-        public bool IsVisible(MenuItem item)
-        {
-            return MenuItem.IsVisible(Client, item.MenuPriv);
-        }
 
         public string GetTarget()
         {
@@ -68,10 +64,13 @@ namespace LNF.Models
             var schedServer = prefix + ConfigurationManager.AppSettings["SchedServer"];
 
             foreach (var m in _items.Where(x => x.MenuURL != null))
-                m.MenuURL = m.MenuURL.Replace("{AppServer}", appServer).Replace("{SchedServer}", schedServer);
+            {
+                var url = m.MenuURL.Replace("{AppServer}", appServer).Replace("{SchedServer}", schedServer);
+                m.MenuURL = url;
+            }
         }
 
-        public IEnumerator<MenuItem> GetEnumerator()
+        public IEnumerator<IMenu> GetEnumerator()
         {
             return _items.GetEnumerator();
         }

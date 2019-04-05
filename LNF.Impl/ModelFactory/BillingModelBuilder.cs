@@ -12,7 +12,7 @@ namespace LNF.Impl.ModelFactory
         public IToolData MapToolData(ToolData source)
         {
             var acct = Session.Single<AccountInfo>(source.AccountID);
-            var result = CreateModelFrom<ToolDataItem>(source);
+            var result = MapFrom<ToolDataItem>(source);
             result.OrgID = acct.OrgID;
             return result;
         }
@@ -20,7 +20,7 @@ namespace LNF.Impl.ModelFactory
         public override void AddMaps()
         {
             Map<ToolData, IToolData>(x => MapToolData(x));
-            Map<ApportionmentClient, IApportionmentClient>(x => CreateModelFrom<ApportionmentClientItem>(x));
+            Map<ApportionmentClient, ApportionmentClientItem, IApportionmentClient>();
         }
     }
 }

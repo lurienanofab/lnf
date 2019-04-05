@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 
@@ -19,6 +20,16 @@ namespace LNF.Data
             int result = 0;
 
             foreach (Community c in communites)
+                result |= c.CommunityFlag;
+
+            return result;
+        }
+
+        public static int CalculateFlag(IEnumerable<ICommunity> communites)
+        {
+            int result = 0;
+
+            foreach (ICommunity c in communites)
                 result |= c.CommunityFlag;
 
             return result;

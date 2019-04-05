@@ -45,9 +45,10 @@ namespace LNF.Web.Controls.Navigation
 
             foreach (var pmenu in parents)
             {
-                DropDownMenuItem p = new DropDownMenuItem(pmenu.MenuText, pmenu.MenuURL, DataSource.IsVisible(pmenu));
-                
-                p.CssClass = pmenu.MenuCssClass;
+                DropDownMenuItem p = new DropDownMenuItem(pmenu.MenuText, pmenu.MenuURL, pmenu.IsVisible(DataSource.Client))
+                {
+                    CssClass = pmenu.MenuCssClass
+                };
 
                 if (pmenu.TopWindow)
                     p.Target = "_top";
@@ -60,9 +61,10 @@ namespace LNF.Web.Controls.Navigation
 
                 foreach (var cmenu in children)
                 {
-                    DropDownMenuItem c = new DropDownMenuItem(cmenu.MenuText, cmenu.MenuURL, DataSource.IsVisible(cmenu));
-
-                    c.CssClass = cmenu.MenuCssClass;
+                    DropDownMenuItem c = new DropDownMenuItem(cmenu.MenuText, cmenu.MenuURL, cmenu.IsVisible(DataSource.Client))
+                    {
+                        CssClass = cmenu.MenuCssClass
+                    };
 
                     if (cmenu.TopWindow)
                         c.Target = "_top";

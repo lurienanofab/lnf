@@ -13,24 +13,36 @@ namespace LNF.Impl.ModelFactory
             Session = session;
         }
 
-        protected T CreateModelFrom<T>(object source) where T : new()
+        protected T MapFrom<T>(object source) where T : new()
         {
             var result = new T();
             result.InjectFrom(source);
             return result;
         }
 
-        protected TResult CreateModelFrom<TSource, TResult>(object id)
+        private TResult MapFrom<TProxy, TResult>(object id)
             where TResult : new()
-            where TSource : IDataItem
+            where TProxy : IDataItem
         {
             var result = new TResult();
-            TSource source = Session.Single<TSource>(id);
+            TProxy source = Session.Single<TProxy>(id);
             result.InjectFrom(source);
             return result;
         }
 
         protected void Map<TSource, TResult>(Func<TSource, TResult> fn) => Mapper.AddMap(fn);
+
+        protected void Map<TSource, TConcrete, TResult>() where TConcrete : TResult, new()
+        {
+            Map<TSource, TResult>(x => MapFrom<TConcrete>(x));
+        }
+
+        protected void Map<TSource, TProxy, TConcrete, TResult>(Func<TSource, object> id)
+            where TProxy : IDataItem
+            where TConcrete : TResult, new()
+        {
+            Map<TSource, TResult>(x => MapFrom<TProxy, TConcrete>(id(x)));
+        }
 
         public abstract void AddMaps();
     }

@@ -9,7 +9,7 @@ namespace LNF.Impl.ModelFactory
     {
         public SchedulerModelBuilder(ISession session) : base(session) { }
 
-        private ILab CreateLabModel(Lab source)
+        private ILab MapLab(Lab source)
         {
             int roomId = 0;
             string roomName = string.Empty;
@@ -22,16 +22,16 @@ namespace LNF.Impl.ModelFactory
                 roomDisplayName = source.Room.DisplayName;
             }
 
-            var result = CreateModelFrom<LabItem>(source);
+            var result = MapFrom<LabItem>(source);
             result.RoomID = roomId;
             result.RoomName = roomName;
             result.RoomDisplayName = roomDisplayName;
             return result;
         }
 
-        private IProcessTech CreateProcessTechModel(ProcessTech source)
+        private IProcessTech MapProcessTech(ProcessTech source)
         {
-            var result = CreateModelFrom<ProcessTechItem>(source);
+            var result = MapFrom<ProcessTechItem>(source);
             result.ProcessTechGroupName = source.Group.GroupName;
             result.BuildingID = source.Lab.Building.BuildingID;
             result.BuildingName = source.Lab.Building.BuildingName;
@@ -43,43 +43,45 @@ namespace LNF.Impl.ModelFactory
             return result;
         }
 
-        private IProcessInfoLine CreateProcessInfoLineModel(ProcessInfoLine source)
+        private IProcessInfoLine MapProcessInfoLine(ProcessInfoLine source)
         {
-            var result = CreateModelFrom<ProcessInfoLineItem>(source);
+            var result = MapFrom<ProcessInfoLineItem>(source);
             result.ProcessInfoLineParamID = source.ProcessInfoLineParam.ProcessInfoLineParamID;
             result.ResourceID = source.ProcessInfoLineParam.Resource.ResourceID;
             result.ResourceName = source.ProcessInfoLineParam.Resource.ResourceName;
             return result;
         }
 
-        private IReservationWithInvitees CreateReservationWithInviteesModel(Reservation source)
+        private IReservationWithInvitees MapReservationWithInvitees(Reservation source)
         {
             var info = DA.Current.Single<ReservationInfo>(source.ReservationID);
-            return CreateReservationWithInviteesModel(info);
+            return MapReservationWithInvitees(info);
         }
 
-        private IReservationWithInvitees CreateReservationWithInviteesModel(ReservationInfo source)
+        private IReservationWithInvitees MapReservationWithInvitees(ReservationInfo source)
         {
-            var result = CreateModelFrom<ReservationItemWithInvitees>(source);
+            var result = MapFrom<ReservationItemWithInvitees>(source);
             result.Invitees = DA.Current.Query<ReservationInviteeInfo>().Where(x => x.ReservationID == source.ReservationID).CreateModels<IReservationInvitee>();
             return result;
         }
 
         public override void AddMaps()
         {
-            Map<Building, IBuilding>(x => CreateModelFrom<BuildingItem>(x));
-            Map<Lab, ILab>(x => CreateLabModel(x));
-            Map<ProcessTech, IProcessTech>(x => CreateProcessTechModel(x));
-            Map<Resource, IResource>(x => CreateModelFrom<ResourceInfo, ResourceItem>(x.ResourceID));
-            Map<ResourceInfo, IResource>(x => CreateModelFrom<ResourceItem>(x));
-            Map<Reservation, IReservation>(x => CreateModelFrom<ReservationInfo, ReservationItem>(x.ReservationID));
-            Map<ReservationInfo, IReservation>(x => CreateModelFrom<ReservationItem>(x));
-            Map<Reservation, IReservationWithInvitees>(x => CreateReservationWithInviteesModel(x));
-            Map<ReservationInfo, IReservationWithInvitees>(x => CreateReservationWithInviteesModel(x));
-            Map<ProcessInfo, IProcessInfo>(x => CreateModelFrom<ProcessInfoItem>(x));
-            Map<ProcessInfoLine, IProcessInfoLine>(x => CreateProcessInfoLineModel(x));
-            Map<ResourceClient, IResourceClient>(x => CreateModelFrom<ResourceClientInfo, ResourceClientItem>(x.ResourceClientID));
-            Map<ResourceClientInfo, IResourceClient>(x => CreateModelFrom<ResourceClientItem>(x));
+            Map<Building, BuildingItem, IBuilding>();
+            Map<Lab, ILab>(x => MapLab(x));
+            Map<ProcessTech, IProcessTech>(x => MapProcessTech(x));
+            Map<Resource, ResourceInfo, ResourceItem, IResource>(x => x.ResourceID);
+            Map<ResourceInfo, ResourceItem, IResource>();
+            Map<Reservation, ReservationInfo, ReservationItem, IReservation>(x => x.ReservationID);
+            Map<ReservationInfo, ReservationItem, IReservation>();
+            Map<Reservation, IReservationWithInvitees>(x => MapReservationWithInvitees(x));
+            Map<ReservationInfo, IReservationWithInvitees>(x => MapReservationWithInvitees(x));
+            Map<ProcessInfo, ProcessInfoItem, IProcessInfo>();
+            Map<ProcessInfoLine, IProcessInfoLine>(x => MapProcessInfoLine(x));
+            Map<ResourceClient, ResourceClientInfo, ResourceClientItem, IResourceClient>(x => x.ResourceClientID);
+            Map<ResourceClientInfo, ResourceClientItem, IResourceClient>();
+            Map<ReservationInvitee, ReservationInviteeInfo, ReservationInviteeItem, IReservationInvitee>(x => new ReservationInviteeInfo { ReservationID = x.Reservation.ReservationID, InviteeID = x.Invitee.ClientID });
+            Map<ReservationInviteeInfo, ReservationInviteeItem, IReservationInvitee>();
         }
     }
 }

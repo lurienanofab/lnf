@@ -1,6 +1,7 @@
 ﻿using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
+using System;
 
 namespace LNF.Impl.ModelFactory
 {
@@ -8,16 +9,16 @@ namespace LNF.Impl.ModelFactory
     {
         public DataModelBuilder(ISession session) : base(session) { }
 
-        private IRoom CreateRoomModel(Room source)
+        private IRoom MapRoom(Room source)
         {
-            var result = CreateModelFrom<RoomItem>(source);
+            var result = MapFrom<RoomItem>(source);
             result.RoomDisplayName = source.DisplayName;
             return result;
         }
 
-        private IGlobalCost CreateGlobalCostModel(GlobalCost source)
+        private IGlobalCost MapGlobalCost(GlobalCost source)
         {
-            var result = CreateModelFrom<GlobalCostItem>(source);
+            var result = MapFrom<GlobalCostItem>(source);
             result.AdminID = source.Admin.ClientID;
             result.LabAccountID = source.LabAccount.AccountID;
             result.LabCreditAccountID = source.LabCreditAccount.AccountID;
@@ -25,20 +26,32 @@ namespace LNF.Impl.ModelFactory
             return result;
         }
 
+        private ITechnicalField MapTechnicalField(ClientOrgInfoBase source)
+        {
+            return new TechnicalFieldItem
+            {
+                TechnicalFieldID = source.TechnicalInterestID,
+                TechnicalFieldName = source.TechnicalInterestName
+            };
+        }
+
         public override void AddMaps()
         {
-            Map<Client, IClient>(x => CreateModelFrom<ClientInfo, ClientItem>(x.ClientID));
-            Map<ClientInfo, IClient>(x => CreateModelFrom<ClientItem>(x));
-            Map<ClientOrg, IClient>(x => CreateModelFrom<ClientOrgInfo, ClientItem>(x.ClientOrgID));
-            Map<ClientOrgInfo, IClient>(x => CreateModelFrom<ClientItem>(x));
-            Map<ClientAccount, IClientAccount>(x => CreateModelFrom<ClientAccountInfo, ClientAccountItem>(x.ClientAccountID));
-            Map<ClientAccountInfo, IClientAccount>(x => CreateModelFrom<ClientAccountItem>(x));
-            Map<Org, IOrg>(x => CreateModelFrom<OrgInfo, OrgItem>(x.OrgID));
-            Map<OrgInfo, IOrg>(x => CreateModelFrom<OrgItem>(x));
-            Map<Account, IAccount>(x => CreateModelFrom<AccountInfo, AccountItem>(x.AccountID));
-            Map<AccountInfo, IAccount>(x => CreateModelFrom<AccountItem>(x));
-            Map<Room, IRoom>(x => CreateRoomModel(x));
-            Map<GlobalCost, IGlobalCost>(x => CreateGlobalCostModel(x));
+            Map<Client, ClientInfo, ClientItem, IClient>(x => x.ClientID);
+            Map<ClientInfo, ClientItem, IClient>();
+            Map<ClientOrg, ClientOrgInfo, ClientItem, IClient>(x => x.ClientOrgID);
+            Map<ClientOrgInfo, ClientItem, IClient>();
+            Map<ClientAccount, ClientAccountInfo, ClientAccountItem, IClientAccount>(x => x.ClientAccountID);
+            Map<ClientAccountInfo, ClientAccountItem, IClientAccount>();
+            Map<Org, OrgInfo, OrgItem, IOrg>(x => x.OrgID);
+            Map<OrgInfo, OrgItem, IOrg>();
+            Map<Account, AccountInfo, AccountItem, IAccount>(x => x.AccountID);
+            Map<AccountInfo, AccountItem, IAccount>();
+            Map<Room, IRoom>(x => MapRoom(x));
+            Map<GlobalCost, IGlobalCost>(x => MapGlobalCost(x));
+            Map<ClientOrgInfoBase, ITechnicalField>(x => MapTechnicalField(x));
+            Map<TechnicalField, TechnicalFieldItem, ITechnicalField>();
+            Map<Menu, MenuItem, IMenu>();
         }
     }
 }

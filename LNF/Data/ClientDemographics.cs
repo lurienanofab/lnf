@@ -1,4 +1,5 @@
-﻿using LNF.Repository;
+﻿using LNF.Models.Data;
+using LNF.Repository;
 using LNF.Repository.Data;
 using System;
 
@@ -34,6 +35,19 @@ namespace LNF.Data
                 d: DA.Current.Single<DemDisability>(c.DemDisabilityID));
 
             return result;
+        }
+
+        public static ClientDemographics Create(IClientDemographics demographics)
+        {
+            if (demographics == null)
+                throw new ArgumentNullException("demographics");
+
+            return new ClientDemographics(
+                 c: DA.Current.Single<DemCitizen>(demographics.DemCitizenID),
+                 e: DA.Current.Single<DemEthnic>(demographics.DemEthnicID),
+                 r: DA.Current.Single<DemRace>(demographics.DemRaceID),
+                 g: DA.Current.Single<DemGender>(demographics.DemGenderID),
+                 d: DA.Current.Single<DemDisability>(demographics.DemDisabilityID));
         }
 
         public void Update(Client client)
