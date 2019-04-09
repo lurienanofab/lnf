@@ -6,6 +6,9 @@ using LNF.Models;
 using LNF.Models.Billing;
 using LNF.Models.Data;
 using LNF.Models.Mail;
+using LNF.Models.PhysicalAccess;
+using LNF.Models.Scheduler;
+using LNF.Models.Worker;
 using LNF.Repository;
 using LNF.Scheduler;
 using System;
@@ -13,7 +16,7 @@ using System.Configuration;
 
 namespace LNF
 {
-    public interface IProvider
+    public interface IProvider: Models.IProvider
     {
         IContext Context { get; }
         IDataAccessService DataAccess { get; }
@@ -22,39 +25,27 @@ namespace LNF
         IEncryptionService Encryption { get; }
         ISerializationService Serialization { get; }
         IScriptingService Scripting { get; }
-        IDataService Data { get; }
-        IBillingService Billing { get; }
-        IMailApi Mail { get; }
-        IPhysicalAccessService PhysicalAccess { get; }
-        ISchedulerService Scheduler { get; }
-        IWorkerService Worker { get; }
-
         IModelFactory ModelFactory { get; }
-
         IClientOrgManager ClientOrgManager { get; }
         IActiveLogManager ActiveLogManager { get; }
         IActiveDataItemManager ActiveDataItemManager { get; }
         ICostManager CostManager { get; }
         IDryBoxManager DryBoxManager { get; }
-
         IToolBillingManager ToolBillingManager { get; }
         IBillingTypeManager BillingTypeManager { get; }
-
         ISchedulerRepository SchedulerRepository { get; }
         IResourceManager ResourceManager { get; }
         IReservationManager ReservationManager { get; }
         IReservationInviteeManager ReservationInviteeManager { get; }
         IProcessInfoManager ProcessInfoManager { get; }
         IEmailManager EmailManager { get; }
-
         IReadRoomDataManager ReadRoomDataManager { get; }
         IReadToolDataManager ReadToolDataManager { get; }
         IReadStoreDataManager ReadStoreDataManager { get; }
         IReadMiscDataManager ReadMiscDataManager { get; }
         IAdministrativeHelper AdministrativeHelper { get; }
-        string[] Hooks { get; }
         void BuildUp(object target);
-        bool IsProduction();
+        string[] Hooks { get; }
     }
 
     public class ServiceProvider : IProvider
@@ -71,7 +62,7 @@ namespace LNF
 
         public IDataService Data => Use<IDataService>();
         public IBillingService Billing => Use<IBillingService>();
-        public IMailApi Mail => Use<IMailApi>();
+        public IMailService Mail => Use<IMailService>();
         public IPhysicalAccessService PhysicalAccess => Use<IPhysicalAccessService>();
         public ISchedulerService Scheduler => Use<ISchedulerService>();
         public IWorkerService Worker => Use<IWorkerService>();

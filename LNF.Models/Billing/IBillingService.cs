@@ -14,10 +14,10 @@ namespace LNF.Models.Billing
         IEnumerable<string> UpdateBilling(UpdateBillingArgs args);
         UpdateClientBillingResult UpdateClientBilling(UpdateClientBillingCommand model);
 
-        IReportClient Report { get; }
-        IToolClient Tool { get; }
-        IRoomClient Room { get; }
-        IStoreClient Store { get; }
-        IMiscClient Misc { get; }
+        IReportManager Report { get; }
+        IToolManager Tool { get; }
+        IRoomManager Room { get; }
+        IStoreManager Store { get; }
+        IMiscManager Misc { get; }
     }
 }

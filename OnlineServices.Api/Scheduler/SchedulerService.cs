@@ -6,9 +6,9 @@ using System.Collections.Generic;
 
 namespace OnlineServices.Api.Scheduler
 {
-    public class SchedulerClient : ApiClient, ISchedulerService
+    public class SchedulerService : ApiClient, ISchedulerService
     {
-        public SchedulerClient() : base(GetApiBaseUrl()) { }
+        public SchedulerService() : base(GetApiBaseUrl()) { }
 
         public IEnumerable<ReservationItem> GetReservations(DateTime sd, DateTime ed, int clientId = 0, int resourceId = 0, int activityId = 0, bool? started = null, bool? active = null)
         {

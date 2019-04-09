@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace OnlineServices.Api.Billing
 {
-    public class StoreClient : ApiClient, IStoreClient
+    public class StoreManager : ApiClient, IStoreManager
     {
         public IEnumerable<StoreBillingItem> CreateStoreBilling(DateTime period, int clientId = 0)
         {

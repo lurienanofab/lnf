@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace OnlineServices.Api.Billing
 {
-    public class RoomClient : ApiClient, IRoomClient
+    public class RoomManager : ApiClient, IRoomManager
     {
         public IEnumerable<RoomBillingItem> CreateRoomBilling(DateTime period, int clientId = 0)
         {

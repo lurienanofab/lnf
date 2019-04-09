@@ -1,8 +1,7 @@
-﻿using LNF.Models.Scheduler;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace LNF.Models
+namespace LNF.Models.Scheduler
 {
     public interface ISchedulerService
     {

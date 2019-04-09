@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace LNF.Models.Billing
 {
-    public interface IStoreClient
+    public interface IStoreManager
     {
         IEnumerable<StoreBillingItem> CreateStoreBilling(DateTime period, int clientId = 0);
         IEnumerable<StoreDataItem> CreateStoreData(DateTime period, int clientId = 0, int itemId = 0);

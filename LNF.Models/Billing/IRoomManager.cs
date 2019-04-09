@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace LNF.Models.Billing
 {
-    public interface IRoomClient
+    public interface IRoomManager
     {
         IEnumerable<RoomBillingItem> CreateRoomBilling(DateTime period, int clientId = 0);
         IEnumerable<RoomDataItem> CreateRoomData(DateTime period, int clientId = 0, int roomId = 0);

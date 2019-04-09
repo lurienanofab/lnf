@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Mail
 {
-    public interface IMailApi
+    public interface IMailService
     {
         string Get();
         void SendMessage(SendMessageArgs args);

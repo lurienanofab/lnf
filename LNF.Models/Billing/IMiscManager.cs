@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace LNF.Models.Billing
 {
-    public interface IMiscClient
+    public interface IMiscManager
     {
         MiscBillingChargeItem GetMiscBillingCharge(int expId);
         IEnumerable<MiscBillingChargeItem> GetMiscBillingCharges(DateTime period, int? clientId = null, bool? active = null);

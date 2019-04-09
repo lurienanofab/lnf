@@ -46,6 +46,9 @@
     <Reference Include="RestSharp, Version=106.6.9.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.106.6.9\lib\net452\RestSharp.dll</HintPath>
     </Reference>
+    <Reference Include="SimpleInjector, Version=4.5.1.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.4.5.1\lib\net45\SimpleInjector.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -68,27 +71,30 @@
     <Compile Include="Authorization\Credentials\ClientCredentials.cs" />
     <Compile Include="Authorization\Credentials\RefreshCredentials.cs" />
     <Compile Include="Billing\AccountSubsidyManager.cs" />
+    <Compile Include="Billing\ApportionmentManager.cs" />
     <Compile Include="Billing\BillingService.cs" />
-    <Compile Include="Billing\MiscClient.cs" />
+    <Compile Include="Billing\MiscManager.cs" />
     <Compile Include="Billing\ProcessManager.cs" />
-    <Compile Include="Billing\ReportClient.cs" />
-    <Compile Include="Billing\RoomClient.cs" />
-    <Compile Include="Billing\StoreClient.cs" />
-    <Compile Include="Billing\ToolClient.cs" />
+    <Compile Include="Billing\ReportManager.cs" />
+    <Compile Include="Billing\RoomManager.cs" />
+    <Compile Include="Billing\StoreManager.cs" />
+    <Compile Include="Billing\ToolManager.cs" />
     <Compile Include="Control\ControlClient.cs" />
     <Compile Include="Data\DataApi.cs" />
     <Compile Include="Data\DataService.cs" />
     <Compile Include="Data\FeedClient.cs" />
     <Compile Include="Data\RoomManager.cs" />
     <Compile Include="Inventory\InventoryClient.cs" />
+    <Compile Include="IOC.cs" />
     <Compile Include="JsonNetSerializer.cs" />
-    <Compile Include="Mail\MailApi.cs" />
-    <Compile Include="PhysicalAccess\PhysicalAccessClient.cs" />
+    <Compile Include="Mail\MailService.cs" />
+    <Compile Include="PhysicalAccess\PhysicalAccessService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Scheduler\SchedulerClient.cs" />
+    <Compile Include="Scheduler\SchedulerService.cs" />
     <Compile Include="Scheduler\SchedulerServiceClient.cs" />
+    <Compile Include="ServiceProvider.cs" />
     <Compile Include="Tasks\TasksClient.cs" />
-    <Compile Include="Worker\WorkerClient.cs" />
+    <Compile Include="Worker\WorkerService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

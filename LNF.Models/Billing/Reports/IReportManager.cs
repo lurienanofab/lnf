@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace LNF.Models.Billing.Reports
 {
-    public interface IReportClient
+    public interface IReportManager
     {
         IEnumerable<BillingSummaryItem> GetBillingSummary(DateTime sd, DateTime ed, bool includeRemote = false, int clientId = 0);
         IEnumerable<RegularExceptionItem> GetRegularExceptions(DateTime period, int clientId = 0);

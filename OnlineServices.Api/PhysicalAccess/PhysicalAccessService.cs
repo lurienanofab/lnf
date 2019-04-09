@@ -7,9 +7,9 @@ using System.Collections.Generic;
 
 namespace OnlineServices.Api.PhysicalAccess
 {
-    public class PhysicalAccessClient : ApiClient, IPhysicalAccessService
+    public class PhysicalAccessService : ApiClient, IPhysicalAccessService
     {
-        public PhysicalAccessClient() : base(GetApiBaseUrl()) { }
+        public PhysicalAccessService() : base(GetApiBaseUrl()) { }
 
         public IEnumerable<Badge> GetBadge(int clientId = 0)
         {

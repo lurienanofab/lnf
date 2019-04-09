@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace OnlineServices.Api.Billing
 {
-    public class ReportClient : ApiClient, IReportClient
+    public class ReportManager : ApiClient, IReportManager
     {
         public IEnumerable<BillingSummaryItem> GetBillingSummary(DateTime sd, DateTime ed, bool includeRemote = false, int clientId = 0)
         {

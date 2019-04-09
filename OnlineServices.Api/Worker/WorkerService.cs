@@ -3,9 +3,9 @@ using LNF.Models.Worker;
 
 namespace OnlineServices.Api.Worker
 {
-    public class WorkerClient : ApiClient, IWorkerService
+    public class WorkerService : ApiClient, IWorkerService
     {
-        public WorkerClient() : base(GetApiBaseUrl()) { }
+        public WorkerService() : base(GetApiBaseUrl()) { }
 
         public string Execute(WorkerRequest req)
         {

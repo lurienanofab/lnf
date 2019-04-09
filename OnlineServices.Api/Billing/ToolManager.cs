@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace OnlineServices.Api.Billing
 {
-    public class ToolClient : ApiClient, IToolClient
+    public class ToolManager : ApiClient, IToolManager
     {
         public IEnumerable<ToolBillingItem> CreateToolBilling(DateTime period, int clientId = 0)
         {

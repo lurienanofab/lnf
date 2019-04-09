@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace LNF.Models.Billing
 {
-    public interface IToolClient
+    public interface IToolManager
     {
         IEnumerable<ToolBillingItem> CreateToolBilling(DateTime period, int clientId = 0);
         IEnumerable<ToolBillingItem> CreateToolBilling(int reservationId);

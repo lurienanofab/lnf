@@ -1,6 +1,4 @@
-﻿using LNF.Models.Worker;
-
-namespace LNF.Models
+﻿namespace LNF.Models.Worker
 {
     public interface IWorkerService
     {

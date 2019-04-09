@@ -7,7 +7,7 @@ namespace OnlineServices.Api.Billing
 {
     public class BillingService : ApiClient, IBillingService
     {
-        public BillingService(IAccountSubsidyManager accountSubsidyManager, IProcessManager processManager, IReportClient report, IToolClient tool, IRoomClient room, IStoreClient store, IMiscClient misc, IApportionmentManager apportionmentManager)
+        public BillingService(IAccountSubsidyManager accountSubsidyManager, IProcessManager processManager, IReportManager report, IToolManager tool, IRoomManager room, IStoreManager store, IMiscManager misc, IApportionmentManager apportionmentManager)
         {
             ProcessManager = processManager;
             ApportionmentManager = apportionmentManager;
@@ -39,14 +39,14 @@ namespace OnlineServices.Api.Billing
         public IApportionmentManager ApportionmentManager { get; }
         public IAccountSubsidyManager AccountSubsidyManager { get; }
 
-        public IReportClient Report { get; }
+        public IReportManager Report { get; }
 
-        public IToolClient Tool { get; }
+        public IToolManager Tool { get; }
 
-        public IRoomClient Room { get; }
+        public IRoomManager Room { get; }
 
-        public IStoreClient Store { get; }
+        public IStoreManager Store { get; }
 
-        public IMiscClient Misc { get; }
+        public IMiscManager Misc { get; }
     }
 }

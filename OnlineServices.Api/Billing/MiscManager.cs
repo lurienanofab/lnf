@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace OnlineServices.Api.Billing
 {
-    public class MiscClient : ApiClient, IMiscClient
+    public class MiscManager : ApiClient, IMiscManager
     {
         public MiscBillingChargeItem GetMiscBillingCharge(int expId)
         {

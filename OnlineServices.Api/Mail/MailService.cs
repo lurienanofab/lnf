@@ -4,7 +4,7 @@ using System;
 
 namespace OnlineServices.Api.Mail
 {
-    public class MailApi : ApiClient, IMailApi
+    public class MailService : ApiClient, IMailService
     {
         public string Get()
         {
