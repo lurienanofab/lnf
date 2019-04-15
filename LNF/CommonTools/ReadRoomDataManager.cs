@@ -22,26 +22,14 @@ namespace LNF.CommonTools
 
         //2007-11-08 Wen: The strange thing here is this function will also set a global dataset, so the return data tables are not limited to the raw data
         //from prowatch, but also room data and client data for this month as well.
-        public DataSet ReadRoomDataRaw(DateTime sd, DateTime ed, int clientId = 0)
+        public DataSet ReadRoomDataRaw(DateTime sd, DateTime ed, int clientId = 0, int roomId = 0)
         {
-            var ds = Command()
-                .Timeout(600)
-                .Param("Action", "RoomDataRaw")
-                .Param("sDate", sd)
-                .Param("eDate", ed)
-                .Param("ClientID", clientId > 0, clientId)
-                .FillDataSet("dbo.NexWatch_Select");
-
-            // Three tables are returned:
-            //      0) RoomDataRaw
-            //      1) Client
-            //      2) Room
-
-            ds.Tables[0].TableName = "RoomDataRaw";
-            ds.Tables[1].TableName = "Client";
-            ds.Tables[2].TableName = "Room";
-
-            return ds;
+            using (var reader = new RoomDataImportReader(sd, ed, clientId, roomId))
+            {
+                reader.SelectRoomDataImportItems();
+                var result = reader.AsDataSet();
+                return result;
+            }
         }
 
         public DataSet NewReadRoomDataRaw(DateTime sd, DateTime ed, int clientId = 0)

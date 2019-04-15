@@ -16,7 +16,7 @@ namespace LNF.Data
         public bool HasPhysicalAccessPriv { get { return Client.HasPriv(ClientPrivilege.PhysicalAccess); } }
         public bool HasLabUserPriv { get { return Client.HasPriv(ClientPrivilege.LabUser); } }
         public bool HasStoreUserPriv { get { return Client.HasPriv(ClientPrivilege.StoreUser); } }
-        public bool HasActiveAccounts { get { return Provider.Data.ClientManager.GetActiveAccountCount(Client.ClientID) > 0; } }
+        public bool HasActiveAccounts { get { return Provider.Data.Client.GetActiveAccountCount(Client.ClientID) > 0; } }
         public IProvider Provider { get; }
 
         /// <summary>

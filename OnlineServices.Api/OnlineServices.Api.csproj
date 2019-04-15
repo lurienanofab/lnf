@@ -80,6 +80,7 @@
     <Compile Include="Billing\StoreManager.cs" />
     <Compile Include="Billing\ToolManager.cs" />
     <Compile Include="Control\ControlClient.cs" />
+    <Compile Include="Data\ClientRemoteManager.cs" />
     <Compile Include="Data\DataApi.cs" />
     <Compile Include="Data\DataService.cs" />
     <Compile Include="Data\FeedClient.cs" />
@@ -88,6 +89,9 @@
     <Compile Include="IOC.cs" />
     <Compile Include="JsonNetSerializer.cs" />
     <Compile Include="Mail\MailService.cs" />
+    <Compile Include="OnlineServices\Api\Data\AccountManager.cs" />
+    <Compile Include="OnlineServices\Api\Data\ChargeTypeManager.cs" />
+    <Compile Include="OnlineServices\Api\Data\ClientManager.cs" />
     <Compile Include="PhysicalAccess\PhysicalAccessService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scheduler\SchedulerService.cs" />

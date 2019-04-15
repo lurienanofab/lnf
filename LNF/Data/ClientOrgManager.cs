@@ -35,7 +35,7 @@ namespace LNF.Data
             Provider.ActiveDataItemManager.Disable(item); // normal disable of ClientOrg
 
             // first check for other active ClientOrgs, this one won't be included because it was just disabled
-            bool otherActive = Provider.Data.ClientManager.ClientOrgs(item.Client.ClientID).Any(x => x.ClientOrgActive);
+            bool otherActive = Provider.Data.Client.ClientOrgs(item.Client.ClientID).Any(x => x.ClientOrgActive);
 
             if (!otherActive)
                 Provider.ActiveDataItemManager.Disable(item.Client);

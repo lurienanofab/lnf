@@ -7,6 +7,7 @@ namespace LNF.Models.Billing.Process
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public int ClientID { get; set; }
+        public int RoomID { get; set; }
         public override string ProcessName => "WriteRoomDataClean";
 
         protected override void WriteLog()

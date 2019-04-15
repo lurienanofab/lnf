@@ -18,12 +18,6 @@ using LNF.Models.Scheduler;
 using LNF.Models.Worker;
 using LNF.Repository;
 using LNF.Scheduler;
-using OnlineServices.Api.Billing;
-using OnlineServices.Api.Data;
-using OnlineServices.Api.Mail;
-using OnlineServices.Api.PhysicalAccess;
-using OnlineServices.Api.Scheduler;
-using OnlineServices.Api.Worker;
 using StructureMap;
 using System;
 
@@ -51,24 +45,24 @@ namespace LNF.Impl.DependencyInjection
                 _.For<IEncryptionService>().Singleton().Use<EncryptionService>();
                 _.For<ISerializationService>().Singleton().Use<SerializationService>();
 
-                _.For<IDataService>().Singleton().Use<DataService>();
+                _.For<IDataService>().Singleton().Use<OnlineServices.Api.Data.DataService>();
 
                 // Mail API
-                _.For<IMailService>().Singleton().Use<MailService>();
+                _.For<IMailService>().Singleton().Use<OnlineServices.Api.Mail.MailService>();
 
                 // Billing API
-                _.For<IBillingService>().Singleton().Use<BillingService>();
-                _.For<IAccountSubsidyManager>().Singleton().Use<Billing.AccountSubsidyManager>();
-                _.For<IProcessManager>().Singleton().Use<Billing.ProcessManager>();
-                _.For<IReportManager>().Singleton().Use<ReportManager>();
-                _.For<IToolManager>().Singleton().Use<ToolManager>();
-                _.For<Models.Billing.IRoomManager>().Singleton().Use<OnlineServices.Api.Billing.RoomManager>();
-                _.For<IStoreManager>().Singleton().Use<StoreManager>();
-                _.For<IMiscManager>().Singleton().Use<MiscManager>();
+                _.For<IBillingService>().Singleton().Use<OnlineServices.Api.Billing.BillingService>();
+                _.For<IAccountSubsidyManager>().Singleton().Use<AccountSubsidyManager>();
+                _.For<IProcessManager>().Singleton().Use<ProcessManager>();
+                _.For<IReportManager>().Singleton().Use<OnlineServices.Api.Billing.ReportManager>();
+                _.For<IToolManager>().Singleton().Use<OnlineServices.Api.Billing.ToolManager>();
+                _.For<Models.Billing.IRoomManager>().Singleton().Use<Billing.RoomManager>();
+                _.For<IStoreManager>().Singleton().Use<OnlineServices.Api.Billing.StoreManager>();
+                _.For<IMiscManager>().Singleton().Use<OnlineServices.Api.Billing.MiscManager>();
 
-                _.For<IPhysicalAccessService>().Singleton().Use<PhysicalAccessService>();
-                _.For<ISchedulerService>().Singleton().Use<SchedulerService>();
-                _.For<IWorkerService>().Singleton().Use<WorkerService>();
+                _.For<IPhysicalAccessService>().Singleton().Use<OnlineServices.Api.PhysicalAccess.PhysicalAccessService>();
+                _.For<ISchedulerService>().Singleton().Use<OnlineServices.Api.Scheduler.SchedulerService>();
+                _.For<IWorkerService>().Singleton().Use<OnlineServices.Api.Worker.WorkerService>();
 
                 _.For<IModelFactory>().Singleton().Use<ValueInjecterModelFactory>();
 
@@ -85,7 +79,7 @@ namespace LNF.Impl.DependencyInjection
 
                 _.For<IBillingTypeManager>().Singleton().Use<BillingTypeManager>();
                 _.For<IToolBillingManager>().Singleton().Use<ToolBillingManager>();
-                _.For<IApportionmentManager>().Singleton().Use<LNF.Billing.ApportionmentManager>();
+                _.For<IApportionmentManager>().Singleton().Use<ApportionmentManager>();
 
                 _.For<IReservationManager>().Singleton().Use<ReservationManager>();
                 _.For<IReservationInviteeManager>().Singleton().Use<ReservationInviteeManager>();

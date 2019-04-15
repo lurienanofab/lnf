@@ -54,6 +54,7 @@
     <Compile Include="Billing\IApportionmentManager.cs" />
     <Compile Include="Billing\IApportionmentOrg.cs" />
     <Compile Include="Billing\IMiscManager.cs" />
+    <Compile Include="Billing\IRoomDataImportLog.cs" />
     <Compile Include="Billing\IRoomManager.cs" />
     <Compile Include="Billing\IStoreManager.cs" />
     <Compile Include="Billing\IToolManager.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="Billing\Reports\RegularExceptionItem.cs" />
     <Compile Include="Billing\RoomBillingItem.cs" />
     <Compile Include="Billing\RoomDataCleanItem.cs" />
+    <Compile Include="Billing\RoomDataImportLogItem.cs" />
     <Compile Include="Billing\RoomDataItem.cs" />
     <Compile Include="Billing\StoreBillingItem.cs" />
     <Compile Include="Billing\StoreDataCleanItem.cs" />
@@ -132,6 +134,7 @@
     <Compile Include="Data\Utility\AddressItem.cs" />
     <Compile Include="Data\IDataService.cs" />
     <Compile Include="Data\IDryBox.cs" />
+    <Compile Include="Data\IClientRemoteManager.cs" />
     <Compile Include="IProvider.cs" />
     <Compile Include="Worker\IWorkerService.cs" />
     <Compile Include="PhysicalAccess\IPhysicalAccessService.cs" />

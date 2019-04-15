@@ -16,6 +16,11 @@ namespace OnlineServices.Api.Billing
             return Get<List<RoomDataItem>>("webapi/billing/room/data/create", QueryStrings(new { period, clientId, roomId }));
         }
 
+        public IEnumerable<IRoomDataImportLog> GetImportLogs(DateTime sd, DateTime ed)
+        {
+            return Get<List<RoomDataImportLogItem>>("webapi/billing/room/import-logs", QueryStrings(new { sd, ed }));
+        }
+
         public IEnumerable<RoomBillingItem> GetRoomBilling(DateTime period, int clientId = 0, int roomId = 0)
         {
             return Get<List<RoomBillingItem>>("webapi/billing/room", QueryStrings(new { period, clientId, roomId }));

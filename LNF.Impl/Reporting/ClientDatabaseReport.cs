@@ -91,7 +91,7 @@ namespace LNF.Reporting
                 {
                     Error = "",
                     Client = GetDetailClientInfo(c),
-                    Orgs = GetDetailOrgInfo(Provider.Data.ClientManager.ClientOrgs(c.ClientID).ToList())
+                    Orgs = GetDetailOrgInfo(Provider.Data.Client.ClientOrgs(c.ClientID).ToList())
                 };
                 result.Data = data;
             }
@@ -121,7 +121,7 @@ namespace LNF.Reporting
                         co.Email,
                         Managers = GetDetailManagerInfo(ClientManagerUtility.FindManagers(co.ClientOrgID)),
                         BillingType = GetDetailBillingType(co),
-                        Accounts = GetDetailAccounts(Provider.Data.AccountManager.FindClientAccounts(co.ClientOrgID))
+                        Accounts = GetDetailAccounts(Provider.Data.Account.FindClientAccounts(co.ClientOrgID))
                     };
                     list.Add(item);
                 }

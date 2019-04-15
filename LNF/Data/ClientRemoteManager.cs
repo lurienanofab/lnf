@@ -1,4 +1,5 @@
 ﻿using LNF.Billing;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Billing;
 using LNF.Repository.Data;
@@ -12,11 +13,11 @@ namespace LNF.Data
     {
         public ClientRemoteManager(IProvider provider) : base(provider) { }
 
-        public void Enable(ClientRemote item, DateTime period)
+        public void Enable(int clientRemoteId, DateTime period)
         {
             ActiveLog alog = null;
 
-            IList<ActiveLog> alogs = Session.Query<ActiveLog>().Where(x => x.TableName == item.TableName() && x.Record == item.Record()).ToList();
+            IList<ActiveLog> alogs = Session.Query<ActiveLog>().Where(x => x.TableName == "ClientRemote" && x.Record == clientRemoteId).ToList();
 
             if (alogs.Count > 0)
             {
@@ -36,8 +37,8 @@ namespace LNF.Data
             {
                 alog = new ActiveLog()
                 {
-                    TableName = item.TableName(),
-                    Record = item.Record(),
+                    TableName = "ClientRemote",
+                    Record = clientRemoteId,
                     EnableDate = period,
                     DisableDate = period.AddMonths(1)
                 };
@@ -46,15 +47,15 @@ namespace LNF.Data
             Session.SaveOrUpdate(alog);
         }
 
-        public IEnumerable<ClientRemote> SelectByPeriod(DateTime period)
+        public IEnumerable<IClientRemote> SelectByPeriod(DateTime period)
         {
             DateTime sd = period;
             DateTime ed = period.AddMonths(1);
-            var query = Session.Query<ClientRemote>();
-            return Provider.ActiveDataItemManager.FindActive(query, x => x.ClientRemoteID, sd, ed);
+            var result = Provider.ActiveDataItemManager.FindActive(Session.Query<ClientRemote>(), x => x.ClientRemoteID, sd, ed).CreateModels<IClientRemote>();
+            return result;
         }
 
-        public ClientRemote Create(int clientId, int remoteClientId, int accountId, DateTime period, out bool success)
+        public IClientRemote Create(int clientId, int remoteClientId, int accountId, DateTime period, out bool success)
         {
             DateTime sd = period;
             DateTime ed = period.AddMonths(1);
@@ -70,7 +71,7 @@ namespace LNF.Data
             if (existing != null)
             {
                 success = false;
-                return existing;
+                return existing.CreateModel<IClientRemote>();
             }
 
             ClientRemote cr = new ClientRemote()
@@ -88,7 +89,7 @@ namespace LNF.Data
 
             success = true;
 
-            return cr;
+            return cr.CreateModel<IClientRemote>();
         }
 
         public void Delete(int clientRemoteId, DateTime period)

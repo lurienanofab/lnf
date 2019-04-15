@@ -47,7 +47,7 @@ namespace LNF.Web.Mvc
                     string username = splitter[0];
                     string password = splitter[1];
 
-                    var c = ServiceProvider.Current.Data.ClientManager.Login(username, password);
+                    var c = ServiceProvider.Current.Data.Client.Login(username, password);
                     if (c != null && c.ClientActive)
                         httpContext.User = new GenericPrincipal(new GenericIdentity(c.UserName, "Basic"), null);
                 }

@@ -52,6 +52,8 @@ namespace LNF.Impl.ModelFactory
             Map<ClientOrgInfoBase, ITechnicalField>(x => MapTechnicalField(x));
             Map<TechnicalField, TechnicalFieldItem, ITechnicalField>();
             Map<Menu, MenuItem, IMenu>();
+            Map<ClientRemote, ClientRemoteInfo, ClientRemoteItem, IClientRemote>(x => x.ClientRemoteID);
+            Map<ClientRemoteInfo, ClientRemoteItem, IClientRemote>();
         }
     }
 }

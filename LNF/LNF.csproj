@@ -83,6 +83,7 @@
     <Compile Include="Billing\ReservationDurationItem.cs" />
     <Compile Include="Billing\ReservationDurations.cs" />
     <Compile Include="Billing\RoomBillingUtility.cs" />
+    <Compile Include="Billing\RoomManager.cs" />
     <Compile Include="Billing\ToolBillingManager.cs" />
     <Compile Include="Billing\ToolBillingUtility.cs" />
     <Compile Include="Cache\CacheItemNotFoundException.cs" />
@@ -94,6 +95,7 @@
     <Compile Include="CommonTools\IReadStoreDataManager.cs" />
     <Compile Include="CommonTools\IReadToolDataManager.cs" />
     <Compile Include="CommonTools\ProcessBase.cs" />
+    <Compile Include="CommonTools\RoomDataImportReader.cs" />
     <Compile Include="CommonTools\WriteRoomDataCleanProcess.cs" />
     <Compile Include="CommonTools\WriteStoreDataCleanProcess.cs" />
     <Compile Include="CommonTools\WriteToolDataCleanProcess.cs" />
@@ -113,7 +115,6 @@
     <Compile Include="Data\IActiveLogManager.cs" />
     <Compile Include="Data\IClientInfoManager.cs" />
     <Compile Include="Data\IClientOrgManager.cs" />
-    <Compile Include="Data\IClientRemoteManager.cs" />
     <Compile Include="Data\ICostManager.cs" />
     <Compile Include="Data\IDataRepository.cs" />
     <Compile Include="Data\IDryBoxManager.cs" />
@@ -166,6 +167,7 @@
     <Compile Include="Reporting\ReportGenerator.cs" />
     <Compile Include="Repository\Billing\Extensions.cs" />
     <Compile Include="Repository\Billing\MiscBillingCharge.cs" />
+    <Compile Include="Repository\Billing\RoomDataImportLog.cs" />
     <Compile Include="Repository\IManager.cs" />
     <Compile Include="Repository\ManagerBase.cs" />
     <Compile Include="Repository\Bytes.cs" />

@@ -25,6 +25,7 @@ namespace LNF.CommonTools
         public DateTime StartDate { get; }
         public DateTime EndDate { get; }
         public int ClientID { get; }
+        public int RoomID { get; set; }
 
         private DataSet _ds;
 
@@ -34,15 +35,17 @@ namespace LNF.CommonTools
             {
                 StartDate = StartDate,
                 EndDate = EndDate,
-                ClientID = ClientID
+                ClientID = ClientID,
+                RoomID = RoomID
             };
         }
 
-        public WriteRoomDataCleanProcess(DateTime sd, DateTime ed, int clientId = 0)
+        public WriteRoomDataCleanProcess(DateTime sd, DateTime ed, int clientId = 0, int roomId = 0)
         {
             StartDate = sd;
             EndDate = ed;
             ClientID = clientId;
+            RoomID = roomId;
         }
 
         public override int DeleteExisting()
@@ -53,12 +56,13 @@ namespace LNF.CommonTools
                 .Param("sDate", StartDate)
                 .Param("eDate", EndDate)
                 .Param("ClientID", ClientID > 0, ClientID)
+                .Param("RoomID", RoomID > 0, RoomID)
                 .ExecuteNonQuery("dbo.RoomDataClean_Delete").Value;
         }
 
         public override DataTable Extract()
         {
-            _ds = ReadData.Room.ReadRoomDataRaw(StartDate, EndDate, ClientID);
+            _ds = ReadData.Room.ReadRoomDataRaw(StartDate, EndDate, ClientID, RoomID);
             return _ds.Tables["RoomDataRaw"];
         }
 
@@ -160,14 +164,14 @@ namespace LNF.CommonTools
 
             //now, remove all rows that occurred in the past day - can happen if first entry is PB error
             //also remove any entries that are in the future
-            fdr = dtTransform.Select($"(EntryDT < '{StartDate}' AND ExitDT < '{StartDate}') OR ExitDT > '{DateTime.Now}'");
+            fdr = dtTransform.Select($"(EntryDT < #{StartDate:yyyy-MM-dd HH:mm:ss}# AND ExitDT < #{StartDate:yyyy-MM-dd HH:mm:ss}#) OR ExitDT > #{DateTime.Now:yyyy-MM-dd HH:mm:ss}#");
             for (int i = 0; i < fdr.Length; i++)
             {
                 dtTransform.Rows.Remove(fdr[i]);
             }
 
             //remove all rows that begin or end on either boundary and whose duration is maxtime
-            fdr = dtTransform.Select($"(EntryDT = '{StartDate}' OR ExitDT = '{EndDate}') AND Duration = {MaxTime}");
+            fdr = dtTransform.Select($"(EntryDT = #{StartDate:yyyy-MM-dd HH:mm:ss}# OR ExitDT = #{EndDate:yyyy-MM-dd HH:mm:ss}#) AND Duration = {MaxTime}");
             for (int i = 0; i < fdr.Length; i++)
             {
                 dtTransform.Rows.Remove(fdr[i]);
@@ -460,5 +464,27 @@ namespace LNF.CommonTools
             dr["RoomID"] = roomId;
             return dr;
         }
-    }
+
+        private void InsertPreviousInEvents(DataTable dt, DataTable dtRooms, DateTime sd, DateTime ed)
+        {
+            // need the min event for each client/room that is not 'Local Grant - IN'
+
+            var group = dt.AsEnumerable()
+                .Where(x => x.RowState == DataRowState.Unchanged && x.Field<DateTime>("EventDate") >= sd && x.Field<DateTime>("EventDate") < ed && x.Field<bool>("PassbackRoom"))
+                .GroupBy(x => new { ClientID = x.Field<int>("ClientID"), RoomName = x.Field<string>("RoomName") })
+                .Select(g => new
+                {
+                    g.Key.ClientID,
+                    g.Key.RoomName,
+                    MinEventDate = g.Min(x => x.Field<DateTime>("EventDate")),
+                    MinEventDesc = g.First(z =>
+                        z.Field<int>("ClientID") == g.Key.ClientID
+                        && z.Field<string>("RoomName") == g.Key.RoomName
+                        && z.Field<DateTime>("EventDate") == g.Min(m => m.Field<DateTime>("EventDate"))).Field<string>("EventDescription")
+                })
+                .ToList();
+
+            group.OrderBy(x => x.ClientID).ThenBy(x => x.RoomName).ThenBy(x => x.MinEventDate); ;
+        }
+        }
 }

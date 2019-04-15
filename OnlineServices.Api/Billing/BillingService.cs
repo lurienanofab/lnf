@@ -9,9 +9,9 @@ namespace OnlineServices.Api.Billing
     {
         public BillingService(IAccountSubsidyManager accountSubsidyManager, IProcessManager processManager, IReportManager report, IToolManager tool, IRoomManager room, IStoreManager store, IMiscManager misc, IApportionmentManager apportionmentManager)
         {
-            ProcessManager = processManager;
-            ApportionmentManager = apportionmentManager;
-            AccountSubsidyManager = accountSubsidyManager;
+            Process = processManager;
+            Apportionment = apportionmentManager;
+            AccountSubsidy = accountSubsidyManager;
             
             Report = report;
             Tool = tool;
@@ -35,9 +35,9 @@ namespace OnlineServices.Api.Billing
             return Post<UpdateClientBillingResult>("webapi/billing/update-client", model);
         }
 
-        public IProcessManager ProcessManager { get; }
-        public IApportionmentManager ApportionmentManager { get; }
-        public IAccountSubsidyManager AccountSubsidyManager { get; }
+        public IProcessManager Process { get; }
+        public IApportionmentManager Apportionment { get; }
+        public IAccountSubsidyManager AccountSubsidy { get; }
 
         public IReportManager Report { get; }
 

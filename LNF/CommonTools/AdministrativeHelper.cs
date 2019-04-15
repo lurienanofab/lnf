@@ -17,7 +17,7 @@ namespace LNF.CommonTools
 
         public IEnumerable<string> GetEmailListByPrivilege(ClientPrivilege privs)
         {
-            var clients = Provider.Data.ClientManager.FindByPrivilege(privs);
+            var clients = Provider.Data.Client.FindByPrivilege(privs);
             IEnumerable<string> result = clients.Select(c => c.Email);
             return result;
         }

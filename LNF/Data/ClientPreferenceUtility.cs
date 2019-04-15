@@ -40,7 +40,7 @@ namespace LNF.Data
         {
             if (accounts == null)
             {
-                accounts = Provider.Data.ClientManager.ActiveAccounts(client.ClientID);
+                accounts = Provider.Data.Client.ActiveAccounts(client.ClientID);
             }
 
             if (accounts == null) return null;

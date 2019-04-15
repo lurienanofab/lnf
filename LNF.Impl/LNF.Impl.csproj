@@ -118,6 +118,7 @@
     <Compile Include="DependencyInjection\IIOC.cs" />
     <Compile Include="DependencyInjection\Web\IOC.cs" />
     <Compile Include="Mappings\Billing\MiscBillingChargeMap.cs" />
+    <Compile Include="Mappings\Billing\RoomDataImportLogMap.cs" />
     <Compile Include="Mappings\Ordering\StoreManagerReportItemMap.cs" />
     <Compile Include="Mappings\Scheduler\ReservationInviteeInfoMap.cs" />
     <Compile Include="ModelFactory\BillingModelBuilder.cs" />

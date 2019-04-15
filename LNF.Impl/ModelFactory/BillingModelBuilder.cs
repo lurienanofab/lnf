@@ -21,6 +21,7 @@ namespace LNF.Impl.ModelFactory
         {
             Map<ToolData, IToolData>(x => MapToolData(x));
             Map<ApportionmentClient, ApportionmentClientItem, IApportionmentClient>();
+            Map<RoomDataImportLog, RoomDataImportLogItem, IRoomDataImportLog>();
         }
     }
 }

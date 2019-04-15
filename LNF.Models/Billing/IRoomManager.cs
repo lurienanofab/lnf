@@ -10,5 +10,6 @@ namespace LNF.Models.Billing
         IEnumerable<RoomBillingItem> GetRoomBilling(DateTime period, int clientId = 0, int roomId = 0);
         IEnumerable<RoomDataItem> GetRoomData(DateTime period, int clientId = 0, int roomId = 0);
         IEnumerable<RoomDataCleanItem> GetRoomDataClean(DateTime sd, DateTime ed, int clientId = 0, int roomId = 0);
+        IEnumerable<IRoomDataImportLog> GetImportLogs(DateTime sd, DateTime ed);
     }
 }

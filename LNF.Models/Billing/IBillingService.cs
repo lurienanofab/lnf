@@ -6,18 +6,16 @@ namespace LNF.Models.Billing
 {
     public interface IBillingService
     {
-        IProcessManager ProcessManager { get; }
-        IApportionmentManager ApportionmentManager { get; }
-        IAccountSubsidyManager AccountSubsidyManager { get; }
-        
-        string Get();
-        IEnumerable<string> UpdateBilling(UpdateBillingArgs args);
-        UpdateClientBillingResult UpdateClientBilling(UpdateClientBillingCommand model);
-
+        IProcessManager Process { get; }
+        IApportionmentManager Apportionment { get; }
+        IAccountSubsidyManager AccountSubsidy { get; }
         IReportManager Report { get; }
         IToolManager Tool { get; }
         IRoomManager Room { get; }
         IStoreManager Store { get; }
         IMiscManager Misc { get; }
+
+        IEnumerable<string> UpdateBilling(UpdateBillingArgs args);
+        UpdateClientBillingResult UpdateClientBilling(UpdateClientBillingCommand model);
     }
 }

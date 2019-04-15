@@ -7,10 +7,11 @@ namespace LNF.Models.Data
 {
     public interface IDataService
     {
-        IClientManager ClientManager { get; }
-        IAccountManager AccountManager { get; }
-        IChargeTypeManager ChargeTypeManager { get; }
-        IRoomManager RoomManager { get; }
+        IClientManager Client { get; }
+        IAccountManager Account { get; }
+        IChargeTypeManager ChargeType { get; }
+        IRoomManager Room { get; }
+        IClientRemoteManager ClientRemote { get; }
 
         // Clients
         IEnumerable<IClient> GetClients(int limit, int skip = 0);

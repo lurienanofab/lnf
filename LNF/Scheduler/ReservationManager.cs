@@ -26,7 +26,7 @@ namespace LNF.Scheduler
             if (item.ActivityAccountType == ActivityAccountType.Reserver || item.ActivityAccountType == ActivityAccountType.Both)
             {
                 //Load reserver's accounts
-                result = Provider.Data.ClientManager.ActiveClientAccounts(item.ClientID, sd, ed).ToList();
+                result = Provider.Data.Client.ActiveClientAccounts(item.ClientID, sd, ed).ToList();
             }
 
             if (item.ActivityAccountType == ActivityAccountType.Invitee || item.ActivityAccountType == ActivityAccountType.Both)
@@ -34,7 +34,7 @@ namespace LNF.Scheduler
                 //Loads each of the invitee's accounts
                 foreach (var ri in GetInvitees(item.ReservationID))
                 {
-                    var temp = Provider.Data.ClientManager.ActiveClientAccounts(ri.InviteeID, sd, ed);
+                    var temp = Provider.Data.Client.ActiveClientAccounts(ri.InviteeID, sd, ed);
 
                     if (result == null)
                         result = temp.ToList();

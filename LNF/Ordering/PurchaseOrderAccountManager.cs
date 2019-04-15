@@ -13,7 +13,7 @@ namespace LNF.Ordering
         public IEnumerable<IAccount> AvailabePurchaseOrderAccounts(IClient client)
         {
             var accounts = GetAccounts(client);
-            var activeAccounts = Provider.Data.ClientManager.ActiveAccounts(client.ClientID);
+            var activeAccounts = Provider.Data.Client.ActiveAccounts(client.ClientID);
             var result = activeAccounts.Where(acct => !accounts.Any(x => x.AccountID == acct.AccountID));
             return result;
         }

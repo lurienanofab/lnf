@@ -10,17 +10,19 @@ namespace OnlineServices.Api.Data
 {
     public class DataService : ApiClient, IDataService
     {
-        public IClientManager ClientManager { get; }
-        public IAccountManager AccountManager { get; }
-        public IChargeTypeManager ChargeTypeManager { get; set; }
-        public IRoomManager RoomManager { get; set; }
+        public IClientManager Client { get; }
+        public IAccountManager Account { get; }
+        public IChargeTypeManager ChargeType { get; set; }
+        public IRoomManager Room { get; set; }
+        public IClientRemoteManager ClientRemote { get; set; }
 
-        public DataService(IClientManager clientManager, IAccountManager accountManager, IChargeTypeManager chargeTypeManager, IRoomManager roomManager) : base(GetApiBaseUrl())
+        public DataService(IClientManager clientManager, IAccountManager accountManager, IChargeTypeManager chargeTypeManager, IRoomManager roomManager, IClientRemoteManager clientRemote) : base(GetApiBaseUrl())
         {
-            ClientManager = clientManager;
-            AccountManager = accountManager;
-            ChargeTypeManager = chargeTypeManager;
-            RoomManager = roomManager;
+            Client = clientManager;
+            Account = accountManager;
+            ChargeType = chargeTypeManager;
+            Room = roomManager;
+            ClientRemote = clientRemote;
         }
 
         public IEnumerable<IClient> GetClients(int limit, int skip = 0)
