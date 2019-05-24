@@ -1,7 +1,6 @@
 ﻿using LNF.Cache;
 using LNF.Models.Data;
 using LNF.Models.Scheduler;
-using LNF.Repository.Data;
 using LNF.Scheduler;
 using System;
 using System.Collections.Generic;
@@ -80,8 +79,7 @@ namespace LNF.Repository.Scheduler
 
         public override bool Equals(object obj)
         {
-            var item = obj as ResourceTree;
-            if (item == null) return false;
+            if (!(obj is ResourceTree item)) return false;
             return item.ResourceID == ResourceID && item.ClientID == ClientID;
         }
 
@@ -92,7 +90,7 @@ namespace LNF.Repository.Scheduler
 
         public override string ToString()
         {
-            return ResourceItem.GetDisplayName(ResourceName, ResourceID);
+            return ResourceItem.GetResourceDisplayName(ResourceName, ResourceID);
         }
 
         public virtual IEnumerable<ResourceClientInfo> GetToolEngineers()

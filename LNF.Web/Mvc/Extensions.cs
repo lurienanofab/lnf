@@ -27,7 +27,7 @@ namespace LNF.Web.Mvc
             if (helper.ViewContext.HttpContext.Session["SiteMenu"] == null)
                 helper.ViewContext.HttpContext.Session["SiteMenu"] = WebUtility.GetSiteMenu(client.ClientID);
 
-            return new HtmlString(helper.ViewContext.HttpContext.Session["SiteMenu"].ToString());
+            return new HtmlString(Convert.ToString(helper.ViewContext.HttpContext.Session["SiteMenu"]));
         }
 
         public static IHtmlString BootstrapMenu(this HtmlHelper helper, IEnumerable<DropDownMenuItem> items, string logoUrl = "", object htmlAttributes = null)

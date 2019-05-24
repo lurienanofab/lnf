@@ -1,4 +1,5 @@
 ﻿using LNF.Models.Billing;
+using LNF.Models.Billing.Reports;
 using LNF.Repository;
 using LNF.Repository.Billing;
 using LNF.Repository.Data;
@@ -22,6 +23,13 @@ namespace LNF.Impl.ModelFactory
             Map<ToolData, IToolData>(x => MapToolData(x));
             Map<ApportionmentClient, ApportionmentClientItem, IApportionmentClient>();
             Map<RoomDataImportLog, RoomDataImportLogItem, IRoomDataImportLog>();
+            Map<BillingType, BillingTypeItem, IBillingType>();
+            Map<RoomBilling, RoomBillingItem, Models.Billing.IRoomBilling>();
+            Map<RoomBillingTemp, RoomBillingItem, Models.Billing.IRoomBilling>();
+            Map<ToolBilling, ToolBillingItem, Models.Billing.IToolBilling>();
+            Map<ToolBillingTemp, ToolBillingItem, Models.Billing.IToolBilling>();
+            Map<MiscBillingCharge, MiscBillingChargeItem, IMiscBillingCharge>();
+            Map<RegularException, RegularExceptionItem, IRegularException>();
         }
     }
 }

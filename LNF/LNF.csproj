@@ -67,8 +67,6 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Billing\AccountSubsidyManager.cs" />
-    <Compile Include="Billing\BillingTypeManager.cs" />
     <Compile Include="Billing\Extensions.cs" />
     <Compile Include="Billing\ExternalInvoiceUsage.cs" />
     <Compile Include="Billing\ExternalInvoiceManager.cs" />
@@ -76,15 +74,10 @@
     <Compile Include="Billing\ExternalInvoiceLineItem.cs" />
     <Compile Include="Billing\ExternalInvoiceHeader.cs" />
     <Compile Include="Billing\ExternalInvoiceSummaryItem.cs" />
-    <Compile Include="Billing\IBillingTypeManager.cs" />
-    <Compile Include="Billing\IToolBillingManager.cs" />
-    <Compile Include="Billing\ProcessManager.cs" />
     <Compile Include="Billing\ReservationDateRange.cs" />
     <Compile Include="Billing\ReservationDurationItem.cs" />
     <Compile Include="Billing\ReservationDurations.cs" />
     <Compile Include="Billing\RoomBillingUtility.cs" />
-    <Compile Include="Billing\RoomManager.cs" />
-    <Compile Include="Billing\ToolBillingManager.cs" />
     <Compile Include="Billing\ToolBillingUtility.cs" />
     <Compile Include="Cache\CacheItemNotFoundException.cs" />
     <Compile Include="Cache\MemoryCacheHackExtenstions.cs" />
@@ -102,30 +95,10 @@
     <Compile Include="CommonTools\IAdministrativeHelper.cs" />
     <Compile Include="CommonTools\IReadRoomDataManager.cs" />
     <Compile Include="Control\IService.cs" />
-    <Compile Include="Data\AccountManager.cs" />
-    <Compile Include="Data\ActiveDataItemManager.cs" />
-    <Compile Include="Data\ActiveLogManager.cs" />
-    <Compile Include="Data\ChargeTypeManager.cs" />
-    <Compile Include="Data\ClientInfoManager.cs" />
-    <Compile Include="Data\ClientManager.cs" />
-    <Compile Include="Data\ClientOrgManager.cs" />
-    <Compile Include="Data\CostManager.cs" />
-    <Compile Include="Data\DryBoxManager.cs" />
-    <Compile Include="Data\IActiveDataItemManager.cs" />
-    <Compile Include="Data\IActiveLogManager.cs" />
-    <Compile Include="Data\IClientInfoManager.cs" />
-    <Compile Include="Data\IClientOrgManager.cs" />
-    <Compile Include="Data\ICostManager.cs" />
-    <Compile Include="Data\IDataRepository.cs" />
-    <Compile Include="Data\IDryBoxManager.cs" />
-    <Compile Include="Data\INewsManager.cs" />
-    <Compile Include="Data\IOrgManager.cs" />
     <Compile Include="Data\IRoomDataManager.cs" />
     <Compile Include="Data\IToolDataManager.cs" />
     <Compile Include="Data\NewsManager.cs" />
-    <Compile Include="Data\OrgManager.cs" />
     <Compile Include="Data\RoomDataManager.cs" />
-    <Compile Include="Data\RoomManager.cs" />
     <Compile Include="Data\ToolDataManager.cs" />
     <Compile Include="IDependencyResolver.cs" />
     <Compile Include="ItemNotFoundException.cs" />
@@ -136,7 +109,6 @@
     <Compile Include="CommonTools\BillingDataProcessStep1.cs" />
     <Compile Include="Control\ErrorResponse.cs" />
     <Compile Include="Data\ClientAccountInfoUtility.cs" />
-    <Compile Include="Data\ClientDemographics.cs" />
     <Compile Include="Data\ClientEqualityComparer.cs" />
     <Compile Include="Data\ClientManagerUtility.cs" />
     <Compile Include="Data\ClientOrgInfoUtility.cs" />
@@ -162,7 +134,6 @@
     <Compile Include="Ordering\IPurchaseOrderAccountManager.cs" />
     <Compile Include="Ordering\PurchaseOrderAccountManager.cs" />
     <Compile Include="PhysicalAccess\PhysicalAccessUtility.cs" />
-    <Compile Include="Reporting\ClientItemUtility.cs" />
     <Compile Include="Reporting\ManagerUsageSummaryItem.cs" />
     <Compile Include="Reporting\ReportGenerator.cs" />
     <Compile Include="Repository\Billing\Extensions.cs" />
@@ -250,15 +221,12 @@
     <Compile Include="DataTables\Response.cs" />
     <Compile Include="DataTables\Search.cs" />
     <Compile Include="DataTables\SortColumn.cs" />
-    <Compile Include="Data\ClientRemoteManager.cs" />
     <Compile Include="Data\AccessCheck.cs" />
     <Compile Include="CommonTools\Rooms.cs" />
     <Compile Include="DefaultContext.cs" />
     <Compile Include="Authorization.cs" />
-    <Compile Include="Billing\ApportionmentManager.cs" />
     <Compile Include="Billing\ClientOrgBillingTypeLogUtility.cs" />
     <Compile Include="Billing\FinancialManagerUtility.cs" />
-    <Compile Include="Billing\SubLineItem.cs" />
     <Compile Include="Billing\SubsidyUtility.cs" />
     <Compile Include="ILogService.cs" />
     <Compile Include="Inventory\InventoryLocationUtility.cs" />
@@ -516,7 +484,6 @@
     <Compile Include="Scheduler\ResourceClientInfoUtility.cs" />
     <Compile Include="Scheduler\ResourceCost.cs" />
     <Compile Include="Scheduler\OnTheFlyUtility.cs" />
-    <Compile Include="Data\AccountChartFields.cs" />
     <Compile Include="Data\AddressItem.cs" />
     <Compile Include="Data\ClientAccountMatrix\Matrix.cs" />
     <Compile Include="Data\ClientAccountMatrix\MatrixAccount.cs" />
@@ -626,8 +593,8 @@
     <Compile Include="Scripting\Parameters.cs" />
     <Compile Include="Service\JobManager.cs" />
     <Compile Include="Service\ServiceJob.cs" />
-    <Compile Include="SiteMenu.cs" />
     <Compile Include="Inventory\ItemUtility.cs" />
+    <Compile Include="SiteMenu.cs" />
     <Compile Include="Store\PriceUtility.cs" />
     <Compile Include="Store\StoreOrderDetailUtility.cs" />
     <Compile Include="Store\StoreOrderUtility.cs" />

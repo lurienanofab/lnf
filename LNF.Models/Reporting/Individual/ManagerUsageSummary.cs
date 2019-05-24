@@ -15,13 +15,7 @@ namespace LNF.Models.Reporting.Individual
         public IEnumerable<ManagerUsageSummaryClient> Clients { get; set; }
         public bool ShowSubsidyColumn { get; set; }
 
-        public bool HasData
-        {
-            get
-            {
-                return Accounts != null && Accounts.Count() > 0;
-            }
-        }
+        public bool HasData => Accounts != null && Accounts.Count() > 0;
 
         public double TotalNetCharge
         {

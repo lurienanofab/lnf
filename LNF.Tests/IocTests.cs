@@ -1,5 +1,7 @@
 ﻿using LNF.Data;
+using LNF.Impl.Context;
 using LNF.Impl.DependencyInjection.Default;
+using LNF.Models.Billing;
 using LNF.Repository;
 using LNF.Repository.Data;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,7 +16,8 @@ namespace LNF.Tests
         [TestMethod]
         public void CanGetClient()
         {
-            var ioc = new IOC(new ContextFactory());
+            var ctx = new WebContext(new ContextFactory());
+            var ioc = new IOC(ctx);
             using (ioc.Resolver.GetInstance<IUnitOfWork>())
             {
                 var session = ioc.Resolver.GetInstance<ISession>();
@@ -50,27 +53,13 @@ namespace LNF.Tests
         [TestMethod]
         public void CanSelectToolBilling()
         {
-            var ioc = new IOC(new ContextFactory());
+            var ctx = new WebContext(new ContextFactory());
+            var ioc = new IOC(ctx);
             using (ioc.Resolver.GetInstance<IUnitOfWork>())
             {
-                var repo = ioc.Resolver.GetInstance<Billing.ToolBillingManager>();
+                var repo = ioc.Resolver.GetInstance<IToolBillingManager>();
                 var results = repo.SelectToolBilling(DateTime.Parse("2017-02-01"));
                 Assert.IsTrue(results.Count() > 0);
-            }
-        }
-
-        [TestMethod]
-        public void CanGetRange()
-        {
-            var ioc = new IOC(new ContextFactory());
-            ServiceProvider.Current = ioc.Resolver.GetInstance<ServiceProvider>();
-
-            using (DA.StartUnitOfWork())
-            {
-                var range = ServiceProvider.Current.ActiveDataItemManager.Range(DA.Current.Query<Client>().Where(x => x.ClientID == 1301),
-                    k => new ActiveLogKey("Client", k.ClientID),
-                    DateTime.Parse("2018-01-01"), DateTime.Parse("2018-02-01"));
-                Assert.IsTrue(range.Count() > 0);
             }
         }
     }

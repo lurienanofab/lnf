@@ -11,7 +11,7 @@ namespace OnlineServices.Api
 {
     public class ServiceProvider : IProvider
     {
-        public ServiceProvider(IDataService data, IBillingService billing, IMailService mail, IPhysicalAccessService physicalAccess, ISchedulerService scheduler, IWorkerService worker)
+        public ServiceProvider(IDataService data, IBillingServices billing, IMailService mail, IPhysicalAccessService physicalAccess, ISchedulerService scheduler, IWorkerService worker)
         {
             Data = data;
             Billing = billing;
@@ -23,7 +23,7 @@ namespace OnlineServices.Api
 
         public IDataService Data { get; }
 
-        public IBillingService Billing { get; }
+        public IBillingServices Billing { get; }
 
         public IMailService Mail { get; }
 

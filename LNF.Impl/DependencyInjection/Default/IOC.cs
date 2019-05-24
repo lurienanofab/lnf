@@ -1,5 +1,4 @@
-﻿using LNF.Impl.Context;
-using LNF.Impl.DataAccess;
+﻿using LNF.Impl.DataAccess;
 using NHibernate.Context;
 using StructureMap;
 
@@ -9,9 +8,8 @@ namespace LNF.Impl.DependencyInjection.Default
     {
         public IDependencyResolver Resolver { get; }
 
-        public IOC(IHttpContextFactory httpContextFactory)
+        public IOC(IContext ctx)
         {
-            var ctx = new WebContext(httpContextFactory);
             var reg = new Registry();
 
             reg.For<IContext>().Singleton().Use(ctx);

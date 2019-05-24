@@ -1,4 +1,5 @@
-﻿using LNF.Repository;
+﻿using LNF.Models.Billing;
+using LNF.Repository;
 using LNF.Repository.Billing;
 using LNF.Repository.Data;
 using LNF.Repository.Scheduler;
@@ -27,11 +28,9 @@ namespace LNF.Data
                 return null;
         }
 
-        public BillingType GetBillingType(ToolData item)
+        public IBillingType GetBillingType(ToolData item)
         {
-            var client = Session.Single<Client>(item.ClientID);
-            var account = Session.Single<Account>(item.AccountID);
-            return Provider.BillingTypeManager.GetBillingType(client, account, item.Period);
+            return Provider.Billing.BillingType.GetBillingType(item.ClientID, item.AccountID, item.Period);
         }
     }
 }

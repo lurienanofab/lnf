@@ -63,12 +63,14 @@ namespace LNF.Reporting
 
         public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, int clientId, string username, string lname, string fname, IEnumerable<ManagerUsageSummaryItem> items)
         {
-            var result = new ManagerUsageSummary();
-            result.ClientID = clientId;
-            result.UserName = username;
-            result.LName = lname;
-            result.FName = fname;
-            result.Period = period;
+            var result = new ManagerUsageSummary
+            {
+                ClientID = clientId,
+                UserName = username,
+                LName = lname,
+                FName = fname,
+                Period = period
+            };
 
             /*===== Accounts =========================================*/
             var groupByAccount = items.GroupBy(x => new
@@ -114,7 +116,7 @@ namespace LNF.Reporting
                 SubsidyDiscount = x.Sum(g => g.SubsidyDiscount)
             }).ToList();
 
-            var clientItemsFiltered = clientItems.Where(x => x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv)).ToList();
+            var clientItemsFiltered = clientItems.Where(x => x.TotalCharge != 0 || x.SubsidyDiscount != 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv)).ToList();
 
             var managerUsageSummaryClients = clientItemsFiltered.Select(x => CreateManagerUsageSummaryClient(x, items)).OrderBy(x => x.Sort).ToList();
 

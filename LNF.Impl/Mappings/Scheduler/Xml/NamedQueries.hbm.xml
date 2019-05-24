@@ -12,11 +12,11 @@
     <![CDATA[EXEC sselScheduler.dbo.procReservationSelect @Action='SelectPastEndableRepair']]>
   </sql-query>
   <sql-query name="SelectAutoEndReservations">
-    <return class="Reservation"/>
+    <return class="ReservationInfo"/>
     <![CDATA[EXEC sselScheduler.dbo.procReservationSelect @Action='SelectAutoEnd']]>
   </sql-query>
   <sql-query name="SelectPastUnstartedReservations">
-    <return class="Reservation"/>
+    <return class="ReservationInfo"/>
     <![CDATA[EXEC sselScheduler.dbo.procReservationSelect @Action='SelectPastUnstarted']]>
   </sql-query>
   <sql-query name="EndPastUnstartedReservations">

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace LNF.Models.Billing.Process
 {
@@ -12,5 +13,7 @@ namespace LNF.Models.Billing.Process
         DataUpdateProcessResult BillingProcessDataUpdate(BillingProcessDataUpdateCommand command);
         bool RemoteProcessingUpdate(RemoteProcessingUpdate command);
         int DeleteData(BillingCategory billingCategory, DateTime period, int clientId = 0, int record = 0);
+        IEnumerable<string> UpdateBilling(UpdateBillingArgs args);
+        UpdateClientBillingResult UpdateClientBilling(UpdateClientBillingCommand model);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Billing
 {
-    public class ToolBillingItem
+    public class ToolBillingItem : IToolBilling
     {
         public int ToolBillingID { get; set; }
         public DateTime Period { get; set; }
@@ -47,5 +47,36 @@ namespace LNF.Models.Billing
         public decimal ReservationFee2 { get; set; }
         public decimal UsageFeeFiftyPercent { get; set; }
         public bool IsTemp { get; set; }
+
+        public decimal GetTotalCharge()
+        {
+            // We can include everything now because the value in each column is correct.
+            // For example: after 2015-10-01 UncancelledPenaltyFee and ReservationFee2 will be zero
+            // and before 2011-04-01 BookingFee will be zero. And UsageFeeCharged is whatever value
+            // was calculated based on the rules in place at the time. By making the data correct
+            // based on the current rules we don't have to check the period and apply different
+            // logic in many different places. In other words this formula will work for any
+            // period - much easier to manage.
+            return UsageFeeCharged + OverTimePenaltyFee + BookingFee + UncancelledPenaltyFee + ReservationFee2;
+        }
+
+        public TimeSpan ActivatedUsed()
+        {
+            // if a reservation is started IsCancelledBeforeAllowedTime must be false, right?
+            decimal activatedUsed = (IsStarted && !IsCancelledBeforeAllowedTime) ? (ActDuration - OverTime) : 0;
+            return TimeSpan.FromMinutes((double)activatedUsed);
+        }
+
+        public TimeSpan ActivatedUnused()
+        {
+            decimal activatedUnused = (IsStarted && !IsCancelledBeforeAllowedTime) ? Math.Max(ChargeDuration - ActDuration, 0) : 0;
+            return TimeSpan.FromMinutes((double)activatedUnused);
+        }
+
+        public TimeSpan UnstartedUnused()
+        {
+            decimal unstartedUnused = (!IsStarted && !IsCancelledBeforeAllowedTime) ? ChargeDuration : 0;
+            return TimeSpan.FromMinutes((double)unstartedUnused);
+        }
     }
 }

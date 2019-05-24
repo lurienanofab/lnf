@@ -1,4 +1,5 @@
 ﻿using LNF.CommonTools;
+using LNF.Models.Billing;
 using LNF.Repository;
 using LNF.Repository.Billing;
 using LNF.Repository.Data;
@@ -11,9 +12,9 @@ namespace LNF.Billing
 {
     public static class RoomBillingUtility
     {
-        public static IRoomBilling CreateRoomBillingItem(bool isTemp)
+        public static Repository.Billing.IRoomBilling CreateRoomBillingItem(bool isTemp)
         {
-            IRoomBilling result;
+            Repository.Billing.IRoomBilling result;
 
             if (isTemp)
                 result = new RoomBillingTemp();
@@ -23,11 +24,11 @@ namespace LNF.Billing
             return result;
         }
 
-        public static IRoomBilling CreateRoomBillingFromDataRow(DataRow dr, bool isTemp)
+        public static Repository.Billing.IRoomBilling CreateRoomBillingFromDataRow(DataRow dr, bool isTemp)
         {
             // Using Convert.ToDecimal because values can be either decimal or double depending on if they are from RoomBilling or RoomBillingTemp.
 
-            IRoomBilling item = CreateRoomBillingItem(isTemp);
+            Repository.Billing.IRoomBilling item = CreateRoomBillingItem(isTemp);
 
             item.RoomBillingID = 0;
             item.Period = dr.Field<DateTime>("Period");
@@ -61,9 +62,9 @@ namespace LNF.Billing
                 return defval;
         }
 
-        public static IEnumerable<IRoomBilling> SelectRoomBilling(DateTime period)
+        public static IEnumerable<Repository.Billing.IRoomBilling> SelectRoomBilling(DateTime period)
         {
-            IRoomBilling[] items;
+            Repository.Billing.IRoomBilling[] items;
 
             if (period >= DateTime.Now.FirstOfMonth())
                 items = DA.Current.Query<RoomBillingTemp>().Where(x => x.Period == period).ToArray();
@@ -73,9 +74,9 @@ namespace LNF.Billing
             return items;
         }
 
-        public static IEnumerable<IRoomBilling> SelectRoomBilling(DateTime period, int clientId)
+        public static IEnumerable<Repository.Billing.IRoomBilling> SelectRoomBilling(DateTime period, int clientId)
         {
-            IRoomBilling[] items;
+            Repository.Billing.IRoomBilling[] items;
 
             if (period >= DateTime.Now.FirstOfMonth())
                 items = DA.Current.Query<RoomBillingTemp>().Where(x => x.Period == period && x.ClientID == clientId).ToArray();
@@ -85,7 +86,7 @@ namespace LNF.Billing
             return items;
         }
 
-        public static int UpdateBillingType(Client client, Account acct, BillingType billingType, DateTime period)
+        public static int UpdateBillingType(Client client, Account acct, IBillingType billingType, DateTime period)
         {
             string queryName = "UpdateBillingTypeRoomBilling" + (Utility.IsCurrentPeriod(period) ? "Temp" : string.Empty);
             return DA.Current.NamedQuery(queryName).SetParameters(new

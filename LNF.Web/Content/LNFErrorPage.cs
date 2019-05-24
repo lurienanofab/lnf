@@ -61,7 +61,7 @@ namespace LNF.Web.Content
                 .Param("ClientID", clientId > 0, clientId)
                 .Param("ClientName", !string.IsNullOrEmpty(clientName), clientName)
                 .Param("FilePath", !string.IsNullOrEmpty(filePath), filePath)
-                .ExecuteScalar<string>("dbo.PassError_Select");
+                .ExecuteScalar<string>("dbo.PassError_Select").Value;
 
             var msgId = ((errorId == string.Empty) ? Guid.NewGuid() : new Guid(errorId));
 

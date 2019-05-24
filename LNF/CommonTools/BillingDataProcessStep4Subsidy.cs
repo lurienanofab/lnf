@@ -11,18 +11,64 @@ using System.Linq;
 namespace LNF.CommonTools
 {
     //2010-03-23 Subsidy billing data process - run after the 3rd day of business every month
-    public static class BillingDataProcessStep4Subsidy
+    public class BillingDataProcessStep4Subsidy
     {
-        public static PopulateSubsidyBillingProcessResult PopulateSubsidyBilling(DateTime period, int clientId = 0)
+        private DataTable _special = null;
+        private DataTable _newfac = null;
+
+        public DateTime Period { get; }
+        public int ClientID { get; }
+
+        public BillingDataProcessStep4Subsidy(BillingProcessStep4Command cmd)
+        {
+            Period = cmd.Period;
+            ClientID = cmd.ClientID;
+
+            _special = DA.Command(CommandType.Text)
+                .FillDataTable("SELECT * FROM Billing.dbo.SpecialSubsidy");
+        }
+
+        private DataTable GetNewFaculty()
+        {
+            if (_newfac == null)
+            {
+                _newfac = DA.Command()
+                    .Param("Action", "GetNewFaculty")
+                    .Param("sDate", Period)
+                    .Param("eDate", Period.AddMonths(1))
+                    .Param("ClientID", ClientID > 0, ClientID)
+                    .FillDataTable("dbo.ClientManager_Select");
+            }
+
+            return _newfac;
+        }
+
+        private bool IsSpecial(int clientId, out DateTime ssd)
+        {
+            var rows = _special.Select($"ClientID = {clientId}");
+
+            if (rows.Length > 0)
+            {
+                ssd = rows[0].Field<DateTime>("SubsidyStartDate");
+                return ssd.AddYears(1) > Period;
+            }
+            else
+            {
+                ssd = default(DateTime);
+                return false;
+            }
+        }
+
+        public PopulateSubsidyBillingProcessResult PopulateSubsidyBilling()
         {
             var result = new PopulateSubsidyBillingProcessResult
             {
-                Period = period,
-                ClientID = clientId,
+                Period = Period,
+                ClientID = ClientID,
                 Command = "subsidy"
             };
 
-            DataSet ds = GetNecessaryTables(period, clientId);
+            DataSet ds = GetNecessaryTables();
             DataTable dtRoom = ds.Tables[0];
             DataTable dtTool = ds.Tables[1];
             DataTable dtTiers = ds.Tables[2];
@@ -102,7 +148,7 @@ namespace LNF.CommonTools
                     //This user has no tool nor room, so it's a whole new record
                     newrow = dtOut.NewRow();
 
-                    newrow["Period"] = period;
+                    newrow["Period"] = Period;
                     newrow["ClientID"] = dr["ClientID"];
                     newrow["OrgID"] = 17; //always internal
 
@@ -123,30 +169,30 @@ namespace LNF.CommonTools
 
             //At this point, the TiredSubsidyBilling table should have all the records but some fields are missing.  
             //So we loop through the newly constructed table and fill out the missing fields
-            PopulateFieldsFromHistory(period, dtOut, clientId);
+            PopulateFieldsFromHistory(dtOut);
 
             //Clean up the data before saving
-            result.RowsDeleted = DeleteTieredSubsidyBilling(period, clientId);
+            result.RowsDeleted = DeleteTieredSubsidyBilling();
 
             //Save everything back to the main table
             result.RowsLoaded = SaveNewTieredSubsidyBilling(dtOut);
 
             //Calculate the real subsidy amount and populate the details, UserPaymentSum is set in this method.
-            CalculateSubsidyFee(period, clientId);
+            CalculateSubsidyFee();
 
             //Push changes back to billing tables
-            DistributeSubsidyMoneyEvenly(period, clientId);
+            DistributeSubsidyMoneyEvenly();
 
             //[2015-10-20 jg] Added account subsidy feature per Sandrine. Some accounts get a fixed subsidy that overrides the tiered subsidy
-            ApplyAccountSubsidy(period);
+            ApplyAccountSubsidy();
 
             return result;
         }
 
-        private static void ApplyAccountSubsidy(DateTime period)
+        private void ApplyAccountSubsidy()
         {
-            DateTime sd = period;
-            DateTime ed = period.AddMonths(1);
+            DateTime sd = Period;
+            DateTime ed = Period.AddMonths(1);
 
             //base query
             var baseQuery = DA.Current.Query<AccountSubsidy>()
@@ -164,15 +210,15 @@ namespace LNF.CommonTools
             var accountSubsidy = step1.OrderBy(x => x.AccountID).ToList();
 
             foreach (var item in accountSubsidy)
-                item.ApplyToBilling(period);
+                item.ApplyToBilling(Period);
         }
 
-        public static decimal GetSubsidyDiscountPercentage(IEnumerable<TieredSubsidyBilling> tieredSubsidyBilling, DateTime period, int clientId)
+        public decimal GetSubsidyDiscountPercentage(IEnumerable<TieredSubsidyBilling> tieredSubsidyBilling, int clientId)
         {
             decimal result = 0;
 
             //the the subsidy header data
-            TieredSubsidyBilling tsb = tieredSubsidyBilling.FirstOrDefault(x => x.Client.ClientID == clientId && x.Period == period);
+            TieredSubsidyBilling tsb = tieredSubsidyBilling.FirstOrDefault(x => x.Client.ClientID == clientId && x.Period == Period);
 
             if (tsb == null) return 0;
 
@@ -195,11 +241,11 @@ namespace LNF.CommonTools
             return result;
         }
 
-        public static void DistributeSubsidyMoneyEvenly(DateTime period, int clientId)
+        public void DistributeSubsidyMoneyEvenly()
         {
             //Get all the subsidy discount per person in UM
             //Get all RoomBilling and ToolBilling tables with UM
-            DataSet ds = GetTablesForSubsidyDiscountDistribution(period, clientId);
+            DataSet ds = GetTablesForSubsidyDiscountDistribution();
             DataTable dtSubsidy = ds.Tables[0];
             DataTable dtRoomBilling = ds.Tables[1];
             DataTable dtToolBilling = ds.Tables[2];
@@ -217,7 +263,7 @@ namespace LNF.CommonTools
             decimal subsidyFactor = 0;
             //double discountFactor = 0;
 
-            var tieredSubsidyBilling = DA.Current.Query<TieredSubsidyBilling>().Where(x => x.Period == period).ToList();
+            var tieredSubsidyBilling = DA.Current.Query<TieredSubsidyBilling>().Where(x => x.Period == Period).ToList();
 
             foreach (DataRow dr in dtUser.Rows)
             {
@@ -237,7 +283,7 @@ namespace LNF.CommonTools
                     totalOriginalPayment = Convert.ToDecimal(subsidyRows[0]["UserTotalSum"]);
 
                     //subsidyFactor = TotalDiscount / TotalOriginalPayment;
-                    subsidyFactor = GetSubsidyDiscountPercentage(tieredSubsidyBilling, period, cid);
+                    subsidyFactor = GetSubsidyDiscountPercentage(tieredSubsidyBilling, cid);
                     //discountFactor = 1 - subsidyFactor;
 
                     if (totalOriginalPayment != 0)
@@ -286,7 +332,7 @@ namespace LNF.CommonTools
                             ExpName = "User has zero or negative TotalOriginalPayment",
                             AppName = typeof(BillingDataProcessStep4Subsidy).Assembly.GetName().Name,
                             FunctionName = "CommonTools-DistributeSubsidyMoneyEvenly",
-                            CustomData = $"ClientID = {cid}, Period = {period}"
+                            CustomData = $"ClientID = {cid}, Period = {Period}"
                         };
 
                         exp.LogException();
@@ -301,14 +347,14 @@ namespace LNF.CommonTools
             CleanUpAfterSubsidy();
         }
 
-        private static void CleanUpAfterSubsidy()
+        private void CleanUpAfterSubsidy()
         {
             DA.Command()
                 .Param("Action", "CleanUpAfterSubsidy")
                 .ExecuteNonQuery("dbo.RoomApportionmentInDaysMonthly_Update");
         }
 
-        private static void SaveSubsidyDiscountRoomToolMisc(DataTable dtIn)
+        private void SaveSubsidyDiscountRoomToolMisc(DataTable dtIn)
         {
             int count = DA.Command().Update(dtIn, x =>
             {
@@ -322,7 +368,7 @@ namespace LNF.CommonTools
                 SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountRoomToolMisc", $"Update MiscBilling SubsidyDiscount Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]");
         }
 
-        private static void SaveSubsidyDiscountRoom(DataTable dtIn)
+        private void SaveSubsidyDiscountRoom(DataTable dtIn)
         {
             int count = DA.Command().Update(dtIn, x =>
             {
@@ -336,7 +382,7 @@ namespace LNF.CommonTools
                 SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountRoom", $"Update RoomBilling SubsidyDiscount Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]");
         }
 
-        private static void SaveSubsidyDiscountTool(DataTable dtIn)
+        private void SaveSubsidyDiscountTool(DataTable dtIn)
         {
             int count = DA.Command().Update(dtIn, x =>
             {
@@ -350,24 +396,24 @@ namespace LNF.CommonTools
                 SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveSubsidyDiscountTool", $"Update ToolBilling SubsidyDiscount Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]");
         }
 
-        private static DataSet GetTablesForSubsidyDiscountDistribution(DateTime period, int clientId = 0)
+        private DataSet GetTablesForSubsidyDiscountDistribution()
         {
             return DA.Command()
                 .Param("Action", "ForSubsidyDiscountDistribution")
-                .Param("Period", period)
-                .Param("ClientID", clientId > 0, clientId)
+                .Param("Period", Period)
+                .Param("ClientID", ClientID > 0, ClientID)
                 .FillDataSet("dbo.TieredSubsidyBilling_Select");
         }
 
-        private static void CalculateSubsidyFee(DateTime period, int clientId = 0)
+        private void CalculateSubsidyFee()
         {
             //Get Tieres table
-            DataSet ds = GetTieredSubsidyBillingRelatedTables(period, clientId);
+            DataSet ds = GetTieredSubsidyBillingRelatedTables();
             DataTable dtIn = ds.Tables[0];
             DataTable dtDetails = ds.Tables[1]; //Empty table
             DataTable dtTiers = ds.Tables[2];
 
-            DataTable dtOriginalSubsidyStartDate = GetFirstSubsidyDateTable(clientId);
+            DataTable dtOriginalSubsidyStartDate = GetFirstSubsidyDateTable();
 
             SortedList<double, double> tierRegular = new SortedList<double, double>();
             SortedList<double, double> tierNewUser = new SortedList<double, double>();
@@ -461,7 +507,7 @@ namespace LNF.CommonTools
                     double floorAmount = currentTier.Keys[currentTierIndex];
                     double userPaymentPercentage = currentTier.Values[currentTierIndex];
 
-                    drNew["Period"] = period;
+                    drNew["Period"] = Period;
                     drNew["TierBillingID"] = tierBillingID;
                     drNew["FloorAmount"] = floorAmount;
                     drNew["UserPaymentPercentage"] = userPaymentPercentage;
@@ -501,18 +547,18 @@ namespace LNF.CommonTools
             }
 
             //Clean up the data before saving
-            DeleteTieredSubsidyBillingDetail(period, clientId);
+            DeleteTieredSubsidyBillingDetail();
 
             //Save everything back to the main table
             SaveNewTieredSubsidyBillingDetail(dtDetails);
 
             //Now fill out the UserPaymentSum Column of TieredSubsidyBilling
-            UpdateUserPaymentSum(period, clientId);
+            UpdateUserPaymentSum();
         }
 
-        private static void UpdateUserPaymentSum(DateTime period, int clientId = 0)
+        private void UpdateUserPaymentSum()
         {
-            DataSet ds = GetNecessaryTablesForUpdatingUserPayment(period, clientId);
+            DataSet ds = GetNecessaryTablesForUpdatingUserPayment();
             DataTable dtTierBilling = ds.Tables[0];
             DataTable dtTierBillingDetailGroupByTierBillingID = ds.Tables[1];
 
@@ -536,25 +582,25 @@ namespace LNF.CommonTools
                 SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep4Subsidy.UpdateUserPaymentSum", $"Update UserPaymentSum Failed - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]");
         }
 
-        private static DataSet GetNecessaryTablesForUpdatingUserPayment(DateTime period, int clientId = 0)
+        private DataSet GetNecessaryTablesForUpdatingUserPayment()
         {
             return DA.Command()
                  .Param("Action", "ForUpdatingUserPaymentSum")
-                 .Param("Period", period)
-                 .Param("ClientID", clientId > 0, clientId)
+                 .Param("Period", Period)
+                 .Param("ClientID", ClientID > 0, ClientID)
                  .FillDataSet("dbo.TieredSubsidyBilling_Select");
         }
 
-        private static void DeleteTieredSubsidyBillingDetail(DateTime period, int clientId = 0)
+        private void DeleteTieredSubsidyBillingDetail()
         {
             DA.Command()
                 .Param("Action", "DeleteCurrentRange")
-                .Param("Period", period)
-                .Param("ClientID", clientId > 0, clientId)
+                .Param("Period", Period)
+                .Param("ClientID", ClientID > 0, ClientID)
                 .ExecuteNonQuery("dbo.TieredSubsidyBillingDetail_Delete");
         }
 
-        private static void SaveNewTieredSubsidyBillingDetail(DataTable dtIn)
+        private void SaveNewTieredSubsidyBillingDetail(DataTable dtIn)
         {
             int count = DA.Command().Update(dtIn, x =>
             {
@@ -571,30 +617,30 @@ namespace LNF.CommonTools
                 SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep4Subsidy.SaveNewTieredSubsidyBillingDetail", $"Error in Processing TieredSubsidyBillingDetail - saving to database [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]");
         }
 
-        private static DataSet GetTieredSubsidyBillingRelatedTables(DateTime period, int clientId = 0)
+        private DataSet GetTieredSubsidyBillingRelatedTables()
         {
             return DA.Command()
                 .Param("Action", "SelectAllByPeriod")
-                .Param("Period", period)
-                .Param("ClientID", clientId > 0, clientId)
+                .Param("Period", Period)
+                .Param("ClientID", ClientID > 0, ClientID)
                 .FillDataSet("dbo.TieredSubsidyBilling_Select");
         }
 
-        private static DataTable GetTieredSubsidyBillingDetailSchema()
+        private DataTable GetTieredSubsidyBillingDetailSchema()
         {
             return DA.Command()
                 .Param("Action", "SelectSchema")
                 .FillDataTable("dbo.TieredSubsidyBillingDetail_Select");
         }
 
-        private static DataTable GetSubsidyTiers(DateTime period)
+        private DataTable GetSubsidyTiers(DateTime period)
         {
             return DA.Command()
                 .Param("Period", period)
                 .FillDataTable("dbo.TieredSubsidyTiers_Select");
         }
 
-        private static void TransformTiersIntoSortedDictionary(DataTable dtTiers, SortedList<double, double> TierRegular, SortedList<double, double> TierNewUser, SortedList<double, double> TierNewFacultyUser)
+        private void TransformTiersIntoSortedDictionary(DataTable dtTiers, SortedList<double, double> TierRegular, SortedList<double, double> TierNewUser, SortedList<double, double> TierNewFacultyUser)
         {
             IEnumerable<DataRow> query;
 
@@ -626,16 +672,16 @@ namespace LNF.CommonTools
             }
         }
 
-        private static int DeleteTieredSubsidyBilling(DateTime period, int clientId = 0)
+        private int DeleteTieredSubsidyBilling()
         {
             return DA.Command()
                 .Param("Action", "DeleteCurrentRange")
-                .Param("Period", period)
-                .Param("ClientID", clientId > 0, clientId)
+                .Param("Period", Period)
+                .Param("ClientID", ClientID > 0, ClientID)
                 .ExecuteNonQuery("dbo.TieredSubsidyBilling_Delete").Value;
         }
 
-        private static int SaveNewTieredSubsidyBilling(DataTable dtIn)
+        private int SaveNewTieredSubsidyBilling(DataTable dtIn)
         {
             int count = DA.Command().Update(dtIn, x =>
             {
@@ -663,11 +709,11 @@ namespace LNF.CommonTools
 
         //This will populate necessary data fields for calculating the new subsidy amount
         //key fields: Accumulated original amount and Starting Period
-        private static void PopulateFieldsFromHistory(DateTime period, DataTable dtIn, int clientId)
+        private void PopulateFieldsFromHistory(DataTable dtIn)
         {
             //Get everone's original starting date and current fiscal year
-            DataTable dtLastBillingData = GetLastUsedDateFromTieredSubsidyBilling(period, clientId);
-            DataTable dtOriginalSubsidyStartDate = GetFirstSubsidyDateTable(clientId);
+            DataTable dtLastBillingData = GetLastUsedDateFromTieredSubsidyBilling();
+            DataTable dtOriginalSubsidyStartDate = GetFirstSubsidyDateTable();
 
             foreach (DataRow dr in dtIn.Rows)
             {
@@ -681,10 +727,10 @@ namespace LNF.CommonTools
                     //No Starting Period, this means user uses the lab for the first time after 2010-07-01 when subsidy started
                     if (mySubsidyStartDate != null)
                     {
-                        dr["StartingPeriod"] = GetLatestFiscalYear(period, mySubsidyStartDate.Value);
+                        dr["StartingPeriod"] = GetLatestFiscalYear(mySubsidyStartDate.Value);
                         dr["Accumulated"] = 0;
 
-                        if (period < mySubsidyStartDate.Value.AddYears(1) && period >= mySubsidyStartDate)
+                        if (Period < mySubsidyStartDate.Value.AddYears(1) && Period >= mySubsidyStartDate)
                             dr["IsNewStudent"] = true;
                         else
                             dr["IsNewStudent"] = false;
@@ -702,7 +748,7 @@ namespace LNF.CommonTools
                             ExpName = "No SubsidyStartDate",
                             AppName = typeof(BillingDataProcessStep4Subsidy).Assembly.GetName().Name,
                             FunctionName = "LNF.CommonTools.BillingDataProcessStep4.PopulateFieldsFromHistory",
-                            CustomData = $"ClientID = {cid}, Period = {period}"
+                            CustomData = $"ClientID = {cid}, Period = {Period}"
                         };
 
                         exp.LogException();
@@ -713,81 +759,75 @@ namespace LNF.CommonTools
                     //We got fiscalYearStarting Period, now we have to see if it's a new year
                     DateTime currentStartingPeriod = mySubsidyStartDate.Value;
 
-                    while (currentStartingPeriod.AddYears(1) < period)
+                    while (currentStartingPeriod.AddYears(1) < Period)
                     {
                         currentStartingPeriod = currentStartingPeriod.AddYears(1);
                     }
 
                     //we need to see we have a new year coming
-                    if (currentStartingPeriod.AddYears(1) == period)
+                    if (currentStartingPeriod.AddYears(1) == Period)
                     {
                         //new fiscal year
-                        dr["StartingPeriod"] = GetLatestFiscalYear(period, mySubsidyStartDate.Value);
+                        dr["StartingPeriod"] = GetLatestFiscalYear(mySubsidyStartDate.Value);
                         dr["Accumulated"] = 0;
                     }
                     else if (myLastLabUsagePeriod < currentStartingPeriod)
                     {
                         //new fiscal year, for people who skip the cut off month (most people are july 2009)
-                        dr["StartingPeriod"] = GetLatestFiscalYear(period, mySubsidyStartDate.Value);
+                        dr["StartingPeriod"] = GetLatestFiscalYear(mySubsidyStartDate.Value);
                         dr["Accumulated"] = 0;
                     }
                     else
                     {
                         //still the same fiscal year
-                        dr["StartingPeriod"] = GetLatestFiscalYear(period, mySubsidyStartDate.Value);
+                        dr["StartingPeriod"] = GetLatestFiscalYear(mySubsidyStartDate.Value);
                         double? accum = GetAccumulatedSum(cid, dtLastBillingData);
                         dr["Accumulated"] = (accum > 0) ? accum : 0;
                     }
 
                     //Determine whether it's New Student or not
-                    if (period < mySubsidyStartDate.Value.AddYears(1) && period >= mySubsidyStartDate)
+                    if (Period < mySubsidyStartDate.Value.AddYears(1) && Period >= mySubsidyStartDate)
                         dr["IsNewStudent"] = true;
                     else
                         dr["IsNewStudent"] = false;
                 }
 
                 //2010-12 determine if this user belong to a new faculty
-                dr["IsNewFacultyUser"] = GetIsNewFacultyUser(period, cid);
+                dr["IsNewFacultyUser"] = GetIsNewFacultyUser(cid);
             }
         }
 
-        private static bool GetIsNewFacultyUser(DateTime period, int clientId)
+        private bool GetIsNewFacultyUser(int clientId)
         {
-            var args = new
+            if (IsSpecial(clientId, out DateTime ssd))
             {
-                Action = "GetManagerOrgIDNewFaculty",
-                sDate = period,
-                eDate = period.AddMonths(1),
-                ClientID = clientId
-            };
-
-            using (IDataReader reader = DA.Command().Param(args).ExecuteReader("dbo.ClientManager_Select"))
-            {
-                bool result = reader.Read();
-                reader.Close();
-                return result;
+                return true;
             }
+
+            var rows = GetNewFaculty().Select($"ClientID = {clientId}");
+
+            return rows.Length > 0;
         }
 
-        private static DateTime GetLatestFiscalYear(DateTime Period, DateTime OriginalStartingPeriod)
+        private DateTime GetLatestFiscalYear(DateTime originalStartingPeriod)
         {
-            DateTime curserTime = OriginalStartingPeriod;
+            DateTime curserTime = originalStartingPeriod;
             while (curserTime <= Period)
                 curserTime = curserTime.AddYears(1);
             return curserTime.AddYears(-1);
         }
 
-        private static DateTime? GetFiscalYearStartingPeriod(int clientId, DataTable dt)
+        private DateTime? GetFiscalYearStartingPeriod(int clientId, DataTable dt)
         {
             return GetDateFromTable(clientId, dt, "Period");
         }
 
-        private static DateTime? GetSubsidyStartDate(int clientId, DataTable dt)
+        private DateTime? GetSubsidyStartDate(int clientId, DataTable dt)
         {
             return GetDateFromTable(clientId, dt, "SubsidyStartDate");
         }
 
-        private static double? GetAccumulatedSum(int clientId, DataTable dt)
+        private double? GetAccumulatedSum(int clientId, DataTable dt)
         {
             IEnumerable<DataRow> query = from ddr in dt.AsEnumerable()
                                          where Convert.ToInt32(ddr["ClientID"]) == clientId
@@ -799,7 +839,7 @@ namespace LNF.CommonTools
             else return Convert.ToDouble(dr["AccumulatedSum"]);
         }
 
-        private static DateTime? GetDateFromTable(int clientId, DataTable dt, string type)
+        private DateTime? GetDateFromTable(int clientId, DataTable dt, string type)
         {
             IEnumerable<DataRow> query = from ddr in dt.AsEnumerable()
                                          where Convert.ToInt32(ddr["ClientID"]) == clientId
@@ -811,25 +851,25 @@ namespace LNF.CommonTools
             else return Convert.ToDateTime(dr[type]);
         }
 
-        private static DataTable GetFirstSubsidyDateTable(int clientId = 0)
+        private DataTable GetFirstSubsidyDateTable()
         {
             return DA.Command()
                 .Param("Action", "GetAllActiveStartDate")
-                .Param("ClientID", clientId > 0, clientId)
+                .Param("ClientID", ClientID > 0, ClientID)
                 .FillDataTable("dbo.ClientOrg_Select");
         }
 
-        private static DataTable GetLastUsedDateFromTieredSubsidyBilling(DateTime period, int clientId = 0)
+        private DataTable GetLastUsedDateFromTieredSubsidyBilling()
         {
             return DA.Command()
                 .Param("Action", "GetLastUsedStartingDate")
-                .Param("Period", period)
-                .Param("ClientID", clientId > 0, clientId)
-                .FillDataTable("TieredSubsidyBilling_Select");
+                .Param("Period", Period)
+                .Param("ClientID", ClientID > 0, ClientID)
+                .FillDataTable("dbo.TieredSubsidyBilling_Select");
         }
 
         //Get Misc Charge
-        private static double GetMiscSumPerClient(DataTable dt, int clientId, string subType)
+        private double GetMiscSumPerClient(DataTable dt, int clientId, string subType)
         {
             DataRow[] drs = dt.Select($"SUBType = '{subType}' AND ClientID = {clientId}");
 
@@ -839,12 +879,12 @@ namespace LNF.CommonTools
                 return 0.0;
         }
 
-        private static DataSet GetNecessaryTables(DateTime period, int clientId = 0)
+        private DataSet GetNecessaryTables()
         {
             return DA.Command()
                 .Param("Action", "PopulateTieredSubsidyBilling")
-                .Param("Period", period)
-                .Param("ClientID", clientId > 0, clientId)
+                .Param("Period", Period)
+                .Param("ClientID", ClientID > 0, ClientID)
                 .FillDataSet("dbo.TieredSubsidyBilling_Select");
         }
     }

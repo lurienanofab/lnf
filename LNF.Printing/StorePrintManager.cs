@@ -131,7 +131,7 @@ namespace LNF.Printing
 
             PdfPTable innerTable = new PdfPTable(new float[] { 0.3F, 0.7F });
 
-            var mgr = ServiceProvider.Current.Data.ClientManager;
+            var mgr = ServiceProvider.Current.Data.Client;
 
             var c = order.Client.CreateModel<IClient>();
 

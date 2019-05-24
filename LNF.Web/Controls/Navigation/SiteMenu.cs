@@ -1,4 +1,5 @@
 ﻿using LNF.Models.Data;
+using System;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -31,7 +32,7 @@ namespace LNF.Web.Controls.Navigation
                 Context.Session["SiteMenu"] = WebUtility.GetSiteMenu(CurrentUser.ClientID);
             }
 
-            return new HtmlString(Context.Session["SiteMenu"].ToString());
+            return new HtmlString(Convert.ToString(Context.Session["SiteMenu"]));
         }
     }
 }

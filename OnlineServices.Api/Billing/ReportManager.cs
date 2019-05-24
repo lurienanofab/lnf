@@ -1,5 +1,4 @@
-﻿using LNF.Models.Billing;
-using LNF.Models.Billing.Reports;
+﻿using LNF.Models.Billing.Reports;
 using LNF.Models.Billing.Reports.ServiceUnitBilling;
 using RestSharp;
 using System;
@@ -9,12 +8,12 @@ namespace OnlineServices.Api.Billing
 {
     public class ReportManager : ApiClient, IReportManager
     {
-        public IEnumerable<BillingSummaryItem> GetBillingSummary(DateTime sd, DateTime ed, bool includeRemote = false, int clientId = 0)
+        public IEnumerable<IBillingSummary> GetBillingSummary(DateTime sd, DateTime ed, bool includeRemote = false, int clientId = 0)
         {
             return Get<List<BillingSummaryItem>>("webapi/billing/report/billing-summary", QueryStrings(new { sd, ed, includeRemote, clientId }));
         }
 
-        public IEnumerable<RegularExceptionItem> GetRegularExceptions(DateTime period, int clientId = 0)
+        public IEnumerable<IRegularException> GetRegularExceptions(DateTime period, int clientId = 0)
         {
             return Get<List<RegularExceptionItem>>("webapi/billing/report/regular-exception", QueryStrings(new { period, clientId }));
         }
@@ -54,9 +53,9 @@ namespace OnlineServices.Api.Billing
             return Post<SendMonthlyUserUsageEmailsProcessResult>("webapi/billing/report/financial-manager", options);
         }
 
-        public IEnumerable<FinancialManagerReportEmail> ViewFinancialManagerReport(DateTime period, int clientId = 0, int managerOrgId = 0, string message = null)
+        public IEnumerable<FinancialManagerReportEmail> GetFinancialManagerReportEmails(FinancialManagerReportOptions options)
         {
-            return Get<List<FinancialManagerReportEmail>>("webapi/billing/report/financial-manager/view", QueryStrings(new { period, clientId, managerOrgId, message }));
+            return Post<List<FinancialManagerReportEmail>>("webapi/billing/report/financial-manager/view", options);
         }
 
         public SendMonthlyApportionmentEmailsProcessResult SendUserApportionmentReport(UserApportionmentReportOptions options)
@@ -64,9 +63,9 @@ namespace OnlineServices.Api.Billing
             return Post<SendMonthlyApportionmentEmailsProcessResult>("webapi/billing/report/user-apportionment", options);
         }
 
-        public IEnumerable<UserApportionmentReportEmail> ViewUserApportionmentReport(DateTime period, string message = null)
+        public IEnumerable<UserApportionmentReportEmail> GetUserApportionmentReportEmails(UserApportionmentReportOptions options)
         {
-            return Get<List<UserApportionmentReportEmail>>("webapi/billing/report/user-apportionment/view", QueryStrings(new { period, message }));
+            return Post<List<UserApportionmentReportEmail>>("webapi/billing/report/user-apportionment/view", options);
         }
     }
 }

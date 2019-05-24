@@ -1,5 +1,4 @@
-﻿using LNF.Impl.Context;
-using LNF.Impl.DependencyInjection.Default;
+﻿using LNF.Impl.DependencyInjection.Default;
 using LNF.Repository;
 using Moq;
 using System;
@@ -22,7 +21,7 @@ namespace LNF.Impl.Testing
         public SessionItemCollection SessionItems { get; }
         public NameValueCollection QueryString { get; }
         public IOC IOC { get; }
-        public HttpContextBase Context { get; }
+        public HttpContextBase ContextBase { get; }
 
         public ContextManager(string ipaddr, string username, IDictionary contextItems = null, SessionItemCollection sessionItems = null, NameValueCollection queryString = null)
         {
@@ -44,9 +43,11 @@ namespace LNF.Impl.Testing
             SessionItems = sessionItems;
             QueryString = queryString;
 
-            Context = CreateHttpContext();
+            ContextBase = CreateHttpContext();
 
-            IOC = new IOC(new TestHttpContextFactory(Context));
+            var ctx = new TestContext(ContextBase);
+
+            IOC = new IOC(ctx);
             ServiceProvider.Current = IOC.Resolver.GetInstance<ServiceProvider>();
 
             Login(username);
@@ -132,21 +133,6 @@ namespace LNF.Impl.Testing
         {
             if (_uow != null)
                 _uow.Dispose();
-        }
-    }
-
-    public sealed class TestHttpContextFactory : IHttpContextFactory
-    {
-        private readonly HttpContextBase _context;
-
-        internal TestHttpContextFactory(HttpContextBase context)
-        {
-            _context = context ?? throw new ArgumentNullException("context");
-        }
-
-        public HttpContextBase Create()
-        {
-            return _context;
         }
     }
 

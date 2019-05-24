@@ -42,7 +42,7 @@ namespace LNF.Data
         private IEnumerable<ICost> GetCurrentCosts()
         {
             if (_costs == null)
-                _costs = Provider.CostManager.FindCosts(new[] { "RoomCost" }, EndDate).AsQueryable().CreateModels<ICost>();
+                _costs = Provider.Data.Cost.FindCosts(new[] { "RoomCost" }, EndDate);
 
             return _costs;
         }

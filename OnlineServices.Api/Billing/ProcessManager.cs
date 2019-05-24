@@ -1,6 +1,7 @@
 ﻿using LNF.Models.Billing;
 using LNF.Models.Billing.Process;
 using System;
+using System.Collections.Generic;
 
 namespace OnlineServices.Api.Billing
 {
@@ -44,6 +45,16 @@ namespace OnlineServices.Api.Billing
         public int DeleteData(BillingCategory billingCategory, DateTime period, int clientId = 0, int record = 0)
         {
             return Delete("webapi/billing/process/data/{billingCategory}", UrlSegments(new { billingCategory }) & QueryStrings(new { period, clientId, record }));
+        }
+
+        public IEnumerable<string> UpdateBilling(UpdateBillingArgs args)
+        {
+            return Post<List<string>>("webapi/billing/update", args);
+        }
+
+        public UpdateClientBillingResult UpdateClientBilling(UpdateClientBillingCommand model)
+        {
+            return Post<UpdateClientBillingResult>("webapi/billing/update-client", model);
         }
     }
 }

@@ -3,7 +3,7 @@ using System;
 
 namespace LNF.Repository.Scheduler
 {
-    public class ResourceInfo : IDataItem
+    public class ResourceInfo : IDataItem, IResource
     {
         public virtual int ResourceID { get; set; }
         public virtual int ProcessTechID { get; set; }
@@ -46,18 +46,8 @@ namespace LNF.Repository.Scheduler
         public virtual int MinReservTime { get; set; }
         public virtual int MaxReservTime { get; set; }
         public virtual int GracePeriod { get; set; }
-        public virtual int CurrentReservationID { get; set; }
-        public virtual int CurrentClientID { get; set; }
-        public virtual int CurrentActivityID { get; set; }
-        public virtual string CurrentFirstName { get; set; }
-        public virtual string CurrentLastName { get; set; }
-        public virtual string CurrentActivityName { get; set; }
-        public virtual bool CurrentActivityEditable { get; set; }
-        public virtual DateTime? CurrentBeginDateTime { get; set; }
-        public virtual DateTime? CurrentEndDateTime { get; set; }
-        public virtual string CurrentNotes { get; set; }
         public virtual bool HasState(ResourceState state) => ResourceItem.HasState(State, state);
-        public virtual string ResourceDisplayName => ResourceItem.GetDisplayName(ResourceName, ResourceID);
+        public virtual string ResourceDisplayName => ResourceItem.GetResourceDisplayName(ResourceName, ResourceID);
 
         public virtual DateTime GetNextGranularity(DateTime actual, int dir)
         {

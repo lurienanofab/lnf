@@ -39,17 +39,17 @@ namespace LNF.Cache
         }
 
         /// <summary>
-        /// Gets all active Clients. Clients are cached for 30 minutes.
+        /// Gets all active clients. Clients are cached for 5 minutes.
         /// </summary>
-        public IEnumerable<IClient> Clients() => GetValue("Clients", () => DA.Current.Query<ClientInfo>().Where(x => x.ClientActive).CreateModels<ClientItem>(), DateTimeOffset.Now.AddMinutes(5));
+        public IEnumerable<IClient> Clients() => GetValue("Clients", () => DA.Current.Query<ClientInfo>().Where(x => x.ClientActive).CreateModels<IClient>(), DateTimeOffset.Now.AddMinutes(5));
 
         /// <summary>
-        /// Gets one active Client by ClientID. Clients are cached for 30 minutes.
+        /// Gets one active client by ClientID. Clients are cached for 5 minutes.
         /// </summary>
         public IClient GetClient(int clientId) => Clients().FirstOrDefault(x => x.ClientID == clientId);
 
         /// <summary>
-        /// Gets one active Client by UserName. Clients are cached for 30 minutes.
+        /// Gets one active client by UserName. Clients are cached for 5 minutes.
         /// </summary>
         public IClient GetClient(string username) => Clients().FirstOrDefault(x => x.UserName == username);
 

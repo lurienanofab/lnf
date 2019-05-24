@@ -568,7 +568,7 @@ namespace LNF.CommonTools
                 {
                     formula = DA.Command()
                         .Param(new { FormulaType = type, sDate = period, CostToday = exp })
-                        .ExecuteScalar<string>($"dbo.{tableNamePrefix}CostFormula_Select");
+                        .ExecuteScalar<string>($"dbo.{tableNamePrefix}CostFormula_Select").Value;
                 }
 
                 CompileCode(fTypeKey, formula);
@@ -766,7 +766,7 @@ namespace LNF.CommonTools
                 {
                     formula = DA.Command()
                         .Param(new { FormulaType = type, sDate = period, CostToday = exp })
-                        .ExecuteScalar<string>($"dbo.{tableNamePrefix}CostFormula_Select2");
+                        .ExecuteScalar<string>($"dbo.{tableNamePrefix}CostFormula_Select2").Value;
                 }
 
                 CompileCode(typeKey, formula);
@@ -845,7 +845,7 @@ namespace LNF.CommonTools
 
             string formula = DA.Command()
                 .Param(new { FormulaType = "Tool", sDate = DateTime.Now.Date })
-                .ExecuteScalar<string>("dbo.CostFormula_Select");
+                .ExecuteScalar<string>("dbo.CostFormula_Select").Value;
 
             CompileCode(1, formula);
 

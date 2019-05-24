@@ -6,7 +6,7 @@ namespace LNF.Tests
 {
     public class ContextFactory : IHttpContextFactory
     {
-        public HttpContextBase Create()
+        public HttpContextBase CreateContext()
         {
             var mock = new Mock<HttpContextBase>();
             return mock.Object;

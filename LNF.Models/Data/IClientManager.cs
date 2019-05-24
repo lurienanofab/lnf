@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LNF.Models.Billing;
+using System;
 using System.Collections.Generic;
 
 namespace LNF.Models.Data
@@ -15,8 +16,7 @@ namespace LNF.Models.Data
         bool CheckPassword(int clientId, string password);
         string CleanMiddleName(string raw);
         IEnumerable<IClientAccount> ClientAccounts(int clientId);
-        IEnumerable<IClient> ClientOrgs(int clientId);
-        IClient Find(string username);
+        IEnumerable<IClient> ClientOrgs(int clientId);   
         IEnumerable<IClient> FindByCommunity(int flag, bool? active = true);
         IClient FindByDisplayName(string displayName);
         IEnumerable<IClient> FindByManager(int managerClientId, bool? active = true);
@@ -24,10 +24,11 @@ namespace LNF.Models.Data
         IEnumerable<IClient> FindByPrivilege(ClientPrivilege priv, bool? active = true);
         IEnumerable<IClient> FindByTools(int[] resourceIds, bool? active = true);
         int GetActiveAccountCount(int clientId);
+        IEnumerable<IClient> GetClients(int limit, int skip = 0);
         IEnumerable<IClient> GetActiveClients();
-        IEnumerable<IClient> GetActiveClients(ClientPrivilege priv);
-        IEnumerable<IClient> GetActiveClients(DateTime sd, DateTime ed);
-        IEnumerable<IClient> GetActiveClients(DateTime sd, DateTime ed, ClientPrivilege priv);
+        IEnumerable<IClient> GetActiveClients(ClientPrivilege priv = 0);
+        IEnumerable<IClient> GetActiveClients(DateTime sd, DateTime ed, ClientPrivilege priv = 0);
+        IClient GetClient(string username);
         IClient GetClient(int clientId);
         IClient GetClient(int clientId, int rank);
         DateTime? LastReservation(int clientId);
@@ -39,7 +40,30 @@ namespace LNF.Models.Data
         ITechnicalField TechnicalField(int clientId);
         string TechnicalFieldName(int clientId);
         int TotalDaysInLab(int clientId, int roomId, DateTime period);
-        void Update(IClient client);
+        bool Insert(IClient client);
+        bool Update(IClient client);
         bool UpdatePhysicalAccess(IClient client, out string alert);
+        IClientDemographics GetClientDemographics(int clientId);
+        bool UpdateClientDemographics(IClientDemographics value);
+        IEnumerable<IClientAccount> GetClientAccounts(int clientId);
+        IEnumerable<IClientAccount> GetActiveClientAccounts(int clientId);
+        IEnumerable<IClientAccount> GetActiveClientAccounts(int clientId, DateTime sd, DateTime ed);
+        string AccountEmail(int clientId, int accountId);
+        string AccountPhone(int clientId, int accountId);
+        IEnumerable<IClient> AllActiveManagers();
+        void Disable(IClient client);
+        IBillingType GetBillingType(int clientOrgId);
+        int GetMaxChargeTypeID(int clientId);
+        IClient GetPrimary(int clientId);
+        IEnumerable<IClient> GetClientOrgs(int clientId);
+        IEnumerable<IClient> GetActiveClientOrgs(int clientId);
+        IEnumerable<IClient> GetActiveClientOrgs(int clientId, DateTime sd, DateTime ed);
+        IEnumerable<IClient> SelectByClientAccount(int clientId, int accountId);
+        IEnumerable<IClient> SelectOrgManagers(int orgId = 0);
+        void InsertClientRemote(IClientRemote model, DateTime period);
+        void DeleteClientRemote(int clientRemoteId, DateTime period);
+        IEnumerable<IClientRemote> GetActiveClientRemotes(DateTime sd, DateTime ed);
+        IEnumerable<IPriv> GetPrivs();
+        IEnumerable<ICommunity> GetCommunities();
     }
 }

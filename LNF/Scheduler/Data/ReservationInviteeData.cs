@@ -33,7 +33,7 @@ namespace LNF.Scheduler.Data
         /// <summary>
         /// Returns all invitees for the specified reservation
         /// </summary>
-        public static IDataReader SelectReservationInviteesDataReader(int reservationId)
+        public static ExecuteReaderResult SelectReservationInviteesDataReader(int reservationId)
         {
             return DA.Command()
                 .Param("Action", "SelectByReservation")

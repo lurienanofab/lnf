@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Mail
 {
-    public class RecipientItem
+    public class RecipientItem : IRecipient
     {
         public int RecipientID { get; set; }
         public int MessageID { get; set; }

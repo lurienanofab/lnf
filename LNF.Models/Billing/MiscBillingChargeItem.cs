@@ -3,7 +3,7 @@ using System;
 
 namespace LNF.Models.Billing
 {
-    public class MiscBillingChargeItem
+    public class MiscBillingChargeItem : IMiscBillingCharge
     {
         public int ExpID { get; set; }
         public int ClientID { get; set; }
@@ -12,7 +12,7 @@ namespace LNF.Models.Billing
         public int AccountID { get; set; }
         public string AccountName { get; set; }
         public string ShortCode { get; set; }
-        public string SubType { get; set; }
+        public string SUBType { get; set; }
         public DateTime Period { get; set; }
         public DateTime ActDate { get; set; }
         public string Description { get; set; }

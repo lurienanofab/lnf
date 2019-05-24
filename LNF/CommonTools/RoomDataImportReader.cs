@@ -465,6 +465,11 @@ namespace LNF.CommonTools
         public bool Deleted { get; set; }
 
         public bool IsAntipassbackError() => EventDescription.StartsWith("Antipassback");
+
+        public override string ToString()
+        {
+            return $"{RoomName}:{ClientID}:{EventDescription}:{EventDate:yyyy-MM-dd HH:mm:ss}";
+        }
     }
 
     public class RoomDataImportRoom

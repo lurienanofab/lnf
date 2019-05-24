@@ -702,7 +702,110 @@ namespace LNF.Scheduler
 
         public IEnumerable<IReservation> SelectPastEndableRepair()
         {
-            return Session.NamedQuery("SelectPastEndableRepairReservations").List<ReservationInfo>().AsQueryable().CreateModels<IReservation>();
+            var dt = DA.Command()
+                .Param("Action", "SelectPastEndableRepair")
+                .FillDataTable("sselScheduler.dbo.procReservationSelect");
+
+            var result = new List<IReservation>();
+
+            foreach (DataRow dr in dt.Rows)
+            {
+                result.Add(new ReservationItem
+                {
+                    ReservationID = dr.Field<int>("ReservationID"),
+                    ClientID = dr.Field<int>("ClientID"),
+                    UserName = dr.Field<string>("UserName"),
+                    LName = dr.Field<string>("LName"),
+                    MName = dr.Field<string>("MName"),
+                    FName = dr.Field<string>("FName"),
+                    Phone = dr.Field<string>("Phone"),
+                    Email = dr.Field<string>("Email"),
+                    Privs = dr.Field<ClientPrivilege>("Privs"),
+                    AccountID = dr.Field<int>("AccountID"),
+                    AccountName = dr.Field<string>("AccountName"),
+                    ShortCode = dr.Field<string>("ShortCode"),
+                    ChargeTypeID = dr.Field<int>("ChargeTypeID"),
+                    ActivityID = dr.Field<int>("ActivityID"),
+                    ActivityName = dr.Field<string>("ActivityName"),
+                    ActivityAccountType = dr.Field<ActivityAccountType>("ActivityAccountType"),
+                    StartEndAuth = dr.Field<ClientAuthLevel>("StartEndAuth"),
+                    Editable = dr.Field<bool>("Editable"),
+                    IsFacilityDownTime = dr.Field<bool>("IsFacilityDownTime"),
+                    BeginDateTime = dr.Field<DateTime>("BeginDateTime"),
+                    EndDateTime = dr.Field<DateTime>("EndDateTime"),
+                    ActualBeginDateTime = dr.Field<DateTime?>("ActualBeginDateTime"),
+                    ActualEndDateTime = dr.Field<DateTime?>("ActualEndDateTime"),
+                    ClientIDBegin = dr.Field<int?>("ClientIDBegin"),
+                    ClientBeginLName = dr.Field<string>("ClientBeginLName"),
+                    ClientBeginFName = dr.Field<string>("ClientBeginFName"),
+                    ClientIDEnd = dr.Field<int?>("ClientIDEnd"),
+                    ClientEndLName = dr.Field<string>("ClientEndLName"),
+                    ClientEndFName = dr.Field<string>("ClientEndFName"),
+                    CreatedOn = dr.Field<DateTime>("CreatedOn"),
+                    LastModifiedOn = dr.Field<DateTime>("LastModifiedOn"),
+                    Duration = dr.Field<double>("Duration"),
+                    Notes = dr.Field<string>("Notes"),
+                    ChargeMultiplier = dr.Field<double>("ChargeMultiplier"),
+                    ApplyLateChargePenalty = dr.Field<bool>("ApplyLateChargePenalty"),
+                    AutoEnd = dr.Field<bool>("AutoEnd"),
+                    HasProcessInfo = dr.Field<bool>("HasProcessInfo"),
+                    HasInvitees = dr.Field<bool>("HasInvitees"),
+                    IsActive = dr.Field<bool>("IsActive"),
+                    IsStarted = dr.Field<bool>("IsStarted"),
+                    IsUnloaded = dr.Field<bool>("IsUnloaded"),
+                    RecurrenceID = dr.Field<int?>("RecurrenceID"),
+                    GroupID = dr.Field<int?>("GroupID"),
+                    MaxReservedDuration = dr.Field<double>("MaxReservedDuration"),
+                    CancelledDateTime = dr.Field<DateTime?>("CancelledDateTime"),
+                    KeepAlive = dr.Field<bool>("KeepAlive"),
+                    OriginalBeginDateTime = dr.Field<DateTime?>("OriginalBeginDateTime"),
+                    OriginalEndDateTime = dr.Field<DateTime?>("OriginalEndDateTime"),
+                    OriginalModifiedOn = dr.Field<DateTime?>("OriginalModifiedOn"),
+                    AuthDuration = dr.Field<int>("AuthDuration"),
+                    AuthState = dr.Field<bool>("AuthState"),
+                    BuildingDescription = dr.Field<string>("BuildingDescription"),
+                    BuildingID = dr.Field<int>("BuildingID"),
+                    BuildingIsActive = dr.Field<bool>("BuildingIsActive"),
+                    BuildingName = dr.Field<string>("BuildingName"),
+                    GracePeriod = dr.Field<int>("GracePeriod"),
+                    Granularity = dr.Field<int>("Granularity"),
+                    HelpdeskEmail = dr.Field<string>("HelpdeskEmail"),
+                    IsReady = dr.Field<bool>("IsReady"),
+                    IsSchedulable = dr.Field<bool>("IsSchedulable"),
+                    LabDescription = dr.Field<string>("LabDescription"),
+                    LabDisplayName = dr.Field<string>("LabDisplayName"),
+                    LabID = dr.Field<int>("LabID"),
+                    LabIsActive = dr.Field<bool>("LabIsActive"),
+                    LabName = dr.Field<string>("LabName"),
+                    MaxAlloc = dr.Field<int>("MaxAlloc"),
+                    MaxReservTime = dr.Field<int>("MaxReservTime"),
+                    MinCancelTime = dr.Field<int>("MinCancelTime"),
+                    MinReservTime = dr.Field<int>("MinReservTime"),
+                    Offset = dr.Field<int>("Offset"),
+                    OTFSchedTime = dr.Field<int?>("OTFSchedTime"),
+                    ProcessTechDescription = dr.Field<string>("ProcessTechDescription"),
+                    ProcessTechGroupID = dr.Field<int>("ProcessTechGroupID"),
+                    ProcessTechGroupName = dr.Field<string>("ProcessTechGroupName"),
+                    ProcessTechID = dr.Field<int>("ProcessTechID"),
+                    ProcessTechIsActive = dr.Field<bool>("ProcessTechIsActive"),
+                    ProcessTechName = dr.Field<string>("ProcessTechName"),
+                    ReservFence = dr.Field<int>("ReservFence"),
+                    ResourceAutoEnd = dr.Field<int>("ResourceAutoEnd"),
+                    ResourceDescription = dr.Field<string>("ResourceDescription"),
+                    ResourceID = dr.Field<int>("ResourceID"),
+                    ResourceIsActive = dr.Field<bool>("ResourceIsActive"),
+                    ResourceName = dr.Field<string>("ResourceName"),
+                    RoomDisplayName = dr.Field<string>("RoomDisplayName"),
+                    RoomID = dr.Field<int>("RoomID"),
+                    RoomName = dr.Field<string>("RoomName"),
+                    State = dr.Field<ResourceState>("State"),
+                    StateNotes = dr.Field<string>("StateNotes"),
+                    UnloadTime = dr.Field<int?>("UnloadTime"),
+                    WikiPageUrl = dr.Field<string>("WikiPageUrl")
+                });
+            }
+
+            return result;
         }
 
         public IEnumerable<IReservation> SelectPastUnstarted()

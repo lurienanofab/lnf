@@ -6,9 +6,12 @@ namespace LNF.Models.Data
 {
     public interface IAccountManager
     {
-        IEnumerable<IAccount> Accounts(int accountTypeId);
-        IEnumerable<IAccount> ActiveAccounts();
-        IEnumerable<IClientAccount> ClientAccounts(int accountId);
+        IAccount GetAccount(int accountId);
+        IEnumerable<IAccount> GetAccounts();
+        IEnumerable<IAccount> GetAccounts(int accountTypeId);
+        IEnumerable<IAccount> GetActiveAccounts();
+        IEnumerable<IAccount> GetActiveAccounts(int clientId, DateTime sd, DateTime ed);
+        IEnumerable<IClientAccount> GetClientAccounts(int accountId);
         IList<IAccount> ConvertToAccountList(DataTable dt);
         DataTable ConvertToAccountTable(IList<IAccount> accounts);
         bool Delete(int accountId);

@@ -39,11 +39,18 @@ namespace LNF.Feedback
                 var client = CacheManager.Current.GetClient(issue.ClientID);
                 if (client != null)
                 {
-                    var primary = ServiceProvider.Current.ClientOrgManager.GetPrimary(client.ClientID);
-                    if (primary != null)
-                        return primary.Email;
+                    if (!client.PrimaryOrg)
+                    {
+                        var primary = ServiceProvider.Current.Data.Client.GetPrimary(client.ClientID);
+                        if (primary != null)
+                            return primary.Email;
+                        else
+                            return string.Empty;
+                    }
                     else
-                        return string.Empty;
+                    {
+                        return client.Email;
+                    }
                 }
             }
 

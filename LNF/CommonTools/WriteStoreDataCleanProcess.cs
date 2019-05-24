@@ -18,13 +18,6 @@ namespace LNF.CommonTools
     {
         public static readonly int DryBoxCategoryID = 33;
 
-        public IProvider Provider { get; }
-
-        public WriteStoreDataCleanProcess(IProvider provider)
-        {
-            Provider = provider;
-        }
-
         public DateTime StartDate { get; }
         public DateTime EndDate { get; }
         public int ClientID { get; }
@@ -64,7 +57,7 @@ namespace LNF.CommonTools
             var dtStoreDataRaw = ReadData.Store.ReadStoreDataRaw(StartDate, EndDate, ClientID);
             dtStoreDataRaw.TableName = "StoreDataRaw";
 
-            _ds = Provider.DryBoxManager.ReadDryBoxData(StartDate, EndDate, ClientID);
+            _ds = ServiceProvider.Current.Data.DryBox.ReadDryBoxData(StartDate, EndDate, ClientID);
             _ds.Tables.Add(dtStoreDataRaw);
 
             return dtStoreDataRaw;

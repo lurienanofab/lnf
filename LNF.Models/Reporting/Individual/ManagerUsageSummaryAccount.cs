@@ -6,7 +6,7 @@ namespace LNF.Models.Reporting.Individual
 {
     public class ManagerUsageSummaryAccount : ManagerUsageSummaryItem
     {
-        public IEnumerable<ReportingClientItem> Clients { get; set; }
+        public IEnumerable<IReportingClient> Clients { get; set; }
 
         public override string Members
         {

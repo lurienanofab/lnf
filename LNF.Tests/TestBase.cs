@@ -1,4 +1,5 @@
-﻿using LNF.Impl.DependencyInjection.Default;
+﻿using LNF.Impl.Context;
+using LNF.Impl.DependencyInjection.Default;
 using LNF.Repository;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -15,7 +16,8 @@ namespace LNF.Tests
         [TestInitialize]
         public void TestInitialize()
         {
-            var ioc = new IOC(new ContextFactory());
+            var ctx = new WebContext(new ContextFactory());
+            var ioc = new IOC(ctx);
             ServiceProvider.Current = ioc.Resolver.GetInstance<IProvider>();
             _uow = DA.StartUnitOfWork();
         }

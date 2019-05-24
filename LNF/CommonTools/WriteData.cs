@@ -58,7 +58,7 @@ namespace LNF.CommonTools
                         //and will return the max date after the deletion (so the return date should be yesterday)
 
                         string procName = $"dbo.{dataType}_Select";
-                        DateTime lastUpdate = DA.Command().Param("Action", "LastUpdate").Param("ClientID", clientId > 0, clientId).ExecuteScalar<DateTime>(procName).Date;
+                        DateTime lastUpdate = DA.Command().Param("Action", "LastUpdate").Param("ClientID", clientId > 0, clientId).ExecuteScalar<DateTime>(procName).Value.Date;
 
                         /*
                          * For tool: lastUpdate is the last BeginDateTime in ToolDataClean after deleteing all records in this way:

@@ -4,9 +4,19 @@ using System.Collections.Generic;
 
 namespace LNF.Models.Scheduler
 {
-    public interface IReservation : IResource, IClientAccount
+    public interface IReservation : IResource, IPrivileged
     {
         int ReservationID { get; set; }
+        string LName { get; set; }
+        string MName { get; set; }
+        string FName { get; set; }
+        string DisplayName { get; }
+        string Phone { get; set; }
+        string Email { get; set; }
+        int AccountID { get; set; }
+        string AccountName { get; set; }
+        string ShortCode { get; set; }
+        int ChargeTypeID { get; set; }
         int ActivityID { get; set; }
         string ActivityName { get; set; }
         ActivityAccountType ActivityAccountType { get; set; }

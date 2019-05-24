@@ -52,7 +52,12 @@ namespace LNF.Scheduler
 
             Helpdesk.Service service = new Helpdesk.Service(ApiUrl, ApiKey);
 
-            var primary = ServiceProvider.Current.ClientOrgManager.GetPrimary(currentUser.ClientID);
+            IClient primary;
+
+            if (currentUser.PrimaryOrg)
+                primary = currentUser;
+            else
+                primary = ServiceProvider.Current.Data.Client.GetPrimary(currentUser.ClientID);
 
             if (primary != null)
             {

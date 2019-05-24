@@ -4,6 +4,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 
 namespace LNF.Repository
@@ -169,58 +171,71 @@ namespace LNF.Repository
             return this;
         }
 
-        public DataTable FillDataTable(string commandText)
+        public ExecuteFillDataTableResult GetDataTableResult(string commandText)
         {
             var dt = new DataTable();
-            FillDataTable(dt, commandText);
-            return dt;
+            return GetDataTableResult(dt, commandText);
+        }
+
+        public ExecuteFillDataTableResult GetDataTableResult(DataTable dt, string commandText)
+        {
+            using (var adap = GetSelectAdapter(commandText))
+            {
+                return new ExecuteFillDataTableResult(dt, adap);
+            }
+        }
+
+        public ExecuteFillDataSetResult GetDataSetResult(string commandText, string srcTable = null)
+        {
+            var ds = new DataSet();
+            return GetDataSetResult(ds, commandText, srcTable);
+        }
+
+        public ExecuteFillDataSetResult GetDataSetResult(DataSet ds, string commandText, string srcTable = null)
+        {
+            using (var adap = GetSelectAdapter(commandText, ds))
+            {
+                return new ExecuteFillDataSetResult(ds, adap, srcTable);
+            }
+        }
+
+        public DataTable FillDataTable(string commandText)
+        {
+            return GetDataTableResult(commandText).Result;
         }
 
         public void FillDataTable(DataTable dt, string commandText)
         {
-            using (var adap = GetSelectAdapter(commandText))
-            {
-                MapSchema(adap, dt);
-                adap.Fill(dt);
-            }
+            GetDataTableResult(dt, commandText);
         }
 
         public DataSet FillDataSet(string commandText)
         {
-            var ds = new DataSet();
-            FillDataSet(ds, commandText);
-            return ds;
+            return GetDataSetResult(commandText).Result;
         }
 
         public void FillDataSet(DataSet ds, string commandText)
         {
-            using (var adap = GetSelectAdapter(commandText))
-            {
-                MapSchema(adap, ds);
-                adap.Fill(ds);
-            }
+            GetDataSetResult(ds, commandText);
         }
 
         public void FillDataSet(DataSet ds, string commandText, string srcTable)
         {
-            using (var adap = GetSelectAdapter(commandText))
-            {
-                MapSchema(adap, ds);
-                adap.Fill(ds, srcTable);
-            }
+            GetDataSetResult(ds, commandText, srcTable);
         }
 
-        public IDataReader ExecuteReader(string commandText)
+        public ExecuteReaderResult ExecuteReader(string commandText)
         {
             var adap = GetSelectAdapter(commandText);
-            return adap.SelectCommand.ExecuteReader();
+            var result = new ExecuteReaderResult(adap);
+            return result;
         }
 
-        public T ExecuteScalar<T>(string commandText)
+        public ExecuteScalarResult<T> ExecuteScalar<T>(string commandText)
         {
             using (var adap = GetSelectAdapter(commandText))
             {
-                return Utility.ConvertTo(adap.SelectCommand.ExecuteScalar(), default(T));
+                return new ExecuteScalarResult<T>(adap);
             }
         }
 
@@ -228,8 +243,7 @@ namespace LNF.Repository
         {
             using (var adap = GetSelectAdapter(commandText))
             {
-                int value = adap.SelectCommand.ExecuteNonQuery();
-                return new ExecuteNonQueryResult(_configs["select"], value);
+                return new ExecuteNonQueryResult(adap);
             }
         }
 
@@ -290,6 +304,13 @@ namespace LNF.Repository
             return adap;
         }
 
+        private UnitOfWorkAdapter GetSelectAdapter(string commandText, DataSet ds)
+        {
+            var adap = GetSelectAdapter(commandText);
+            MapSchema(adap, ds);
+            return adap;
+        }
+
         private UnitOfWorkAdapter GetUpdateAdapter(Action<UpdateConfiguration> action)
         {
             var adap = GetAdapter();
@@ -337,7 +358,6 @@ namespace LNF.Repository
         private string _commandText;
         private int _commandTimeout = 30;
         private CommandType _commandType = CommandType.StoredProcedure;
-        private IDbCommand _command = null;
         private readonly ParameterDefinitionCollection _parameters = new ParameterDefinitionCollection();
         private readonly IDictionary<string, string> _lists = new Dictionary<string, string>();
 
@@ -594,34 +614,19 @@ namespace LNF.Repository
                 _lists.Add(key, plist);
         }
 
-        public T GetParamValue<T>(string name, T defval = default(T))
-        {
-            if (!_command.Parameters.Contains(name))
-                return defval;
-
-            var p = (IDbDataParameter)_command.Parameters[name];
-
-            if (p == null)
-                return defval;
-
-            return Utility.ConvertTo(p.Value, defval);
-        }
-
         internal void Configure(IDbCommand command)
         {
-            _command = command;
+            command.CommandType = _commandType;
+            command.CommandText = FormatCommandText();
+            command.CommandTimeout = _commandTimeout;
 
-            _command.CommandType = _commandType;
-            _command.CommandText = FormatCommandText();
-            _command.CommandTimeout = _commandTimeout;
-
-            _command.Parameters.Clear();
+            command.Parameters.Clear();
 
             foreach (var kvp in _parameters)
             {
                 var def = kvp.Value;
 
-                var p = _command.CreateParameter();
+                var p = command.CreateParameter();
 
                 p.ParameterName = def.Name;
                 p.Value = def.Value;
@@ -630,7 +635,7 @@ namespace LNF.Repository
                 p.Size = def.Size;
                 p.SourceColumn = string.IsNullOrEmpty(def.SourceColumn) ? def.Name.TrimStart('@') : def.SourceColumn;
 
-                _command.Parameters.Add(p);
+                command.Parameters.Add(p);
             }
         }
 
@@ -722,19 +727,172 @@ namespace LNF.Repository
         public string SourceColumn { get; internal set; }
     }
 
-    public class ExecuteNonQueryResult
+    public abstract class ExecuteResult
     {
-        private readonly CommandConfiguration _config;
+        private Stopwatch _sw;
 
-        internal ExecuteNonQueryResult(CommandConfiguration config, int value)
+        private DbParameterCollection _parameters;
+
+        protected DbDataAdapter Adapter { get; }
+
+        protected abstract void Execute();
+
+        public TimeSpan TimeTaken { get; protected set; }
+
+        internal ExecuteResult(DbDataAdapter adap)
         {
-            _config = config;
-            Value = value;
+            Adapter = adap;
         }
 
-        public int Value { get; }
+        protected void Start()
+        {
+            _sw = Stopwatch.StartNew();
+            Execute();
+            Stop();
+        }
 
-        public T GetParamValue<T>(string name, T defval = default(T)) => _config.GetParamValue(name, defval);
+        private void Stop()
+        {
+            _sw.Stop();
+            _parameters = Adapter.SelectCommand.Parameters;
+            TimeTaken = _sw.Elapsed;
+        }
+
+        public T GetParamValue<T>(string name, T defval = default(T))
+        {
+            if (!_parameters.Contains(name))
+                return defval;
+
+            var p = _parameters[name];
+
+            if (p == null)
+                return defval;
+
+            return Utility.ConvertTo(p.Value, defval);
+        }
+    }
+
+    public class ExecuteFillDataTableResult : ExecuteResult
+    {
+        private DbDataAdapter _adap;
+
+        public DataTable Result { get; private set; }
+
+        public ExecuteFillDataTableResult(DataTable dt, DbDataAdapter adap) : base(adap)
+        {
+            _adap = adap;
+            Result = dt;
+            Start();
+        }
+
+        protected override void Execute()
+        {
+            _adap.Fill(Result);
+        }
+    }
+
+    public class ExecuteFillDataSetResult : ExecuteResult
+    {
+        public string SourceTable { get; }
+        public DataSet Result { get; private set; }
+
+        public ExecuteFillDataSetResult(DataSet ds, DbDataAdapter adap, string srcTable = null) : base(adap)
+        {
+            Result = ds;
+            SourceTable = srcTable;
+            Start();
+        }
+
+        protected override void Execute()
+        {
+            // Fill throws an error if srcTable is null so...
+
+            if (string.IsNullOrEmpty(SourceTable))
+                Adapter.Fill(Result);
+            else
+                Adapter.Fill(Result, SourceTable);
+        }
+    }
+
+    public class ExecuteScalarResult<T> : ExecuteResult
+    {
+        public T Value { get; private set; }
+
+        internal ExecuteScalarResult(DbDataAdapter adap) : base(adap)
+        {
+            Start();
+        }
+
+        protected override void Execute()
+        {
+            var scalar = Adapter.SelectCommand.ExecuteScalar();
+            Value = Utility.ConvertTo(scalar, default(T));
+        }
+    }
+
+    public class ExecuteNonQueryResult : ExecuteResult
+    {
+        public int Value { get; private set; }
+
+        internal ExecuteNonQueryResult(DbDataAdapter adap) : base(adap)
+        {
+            Start();
+        }
+
+        protected override void Execute()
+        {
+            Value = Adapter.SelectCommand.ExecuteNonQuery();
+        }
+    }
+
+    public class ExecuteReaderResult : ExecuteResult, IEnumerable, IDisposable
+    {
+        private DbDataReader _reader;
+
+        public object this[string name]
+        {
+            get => _reader[name];
+        }
+
+        public object this[int i]
+        {
+            get => _reader[i];
+        }
+
+        internal ExecuteReaderResult(DbDataAdapter adap) : base(adap)
+        {
+            Start();
+        }
+
+        protected override void Execute()
+        {
+            _reader = Adapter.SelectCommand.ExecuteReader();
+        }
+
+        public bool Read()
+        {
+            return _reader.Read();
+        }
+
+        public void Close()
+        {
+            _reader.Close();
+        }
+
+        public void Dispose()
+        {
+            if (!_reader.IsClosed)
+                _reader.Close();
+
+            _reader.Dispose();
+
+            Adapter.Dispose();
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            return _reader.GetEnumerator();
+        }
     }
 
     public class BatchConfiguration
@@ -744,7 +902,7 @@ namespace LNF.Repository
         public BatchCommandConfiguration Update { get; }
         public BatchCommandConfiguration Delete { get; }
 
-        internal BatchConfiguration(IDbDataAdapter adap, IDictionary<string, CommandConfiguration> configs)
+        internal BatchConfiguration(DbDataAdapter adap, IDictionary<string, CommandConfiguration> configs)
         {
             Select = new BatchCommandConfiguration(adap, adap.SelectCommand, configs["select"]);
             Insert = new BatchCommandConfiguration(adap, adap.InsertCommand, configs["insert"]);
@@ -755,11 +913,11 @@ namespace LNF.Repository
 
     public class BatchCommandConfiguration : CommandConfiguration
     {
-        private readonly IDbDataAdapter _adap;
-        private readonly IDbCommand _command;
+        private readonly DbDataAdapter _adap;
+        private readonly DbCommand _command;
         private readonly CommandConfiguration _config;
 
-        internal BatchCommandConfiguration(IDbDataAdapter adap, IDbCommand command, CommandConfiguration config)
+        internal BatchCommandConfiguration(DbDataAdapter adap, DbCommand command, CommandConfiguration config)
         {
             _adap = adap;
             _command = command;
@@ -769,20 +927,19 @@ namespace LNF.Repository
         public ExecuteNonQueryResult ExecuteNonQuery()
         {
             _config.Configure(_command);
-            var value = _command.ExecuteNonQuery();
-            return new ExecuteNonQueryResult(_config, value);
+            return new ExecuteNonQueryResult(_adap);
         }
 
-        public IDataReader ExecuteReader()
+        public ExecuteReaderResult ExecuteReader()
         {
             _config.Configure(_command);
-            return _command.ExecuteReader();
+            return new ExecuteReaderResult(_adap);
         }
 
-        public T ExecuteScalar<T>()
+        public ExecuteScalarResult<T> ExecuteScalar<T>()
         {
             _config.Configure(_command);
-            return Utility.ConvertTo(_command.ExecuteScalar(), default(T));
+            return new ExecuteScalarResult<T>(_adap);
         }
     }
 

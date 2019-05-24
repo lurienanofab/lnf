@@ -25,5 +25,10 @@ namespace OnlineServices.Api.Billing
         {
             return Get<bool>("webapi/billing/account-subsidy/disable/{accountSubsidyId}", UrlSegments(new { accountSubsidyId }));
         }
+
+        public IAccountSubsidy GetSingleAccountSubsidy(int accountSubsidyId)
+        {
+            return Get<AccountSubsidyItem>("webapi/billing/account-subsidy/{accountSubsidyId}", UrlSegments(new { accountSubsidyId }));
+        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using LNF.Repository.Billing;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 
@@ -7,27 +6,12 @@ namespace LNF.Billing
 {
     public static class ToolBillingUtility
     {
-        public static int NumberOfDaysInMonth(DateTime d)
+        public static Models.Billing.IToolBilling CreateToolBillingItem(bool temp)
         {
-            DateTime fom = new DateTime(d.Year, d.Month, 1);
-            DateTime nextMonth = fom.AddMonths(1);
-            DateTime lastDayOfMonth = nextMonth.AddDays(-1);
-            return lastDayOfMonth.Day;
+            return new Models.Billing.ToolBillingItem { IsTemp = temp };
         }
 
-        public static IToolBilling CreateToolBillingItem(bool temp)
-        {
-            IToolBilling result;
-
-            if (temp)
-                result = new ToolBillingTemp();
-            else
-                result = new ToolBilling();
-
-            return result;
-        }
-
-        public static IEnumerable<IToolBilling> CreateToolBillingFromDataTable(DataTable dt, bool temp)
+        public static IEnumerable<Models.Billing.IToolBilling> CreateToolBillingFromDataTable(DataTable dt, bool temp)
         {
             foreach (DataRow dr in dt.Rows)
             {
@@ -36,9 +20,9 @@ namespace LNF.Billing
             }
         }
 
-        public static IToolBilling CreateToolBillingFromDataRow(DataRow dr, bool temp)
+        public static Models.Billing.IToolBilling CreateToolBillingFromDataRow(DataRow dr, bool temp)
         {
-            IToolBilling item = CreateToolBillingItem(temp);
+            var item = CreateToolBillingItem(temp);
 
             item.ToolBillingID = 0;
             item.Period = dr.Field<DateTime>("Period");

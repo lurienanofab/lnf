@@ -30,9 +30,9 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.BuildingName);
             Map(x => x.BuildingDescription);
             Map(x => x.BuildingIsActive);
-            Map(x => x.ResourceIsActive, "IsActive");
+            Map(x => x.ResourceIsActive);
             Map(x => x.IsSchedulable);
-            Map(x => x.ResourceDescription, "Description");
+            Map(x => x.ResourceDescription);
             Map(x => x.HelpdeskEmail);
             Map(x => x.WikiPageUrl);
             Map(x => x.State);
@@ -42,7 +42,7 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.ReservFence);
             Map(x => x.MaxAlloc);
             Map(x => x.MinCancelTime);
-            Map(x => x.ResourceAutoEnd, "AutoEnd");
+            Map(x => x.ResourceAutoEnd);
             Map(x => x.UnloadTime);
             Map(x => x.OTFSchedTime);
             Map(x => x.Granularity);
@@ -51,16 +51,6 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.MinReservTime);
             Map(x => x.MaxReservTime);
             Map(x => x.GracePeriod);
-            Map(x => x.CurrentReservationID);
-            Map(x => x.CurrentClientID);
-            Map(x => x.CurrentActivityID);
-            Map(x => x.CurrentFirstName);
-            Map(x => x.CurrentLastName);
-            Map(x => x.CurrentActivityName);
-            Map(x => x.CurrentActivityEditable);
-            Map(x => x.CurrentBeginDateTime);
-            Map(x => x.CurrentEndDateTime);
-            Map(x => x.CurrentNotes);
         }
     }
 }

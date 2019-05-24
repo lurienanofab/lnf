@@ -34,44 +34,44 @@ namespace LNF.Data
         /// <summary>
         /// Gets all active ClientAccounts. ClientAccounts are cached for 30 minutes.
         /// </summary>
-        public static IEnumerable<ClientAccountItem> ClientAccounts(this CacheManager cm) => cm.GetValue("ClientAccounts", () => DA.Current.Query<ClientAccountInfo>().Where(x => x.ClientAccountActive && x.ClientOrgActive).CreateModels<ClientAccountItem>(), DateTimeOffset.Now.AddMinutes(30));
+        public static IEnumerable<IClientAccount> ClientAccounts(this CacheManager cm) => cm.GetValue("ClientAccounts", () => DA.Current.Query<ClientAccountInfo>().Where(x => x.ClientAccountActive && x.ClientOrgActive).CreateModels<ClientAccountItem>(), DateTimeOffset.Now.AddMinutes(30));
 
         /// <summary>
         /// Gets the active ClientAccounts for a particular client. ClientAccounts are cached for 30 minutes.
         /// </summary>
-        public static IEnumerable<ClientAccountItem> GetClientAccounts(this CacheManager cm, int clientId) => cm.ClientAccounts().Where(x => x.ClientID == clientId);
+        public static IEnumerable<IClientAccount> GetClientAccounts(this CacheManager cm, int clientId) => cm.ClientAccounts().Where(x => x.ClientID == clientId);
 
         /// <summary>
         /// Gets one active ClientAccount for a particular client and account. ClientAccounts are cached for 30 minutes.
         /// </summary>
-        public static ClientAccountItem GetClientAccount(this CacheManager cm, int clientId, int accountId) => cm.GetClientAccounts(clientId).FirstOrDefault(x => x.AccountID == accountId);
+        public static IClientAccount GetClientAccount(this CacheManager cm, int clientId, int accountId) => cm.GetClientAccounts(clientId).FirstOrDefault(x => x.AccountID == accountId);
 
         /// <summary>
         /// Gets the active ClientAccounts for the current user. ClientAccounts are cached for 30 minutes.
         /// </summary>
         [Obsolete("Use HttpContextBase instead.")]
-        public static IEnumerable<ClientAccountItem> GetCurrentUserClientAccounts(this CacheManager cm) => cm.GetClientAccounts(cm.CurrentUser.ClientID);
+        public static IEnumerable<IClientAccount> GetCurrentUserClientAccounts(this CacheManager cm) => cm.GetClientAccounts(cm.CurrentUser.ClientID);
 
         /// <summary>
         /// Gets all active ClientOrgs. ClientOrgs are cached for 30 minutes.
         /// </summary>
-        public static IEnumerable<ClientItem> ClientOrgs(this CacheManager cm) => cm.GetValue("ClientOrgs", () => DA.Current.Query<ClientOrgInfo>().Where(x => x.ClientOrgActive).CreateModels<ClientItem>(), DateTimeOffset.Now.AddMinutes(30));
+        public static IEnumerable<IClient> ClientOrgs(this CacheManager cm) => cm.GetValue("ClientOrgs", () => DA.Current.Query<ClientOrgInfo>().Where(x => x.ClientOrgActive).CreateModels<IClient>(), DateTimeOffset.Now.AddMinutes(30));
 
         /// <summary>
         /// Gets all active ClientOrgs for a particular client. ClientOrgs are cached for 30 minutes.
         /// </summary>
-        public static IEnumerable<ClientItem> GetClientOrgs(this CacheManager cm, int clientId) => cm.ClientOrgs().Where(x => x.ClientID == clientId);
+        public static IEnumerable<IClient> GetClientOrgs(this CacheManager cm, int clientId) => cm.ClientOrgs().Where(x => x.ClientID == clientId);
 
         /// <summary>
         /// Gets one active ClientOrg for a particular client and org. ClientOrgs are cached for 30 minutes.
         /// </summary>
-        public static ClientItem GetClientOrg(this CacheManager cm, int clientId, int orgId) => cm.GetClientOrgs(clientId).FirstOrDefault(x => x.OrgID == orgId);
+        public static IClient GetClientOrg(this CacheManager cm, int clientId, int orgId) => cm.GetClientOrgs(clientId).FirstOrDefault(x => x.OrgID == orgId);
 
         /// <summary>
         /// Gets the active ClientOrgs for the current user. ClientOrgs are cached for 30 minutes.
         /// </summary>
         [Obsolete("Use HttpContextBase instead.")]
-        public static IEnumerable<ClientItem> GetCurrentUserClientOrgs(this CacheManager cm) => cm.GetClientOrgs(cm.CurrentUser.ClientID);
+        public static IEnumerable<IClient> GetCurrentUserClientOrgs(this CacheManager cm) => cm.GetClientOrgs(cm.CurrentUser.ClientID);
 
         /// <summary>
         /// Gets the global cost config from cache. Using MemoryCache because this data rarely changes. 

@@ -9,5 +9,6 @@ namespace LNF.Models.Billing
         IEnumerable<IAccountSubsidy> GetActiveAccountSubsidy(DateTime sd, DateTime ed);
         int AddAccountSubsidy(IAccountSubsidy model);
         bool DisableAccountSubsidy(int accountSubsidyId);
+        IAccountSubsidy GetSingleAccountSubsidy(int accountSubsidyId);
     }
 }

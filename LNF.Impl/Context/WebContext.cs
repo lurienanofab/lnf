@@ -13,13 +13,13 @@ namespace LNF.Impl.Context
 {
     public class WebContext : ContextBase
     {
-        private IHttpContextFactory _httpContextFactory;
+        private IHttpContextFactory _factory;
 
-        public HttpContextBase ContextBase => _httpContextFactory.Create();
+        public virtual HttpContextBase ContextBase => _factory.CreateContext();
 
-        public WebContext(IHttpContextFactory httpContextFactory)
+        public WebContext(IHttpContextFactory contextFactory)
         {
-            _httpContextFactory = httpContextFactory ?? throw new ArgumentNullException("httpContextFactory");
+            _factory = contextFactory;
         }
 
         public override object GetSessionValue(string key)

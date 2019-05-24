@@ -35,11 +35,11 @@ namespace LNF.CommonTools
         public BillingDataProcessStep1(DateTime now, IProvider provider)
         {
             Now = now;
-            ServiceProvider = provider;
+            Provider = provider;
         }
 
         public DateTime Now { get; }
-        public IProvider ServiceProvider { get; }
+        public IProvider Provider { get; }
 
         #region Room Billing
         public const string FOR_PARENT_ROOMS = "ForParentRooms";
@@ -803,11 +803,11 @@ namespace LNF.CommonTools
                 IsTemp = temp
             };
 
-            IToolBilling[] source = GetToolData(period, clientId, 0, temp);
+            Models.Billing.IToolBilling[] source = GetToolData(period, clientId, 0, temp);
 
             result.RowsExtracted = source.Length;
 
-            foreach (IToolBilling tb in source)
+            foreach (var tb in source)
                 CalculateToolBillingCharges(tb);
 
             //Delete appropriate data
@@ -819,7 +819,7 @@ namespace LNF.CommonTools
             return result;
         }
 
-        public static IToolBilling[] GetToolData(DateTime period, int clientId, int reservationId, bool temp)
+        public static Models.Billing.IToolBilling[] GetToolData(DateTime period, int clientId, int reservationId, bool temp)
         {
             // Must use a DataTable here because the stored proc returns new ToolBilling rows, without ToolBillingID, which causes problems
             var dt = DA.Command()
@@ -834,11 +834,11 @@ namespace LNF.CommonTools
             return source;
         }
 
-        public void CalculateToolBillingCharges(IToolBilling tb)
+        public void CalculateToolBillingCharges(Models.Billing.IToolBilling tb)
         {
-            ServiceProvider.ToolBillingManager.CalculateReservationFee(tb);
-            ServiceProvider.ToolBillingManager.CalculateUsageFeeCharged(tb);
-            ServiceProvider.ToolBillingManager.CalculateBookingFee(tb);
+            Provider.Billing.Tool.CalculateReservationFee(tb);
+            Provider.Billing.Tool.CalculateUsageFeeCharged(tb);
+            Provider.Billing.Tool.CalculateBookingFee(tb);
         }
 
         //Get source data from ToolData
@@ -859,7 +859,7 @@ namespace LNF.CommonTools
                 .ExecuteNonQuery(sp).Value;
         }
 
-        private static int InsertToolBillingData(IEnumerable<IToolBilling> items, bool temp)
+        private static int InsertToolBillingData(IEnumerable<Models.Billing.IToolBilling> items, bool temp)
         {
             DataTable dt = CreateToolBillingTable();
             FillToolBillingDataTable(dt, items);
@@ -1019,7 +1019,7 @@ namespace LNF.CommonTools
             return dt;
         }
 
-        private static void FillToolBillingDataTable(DataTable dt, IEnumerable<IToolBilling> items)
+        private static void FillToolBillingDataTable(DataTable dt, IEnumerable<Models.Billing.IToolBilling> items)
         {
             foreach (var tb in items)
             {

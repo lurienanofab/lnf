@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Billing
 {
-    public class RoomBillingItem
+    public class RoomBillingItem : IRoomBilling
     {
         public int RoomBillingID { get; set; }
         public DateTime Period { get; set; }
@@ -25,5 +25,16 @@ namespace LNF.Models.Billing
         public decimal EntryCharge { get; set; }
         public decimal SubsidyDiscount { get; set; }
         public bool IsTemp { get; set; }
+
+        /// <summary>
+        /// The total charge used to calculate subsidy.
+        /// </summary>
+        public decimal GetTotalCharge() => GetTotalCharge(RoomCharge, EntryCharge);
+
+        public static decimal GetTotalCharge(decimal roomCharge, decimal entryCharge)
+        {
+            // this matches the stored procedure TieredSubsidyBilling_Select @Action = 'ForSubsidyDiscountDistribution'
+            return roomCharge + entryCharge;
+        }
     }
 }

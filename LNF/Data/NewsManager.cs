@@ -1,4 +1,5 @@
-﻿using LNF.Repository;
+﻿using LNF.Models.Data;
+using LNF.Repository;
 using LNF.Repository.Data;
 using System;
 using System.Collections.Generic;
@@ -13,36 +14,53 @@ namespace LNF.Data
         /// <summary>
         /// Deletes a News item
         /// </summary>
-        public void Delete(News item, int currentUserClientId)
+        public void Delete(int newsId, int currentUserClientId)
         {
-            item.NewsUpdatedByClientID = currentUserClientId;
-            item.NewsLastUpdate = DateTime.Now;
-            item.NewsDeleted = true;
+            var n = GetNews(newsId);
+
+            n.NewsUpdatedByClientID = currentUserClientId;
+            n.NewsLastUpdate = DateTime.Now;
+            n.NewsDeleted = true;
+
+            Session.SaveOrUpdate(n);
         }
 
         /// <summary>
         /// Restores a previously deleted News item
         /// </summary>
-        public void Undelete(News item, int currentUserClientId)
+        public void Undelete(int newsId, int currentUserClientId)
         {
-            item.NewsUpdatedByClientID = currentUserClientId;
-            item.NewsLastUpdate = DateTime.Now;
-            item.NewsDeleted = false;
+            var n = GetNews(newsId);
+
+            n.NewsUpdatedByClientID = currentUserClientId;
+            n.NewsLastUpdate = DateTime.Now;
+            n.NewsDeleted = false;
+
+            Session.SaveOrUpdate(n);
         }
 
-        public void SetDefault(News item, int currentUserClientId)
+        public void SetDefault(int newsId, int currentUserClientId)
         {
-            News d = Session.Query<News>().FirstOrDefault(x => x.NewsDefault);
-            d.NewsDefault = false;
+            var d = Session.Query<News>().FirstOrDefault(x => x.NewsDefault);
 
-            item.NewsUpdatedByClientID = currentUserClientId;
-            item.NewsLastUpdate = DateTime.Now;
-            item.NewsDefault = true;
+            if (d != null)
+            {
+                d.NewsDefault = false;
+                Session.SaveOrUpdate(d);
+            }
+
+            var n = GetNews(newsId);
+
+            n.NewsUpdatedByClientID = currentUserClientId;
+            n.NewsLastUpdate = DateTime.Now;
+            n.NewsDefault = true;
+
+            Session.SaveOrUpdate(n);
         }
 
-        public IList<News> FindByStatus(string status)
+        public IEnumerable<INews> FindByStatus(string status)
         {
-            IList<News> activeItems = Session.Query<News>().Where(x =>
+            var activeItems = Session.Query<News>().Where(x =>
                 (x.NewsPublishDate == null || x.NewsPublishDate.Value <= DateTime.Now) &&
                 (x.NewsExpirationDate == null || x.NewsExpirationDate > DateTime.Now) &&
                 x.NewsActive && !x.NewsDeleted).ToList();
@@ -53,12 +71,12 @@ namespace LNF.Data
             switch (status)
             {
                 case "current":
-                    return activeItems;
+                    return activeItems.CreateModels<INews>();
                 case "inactive":
-                    IList<News> inactiveItems = Session.Query<News>().Where(x => !x.NewsDeleted).ToList();
+                    var inactiveItems = Session.Query<News>().Where(x => !x.NewsDeleted).ToList();
                     return inactiveItems
                         .Where(x => !activeItems.Select(a => a.NewsID).Contains(x.NewsID))
-                        .ToList();
+                        .CreateModels<INews>();
                 default:
                     throw new ArgumentException("Argument status must be either \"current\" or \"inactive\".");
             }
@@ -66,7 +84,7 @@ namespace LNF.Data
 
         public int UploadImage(int newsId, byte[] image, string fileName, string contentType, int currentUserClientId)
         {
-            News n = Session.Single<News>(newsId);
+            var n = Session.Single<News>(newsId);
 
             if (n != null)
             {
@@ -83,7 +101,7 @@ namespace LNF.Data
 
         public int DeleteImage(int newsId, int currentUserClientId)
         {
-            News n = Session.Single<News>(newsId);
+            var n = Session.Single<News>(newsId);
             if (n != null)
             {
                 n.NewsUpdatedByClientID = currentUserClientId;
@@ -94,6 +112,16 @@ namespace LNF.Data
                 return 1;
             }
             return 0;
+        }
+
+        private News GetNews(int newsId)
+        {
+            var result = Session.Single<News>(newsId);
+
+            if (result == null)
+                throw new ItemNotFoundException<News>(x => x.NewsID, newsId);
+
+            return result;
         }
     }
 }

@@ -5,33 +5,24 @@ namespace LNF.Models.Scheduler
 {
     public class ResourceTreeItem : ClientItem, IResourceTree
     {
-        public string ProcessTechDescription { get; set; }
-        public bool ProcessTechIsActive { get; set; }
-        public int ProcessTechGroupID { get; set; }
-        public string ProcessTechGroupName { get; set; }
-        public string LabDescription { get; set; }
-        public bool LabIsActive { get; set; }
-        public int RoomID { get; set; }
-        public string RoomName { get; set; }
-        public string RoomDisplayName { get; set; }
-        public string BuildingDescription { get; set; }
-        public bool BuildingIsActive { get; set; }
+        public int CurrentReservationID { get; set; }
+        public int CurrentClientID { get; set; }
+        public int CurrentActivityID { get; set; }
+        public string CurrentFirstName { get; set; }
+        public string CurrentLastName { get; set; }
+        public string CurrentActivityName { get; set; }
+        public bool CurrentActivityEditable { get; set; }
+        public DateTime? CurrentBeginDateTime { get; set; }
+        public DateTime? CurrentEndDateTime { get; set; }
+        public string CurrentNotes { get; set; }
         public int ResourceClientID { get; set; }
-        public ClientAuthLevel AuthLevel { get; set; }
         public ClientAuthLevel EveryoneAuthLevel { get; set; }
         public ClientAuthLevel EffectiveAuthLevel { get; set; }
         public DateTime? Expiration { get; set; }
         public int? EmailNotify { get; set; }
         public int? PracticeResEmailNotify { get; set; }
         public int ResourceID { get; set; }
-        public int ProcessTechID { get; set; }
-        public int LabID { get; set; }
-        public int BuildingID { get; set; }
         public string ResourceName { get; set; }
-        public string ProcessTechName { get; set; }
-        public string LabName { get; set; }
-        public string LabDisplayName { get; set; }
-        public string BuildingName { get; set; }
         public bool ResourceIsActive { get; set; }
         public bool IsSchedulable { get; set; }
         public string ResourceDescription { get; set; }
@@ -53,20 +44,31 @@ namespace LNF.Models.Scheduler
         public int MinReservTime { get; set; }
         public int MaxReservTime { get; set; }
         public int GracePeriod { get; set; }
-        public int CurrentReservationID { get; set; }
-        public int CurrentClientID { get; set; }
-        public int CurrentActivityID { get; set; }
-        public bool CurrentActivityEditable { get; set; }
-        public string CurrentFirstName { get; set; }
-        public string CurrentLastName { get; set; }
-        public string CurrentActivityName { get; set; }
-        public DateTime? CurrentBeginDateTime { get; set; }
-        public DateTime? CurrentEndDateTime { get; set; }
-        public string CurrentNotes { get; set; }
-        public string ResourceDisplayName => ResourceItem.GetDisplayName(ResourceName, ResourceID);
-        public bool HasState(ResourceState state) => ResourceItem.HasState(State, state);
+
+        public string ResourceDisplayName => throw new NotImplementedException();
+
+        public int ProcessTechID { get; set; }
+        public int ProcessTechGroupID { get; set; }
+        public string ProcessTechGroupName { get; set; }
+        public string ProcessTechDescription { get; set; }
+        public bool ProcessTechIsActive { get; set; }
+        public string ProcessTechName { get; set; }
+        public string LabDescription { get; set; }
+        public string LabDisplayName { get; set; }
+        public int LabID { get; set; }
+        public bool LabIsActive { get; set; }
+        public string LabName { get; set; }
+        public string RoomDisplayName { get; set; }
+        public int RoomID { get; set; }
+        public string RoomName { get; set; }
+        public string BuildingDescription { get; set; }
+        public int BuildingID { get; set; }
+        public bool BuildingIsActive { get; set; }
+        public string BuildingName { get; set; }
+        public ClientAuthLevel AuthLevel { get; set; }
         public bool HasAuth(ClientAuthLevel auths) => ResourceClientItem.HasAuth(AuthLevel, auths);
         public bool HasEffectiveAuth(ClientAuthLevel auths) => ResourceClientItem.HasAuth(EffectiveAuthLevel, auths);
+        public bool HasState(ResourceState state) => ResourceItem.HasState(State, state);
         public bool IsEveryone() => ResourceClientItem.IsEveryone(ClientID);
     }
 }

@@ -9,7 +9,6 @@ namespace LNF
 {
     public class SiteMenu : SiteMenuBase
     {
-
         public SiteMenu(IClient client, string target) : base(GetMenuItems(), client, target) { }
 
         public override bool IsKiosk()

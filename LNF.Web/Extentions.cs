@@ -89,7 +89,7 @@ namespace LNF.Web
         {
             if (context.Items["CurrentUser"] == null)
             {
-                context.Items["CurrentUser"] = ServiceProvider.Current.Data.GetClient(context.User.Identity.Name);
+                context.Items["CurrentUser"] = ServiceProvider.Current.Data.Client.GetClient(context.User.Identity.Name);
             }
 
             var result = (ClientItem)context.Items["CurrentUser"];
@@ -202,7 +202,7 @@ namespace LNF.Web
             if (context.Session["ErrorID"] == null)
                 return null;
             else
-                return context.Session["ErrorID"].ToString();
+                return Convert.ToString(context.Session["ErrorID"]);
         }
 
         public static void RemoveCacheData(this HttpContextBase context)
@@ -235,9 +235,14 @@ namespace LNF.Web
             else return (DataSet)obj;
         }
 
-        public static IEnumerable<ClientItem> GetCurrentUserClientOrgs(this HttpContextBase context)
+        public static IEnumerable<IClient> GetCurrentUserClientOrgs(this HttpContextBase context)
         {
             return CacheManager.Current.GetClientOrgs(context.CurrentUser().ClientID);
+        }
+
+        public static IEnumerable<IClientAccount> GetCurrentUserClientAccounts(this HttpContextBase context)
+        {
+            return CacheManager.Current.GetClientAccounts(context.CurrentUser().ClientID);
         }
     }
 }

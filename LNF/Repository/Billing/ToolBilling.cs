@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LNF.Models.Billing;
+using System;
 
 namespace LNF.Repository.Billing
 {

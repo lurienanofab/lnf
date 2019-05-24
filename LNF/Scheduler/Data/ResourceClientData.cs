@@ -43,7 +43,7 @@ namespace LNF.Scheduler.Data
         /// <summary>
         /// Returns all resource clients and their emails and affiliations 
         /// </summary>
-        public static IDataReader SelectClientList(int resourceId)
+        public static ExecuteReaderResult SelectClientList(int resourceId)
         {
             return DA.Command()
                 .Param("Action", "SelectClientList")
@@ -115,7 +115,7 @@ namespace LNF.Scheduler.Data
         /// <summary>
         /// Returns the relationship between the specified resource and the specified client
         /// </summary>
-        public static IDataReader SelectResourceClient(int resourceId, int clientId)
+        public static ExecuteReaderResult SelectResourceClient(int resourceId, int clientId)
         {
             return DA.Command()
                 .Param(new { Action = "Select", ResourceID = resourceId, ClientID = clientId })

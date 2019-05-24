@@ -220,7 +220,7 @@ namespace LNF.Scheduler
                 {
                     if (inviteeSetting.EmailInvited.Value)
                     {
-                        var primary = Provider.ClientOrgManager.GetPrimary(ri.InviteeID);
+                        var primary = Provider.Data.Client.GetPrimary(ri.InviteeID);
                         if (primary != null)
                             toAddr.Add(primary.Email);
                     }
@@ -259,7 +259,7 @@ namespace LNF.Scheduler
                 {
                     if (inviteeSetting.EmailInvited.Value)
                     {
-                        var primary = Provider.ClientOrgManager.GetPrimary(ri.InviteeID);
+                        var primary = Provider.Data.Client.GetPrimary(ri.InviteeID);
                         if (primary != null)
                             toAddr.Add(primary.Email);
                     }

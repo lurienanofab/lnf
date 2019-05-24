@@ -1,6 +1,6 @@
 ﻿namespace LNF.Models.Reporting
 {
-    public class ReportingClientItem
+    public class ReportingClientItem : IReportingClient
     {
         public int ClientID { get; set; }
         public string UserName { get; set; }

@@ -4,7 +4,7 @@ using System;
 
 namespace LNF.Repository.Scheduler
 {
-    public class ReservationInfo : IDataItem
+    public class ReservationInfo : IDataItem, IReservation
     {
         // ***** Reservation **********************************************************************
         public virtual int ReservationID { get; set; }
@@ -49,84 +49,18 @@ namespace LNF.Repository.Scheduler
         public virtual string MName { get; set; }
         public virtual string FName { get; set; }
         public virtual ClientPrivilege Privs { get; set; }
-        public virtual int Communities { get; set; }
-        public virtual bool IsChecked { get; set; }
-        public virtual bool IsSafetyTest { get; set; }
-        public virtual int DemCitizenID { get; set; }
-        public virtual string DemCitizenName { get; set; }
-        public virtual int DemGenderID { get; set; }
-        public virtual string DemGenderName { get; set; }
-        public virtual int DemRaceID { get; set; }
-        public virtual string DemRaceName { get; set; }
-        public virtual int DemEthnicID { get; set; }
-        public virtual string DemEthnicName { get; set; }
-        public virtual int DemDisabilityID { get; set; }
-        public virtual string DemDisabilityName { get; set; }
-        public virtual int TechnicalInterestID { get; set; }
-        public virtual string TechnicalInterestName { get; set; }
-        public virtual bool ClientActive { get; set; }
 
         // ***** ClientOrg ************************************************************************
-        public virtual int ClientOrgID { get; set; }
         public virtual string Phone { get; set; }
         public virtual string Email { get; set; }
-        public virtual bool IsManager { get; set; }
-        public virtual bool IsFinManager { get; set; }
-        public virtual DateTime? SubsidyStartDate { get; set; }
-        public virtual DateTime? NewFacultyStartDate { get; set; }
-        public virtual int ClientAddressID { get; set; }
-        public virtual bool ClientOrgActive { get; set; }
-        public virtual int DepartmentID { get; set; }
-        public virtual string DepartmentName { get; set; }
-        public virtual int RoleID { get; set; }
-        public virtual string RoleName { get; set; }
-        public virtual int MaxChargeTypeID { get; set; }
-        public virtual string MaxChargeTypeName { get; set; }
-        public virtual int EmailRank { get; set; }
-
-        // ***** ClientAccount ********************************************************************
-        public virtual int ClientAccountID { get; set; }
-        public virtual bool IsDefault { get; set; }
-        public virtual bool Manager { get; set; }
-        public virtual bool ClientAccountActive { get; set; }
 
         // ***** Account **************************************************************************
         public virtual int AccountID { get; set; }
         public virtual string AccountName { get; set; }
         public virtual string ShortCode { get; set; }
-        public virtual string AccountNumber { get; set; }
-        public virtual int FundingSourceID { get; set; }
-        public virtual string FundingSourceName { get; set; }
-        public virtual int TechnicalFieldID { get; set; }
-        public virtual string TechnicalFieldName { get; set; }
-        public virtual int SpecialTopicID { get; set; }
-        public virtual string SpecialTopicName { get; set; }
-        public virtual int BillAddressID { get; set; }
-        public virtual int ShipAddressID { get; set; }
-        public virtual string InvoiceNumber { get; set; }
-        public virtual string InvoiceLine1 { get; set; }
-        public virtual string InvoiceLine2 { get; set; }
-        public virtual DateTime? PoEndDate { get; set; }
-        public virtual decimal? PoInitialFunds { get; set; }
-        public virtual decimal? PoRemainingFunds { get; set; }
-        public virtual int AccountTypeID { get; set; }
-        public virtual string AccountTypeName { get; set; }
-        public virtual bool AccountActive { get; set; }
 
-        // ***** Org ******************************************************************************
-        public virtual int OrgID { get; set; }
-        public virtual string OrgName { get; set; }
-        public virtual int DefClientAddressID { get; set; }
-        public virtual int DefBillAddressID { get; set; }
-        public virtual int DefShipAddressID { get; set; }
-        public virtual bool NNINOrg { get; set; }
-        public virtual bool PrimaryOrg { get; set; }
-        public virtual int OrgTypeID { get; set; }
-        public virtual string OrgTypeName { get; set; }
+        // ***** OrgType **************************************************************************
         public virtual int ChargeTypeID { get; set; }
-        public virtual string ChargeTypeName { get; set; }
-        public virtual int ChargeTypeAccountID { get; set; }
-        public virtual bool OrgActive { get; set; }
 
         // ***** Resource *************************************************************************
         public virtual int ResourceID { get; set; }
@@ -170,16 +104,6 @@ namespace LNF.Repository.Scheduler
         public virtual int MinReservTime { get; set; }
         public virtual int MaxReservTime { get; set; }
         public virtual int GracePeriod { get; set; }
-        public virtual int CurrentReservationID { get; set; }
-        public virtual int CurrentClientID { get; set; }
-        public virtual int CurrentActivityID { get; set; }
-        public virtual string CurrentFirstName { get; set; }
-        public virtual string CurrentLastName { get; set; }
-        public virtual string CurrentActivityName { get; set; }
-        public virtual bool CurrentActivityEditable { get; set; }
-        public virtual DateTime? CurrentBeginDateTime { get; set; }
-        public virtual DateTime? CurrentEndDateTime { get; set; }
-        public virtual string CurrentNotes { get; set; }
 
         // ***** Activity *************************************************************************
         public virtual int ActivityID { get; set; }
@@ -190,16 +114,18 @@ namespace LNF.Repository.Scheduler
         public virtual bool IsRepair => !Editable;
         public virtual bool IsFacilityDownTime { get; set; }
 
-        
         public virtual bool IsRunning => ReservationItem.GetIsRunning(ActualBeginDateTime, ActualEndDateTime);
         public virtual bool IsCurrentlyOutsideGracePeriod => ReservationItem.GetIsCurrentlyOutsideGracePeriod(GracePeriod, BeginDateTime);
         public virtual bool IsCancelledBeforeCutoff => ReservationItem.GetIsCancelledBeforeCutoff(CancelledDateTime, BeginDateTime);
         public virtual bool HasState(ResourceState state) => ResourceItem.HasState(State, state);
-        public virtual string ResourceDisplayName => ResourceItem.GetDisplayName(ResourceName, ResourceID);
-        public virtual string Project => AccountItem.GetProject(AccountNumber);
+
+        public virtual TimeSpan GetReservedDuration() => ReservationItem.GetDuration(BeginDateTime, EndDateTime);
+        public virtual TimeSpan GetActualDuration() => ReservationItem.GetActualDuration(ActualBeginDateTime, ActualEndDateTime);
+        public virtual TimeSpan GetChargeDuration() => ReservationItem.GetDuration(ChargeBeginDateTime, ChargeEndDateTime);
+        public virtual TimeSpan GetOvertimeDuration() => ReservationItem.GetOvertimeDuration(EndDateTime, ActualEndDateTime);
+
+        public virtual string ResourceDisplayName => ResourceItem.GetResourceDisplayName(ResourceName, ResourceID);
         public virtual string NameWithShortCode => AccountItem.GetNameWithShortCode(AccountName, ShortCode);
-        public virtual string FullAccountName => AccountItem.GetFullAccountName(AccountName, ShortCode, OrgName);
-        public virtual bool IsRegularAccountType => AccountItem.GetIsRegularAccountType(AccountTypeID);
         public virtual string DisplayName => ClientItem.GetDisplayName(LName, FName);
     }
 }

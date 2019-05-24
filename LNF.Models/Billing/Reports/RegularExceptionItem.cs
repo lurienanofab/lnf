@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Billing.Reports
 {
-    public class RegularExceptionItem
+    public class RegularExceptionItem : IRegularException
     {
         public int BillingID { get; set; }
         public DateTime Period { get; set; }

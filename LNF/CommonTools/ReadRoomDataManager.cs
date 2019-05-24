@@ -57,7 +57,7 @@ namespace LNF.CommonTools
                 dtClients.Rows.Add(id);
 
             var rooms = Session.Query<Room>().Where(x => x.Active).ToArray()
-                .Join(Provider.CostManager.FindCosts(new[] { "RoomCost" }, ed), x => x.RoomID, y => y.RecordID, (x, y) => new
+                .Join(Provider.Data.Cost.FindCosts(new[] { "RoomCost" }, ed), x => x.RoomID, y => y.RecordID, (x, y) => new
                 {
                     x.RoomID,
                     x.RoomName,

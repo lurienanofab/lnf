@@ -1,4 +1,6 @@
-﻿namespace LNF.Impl.DependencyInjection
+﻿using NHibernate.Context;
+
+namespace LNF.Impl.DependencyInjection
 {
     public interface IIOC
     {

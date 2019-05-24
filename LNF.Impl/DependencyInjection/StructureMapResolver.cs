@@ -1,17 +1,24 @@
 ﻿using LNF.Billing;
 using LNF.CommonTools;
-using LNF.Data;
+using LNF.Impl.Billing;
+using LNF.Impl.Billing.Report;
 using LNF.Impl.Control.Wago;
+using LNF.Impl.Data;
 using LNF.Impl.DataAccess;
 using LNF.Impl.DataAccess.Scheduler;
 using LNF.Impl.Encryption;
 using LNF.Impl.Logging;
+using LNF.Impl.Mail;
 using LNF.Impl.ModelFactory;
+using LNF.Impl.PhysicalAccess;
+using LNF.Impl.Scheduler;
 using LNF.Impl.Serialization;
+using LNF.Impl.Worker;
 using LNF.Models.Billing;
 using LNF.Models.Billing.Process;
 using LNF.Models.Billing.Reports;
 using LNF.Models.Data;
+using LNF.Models.Data.Utility;
 using LNF.Models.Mail;
 using LNF.Models.PhysicalAccess;
 using LNF.Models.Scheduler;
@@ -33,11 +40,10 @@ namespace LNF.Impl.DependencyInjection
             {
                 _.AddRegistry(registry);
 
-                _.For<IDataRepository>().Use<DataRepository>(); // not a singleton
+                //_.For<LNF.Data.IDataRepository>().Use<DataRepository>(); // not a singleton
                 _.For<ISchedulerRepository>().Use<SchedulerRepository>(); // not a singleton
                 //_.For<IUnitOfWork>().Use<NHibernateUnitOfWork>(); // not a singleton
 
-                //_.For<ISession>().Singleton().Use<NHibernateSession>();
                 _.For<IProvider>().Singleton().Use<ServiceProvider>();
                 _.For<IDataAccessService>().Singleton().Use<NHibernateDataAccess>();
                 _.For<ILogService>().Singleton().Use<ServiceLogService>();
@@ -45,40 +51,38 @@ namespace LNF.Impl.DependencyInjection
                 _.For<IEncryptionService>().Singleton().Use<EncryptionService>();
                 _.For<ISerializationService>().Singleton().Use<SerializationService>();
 
-                _.For<IDataService>().Singleton().Use<OnlineServices.Api.Data.DataService>();
-
                 // Mail API
-                _.For<IMailService>().Singleton().Use<OnlineServices.Api.Mail.MailService>();
+                _.For<IMailService>().Singleton().Use<MailService>();
 
                 // Billing API
-                _.For<IBillingService>().Singleton().Use<OnlineServices.Api.Billing.BillingService>();
+                _.For<IBillingServices>().Singleton().Use<BillingService>();
                 _.For<IAccountSubsidyManager>().Singleton().Use<AccountSubsidyManager>();
                 _.For<IProcessManager>().Singleton().Use<ProcessManager>();
-                _.For<IReportManager>().Singleton().Use<OnlineServices.Api.Billing.ReportManager>();
-                _.For<IToolManager>().Singleton().Use<OnlineServices.Api.Billing.ToolManager>();
-                _.For<Models.Billing.IRoomManager>().Singleton().Use<Billing.RoomManager>();
-                _.For<IStoreManager>().Singleton().Use<OnlineServices.Api.Billing.StoreManager>();
-                _.For<IMiscManager>().Singleton().Use<OnlineServices.Api.Billing.MiscManager>();
+                _.For<IReportManager>().Singleton().Use<ReportManager>();
+                _.For<IToolBillingManager>().Singleton().Use<ToolBillingManager>();
+                _.For<IRoomBillingManager>().Singleton().Use<RoomBillingManager>();
+                _.For<IStoreBillingManager>().Singleton().Use<StoreBillingManager>();
+                _.For<IMiscBillingManager>().Singleton().Use<MiscBillingManager>();
 
-                _.For<IPhysicalAccessService>().Singleton().Use<OnlineServices.Api.PhysicalAccess.PhysicalAccessService>();
-                _.For<ISchedulerService>().Singleton().Use<OnlineServices.Api.Scheduler.SchedulerService>();
-                _.For<IWorkerService>().Singleton().Use<OnlineServices.Api.Worker.WorkerService>();
+                _.For<IPhysicalAccessService>().Singleton().Use<PhysicalAccessService>();
+                _.For<ISchedulerService>().Singleton().Use<SchedulerService>();
+                _.For<IWorkerService>().Singleton().Use<WorkerService>();
 
                 _.For<IModelFactory>().Singleton().Use<ValueInjecterModelFactory>();
 
+                // Data API
+                _.For<IDataService>().Singleton().Use<DataService>();
                 _.For<IAccountManager>().Singleton().Use<AccountManager>();
-                _.For<IChargeTypeManager>().Singleton().Use<ChargeTypeManager>();
                 _.For<IClientManager>().Singleton().Use<ClientManager>();
-                _.For<IClientOrgManager>().Singleton().Use<ClientOrgManager>();
-                _.For<IClientRemoteManager>().Singleton().Use<ClientRemoteManager>();
                 _.For<IOrgManager>().Singleton().Use<OrgManager>();
-                _.For<IActiveDataItemManager>().Singleton().Use<ActiveDataItemManager>();
+                _.For<IActiveLogManager>().Singleton().Use<ActiveLogManager>();
                 _.For<ICostManager>().Singleton().Use<CostManager>();
                 _.For<IDryBoxManager>().Singleton().Use<DryBoxManager>();
-                _.For<Models.Data.IRoomManager>().Singleton().Use<Data.RoomManager>();
+                _.For<IRoomManager>().Singleton().Use<RoomManager>();
+                _.For<IServiceLogManager>().Singleton().Use<ServiceLogManager>();
+                _.For<IUtilityManager>().Singleton().Use<UtilityManager>();
 
                 _.For<IBillingTypeManager>().Singleton().Use<BillingTypeManager>();
-                _.For<IToolBillingManager>().Singleton().Use<ToolBillingManager>();
                 _.For<IApportionmentManager>().Singleton().Use<ApportionmentManager>();
 
                 _.For<IReservationManager>().Singleton().Use<ReservationManager>();

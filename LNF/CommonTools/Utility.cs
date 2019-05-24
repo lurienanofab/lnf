@@ -1,5 +1,7 @@
 ﻿using LNF.Cache;
 using LNF.Data;
+using LNF.Models.Data;
+using LNF.Models.Scheduler;
 using LNF.Repository;
 using LNF.Repository.Data;
 using System;
@@ -307,10 +309,17 @@ namespace LNF.CommonTools
             return result;
         }
 
+        public static bool InCurrentPeriod(IReservation rsv)
+        {
+            DateTime d = ((rsv.ActualEndDateTime == null) ? rsv.EndDateTime : rsv.ActualEndDateTime.Value).Date;
+            DateTime period = new DateTime(d.Year, d.Month, 1);
+            return Utility.IsCurrentPeriod(period);
+        }
+
         /// <summary>
         /// Finds the next business day after the first day of the month.
         /// </summary>
-        public static DateTime NextBusinessDay(DateTime d, IEnumerable<Holiday> holidays)
+        public static DateTime NextBusinessDay(DateTime d, IEnumerable<IHoliday> holidays)
         {
             return NextBusinessDay(d, CacheManager.Current.GetBusinessDay(), holidays);
         }
@@ -318,7 +327,7 @@ namespace LNF.CommonTools
         /// <summary>
         /// Finds the next business day after the first day of the month.
         /// </summary>
-        public static DateTime NextBusinessDay(DateTime d, int count, IEnumerable<Holiday> holidays)
+        public static DateTime NextBusinessDay(DateTime d, int count, IEnumerable<IHoliday> holidays)
         {
             DateTime result = d;
             bool isHoliday;
@@ -341,7 +350,7 @@ namespace LNF.CommonTools
             return result;
         }
 
-        public static bool IsBeforeNextBusinessDay(DateTime d, IEnumerable<Holiday> holidays)
+        public static bool IsBeforeNextBusinessDay(DateTime d, IEnumerable<IHoliday> holidays)
         {
             var nbd = NextBusinessDay(d.FirstOfMonth(), holidays);
 
@@ -351,7 +360,7 @@ namespace LNF.CommonTools
                 return false;
         }
 
-        public static bool IsFirstBusinessDay(DateTime d, IEnumerable<Holiday> holidays)
+        public static bool IsFirstBusinessDay(DateTime d, IEnumerable<IHoliday> holidays)
         {
             if (d.Date == NextBusinessDay(d, holidays))
                 return true;
@@ -359,9 +368,9 @@ namespace LNF.CommonTools
                 return false;
         }
 
-        public static IEnumerable<Holiday> GetHolidays(DateTime sd, DateTime ed)
+        public static IEnumerable<IHoliday> GetHolidays(DateTime sd, DateTime ed)
         {
-            var holidays = DA.Current.Query<Holiday>().Where(x => x.HolidayDate >= sd && x.HolidayDate < ed).ToList();
+            var holidays = DA.Current.Query<Holiday>().Where(x => x.HolidayDate >= sd && x.HolidayDate < ed).CreateModels<IHoliday>();
             return holidays;
         }
 
@@ -538,6 +547,14 @@ namespace LNF.CommonTools
             if (obj == null) return true;
             if (obj == DBNull.Value) return true;
             return false;
+        }
+
+        public static int NumberOfDaysInMonth(DateTime d)
+        {
+            DateTime fom = d.FirstOfMonth();
+            DateTime nextMonth = fom.AddMonths(1);
+            DateTime lastDayOfMonth = nextMonth.AddDays(-1);
+            return lastDayOfMonth.Day;
         }
 
         public static string PropertyName<TSource, TKey>(Expression<Func<TSource, TKey>> exp)

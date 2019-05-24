@@ -38,11 +38,6 @@ namespace OnlineServices.Api.Billing
             throw new NotImplementedException();
         }
 
-        public IEnumerable<UserApportionmentReportEmail> GetMonthlyApportionmentEmails(UserApportionmentReportOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
         public int GetPhysicalDays(DateTime period, int clientId, int roomId)
         {
             throw new NotImplementedException();
@@ -69,11 +64,6 @@ namespace OnlineServices.Api.Billing
         }
 
         public IEnumerable<IApportionmentClient> SelectApportionmentClients(DateTime sd, DateTime ed)
-        {
-            throw new NotImplementedException();
-        }
-
-        public SendMonthlyApportionmentEmailsProcessResult SendMonthlyApportionmentEmails(UserApportionmentReportOptions options)
         {
             throw new NotImplementedException();
         }

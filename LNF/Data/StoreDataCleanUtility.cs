@@ -17,7 +17,7 @@ namespace LNF.Data
 
             double daysInPeriod = (ed - sd).TotalDays;
 
-            IList<DryBoxAssignment> activeAssignments = ServiceProvider.Current.DryBoxManager.ActiveAssignments(sd, ed);
+            var activeAssignments = ServiceProvider.Current.Data.DryBox.GetActiveAssignments(sd, ed).ToList();
 
             if (activeAssignments.Count > 0)
             {
@@ -44,7 +44,7 @@ namespace LNF.Data
                     }
                 }
 
-                IList<DryBoxAssignmentLog> logItems = DA.Current.Query<DryBoxAssignmentLog>().Where(x => activeAssignments.Contains(x.DryBoxAssignment)).ToList();
+                IList<DryBoxAssignmentLog> logItems = DA.Current.Query<DryBoxAssignmentLog>().Where(x => activeAssignments.Any(y => y.DryBoxAssignmentID == x.DryBoxAssignment.DryBoxAssignmentID)).ToList();
 
                 var clientAccountIds = logItems.Select(x => x.ClientAccount.ClientAccountID).Distinct().ToArray();
 

@@ -488,7 +488,7 @@ namespace LNF.Scheduler
         ///<summary>
         ///Ends any reservations that needs to be auto-ended. This includes both types of auto-ending: resource-centric and reservation-centric.
         ///</summary>
-        public HandleAutoEndReservationsProcessResult HandleAutoEndReservations(IEnumerable<ReservationItem> items)
+        public HandleAutoEndReservationsProcessResult HandleAutoEndReservations(IEnumerable<IReservation> items)
         {
             //End auto-end reservations, and turn off interlocks
 
@@ -517,7 +517,7 @@ namespace LNF.Scheduler
         ///<summary>
         ///Ends any repair reservations that are in the past.
         ///</summary>
-        public HandleRepairReservationsProcessResult HandleRepairReservations(IEnumerable<ReservationItem> items)
+        public HandleRepairReservationsProcessResult HandleRepairReservations(IEnumerable<IReservation> items)
         {
             //End past repair reservations
             var result = new HandleRepairReservationsProcessResult()
@@ -542,7 +542,7 @@ namespace LNF.Scheduler
         ///<summary>
         /// Ends any reservations that the reserver fails to start before the grace period had ended.
         ///</summary>
-        public HandleUnstartedReservationsProcessResult HandleUnstartedReservations(IEnumerable<ReservationItem> items)
+        public HandleUnstartedReservationsProcessResult HandleUnstartedReservations(IEnumerable<IReservation> items)
         {
             //End unstarted reservations
             var result = new HandleUnstartedReservationsProcessResult()

@@ -554,7 +554,7 @@ namespace LNF.CommonTools
 
         private IEnumerable<ReservationDateRange.Reservation> GetReservations(ReservationDateRange.DateRange range)
         {
-            var costs = ServiceProvider.Current.Data.GetResourceCosts(ResourceID, range.EndDate);
+            var costs = ServiceProvider.Current.Data.Cost.FindToolCosts(ResourceID, range.EndDate);
 
             var dt = DA.Command(CommandType.Text)
                 .Param("sDate", range.StartDate)

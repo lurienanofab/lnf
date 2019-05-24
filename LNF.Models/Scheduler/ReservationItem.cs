@@ -4,9 +4,22 @@ using System.Collections.Generic;
 
 namespace LNF.Models.Scheduler
 {
-    public class ReservationItem : ClientAccountItem, IReservation
+    public class ReservationItem : ResourceItem, IReservation
     {
         public int ReservationID { get; set; }
+        public int ClientID { get; set; }
+        public string UserName { get; set; }
+        public string LName { get; set; }
+        public string MName { get; set; }
+        public string FName { get; set; }
+        public string DisplayName => ClientItem.GetDisplayName(LName, FName);
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public ClientPrivilege Privs { get; set; }
+        public int AccountID { get; set; }
+        public string AccountName { get; set; }
+        public string ShortCode { get; set; }
+        public int ChargeTypeID { get; set; }
         public int ActivityID { get; set; }
         public string ActivityName { get; set; }
         public ActivityAccountType ActivityAccountType { get; set; }
@@ -46,64 +59,11 @@ namespace LNF.Models.Scheduler
         public DateTime? OriginalBeginDateTime { get; set; }
         public DateTime? OriginalEndDateTime { get; set; }
         public DateTime? OriginalModifiedOn { get; set; }
-        public int ResourceID { get; set; }
-        public string ResourceName { get; set; }
-        public int BuildingID { get; set; }
-        public string BuildingName { get; set; }
-        public string BuildingDescription { get; set; }
-        public bool BuildingIsActive { get; set; }
-        public int LabID { get; set; }
-        public string LabName { get; set; }
-        public string LabDisplayName { get; set; }
-        public string LabDescription { get; set; }
-        public bool LabIsActive { get; set; }
-        public int RoomID { get; set; }
-        public string RoomName { get; set; }
-        public string RoomDisplayName { get; set; }
-        public int ProcessTechID { get; set; }
-        public string ProcessTechName { get; set; }
-        public string ProcessTechDescription { get; set; }
-        public int ProcessTechGroupID { get; set; }
-        public string ProcessTechGroupName { get; set; }
-        public bool ProcessTechIsActive { get; set; }
-        public string ResourceDescription { get; set; }
-        public int Granularity { get; set; }
-        public int ReservFence { get; set; }
-        public int MinReservTime { get; set; }
-        public int MaxReservTime { get; set; }
-        public int MaxAlloc { get; set; }
-        public int Offset { get; set; }
-        public int GracePeriod { get; set; }
-        public int ResourceAutoEnd { get; set; }
-        public int MinCancelTime { get; set; }
-        public int? UnloadTime { get; set; }
-        public int? OTFSchedTime { get; set; }
-        public bool AuthState { get; set; }
-        public int AuthDuration { get; set; }
-        public ResourceState State { get; set; }
-        public string StateNotes { get; set; }
-        public bool IsSchedulable { get; set; }
-        public bool ResourceIsActive { get; set; }
-        public string HelpdeskEmail { get; set; }
-        public string WikiPageUrl { get; set; }
-        public bool IsReady { get; set; }
-        public int CurrentReservationID { get; set; }
-        public int CurrentClientID { get; set; }
-        public int CurrentActivityID { get; set; }
-        public bool CurrentActivityEditable { get; set; }
-        public string CurrentFirstName { get; set; }
-        public string CurrentLastName { get; set; }
-        public string CurrentActivityName { get; set; }
-        public DateTime? CurrentBeginDateTime { get; set; }
-        public DateTime? CurrentEndDateTime { get; set; }
-        public string CurrentNotes { get; set; }
-        public string ResourceDisplayName => ResourceItem.GetDisplayName(ResourceName, ResourceID);
-        public TimeSpan GetReservedDuration() => EndDateTime - BeginDateTime;
-        public TimeSpan GetActualDuration() => (ActualBeginDateTime != null && ActualEndDateTime != null) ? ActualEndDateTime.Value - ActualBeginDateTime.Value : TimeSpan.Zero;
-        public TimeSpan GetChargeDuration() => ChargeEndDateTime - ChargeBeginDateTime;
-        public TimeSpan GetOvertimeDuration() => (ActualEndDateTime != null) ? TimeSpan.FromMinutes(Math.Max((ActualEndDateTime.Value - EndDateTime).TotalMinutes, 0)) : TimeSpan.Zero;
+        public TimeSpan GetReservedDuration() => GetDuration(BeginDateTime, EndDateTime);
+        public TimeSpan GetActualDuration() => GetActualDuration(ActualBeginDateTime, ActualEndDateTime);
+        public TimeSpan GetChargeDuration() => GetDuration(ChargeBeginDateTime, ChargeEndDateTime);
+        public TimeSpan GetOvertimeDuration() => GetOvertimeDuration(EndDateTime, ActualEndDateTime);
         public bool IsRunning => GetIsRunning(ActualBeginDateTime, ActualEndDateTime);
-        public bool HasState(ResourceState state) => ResourceItem.HasState(State, state);
         public bool IsCancelledBeforeCutoff => GetIsCancelledBeforeCutoff(CancelledDateTime, BeginDateTime);
         public bool IsCurrentlyOutsideGracePeriod => GetIsCurrentlyOutsideGracePeriod(GracePeriod, BeginDateTime);
 
@@ -136,6 +96,10 @@ namespace LNF.Models.Scheduler
                 return actualEndDateTime.Value;
             return endDateTime;
         }
+
+        public static TimeSpan GetDuration(DateTime begin, DateTime end) => end - begin;
+        public static TimeSpan GetActualDuration(DateTime? begin, DateTime? end) => (begin != null && end != null) ? end.Value - begin.Value : TimeSpan.Zero;
+        public static TimeSpan GetOvertimeDuration(DateTime end, DateTime? actualEnd) => (actualEnd != null) ? TimeSpan.FromMinutes(Math.Max((actualEnd.Value - end).TotalMinutes, 0)) : TimeSpan.Zero;
     }
 
     public class ReservationItemWithInvitees : ReservationItem, IReservationWithInvitees

@@ -9,7 +9,7 @@ namespace LNF.Scheduler.Data
     /// </summary>
     public static class ReservationProcessInfoData
     {
-        public static IDataReader SelectAllDataReader(int reservationId)
+        public static ExecuteReaderResult SelectAllDataReader(int reservationId)
         {
             return DA.Command()
                 .Param("ReservationID", reservationId)

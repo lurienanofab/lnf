@@ -2,7 +2,6 @@
 using LNF.CommonTools;
 using LNF.Data;
 using LNF.Hooks;
-using LNF.Models;
 using LNF.Models.Billing;
 using LNF.Models.Data;
 using LNF.Models.Mail;
@@ -26,13 +25,6 @@ namespace LNF
         ISerializationService Serialization { get; }
         IScriptingService Scripting { get; }
         IModelFactory ModelFactory { get; }
-        IClientOrgManager ClientOrgManager { get; }
-        IActiveLogManager ActiveLogManager { get; }
-        IActiveDataItemManager ActiveDataItemManager { get; }
-        ICostManager CostManager { get; }
-        IDryBoxManager DryBoxManager { get; }
-        IToolBillingManager ToolBillingManager { get; }
-        IBillingTypeManager BillingTypeManager { get; }
         ISchedulerRepository SchedulerRepository { get; }
         IResourceManager ResourceManager { get; }
         IReservationManager ReservationManager { get; }
@@ -46,50 +38,42 @@ namespace LNF
         IAdministrativeHelper AdministrativeHelper { get; }
         void BuildUp(object target);
         string[] Hooks { get; }
+        T Resolve<T>();
     }
 
     public class ServiceProvider : IProvider
     {
         private IDependencyResolver _resolver;
 
-        public IContext Context => Use<IContext>();
-        public IDataAccessService DataAccess => Use<IDataAccessService>();
-        public ILogService Log => Use<ILogService>();
-        public IControlService Control => Use<IControlService>();
-        public IEncryptionService Encryption => Use<IEncryptionService>();
-        public ISerializationService Serialization => Use<ISerializationService>();
-        public IScriptingService Scripting => Use<IScriptingService>();
+        public IContext Context => Resolve<IContext>();
+        public IDataAccessService DataAccess => Resolve<IDataAccessService>();
+        public ILogService Log => Resolve<ILogService>();
+        public IControlService Control => Resolve<IControlService>();
+        public IEncryptionService Encryption => Resolve<IEncryptionService>();
+        public ISerializationService Serialization => Resolve<ISerializationService>();
+        public IScriptingService Scripting => Resolve<IScriptingService>();
 
-        public IDataService Data => Use<IDataService>();
-        public IBillingService Billing => Use<IBillingService>();
-        public IMailService Mail => Use<IMailService>();
-        public IPhysicalAccessService PhysicalAccess => Use<IPhysicalAccessService>();
-        public ISchedulerService Scheduler => Use<ISchedulerService>();
-        public IWorkerService Worker => Use<IWorkerService>();
+        public IDataService Data => Resolve<IDataService>();
+        public IBillingServices Billing => Resolve<IBillingServices>();
+        public IMailService Mail => Resolve<IMailService>();
+        public IPhysicalAccessService PhysicalAccess => Resolve<IPhysicalAccessService>();
+        public ISchedulerService Scheduler => Resolve<ISchedulerService>();
+        public IWorkerService Worker => Resolve<IWorkerService>();
 
-        public IClientOrgManager ClientOrgManager => Use<IClientOrgManager>();
-        public IActiveLogManager ActiveLogManager => Use<IActiveLogManager>();
-        public IActiveDataItemManager ActiveDataItemManager => Use<IActiveDataItemManager>();
-        public ICostManager CostManager => Use<ICostManager>();
-        public IDryBoxManager DryBoxManager => Use<IDryBoxManager>();
+        public ISchedulerRepository SchedulerRepository => Resolve<ISchedulerRepository>();
+        public IResourceManager ResourceManager => Resolve<IResourceManager>();
+        public IReservationManager ReservationManager => Resolve<IReservationManager>();
+        public IReservationInviteeManager ReservationInviteeManager => Resolve<IReservationInviteeManager>();
+        public IProcessInfoManager ProcessInfoManager => Resolve<IProcessInfoManager>();
+        public IEmailManager EmailManager => Resolve<IEmailManager>();
 
-        public IToolBillingManager ToolBillingManager => Use<IToolBillingManager>();
-        public IBillingTypeManager BillingTypeManager => Use<IBillingTypeManager>();
+        public IReadRoomDataManager ReadRoomDataManager => Resolve<IReadRoomDataManager>();
+        public IReadToolDataManager ReadToolDataManager => Resolve<IReadToolDataManager>();
+        public IReadStoreDataManager ReadStoreDataManager => Resolve<IReadStoreDataManager>();
+        public IReadMiscDataManager ReadMiscDataManager => Resolve<IReadMiscDataManager>();
+        public IAdministrativeHelper AdministrativeHelper => Resolve<IAdministrativeHelper>();
 
-        public ISchedulerRepository SchedulerRepository => Use<ISchedulerRepository>();
-        public IResourceManager ResourceManager => Use<IResourceManager>();
-        public IReservationManager ReservationManager => Use<IReservationManager>();
-        public IReservationInviteeManager ReservationInviteeManager => Use<IReservationInviteeManager>();
-        public IProcessInfoManager ProcessInfoManager => Use<IProcessInfoManager>();
-        public IEmailManager EmailManager => Use<IEmailManager>();
-
-        public IReadRoomDataManager ReadRoomDataManager => Use<IReadRoomDataManager>();
-        public IReadToolDataManager ReadToolDataManager => Use<IReadToolDataManager>();
-        public IReadStoreDataManager ReadStoreDataManager => Use<IReadStoreDataManager>();
-        public IReadMiscDataManager ReadMiscDataManager => Use<IReadMiscDataManager>();
-        public IAdministrativeHelper AdministrativeHelper => Use<IAdministrativeHelper>();
-
-        public IModelFactory ModelFactory => Use<IModelFactory>();
+        public IModelFactory ModelFactory => Resolve<IModelFactory>();
 
         public ServiceProvider(IDependencyResolver resolver)
         {
@@ -98,7 +82,7 @@ namespace LNF
 
         public static IProvider Current { get; set; }
 
-        private T Use<T>() => _resolver.GetInstance<T>();
+        public T Resolve<T>() => _resolver.GetInstance<T>();
 
         public void BuildUp(object target) => _resolver.BuildUp(target);
 

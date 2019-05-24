@@ -193,7 +193,7 @@ namespace LNF.Billing
 
         private static IEnumerable<Reservation> GetReservations(int resourceId, DateRange range)
         {
-            var costs = ServiceProvider.Current.Data.GetResourceCosts(resourceId, range.EndDate);
+            var costs = ServiceProvider.Current.Data.Cost.FindToolCosts(resourceId, range.EndDate);
 
             IQueryable<ReservationInfo> query = null;
 

@@ -1,4 +1,6 @@
-﻿namespace LNF.Repository.Billing
+﻿using LNF.Models.Billing;
+
+namespace LNF.Repository.Billing
 {
     /// <summary>
     /// Represents different types of usage charges
@@ -29,9 +31,7 @@
         {
             if (obj == null) return false;
 
-            var item = obj as BillingType;
-
-            if (item == null) return false;
+            if (!(obj is BillingType item)) return false;
 
             return item.BillingTypeID == BillingTypeID;
         }
@@ -48,137 +48,86 @@
         /// <summary>
         /// The default BillingTypeID
         /// </summary>
-        public static int Default
-        {
-            get { return Regular; }
-        }
+        public static int Default => BillingTypeItem.Default;
 
         /// <summary>
         /// The BillingTypeID for Internal GaAs
         /// </summary>
-        public static int Int_Ga
-        {
-            get { return 1; }
-        }
+        public static int Int_Ga => BillingTypeItem.Int_Ga;
 
         /// <summary>
         /// The BillingTypeID for Internal Si
         /// </summary>
-        public static int Int_Si
-        {
-            get { return 2; }
-        }
+        public static int Int_Si => BillingTypeItem.Int_Si;
 
         /// <summary>
         /// The BillingTypeID for Internal Hour
         /// </summary>
-        public static int Int_Hour
-        {
-            get { return 3; }
-        }
+        public static int Int_Hour => BillingTypeItem.Int_Hour;
 
         /// <summary>
         /// The BillingTypeID for Internal Tools
         /// </summary>
-        public static int Int_Tools
-        {
-            get { return 4; }
-        }
+        public static int Int_Tools => BillingTypeItem.Int_Tools;
 
         /// <summary>
         /// The BillingTypeID for External Academic GaAs
         /// </summary>
-        public static int ExtAc_Ga
-        {
-            get { return 5; }
-        }
+        public static int ExtAc_Ga => BillingTypeItem.ExtAc_Ga;
 
         /// <summary>
         /// The BillingTypeID for External Academic Si
         /// </summary>
-        public static int ExtAc_Si
-        {
-            get { return 6; }
-        }
+        public static int ExtAc_Si => BillingTypeItem.ExtAc_Si;
 
         /// <summary>
         /// The BillingTypeID for External Academic Tools
         /// </summary>
-        public static int ExtAc_Tools
-        {
-            get { return 7; }
-        }
+        public static int ExtAc_Tools => BillingTypeItem.ExtAc_Tools;
 
         /// <summary>
         /// The BillingTypeID for External Academic Hour
         /// </summary>
-        public static int ExtAc_Hour
-        {
-            get { return 8; }
-        }
+        public static int ExtAc_Hour => BillingTypeItem.ExtAc_Hour;
 
         /// <summary>
         /// The BillingTypeID for Non Academic
         /// </summary>
-        public static int NonAc
-        {
-            get { return 9; }
-        }
+        public static int NonAc => BillingTypeItem.NonAc;
 
         /// <summary>
         /// The BillingTypeID for Non Academic Tools
         /// </summary>
-        public static int NonAc_Tools
-        {
-            get { return 10; }
-        }
+        public static int NonAc_Tools => BillingTypeItem.NonAc_Tools;
 
         /// <summary>
         /// The BillingTypeID for Non Academic Hour
         /// </summary>
-        public static int NonAc_Hour
-        {
-            get { return 11; }
-        }
+        public static int NonAc_Hour => BillingTypeItem.NonAc_Hour;
 
         /// <summary>
         /// The BillingTypeID for Regular
         /// </summary>
-        public static int Regular
-        {
-            get { return 12; }
-        }
+        public static int Regular => BillingTypeItem.Regular;
 
         /// <summary>
         /// The BillingTypeID for Grower/Observer
         /// </summary>
-        public static int Grower_Observer
-        {
-            get { return 13; }
-        }
+        public static int Grower_Observer => BillingTypeItem.Grower_Observer;
 
         /// <summary>
         /// The BillingTypeID for Remote
         /// </summary>
-        public static int Remote
-        {
-            get { return 14; }
-        }
+        public static int Remote => BillingTypeItem.Remote;
 
         /// <summary>
         /// The BillingTypeID for RegularException
         /// </summary>
-        public static int RegularException
-        {
-            get { return 15; }
-        }
+        public static int RegularException => BillingTypeItem.RegularException;
 
         /// <summary>
         /// The BillingTypeID for Other
         /// </summary>
-        public static int Other
-        {
-            get { return 99; }
-        }
+        public static int Other => BillingTypeItem.Other;
     }
 }

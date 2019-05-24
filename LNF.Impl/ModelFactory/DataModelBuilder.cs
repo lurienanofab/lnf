@@ -1,7 +1,6 @@
 ﻿using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
-using System;
 
 namespace LNF.Impl.ModelFactory
 {
@@ -35,6 +34,13 @@ namespace LNF.Impl.ModelFactory
             };
         }
 
+        private INews MapNews(News source)
+        {
+            var result = MapFrom<NewsItem>(source);
+            result.NewsCreatedByClient = MapFrom<ClientItem>(source.NewsCreatedByClient);
+            return result;
+        }
+
         public override void AddMaps()
         {
             Map<Client, ClientInfo, ClientItem, IClient>(x => x.ClientID);
@@ -54,6 +60,9 @@ namespace LNF.Impl.ModelFactory
             Map<Menu, MenuItem, IMenu>();
             Map<ClientRemote, ClientRemoteInfo, ClientRemoteItem, IClientRemote>(x => x.ClientRemoteID);
             Map<ClientRemoteInfo, ClientRemoteItem, IClientRemote>();
+            Map<Priv, PrivItem, IPriv>();
+            Map<Community, CommunityItem, ICommunity>();
+            Map<News, INews>(x => MapNews(x));
         }
     }
 }

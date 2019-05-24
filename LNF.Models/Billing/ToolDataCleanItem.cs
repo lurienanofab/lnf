@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Billing
 {
-    public class ToolDataCleanItem
+    public class ToolDataCleanItem : IToolDataClean
     {
         public int ToolDataID { get; set; }
         public int ClientID { get; set; }
@@ -27,5 +27,27 @@ namespace LNF.Models.Billing
         public DateTime? OriginalEndDateTime { get; set; }
         public DateTime? OriginalModifiedOn { get; set; }
         public DateTime CreatedOn { get; set; }
+
+        public virtual DateTime GetChargeBeginDateTime()
+        {
+            if (ActualBeginDateTime == default(DateTime))
+                return BeginDateTime;
+
+            if (ActualBeginDateTime < BeginDateTime)
+                return ActualBeginDateTime;
+            else
+                return BeginDateTime;
+        }
+
+        public virtual DateTime GetChargeEndDateTime()
+        {
+            if (ActualEndDateTime == default(DateTime))
+                return EndDateTime;
+
+            if (ActualEndDateTime > EndDateTime)
+                return ActualEndDateTime;
+            else
+                return EndDateTime;
+        }
     }
 }

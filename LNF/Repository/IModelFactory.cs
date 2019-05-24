@@ -72,7 +72,14 @@ namespace LNF.Repository
         public static IEnumerable<T> CreateModels<T>(this IEnumerable<IDataItem> query)
         {
             var list = query.ToList();
-            var result = list.Select(x => CreateModel<T>(x));
+            var result = new List<T>();
+
+            foreach (var item in list)
+            {
+                var model = item.CreateModel<T>();
+                result.Add(model);
+            }
+
             return result;
         }
     }

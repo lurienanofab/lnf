@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace LNF.Models.Scheduler
+﻿namespace LNF.Models.Scheduler
 {
     public interface IResource : IProcessTech
     {
@@ -50,6 +48,7 @@ namespace LNF.Models.Scheduler
         ///// Hours after 00:00 that specify the beginning of the day for the resource. Stored in hours and entered in hours.
         ///// </summary>
         int Offset { get; set; }
+        bool IsReady { get; set; }
         ///// <summary>
         ///// Minutes that are the minimum allowed reservation duration. Also determines the time a user may start a reservation early. Stored in minutes and entered in minutes.
         ///// </summary>
@@ -62,17 +61,6 @@ namespace LNF.Models.Scheduler
         ///// Minutes after the reservation start time during which a user may start a reservation. Stored in minutes and entered in minutes.
         ///// </summary>
         int GracePeriod { get; set; }
-        bool IsReady { get; set; }
-        int CurrentReservationID { get; set; }
-        int CurrentClientID { get; set; }
-        int CurrentActivityID { get; set; }
-        bool CurrentActivityEditable { get; set; }
-        string CurrentFirstName { get; set; }
-        string CurrentLastName { get; set; }
-        string CurrentActivityName { get; set; }
-        DateTime? CurrentBeginDateTime { get; set; }
-        DateTime? CurrentEndDateTime { get; set; }
-        string CurrentNotes { get; set; }
         string ResourceDisplayName { get; }
         bool HasState(ResourceState state);
     }

@@ -108,13 +108,13 @@ namespace LNF.Scheduler
 
         public IEnumerable<ResourceCost> GetResourceCosts(DateTime? cutoff = null)
         {
-            var costs = Provider.CostManager.FindToolCosts(cutoff).AsQueryable().CreateModels<CostItem>();
+            var costs = Provider.Data.Cost.FindToolCosts(cutoff);
             return ResourceCost.CreateResourceCosts(costs);
         }
 
         public IEnumerable<ResourceCost> GetResourceCosts(ResourceItem item, DateTime? cutoff = null)
         {
-            var costs = Provider.CostManager.FindToolCosts(item.ResourceID, cutoff).AsQueryable().CreateModels<CostItem>();
+            var costs = Provider.Data.Cost.FindToolCosts(item.ResourceID, cutoff);
             return ResourceCost.CreateResourceCosts(costs);
         }
 

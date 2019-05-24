@@ -4,6 +4,6 @@ namespace LNF.Impl.Context
 {
     public interface IHttpContextFactory
     {
-        HttpContextBase Create();
+        HttpContextBase CreateContext();
     }
 }

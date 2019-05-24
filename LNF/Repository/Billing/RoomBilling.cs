@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LNF.Models.Billing;
+using System;
 
 namespace LNF.Repository.Billing
 {
@@ -29,11 +30,7 @@ namespace LNF.Repository.Billing
         /// <summary>
         /// The total charge used to calculate subsidy.
         /// </summary>
-        public virtual decimal GetTotalCharge()
-        {
-            // this matches the stored procedure TieredSubsidyBilling_Select @Action = 'ForSubsidyDiscountDistribution'
-            return RoomCharge + EntryCharge;
-        }
+        public virtual decimal GetTotalCharge() => RoomBillingItem.GetTotalCharge(RoomCharge, EntryCharge);
     }
 
     public class RoomBilling : RoomBillingBase

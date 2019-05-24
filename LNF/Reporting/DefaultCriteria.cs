@@ -1,6 +1,5 @@
 ﻿using LNF.CommonTools;
-using LNF.Repository;
-using LNF.Repository.Data;
+using LNF.Models.Data;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -49,9 +48,9 @@ namespace LNF.Reporting
             return Utility.ConvertTo(raw, defval);
         }
 
-        public IEnumerable<Client> ActiveClients()
+        public IEnumerable<IClient> ActiveClients()
         {
-            return Provider.ActiveDataItemManager.FindActive(DA.Current.Query<Client>(), x => x.ClientID, StartDate, EndDate);
+            return Provider.Data.Client.GetActiveClients(StartDate, EndDate);
         }
 
         public CriteriaWriter CreateWriter(StringBuilder sb)

@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace LNF.Models.Mail
 {
     public interface IMailService
     {
-        string Get();
         void SendMessage(SendMessageArgs args);
+        IEnumerable<IMessage> GetMessages(DateTime sd, DateTime ed, int clientId);
+        IMessage GetMessage(int messageId);
+        IEnumerable<IRecipient> GetRecipients(int messageId);
     }
 }

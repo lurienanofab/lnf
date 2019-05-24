@@ -2,7 +2,7 @@
 
 namespace LNF.Models.Billing.Reports
 {
-    public class BillingSummaryItem
+    public class BillingSummaryItem : IBillingSummary
     {
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
