@@ -455,13 +455,7 @@
     </Compile>
     <Compile Include="Scheduler\AvailableInviteeItem.cs" />
     <Compile Include="Scheduler\IEmailManager.cs" />
-    <Compile Include="Scheduler\IReservationInviteeManager.cs" />
-    <Compile Include="Scheduler\IReservationManager.cs" />
-    <Compile Include="Scheduler\IResourceManager.cs" />
-    <Compile Include="Scheduler\IProcessInfoManager.cs" />
-    <Compile Include="Scheduler\ProcessInfoManager.cs" />
     <Compile Include="Scheduler\ReservationData.cs" />
-    <Compile Include="Scheduler\ReservationInviteeManager.cs" />
     <Compile Include="Scheduler\Data\AuthLevelData.cs" />
     <Compile Include="Scheduler\Data\HolidayData.cs" />
     <Compile Include="Scheduler\Data\ReservationInviteeData.cs" />
@@ -473,16 +467,13 @@
     <Compile Include="Scheduler\ReservationCollection.cs" />
     <Compile Include="Scheduler\ReservationDuration.cs" />
     <Compile Include="Scheduler\ReservationGroupUtility.cs" />
-    <Compile Include="Scheduler\ReservationHistoryFilterItem.cs" />
     <Compile Include="Scheduler\ReservationInProgress.cs" />
     <Compile Include="Scheduler\ReservationInviteeUtility.cs" />
-    <Compile Include="Scheduler\ReservationManager.cs" />
     <Compile Include="Scheduler\ReservationModificationType.cs" />
     <Compile Include="Scheduler\ReservationProcessInfoItem.cs" />
     <Compile Include="Scheduler\ReservationStateArgs.cs" />
     <Compile Include="Scheduler\ReservationUtility.cs" />
     <Compile Include="Scheduler\ResourceClientInfoUtility.cs" />
-    <Compile Include="Scheduler\ResourceCost.cs" />
     <Compile Include="Scheduler\OnTheFlyUtility.cs" />
     <Compile Include="Data\AddressItem.cs" />
     <Compile Include="Data\ClientAccountMatrix\Matrix.cs" />
@@ -532,7 +523,6 @@
     <Compile Include="Hooks\HookContext.cs" />
     <Compile Include="Hooks\HookManager.cs" />
     <Compile Include="Hooks\HookResult.cs" />
-    <Compile Include="IContext.cs" />
     <Compile Include="IControlService.cs" />
     <Compile Include="IDataAccessService.cs" />
     <Compile Include="Hooks\IHook.cs" />
@@ -556,8 +546,6 @@
     <Compile Include="GenericListItem.cs" />
     <Compile Include="Meter\MeterUtility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Scheduler\ResourceManager.cs" />
-    <Compile Include="Scheduler\SaveReservationHistoryResult.cs" />
     <Compile Include="ServiceProvider.cs" />
     <Compile Include="Reporting\CriteriaWriter.cs" />
     <Compile Include="Reporting\DefaultCriteria.cs" />
@@ -580,7 +568,6 @@
     <Compile Include="Repository\Store\Price.cs" />
     <Compile Include="Repository\Store\VendorPackage.cs" />
     <Compile Include="Scheduler\HelpdeskUtility.cs" />
-    <Compile Include="Scheduler\ReservationRecurrenceUtility.cs" />
     <Compile Include="Scheduler\ResourceClientUtility.cs" />
     <Compile Include="IScriptingService.cs" />
     <Compile Include="Scheduler\ResourceListItem.cs" />

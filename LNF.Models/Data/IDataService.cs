@@ -13,5 +13,6 @@ namespace LNF.Models.Data
         IRoomManager Room { get; }
         IServiceLogManager ServiceLog { get; }
         IUtilityManager Utility { get; }
+        IFeedManager Feed { get; }
     }
 }

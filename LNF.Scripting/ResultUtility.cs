@@ -93,7 +93,6 @@ namespace LNF.Scripting
                         dict.Add(name, val);
                     }
                 }
-
                 
                 data.AddItem(dict);
             }

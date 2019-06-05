@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using LNF.Models.Scheduler;
 using LNF.Repository;
+using LNF.Repository.Data;
 using LNF.Repository.Scheduler;
 using System;
+using System.Collections.Generic;
 using System.Data;
-using LNF.Models.Scheduler;
+using System.Linq;
 
 namespace LNF.Scheduler
 {
@@ -15,10 +17,10 @@ namespace LNF.Scheduler
 
     public static class RecurringReservationTransform
     {
-        public static bool GetRegularFromRecurring(ReservationRecurrence rr, DateTime currentDate, DataTable dtOut)
+        public static bool GetRegularFromRecurring(IReservationRecurrence rr, DateTime currentDate, DataTable dtOut)
         {
             // first, find out the pattern type
-            if (rr.Pattern.PatternID == (int)PatternType.Weekly)
+            if (rr.PatternID == (int)PatternType.Weekly)
             {
                 if (rr.PatternParam1 == (int)currentDate.DayOfWeek)
                 {
@@ -26,11 +28,11 @@ namespace LNF.Scheduler
                         AddNewRow(rr, currentDate, dtOut);
                 }
             }
-            else if (rr.Pattern.PatternID == (int)PatternType.Monthly)
+            else if (rr.PatternID == (int)PatternType.Monthly)
             {
                 if ((currentDate >= rr.BeginDate && rr.EndDate == null) || (currentDate >= rr.BeginDate && currentDate <= rr.EndDate))
                 {
-                    DateTime d = ReservationRecurrenceUtility.GetDate(new DateTime(currentDate.Year, currentDate.Month, 1), rr.PatternParam1, (DayOfWeek)rr.PatternParam2);
+                    DateTime d = GetDate(new DateTime(currentDate.Year, currentDate.Month, 1), rr.PatternParam1, (DayOfWeek)rr.PatternParam2);
                     if (currentDate.Date == d)
                         AddNewRow(rr, currentDate, dtOut);
                 }
@@ -41,14 +43,14 @@ namespace LNF.Scheduler
             return true;
         }
 
-        private static void AddNewRow(ReservationRecurrence rr, DateTime currentDate, DataTable dtOut)
+        private static void AddNewRow(IReservationRecurrence rr, DateTime currentDate, DataTable dtOut)
         {
             DataRow ndr = dtOut.NewRow();
             ndr["ReservationID"] = DBNull.Value;
-            ndr["ResourceID"] = rr.Resource.ResourceID;
-            ndr["ClientID"] = rr.Client.ClientID;
-            ndr["AccountID"] = rr.Account.AccountID;
-            ndr["ActivityID"] = Properties.Current.Activities.ScheduledMaintenance.ActivityID;
+            ndr["ResourceID"] = rr.ResourceID;
+            ndr["ClientID"] = rr.ClientID;
+            ndr["AccountID"] = rr.AccountID;
+            ndr["ActivityID"] = rr.ActivityID;
             ndr["BeginDateTime"] = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, rr.BeginTime.Hour, rr.BeginTime.Minute, rr.BeginTime.Second);
             ndr["EndDateTime"] = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, rr.EndTime.Hour, rr.EndTime.Minute, rr.EndTime.Second);
             ndr["ActualBeginDateTime"] = DBNull.Value;
@@ -62,82 +64,105 @@ namespace LNF.Scheduler
             ndr["RecurrenceID"] = rr.RecurrenceID;
             ndr["ApplyLateChargePenalty"] = 1;
             ndr["AutoEnd"] = rr.AutoEnd;
+            ndr["KeepAlive"] = rr.KeepAlive;
             ndr["HasProcessInfo"] = 0;
             ndr["HasInvitees"] = 0;
             ndr["IsActive"] = rr.IsActive;
             ndr["IsStarted"] = false;
             ndr["IsUnloaded"] = false;
-            ndr["ResourceName"] = rr.Resource.ResourceName;
+            ndr["ResourceName"] = rr.ResourceName;
             ndr["IsSchedulable"] = true;
             ndr["Editable"] = true;
             ndr["DisplayName"] = string.Empty;
-            ndr["KeepAlive"] = rr.KeepAlive;
             ndr["Notes"] = rr.Notes;
 
             dtOut.Rows.Add(ndr);
         }
 
-        public static void CopyProcessInfo(int recurrenceId, IReservation rsv)
+        public static IEnumerable<IReservationInvitee> GetInvitees(int recurrenceId)
         {
-            var previousRecurrence = GetPreviousRecurrence(recurrenceId, rsv.ReservationID);
+            // get any invitees for the most recent recurrence reservation
+            var prev = GetPreviousRecurrence(recurrenceId);
 
-            if (previousRecurrence != null)
+            IList<IReservationInvitee> result;
+
+            if (prev != null)
+                result = ServiceProvider.Current.Scheduler.Reservation.GetReservationInvitees(prev.ReservationID).ToList();
+            else
+                result = new List<IReservationInvitee>();
+
+            return result;
+        }
+
+        public static IEnumerable<IReservationProcessInfo> GetProcessInfos(int recurrenceId)
+        {
+            // get any process infos for the most recent recurrence reservation
+            var prev = GetPreviousRecurrence(recurrenceId);
+
+            IList<IReservationProcessInfo> result;
+
+            if (prev != null)
+                result = ServiceProvider.Current.Scheduler.ProcessInfo.GetReservationProcessInfos(prev.ReservationID).ToList();
+            else
+                result = new List<IReservationProcessInfo>();
+
+            return result;
+        }
+
+        public static void CopyProcessInfo(int reservationId, IEnumerable<IReservationProcessInfo> processInfos)
+        {
+            foreach (var item in processInfos)
             {
-                var rsvProcInfos = DA.Current.Query<ReservationProcessInfo>().Where(x => x.Reservation.ReservationID == previousRecurrence.ReservationID);
-                if (rsvProcInfos.Count() > 0)
+                var rpi = new ReservationProcessInfo()
                 {
-                    foreach (var item in rsvProcInfos)
-                    {
-                        ReservationProcessInfo rpi = new ReservationProcessInfo()
-                        {
-                            Active = item.Active,
-                            ChargeMultiplier = item.ChargeMultiplier,
-                            ProcessInfoLine = item.ProcessInfoLine,
-                            Reservation = DA.Current.Single<Reservation>(rsv.ReservationID),
-                            RunNumber = item.RunNumber,
-                            Special = item.Special,
-                            Value = item.Value
-                        };
+                    Active = item.Active,
+                    ChargeMultiplier = item.ChargeMultiplier,
+                    ProcessInfoLine = DA.Current.Single<ProcessInfoLine>(item.ProcessInfoLineID),
+                    Reservation = DA.Current.Single<Reservation>(reservationId),
+                    RunNumber = item.RunNumber,
+                    Special = item.Special,
+                    Value = item.Value
+                };
 
-                        DA.Current.Insert(rpi);
-                        rsv.HasProcessInfo = true;
-                    }
-                }
+                DA.Current.Insert(rpi);
             }
         }
 
-        public static void CopyInvitees(int recurrenceId, IReservation rsv)
+        public static void CopyInvitees(int reservationId, IEnumerable<IReservationInvitee> invitees)
         {
-            var previousRecurrence = GetPreviousRecurrence(recurrenceId, rsv.ReservationID);
 
-            if (previousRecurrence != null)
+            foreach (var item in invitees)
             {
-                var rsvInvitees = DA.Current.Query<ReservationInvitee>().Where(x => x.Reservation.ReservationID == previousRecurrence.ReservationID);
-                if (rsvInvitees.Count() > 0)
+                var ri = new ReservationInvitee()
                 {
-                    foreach (var item in rsvInvitees)
-                    {
-                        ReservationInvitee ri = new ReservationInvitee()
-                        {
-                            Invitee = item.Invitee,
-                            Reservation = DA.Current.Single<Reservation>(rsv.ReservationID)
-                        };
+                    Invitee = DA.Current.Single<Client>(item.InviteeID),
+                    Reservation = DA.Current.Single<Reservation>(reservationId)
+                };
 
-                        DA.Current.Insert(ri);
-                        rsv.HasInvitees = true;
-                    }
-                }
+                DA.Current.Insert(ri);
             }
         }
 
-        public static Reservation GetPreviousRecurrence(int recurrenceId, int reservationId)
+        public static Reservation GetPreviousRecurrence(int recurrenceId, int notReservationId = 0)
         {
             var result = DA.Current.Query<Reservation>()
-                .Where(x => x.RecurrenceID == recurrenceId && x.ReservationID != reservationId)
+                .Where(x => x.RecurrenceID == recurrenceId && x.ReservationID != notReservationId)
                 .OrderByDescending(x => x.BeginDateTime)
                 .FirstOrDefault();
 
             return result;
+        }
+
+        public static DateTime GetDate(DateTime period, int n, DayOfWeek dow)
+        {
+            var edate = period.AddMonths(1);
+            var days = (int)(edate - period).TotalDays;
+            var result = Enumerable.Range(0, days).Select(x => period.AddDays(x)).Where(d => d.DayOfWeek == dow).ToList();
+
+            if (result.Count >= n)
+                return result[n - 1];
+            else
+                return result.Last();
         }
     }
 }

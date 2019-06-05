@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web.Mvc;
 using System.Web.Routing;
 
 namespace LNF.Web
@@ -22,10 +23,16 @@ namespace LNF.Web
         {
             ConfigureAuth(app);
             ConfigureDataContext(app);
+            ConfigureFilters(GlobalFilters.Filters);
             ConfigureRoutes(RouteTable.Routes);
         }
 
         public abstract void ConfigureRoutes(RouteCollection routes);
+
+        public virtual  void ConfigureFilters(GlobalFilterCollection filters)
+        {
+            // do nothing unless overridden
+        }
 
         public virtual void ConfigureDataContext(IAppBuilder app)
         {

@@ -1,4 +1,6 @@
-﻿using LNF.Models.Billing;
+﻿using LNF.Mail;
+using LNF.Models;
+using LNF.Models.Billing;
 using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Billing;
@@ -6,6 +8,7 @@ using LNF.Repository.Data;
 using LNF.Repository.Scheduler;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace LNF.Impl.Data
@@ -93,7 +96,7 @@ namespace LNF.Impl.Data
         public IEnumerable<IClient> ClientOrgs(int clientId)
         {
             return Session.Query<ClientOrgInfo>().Where(x => x.ClientID == clientId).CreateModels<IClient>();
-        }        
+        }
 
         public IEnumerable<IClient> FindByCommunity(int flag, bool? active = true)
         {
@@ -706,11 +709,18 @@ namespace LNF.Impl.Data
                 return null;
         }
 
-        public IEnumerable<IClient> AllActiveManagers()
+        public IEnumerable<ListItem> AllActiveManagers()
         {
-            return Session.Query<ClientOrgInfo>()
-                .Where(x => (x.IsManager || x.IsFinManager) && x.ClientOrgActive)
-                .CreateModels<IClient>();
+            var dt = GroupEmailManager.GetAllActiveManagers();
+
+            var result = new List<ListItem>();
+
+            foreach (DataRow dr in dt.Rows)
+            {
+                result.Add(new ListItem(dr.Field<int>("ClientID").ToString(), dr.Field<string>("DisplayName")));
+            }
+
+            return result;
         }
 
         public void Disable(IClient client)
@@ -812,7 +822,7 @@ namespace LNF.Impl.Data
         {
             return Session.Query<Priv>().CreateModels<IPriv>();
         }
-        
+
         public IEnumerable<ICommunity> GetCommunities()
         {
             return Session.Query<Community>().CreateModels<ICommunity>();

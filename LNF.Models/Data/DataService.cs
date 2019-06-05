@@ -1,5 +1,4 @@
-﻿using LNF.Models.Data;
-using LNF.Models.Data.Utility;
+﻿using LNF.Models.Data.Utility;
 
 namespace LNF.Models.Data
 {
@@ -14,6 +13,7 @@ namespace LNF.Models.Data
         public IActiveLogManager ActiveLog { get; }
         public IServiceLogManager ServiceLog { get; }
         public IUtilityManager Utility { get; }
+        public IFeedManager Feed { get; }
 
         public DataService(
             IClientManager client,
@@ -24,7 +24,8 @@ namespace LNF.Models.Data
             IRoomManager room,
             IActiveLogManager activeLog,
             IServiceLogManager serviceLog,
-            IUtilityManager utility)
+            IUtilityManager utility,
+            IFeedManager feed)
         {
             Client = client;
             Org = org;
@@ -35,6 +36,7 @@ namespace LNF.Models.Data
             ActiveLog = activeLog;
             ServiceLog = serviceLog;
             Utility = utility;
+            Feed = feed;
         }
     }
 }

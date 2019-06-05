@@ -97,6 +97,22 @@ namespace LNF.Web
             return result;
         }
 
+        public static string CurrentIP(this HttpContextBase context)
+        {
+            string ipAddress = context.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+
+            if (!string.IsNullOrEmpty(ipAddress))
+            {
+                string[] addresses = ipAddress.Split(',');
+                if (addresses.Length != 0)
+                {
+                    return addresses[0];
+                }
+            }
+
+            return context.Request.ServerVariables["REMOTE_ADDR"];
+        }
+
         /// <summary>
         /// Ensures that the current session contains data for the authenticated user.
         /// </summary>

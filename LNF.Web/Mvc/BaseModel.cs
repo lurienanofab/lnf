@@ -6,15 +6,22 @@ namespace LNF.Web.Mvc
 {
     public abstract class BaseModel
     {
-        private bool _PermissionDenied = false;
-
         public string CurrentPage { get; set; }
+
         public string CurrentSubMenuItem { get; set; }
 
-        public BaseModel(ClientItem currentUser)
-        {
-            CurrentUser = currentUser;
-        }
+        //by default page is open to everyone
+        public virtual ClientPrivilege AuthTypes => 0;
+
+        public virtual string PermissionDeniedPartial => null;
+
+        public bool PermissionDenied { get; private set; } = false;
+
+        public bool Error { get; set; }
+
+        public string ErrorPartial { get; set; }
+
+        public IClient CurrentUser { get; set; }
 
         public virtual SubMenu GetSubMenu()
         {
@@ -30,36 +37,14 @@ namespace LNF.Web.Mvc
             });
         }
 
-        //by default page is open to everyone
-        public virtual ClientPrivilege AuthTypes
-        {
-            get { return 0; }
-        }
-
-        public virtual string PermissionDeniedPartial
-        {
-            get { return null; }
-        }
-
-        public bool PermissionDenied
-        {
-            get { return _PermissionDenied; }
-        }
-
-        public bool Error { get; set; }
-
-        public string ErrorPartial { get; set; }
-
-        public ClientItem CurrentUser { get; }
-
         public void CheckAuth()
         {
-            _PermissionDenied = true;
+            PermissionDenied = true;
 
             if (AuthTypes == 0) //null means open to everyone
-                _PermissionDenied = false;
+                PermissionDenied = false;
             else if (CurrentUser.HasPriv(AuthTypes))
-                _PermissionDenied = false;
+                PermissionDenied = false;
         }
     }
 }

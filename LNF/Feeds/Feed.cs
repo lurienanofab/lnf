@@ -1,4 +1,4 @@
-﻿using LNF.CommonTools;
+﻿using LNF.Models;
 using LNF.Repository;
 using LNF.Repository.Data;
 using System;
@@ -9,33 +9,29 @@ namespace LNF.Feeds
 {
     public class Feed
     {
-        private FeedFormats _Format;
         private DataTable _Data;
-        private string _ContentType;
-        private string _Charset;
-        private string _FileExtension;
 
         internal Feed(FeedFormats format, DataTable dt)
         {
-            _Format = format;
+            Format = format;
             _Data = dt;
 
-            switch (_Format)
+            switch (Format)
             {
                 case FeedFormats.Calendar:
-                    _ContentType = "text/calendar";
-                    _Charset = string.Empty;
-                    _FileExtension = ".ics";
+                    ContentType = "text/calendar";
+                    Charset = string.Empty;
+                    FileExtension = ".ics";
                     break;
                 default:
                     throw new NotImplementedException("Feed format has not been implemented.");
             }
         }
 
-        public FeedFormats Format { get { return _Format; } }
-        public string ContentType { get { return _ContentType; } }
-        public string Charset { get { return _Charset; } }
-        public string FileExtension { get { return _FileExtension; } }
+        public FeedFormats Format { get; }
+        public string ContentType { get; }
+        public string Charset { get; }
+        public string FileExtension { get; }
 
         public string GetFileNameWithExtension(string fileName)
         {
@@ -46,7 +42,7 @@ namespace LNF.Feeds
         {
             StringBuilder sb = new StringBuilder();
 
-            switch (_Format)
+            switch (Format)
             {
                 case FeedFormats.Calendar:
 
@@ -63,7 +59,7 @@ namespace LNF.Feeds
                     int i = 0;
                     foreach (DataRow dr in _Data.Rows)
                     {
-                        dr["UID"] = Utility.ConvertTo(dr["UID"], "feed_item_" + i.ToString()) + "@" + serverIp;
+                        dr["UID"] = CommonTools.Utility.ConvertTo(dr["UID"], "feed_item_" + i.ToString()) + "@" + serverIp;
                         if (dr["DTSTAMP"] == DBNull.Value)
                             dr["DTSTAMP"] = utc_build_time.ToString("yyyyMMdd'T'HHmmss'Z'");
                         if (dr["LOCATION"] == DBNull.Value)

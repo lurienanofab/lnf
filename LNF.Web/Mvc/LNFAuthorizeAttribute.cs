@@ -25,7 +25,7 @@ namespace LNF.Web.Mvc
         /// <param name="accessDeniedViewName">The name of the view to display for unauthorized requests. Defaults to "AccessDenied". If null the request will redirect to the login page.</param>
         public LNFAuthorizeAttribute(ClientPrivilege requiredPrivilege = 0, int[] allowedClientIDs = null, Type modelType = null, string accessDeniedViewName = "AccessDenied")
         {
-            if (!modelType.IsSubclassOf(typeof(BaseModel)))
+            if (modelType != null && !modelType.IsSubclassOf(typeof(BaseModel)))
                 throw new ArgumentException("The type must inherit LNF.Web.Mvc.BaseModel.", "modelType");
 
             ModelType = modelType ?? typeof(AccessDeniedModel);
@@ -89,7 +89,9 @@ namespace LNF.Web.Mvc
                 if (result != null && result.View != null)
                 {
                     ViewResult view = new ViewResult() { View = result.View };
-                    view.ViewData = new ViewDataDictionary(Activator.CreateInstance(ModelType, filterContext.HttpContext.CurrentUser()));
+                    var model = (BaseModel)Activator.CreateInstance(ModelType);
+                    model.CurrentUser = filterContext.HttpContext.CurrentUser();
+                    view.ViewData = new ViewDataDictionary(model);
                     view.ViewBag.ReturnUrl = filterContext.RequestContext.HttpContext.Request.RawUrl;
                     filterContext.Result = view;
                     return;

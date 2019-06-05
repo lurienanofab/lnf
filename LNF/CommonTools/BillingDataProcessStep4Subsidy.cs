@@ -1,6 +1,5 @@
 ﻿using LNF.Billing;
 using LNF.Models.Billing.Process;
-using LNF.Models.Mail;
 using LNF.Repository;
 using LNF.Repository.Billing;
 using System;
@@ -75,11 +74,11 @@ namespace LNF.CommonTools
             DataTable dtOut = ds.Tables[3];
             DataTable dtMiscCharges = ds.Tables[4];
 
-            //The strategy here is we loop through dtRoom where all users in current month should have data in TieredSubsidyBilling Table
-            //Then we loop through dtTool in case if someone had used the tool, but not the room (unlikely, but possible)
-            //Then we calculate the user payment 
+            // The strategy here is we loop through dtRoom where all users in current month should have data in TieredSubsidyBilling Table
+            // Then we loop through dtTool in case if someone had used the tool, but not the room (unlikely, but possible)
+            // Then we calculate the user payment 
 
-            //The code below will populate two columns "RoomSum" and "RoomMiscSum"
+            // The code below will populate two columns "RoomSum" and "RoomMiscSum"
             DataRow newrow;
             foreach (DataRow dr in dtRoom.Rows)
             {
@@ -92,11 +91,11 @@ namespace LNF.CommonTools
                 newrow["RoomSum"] = dr["TotalCharge"];
                 newrow["RoomMiscSum"] = GetMiscSumPerClient(dtMiscCharges, dr.Field<int>("ClientID"), "Room");
 
-                //We still need to set the tool for people who don't use tool (but only room)
+                // We still need to set the tool for people who don't use tool (but only room)
                 newrow["ToolSum"] = 0;
                 newrow["ToolMiscSum"] = 0;
 
-                //The column does not allow NULL
+                // The column does not allow NULL
                 newrow["UserPaymentSum"] = 0;
 
                 dtOut.Rows.Add(newrow);
@@ -108,13 +107,13 @@ namespace LNF.CommonTools
 
                 if (drs.Length == 1)
                 {
-                    //we found data record for room, so we use the same data record
+                    // we found data record for room, so we use the same data record
                     drs[0]["ToolSum"] = dr["TotalCharge"];
                     drs[0]["ToolMiscSum"] = GetMiscSumPerClient(dtMiscCharges, dr.Field<int>("ClientID"), "Tool");
                 }
                 else if (drs.Length == 0)
                 {
-                    //This user uses tool, but not room, so it's a whole new record
+                    // This user uses tool, but not room, so it's a whole new record
                     newrow = dtOut.NewRow();
 
                     newrow["Period"] = dr["Period"];
@@ -127,14 +126,14 @@ namespace LNF.CommonTools
                     newrow["ToolSum"] = dr["TotalCharge"];
                     newrow["ToolMiscSum"] = GetMiscSumPerClient(dtMiscCharges, dr.Field<int>("ClientID"), "Tool");
 
-                    //The column does not allow NULL
+                    // The column does not allow NULL
                     newrow["UserPaymentSum"] = 0;
 
                     dtOut.Rows.Add(newrow);
                 }
                 else
                 {
-                    //error, it's impossible to have more than 1 data
+                    // error, it's impossible to have more than 1 data
                     SendEmail.SendDeveloperEmail("LNF.CommonTools.BillingDataProcessStep4Subsidy.PopulateSubsidyBilling", "Error in populating TieredSubsidyBilling", $"There is more than one row for client {drs[0]["ClientID"]}");
                 }
             }
@@ -145,12 +144,12 @@ namespace LNF.CommonTools
 
                 if (drs.Length == 0)
                 {
-                    //This user has no tool nor room, so it's a whole new record
+                    // This user has no tool nor room, so it's a whole new record
                     newrow = dtOut.NewRow();
 
                     newrow["Period"] = Period;
                     newrow["ClientID"] = dr["ClientID"];
-                    newrow["OrgID"] = 17; //always internal
+                    newrow["OrgID"] = 17; // always internal
 
                     newrow["RoomSum"] = 0;
                     newrow["RoomMiscSum"] = GetMiscSumPerClient(dtMiscCharges, Convert.ToInt32(dr["ClientID"]), "Room");
@@ -158,7 +157,7 @@ namespace LNF.CommonTools
                     newrow["ToolSum"] = 0;
                     newrow["ToolMiscSum"] = GetMiscSumPerClient(dtMiscCharges, Convert.ToInt32(dr["ClientID"]), "Tool");
 
-                    //The column does not allow NULL
+                    // The column does not allow NULL
                     newrow["UserPaymentSum"] = 0;
 
                     dtOut.Rows.Add(newrow);
@@ -167,23 +166,23 @@ namespace LNF.CommonTools
 
             result.RowsExtracted = dtOut.Rows.Count;
 
-            //At this point, the TiredSubsidyBilling table should have all the records but some fields are missing.  
-            //So we loop through the newly constructed table and fill out the missing fields
+            // At this point, the TiredSubsidyBilling table should have all the records but some fields are missing.  
+            // So we loop through the newly constructed table and fill out the missing fields
             PopulateFieldsFromHistory(dtOut);
 
-            //Clean up the data before saving
+            // Clean up the data before saving
             result.RowsDeleted = DeleteTieredSubsidyBilling();
 
-            //Save everything back to the main table
+            // Save everything back to the main table
             result.RowsLoaded = SaveNewTieredSubsidyBilling(dtOut);
 
-            //Calculate the real subsidy amount and populate the details, UserPaymentSum is set in this method.
+            // Calculate the real subsidy amount and populate the details, UserPaymentSum is set in this method.
             CalculateSubsidyFee();
 
-            //Push changes back to billing tables
+            // Push changes back to billing tables
             DistributeSubsidyMoneyEvenly();
 
-            //[2015-10-20 jg] Added account subsidy feature per Sandrine. Some accounts get a fixed subsidy that overrides the tiered subsidy
+            // [2015-10-20 jg] Added account subsidy feature per Sandrine. Some accounts get a fixed subsidy that overrides the tiered subsidy
             ApplyAccountSubsidy();
 
             return result;

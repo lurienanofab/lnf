@@ -42,6 +42,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Authorization\Credentials\ClientCredentials.cs" />
+    <Compile Include="Authorization\Credentials\CredentialBase.cs" />
+    <Compile Include="Authorization\Credentials\ICredentials.cs" />
+    <Compile Include="Authorization\Credentials\PasswordCredentials.cs" />
+    <Compile Include="Authorization\Credentials\RefreshCredentials.cs" />
+    <Compile Include="Authorization\DefaultAuthorizationAccess.cs" />
+    <Compile Include="Authorization\IAuthorizationAccess.cs" />
+    <Compile Include="Authorization\IAuthorizationService.cs" />
+    <Compile Include="Authorization\IRequest.cs" />
     <Compile Include="Billing\AccountSubsidyItem.cs" />
     <Compile Include="Billing\ApportionmentClientItem.cs" />
     <Compile Include="Billing\BillingService.cs" />
@@ -118,6 +127,11 @@
     <Compile Include="Data\ChargeTypeItem.cs" />
     <Compile Include="Data\ClientDemographics.cs" />
     <Compile Include="Billing\IBillingService.cs" />
+    <Compile Include="Data\DataFeedItem.cs" />
+    <Compile Include="Data\IDataFeed.cs" />
+    <Compile Include="Data\IFeedManager.cs" />
+    <Compile Include="IContext.cs" />
+    <Compile Include="ListItem.cs" />
     <Compile Include="Data\CommunityItem.cs" />
     <Compile Include="Data\DataService.cs" />
     <Compile Include="Data\DryBoxAssignmentItem.cs" />
@@ -175,6 +189,21 @@
     <Compile Include="Mail\IRecipient.cs" />
     <Compile Include="Reporting\IClientItemManager.cs" />
     <Compile Include="Reporting\IReportingClient.cs" />
+    <Compile Include="Scheduler\ExpiringCardConverter.cs" />
+    <Compile Include="Scheduler\InsertReservationArgs.cs" />
+    <Compile Include="Scheduler\IProcessInfoManager.cs" />
+    <Compile Include="Scheduler\IReservationManager.cs" />
+    <Compile Include="Scheduler\IReservationProcessInfo.cs" />
+    <Compile Include="Scheduler\IReservationRecurrence.cs" />
+    <Compile Include="Scheduler\IResourceActivityAuth.cs" />
+    <Compile Include="Scheduler\IResourceCost.cs" />
+    <Compile Include="Scheduler\IResourceManager.cs" />
+    <Compile Include="Scheduler\ReservationHistoryFilterItem.cs" />
+    <Compile Include="Scheduler\ResourceActivityAuthItem.cs" />
+    <Compile Include="Scheduler\ResourceCost.cs" />
+    <Compile Include="Scheduler\SaveReservationHistoryResult.cs" />
+    <Compile Include="Scheduler\SchedulerService.cs" />
+    <Compile Include="Scheduler\UpdateReservationArgs.cs" />
     <Compile Include="Worker\IWorkerService.cs" />
     <Compile Include="PhysicalAccess\IPhysicalAccessService.cs" />
     <Compile Include="Scheduler\ISchedulerService.cs" />
@@ -238,7 +267,7 @@
     <Compile Include="Data\ClientAccountItem.cs" />
     <Compile Include="Data\ClientItem.cs" />
     <Compile Include="Data\ClientRemoteItem.cs" />
-    <Compile Include="Data\DataFeedItem.cs" />
+    <Compile Include="Data\DataFeedResult.cs" />
     <Compile Include="Data\DryBoxItem.cs" />
     <Compile Include="Data\Enums.cs" />
     <Compile Include="Data\GlobalCostItem.cs" />

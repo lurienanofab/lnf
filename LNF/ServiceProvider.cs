@@ -1,7 +1,7 @@
-﻿using LNF.Billing;
-using LNF.CommonTools;
-using LNF.Data;
+﻿using LNF.CommonTools;
 using LNF.Hooks;
+using LNF.Models;
+using LNF.Models.Authorization;
 using LNF.Models.Billing;
 using LNF.Models.Data;
 using LNF.Models.Mail;
@@ -18,6 +18,7 @@ namespace LNF
     public interface IProvider: Models.IProvider
     {
         IContext Context { get; }
+        IAuthorizationService Authorization { get; }
         IDataAccessService DataAccess { get; }
         ILogService Log { get; }
         IControlService Control { get; }
@@ -26,10 +27,6 @@ namespace LNF
         IScriptingService Scripting { get; }
         IModelFactory ModelFactory { get; }
         ISchedulerRepository SchedulerRepository { get; }
-        IResourceManager ResourceManager { get; }
-        IReservationManager ReservationManager { get; }
-        IReservationInviteeManager ReservationInviteeManager { get; }
-        IProcessInfoManager ProcessInfoManager { get; }
         IEmailManager EmailManager { get; }
         IReadRoomDataManager ReadRoomDataManager { get; }
         IReadToolDataManager ReadToolDataManager { get; }
@@ -38,6 +35,7 @@ namespace LNF
         IAdministrativeHelper AdministrativeHelper { get; }
         void BuildUp(object target);
         string[] Hooks { get; }
+
         T Resolve<T>();
     }
 
@@ -46,6 +44,7 @@ namespace LNF
         private IDependencyResolver _resolver;
 
         public IContext Context => Resolve<IContext>();
+        public IAuthorizationService Authorization => Resolve<IAuthorizationService>();
         public IDataAccessService DataAccess => Resolve<IDataAccessService>();
         public ILogService Log => Resolve<ILogService>();
         public IControlService Control => Resolve<IControlService>();
@@ -61,10 +60,7 @@ namespace LNF
         public IWorkerService Worker => Resolve<IWorkerService>();
 
         public ISchedulerRepository SchedulerRepository => Resolve<ISchedulerRepository>();
-        public IResourceManager ResourceManager => Resolve<IResourceManager>();
         public IReservationManager ReservationManager => Resolve<IReservationManager>();
-        public IReservationInviteeManager ReservationInviteeManager => Resolve<IReservationInviteeManager>();
-        public IProcessInfoManager ProcessInfoManager => Resolve<IProcessInfoManager>();
         public IEmailManager EmailManager => Resolve<IEmailManager>();
 
         public IReadRoomDataManager ReadRoomDataManager => Resolve<IReadRoomDataManager>();

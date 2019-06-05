@@ -102,7 +102,7 @@ namespace LNF.Models.Scheduler
         public static TimeSpan GetOvertimeDuration(DateTime end, DateTime? actualEnd) => (actualEnd != null) ? TimeSpan.FromMinutes(Math.Max((actualEnd.Value - end).TotalMinutes, 0)) : TimeSpan.Zero;
     }
 
-    public class ReservationItemWithInvitees : ReservationItem, IReservationWithInvitees
+    public class ReservationWithInviteesItem : ReservationItem, IReservationWithInvitees
     {
         public IEnumerable<IReservationInvitee> Invitees { get; set; }
     }

@@ -1,6 +1,7 @@
 ﻿using LNF.Models.Scheduler;
 using LNF.Repository;
 using LNF.Repository.Scheduler;
+using System;
 using System.Linq;
 
 namespace LNF.Impl.ModelFactory
@@ -60,8 +61,25 @@ namespace LNF.Impl.ModelFactory
 
         private IReservationWithInvitees MapReservationWithInvitees(ReservationInfo source)
         {
-            var result = MapFrom<ReservationItemWithInvitees>(source);
+            var result = MapFrom<ReservationWithInviteesItem>(source);
             result.Invitees = DA.Current.Query<ReservationInviteeInfo>().Where(x => x.ReservationID == source.ReservationID).CreateModels<IReservationInvitee>();
+            return result;
+        }
+
+        private IReservationRecurrence MapReservationRecurrence(ReservationRecurrence source)
+        {
+            var result = MapFrom<ReservationRecurrenceItem>(source);
+            result.ResourceID = source.Resource.ResourceID;
+            result.ResourceName = source.Resource.ResourceName;
+            result.AccountID = source.Account.AccountID;
+            result.AccountName = source.Account.Name;
+            result.ActivityID = source.Activity.ActivityID;
+            result.ActivityName = source.Activity.ActivityName;
+            result.ClientID = source.Client.ClientID;
+            result.LName = source.Client.LName;
+            result.FName = source.Client.FName;
+            result.PatternID = source.Pattern.PatternID;
+            result.PatternName = source.Pattern.PatternName;
             return result;
         }
 
@@ -82,6 +100,8 @@ namespace LNF.Impl.ModelFactory
             Map<ResourceClientInfo, ResourceClientItem, IResourceClient>();
             Map<ReservationInvitee, ReservationInviteeInfo, ReservationInviteeItem, IReservationInvitee>(x => new ReservationInviteeInfo { ReservationID = x.Reservation.ReservationID, InviteeID = x.Invitee.ClientID });
             Map<ReservationInviteeInfo, ReservationInviteeItem, IReservationInvitee>();
+            Map<ReservationProcessInfo, ReservationProcessInfoItem, IReservationProcessInfo>();
+            Map<ReservationRecurrence, IReservationRecurrence>(x => MapReservationRecurrence(x));
         }
     }
 }

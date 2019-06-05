@@ -61,9 +61,9 @@ namespace OnlineServices.Api.PhysicalAccess
             return Get<bool>("webapi/physical-access/allow-reenable", QueryStrings(new { clientId, days }));
         }
 
-        public IEnumerable<int> GetPassbackViolations(DateTime sd, DateTime ed)
+        public int[] GetPassbackViolations(DateTime sd, DateTime ed)
         {
-            return Get<List<int>>("webapi/physical-access/passback-violations", QueryStrings(new { sd = sd.ToString("yyyy-MM-dd"), ed = ed.ToString("yyyy-MM-dd") }));
+            return Get<List<int>>("webapi/physical-access/passback-violations", QueryStrings(new { sd = sd.ToString("yyyy-MM-dd"), ed = ed.ToString("yyyy-MM-dd") })).ToArray();
         }
 
         public int AddClient(IClient c)

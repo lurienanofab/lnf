@@ -5,11 +5,13 @@ namespace LNF.Models.Scheduler
     /// <summary>
     /// A reservation recurrence by a client on a lab resource
     /// </summary>
-    public class ReservationRecurrenceItem
+    public class ReservationRecurrenceItem : IReservationRecurrence
     {
-        public virtual int RecurrenceID { get; set; }
+        public int RecurrenceID { get; set; }
 
         public int ResourceID { get; set; }
+
+        public string ResourceName { get; set; }
 
         /// <summary>
         /// The id for the Client who made the reservation recurrence

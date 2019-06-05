@@ -1,29 +1,20 @@
 ﻿using LNF.CommonTools;
+using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 
 namespace LNF.Scripting
 {
     public class Parameters : DynamicDictionary
     {
-        private Parameters() { }
+        public static readonly Parameters Empty = new Parameters(new Dictionary<object, object>());
 
-        public static Parameters Create()
+        private Parameters(IDictionary<object, object> items) : base(items) { }
+
+        public static Parameters Create(IDictionary<object, object> items)
         {
-            Parameters result = new Parameters();
-
-            foreach (string key in ServiceProvider.Current.Context.QueryString.AllKeys)
-                result.Set(new KeyValuePair<string, string>(key, ServiceProvider.Current.Context.QueryString[key]));
-
-            string parameters = ServiceProvider.Current.Context.PostData["params"];
-
-            if (!string.IsNullOrEmpty(parameters))
-            {
-                Dictionary<string, object> dict = ServiceProvider.Current.Serialization.Json.Deserialize<Dictionary<string, object>>(parameters);
-                foreach (KeyValuePair<string, object> kvp in dict)
-                    result.Set(kvp);
-            }
-
-            return result;
+            return new Parameters(items);
         }
 
         public void Set(KeyValuePair<object, object> kvp)
@@ -62,6 +53,13 @@ namespace LNF.Scripting
             if (parameters != null)
                 foreach (KeyValuePair<object, object> kvp in parameters)
                     Set(kvp);
+        }
+
+        public override string ToString()
+        {
+            var pairs = _Items.Select(x => $"{x.Key}={x.Value}").ToArray();
+            var result = string.Join("&", pairs);
+            return result;
         }
     }
 }

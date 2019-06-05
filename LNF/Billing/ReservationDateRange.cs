@@ -1,4 +1,5 @@
 ﻿using LNF.Models.Data;
+using LNF.Models.Scheduler;
 using LNF.Repository;
 using LNF.Repository.Scheduler;
 using LNF.Scheduler;
@@ -261,7 +262,7 @@ namespace LNF.Billing
             public DateTime LastModifiedOn { get; set; }
             public bool IsCancelledBeforeCutoff { get; set; }
             public double ChargeMultiplier { get; set; }
-            public ResourceCost Cost { get; set; }
+            public IResourceCost Cost { get; set; }
             public DateTime ActDate => ActualBeginDateTime.GetValueOrDefault(BeginDateTime).Date;
         }
 

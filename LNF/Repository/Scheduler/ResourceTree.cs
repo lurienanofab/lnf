@@ -1,5 +1,4 @@
 ﻿using LNF.Cache;
-using LNF.Models.Data;
 using LNF.Models.Scheduler;
 using LNF.Scheduler;
 using System;
@@ -100,9 +99,9 @@ namespace LNF.Repository.Scheduler
                 .OrderBy(x => x.DisplayName).ToList();
         }
 
-        public virtual ResourceCost GetCost(ClientItem client)
+        public virtual IResourceCost GetCost(int chargeTypeId)
         {
-            return CacheManager.Current.GetResourceCost(ResourceID, client.MaxChargeTypeID);
+            return CacheManager.Current.GetResourceCost(ResourceID, chargeTypeId);
         }
     }
 }

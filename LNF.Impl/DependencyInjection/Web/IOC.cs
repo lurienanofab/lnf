@@ -8,11 +8,11 @@ namespace LNF.Impl.DependencyInjection.Web
     {
         public IDependencyResolver Resolver { get; }
 
-        public IOC(IContext ctx)
+        public IOC(Models.IContext ctx)
         {
             var reg = new Registry();
 
-            reg.For<IContext>().Singleton().Use(ctx);
+            reg.For<Models.IContext>().Singleton().Use(ctx);
             reg.For<ISessionManager>().Singleton().Use<SessionManager<WebSessionContext>>();
 
             Resolver = new StructureMapResolver(reg);

@@ -84,12 +84,12 @@ namespace LNF.Scheduler
         /// <summary>
         /// Gets ResourceCosts for all ChargeTypes and Resources. Cached for 24 hours.
         /// </summary>
-        public static IEnumerable<ResourceCost> ResourceCosts(this CacheManager cm) => cm.GetValue("ResourceCosts", () => ServiceProvider.Current.ResourceManager.GetResourceCosts(), DateTimeOffset.Now.AddHours(24));
+        public static IEnumerable<IResourceCost> ResourceCosts(this CacheManager cm) => cm.GetValue("ResourceCosts", () => ServiceProvider.Current.Scheduler.Resource.GetResourceCosts(), DateTimeOffset.Now.AddHours(24));
 
         /// <summary>
         /// Gets a ResourceCost for each ChargeType for the given ResourceID.
         /// </summary>
-        public static IEnumerable<ResourceCost> ResourceCosts(this CacheManager cm, int resourceId)
+        public static IEnumerable<IResourceCost> ResourceCosts(this CacheManager cm, int resourceId)
         {
             return cm.ResourceCosts().Where(x => x.ResourceID == resourceId);
         }
@@ -97,9 +97,15 @@ namespace LNF.Scheduler
         /// <summary>
         /// Gets a single ResourceCost for given ResourceID and ChargeTypeID.
         /// </summary>
-        public static ResourceCost GetResourceCost(this CacheManager cm, int resourceId, int chargeTypeId)
+        public static IResourceCost GetResourceCost(this CacheManager cm, int resourceId, int chargeTypeId)
         {
             return cm.ResourceCosts(resourceId).FirstOrDefault(x => x.ChargeTypeID == chargeTypeId);
+        }
+
+        public static ILab GetLab(this CacheManager cm, string name)
+        {
+            var labs = cm.GetValue("Labs", () => DA.Current.Query<Lab>().CreateModels<ILab>(), DateTimeOffset.Now.AddMinutes(30));
+            return labs.FirstOrDefault(x => x.LabName == name || x.LabDisplayName == name);
         }
     }
 }

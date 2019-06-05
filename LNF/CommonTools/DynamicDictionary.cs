@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Dynamic;
+using System.Linq;
 
 namespace LNF.CommonTools
 {
@@ -16,9 +14,9 @@ namespace LNF.CommonTools
             _Items = new Dictionary<object, object>();
         }
 
-        public DynamicDictionary(IEnumerable<KeyValuePair<object, object>> items)
+        public DynamicDictionary(IDictionary<object, object> items)
         {
-            _Items = items.ToDictionary(x => x.Key, x => x.Value);
+            _Items = items;
         }
 
         public DynamicDictionary(Hashtable hash)
@@ -134,37 +132,37 @@ namespace LNF.CommonTools
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
 
         void IDictionary<string, object>.Add(string key, object value)
         {
-            this.Add(key, value);
+            Add(key, value);
         }
 
         bool IDictionary<string, object>.ContainsKey(string key)
         {
-            return this.ContainsKey(key);
+            return ContainsKey(key);
         }
 
         ICollection<string> IDictionary<string, object>.Keys
         {
-            get { return this.Keys.Select(x => x.ToString()).ToList(); }
+            get { return Keys.Select(x => x.ToString()).ToList(); }
         }
 
         bool IDictionary<string, object>.Remove(string key)
         {
-            return this.Remove(key);
+            return Remove(key);
         }
 
         bool IDictionary<string, object>.TryGetValue(string key, out object value)
         {
-            return this.TryGetValue(key, out value);
+            return TryGetValue(key, out value);
         }
 
         ICollection<object> IDictionary<string, object>.Values
         {
-            get { return this.Values; }
+            get { return Values; }
         }
 
         object IDictionary<string, object>.this[string key]
@@ -175,17 +173,17 @@ namespace LNF.CommonTools
 
         void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
         {
-            this.Add(new KeyValuePair<object, object>(item.Key, item.Value));
+            Add(new KeyValuePair<object, object>(item.Key, item.Value));
         }
 
         void ICollection<KeyValuePair<string, object>>.Clear()
         {
-            this.Clear();
+            Clear();
         }
 
         bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
         {
-            return this.Contains(new KeyValuePair<object, object>(item.Key, item.Value));
+            return Contains(new KeyValuePair<object, object>(item.Key, item.Value));
         }
 
         void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
@@ -196,17 +194,17 @@ namespace LNF.CommonTools
 
         int ICollection<KeyValuePair<string, object>>.Count
         {
-            get { return this.Count; }
+            get { return Count; }
         }
 
         bool ICollection<KeyValuePair<string, object>>.IsReadOnly
         {
-            get { return this.IsReadOnly; }
+            get { return IsReadOnly; }
         }
 
         bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item)
         {
-            return this.Remove(new KeyValuePair<object, object>(item.Key, item.Value));
+            return Remove(new KeyValuePair<object, object>(item.Key, item.Value));
         }
 
         IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()

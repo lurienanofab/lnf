@@ -3,6 +3,7 @@ using System.Configuration;
 using LNF.Repository;
 using LNF.Repository.Reporting;
 using System.Linq;
+using LNF.Models.Scheduler;
 
 namespace LNF.Scheduler
 {
@@ -66,5 +67,7 @@ namespace LNF.Scheduler
 
             return false;
         }
+
+        public override string ToString() => Duration.ToString();
     }
 }

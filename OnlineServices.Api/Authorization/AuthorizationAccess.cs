@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using LNF.Models.Authorization;
+using Newtonsoft.Json;
 using System;
 
 namespace OnlineServices.Api.Authorization
 {
-    public class AuthorizationAccess
+    public class AuthorizationAccess : DefaultAuthorizationAccess
     {
         /*
         Response from auth server looks like this:
@@ -15,42 +16,25 @@ namespace OnlineServices.Api.Authorization
         } 
         */
 
-        public AuthorizationAccess()
-        {
-            Created = DateTime.Now;
-        }
-
         [JsonProperty(PropertyName = "access_token")]
-        public string AccessToken { get; set; }
+        public override string AccessToken { get; set; }
 
         [JsonProperty(PropertyName = "token_type")]
-        public string TokenType { get; set; }
+        public override string TokenType { get; set; }
 
         [JsonProperty(PropertyName = "expires_in")]
-        public int ExpiresIn { get; set; }
+        public override int ExpiresIn { get; set; }
 
         [JsonProperty(PropertyName = "refresh_token")]
-        public string RefreshToken { get; set; }
+        public override string RefreshToken { get; set; }
 
         [JsonIgnore]
-        public DateTime Created { get; }
+        public override DateTime Created => base.Created;
 
         [JsonIgnore]
-        public DateTime ExpirationDate
-        {
-            get
-            {
-                return Created.AddSeconds(ExpiresIn);
-            }
-        }
+        public override DateTime ExpirationDate => base.ExpirationDate;
 
         [JsonIgnore]
-        public bool Expired
-        {
-            get
-            {
-                return ExpirationDate < DateTime.Now;
-            }
-        }
+        public override bool Expired => base.Expired;
     }
 }

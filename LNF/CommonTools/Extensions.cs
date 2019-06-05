@@ -1,4 +1,5 @@
 ﻿using LNF.CommonTools;
+using LNF.Models;
 using LNF.Repository;
 using System;
 using System.Collections.Generic;

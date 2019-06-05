@@ -1,4 +1,5 @@
-﻿using LNF.Models.Billing;
+﻿using LNF.Models;
+using LNF.Models.Billing;
 using LNF.Models.Data;
 using System;
 using System.Collections.Generic;
@@ -229,9 +230,9 @@ namespace OnlineServices.Api.Data
             throw new NotImplementedException();
         }
 
-        public IEnumerable<IClient> AllActiveManagers()
+        public IEnumerable<ListItem> AllActiveManagers()
         {
-            throw new NotImplementedException();
+            return Get<List<ListItem>>("webapi/data/client/manager/active/list");
         }
 
         public void Disable(IClient client)

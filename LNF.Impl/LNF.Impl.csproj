@@ -104,6 +104,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Authorization\AuthorizationService.cs" />
     <Compile Include="Billing\AccountSubsidyManager.cs" />
     <Compile Include="Billing\ApportionmentManager.cs" />
     <Compile Include="Billing\BillingTypeManager.cs" />
@@ -135,6 +136,7 @@
     <Compile Include="Data\AccountManager.cs" />
     <Compile Include="Data\ClientManager.cs" />
     <Compile Include="Data\Extensions.cs" />
+    <Compile Include="Data\FeedManager.cs" />
     <Compile Include="Data\RoomManager.cs" />
     <Compile Include="Data\ServiceLogManager.cs" />
     <Compile Include="Data\UtilityManager.cs" />
@@ -159,8 +161,12 @@
     <Compile Include="ModelFactory\OrderingModelBuilder.cs" />
     <Compile Include="ModelFactory\SchedulerModelBuilder.cs" />
     <Compile Include="PhysicalAccess\PhysicalAccessService.cs" />
+    <Compile Include="PhysicalAccess\Repository.cs" />
+    <Compile Include="PhysicalAccess\Utility.cs" />
     <Compile Include="Reporting\ClientItemManager.cs" />
-    <Compile Include="Scheduler\SchedulerService.cs" />
+    <Compile Include="Scheduler\ProcessInfoManager.cs" />
+    <Compile Include="Scheduler\ReservationManager.cs" />
+    <Compile Include="Scheduler\ResourceManager.cs" />
     <Compile Include="Serialization\DynamicContractResolver.cs" />
     <Compile Include="Encryption\EncryptionService.cs" />
     <Compile Include="Hooks\PostLoginCheckerHook.cs" />

@@ -63,15 +63,10 @@
     <Compile Include="ApiClient.cs" />
     <Compile Include="ApiRequestException.cs" />
     <Compile Include="Authorization\AuthorizationAccess.cs" />
-    <Compile Include="Authorization\AuthorizationClient.cs" />
-    <Compile Include="Authorization\AuthorizationCode.cs" />
-    <Compile Include="Authorization\Credentials\CredentialBase.cs" />
-    <Compile Include="Authorization\Credentials\ICredentials.cs" />
-    <Compile Include="Authorization\Credentials\PasswordCredentials.cs" />
-    <Compile Include="Authorization\Credentials\ClientCredentials.cs" />
-    <Compile Include="Authorization\Credentials\RefreshCredentials.cs" />
+    <Compile Include="Authorization\AuthorizationService.cs" />
     <Compile Include="Billing\AccountSubsidyManager.cs" />
     <Compile Include="Billing\ApportionmentManager.cs" />
+    <Compile Include="Billing\BillingTypeManager.cs" />
     <Compile Include="Billing\MiscBillingManager.cs" />
     <Compile Include="Billing\ProcessManager.cs" />
     <Compile Include="Billing\ReportManager.cs" />
@@ -84,7 +79,7 @@
     <Compile Include="Data\CostManager.cs" />
     <Compile Include="Data\DataApi.cs" />
     <Compile Include="Data\DryBoxManager.cs" />
-    <Compile Include="Data\FeedClient.cs" />
+    <Compile Include="Data\FeedManager.cs" />
     <Compile Include="Data\OrgManager.cs" />
     <Compile Include="Data\RoomManager.cs" />
     <Compile Include="Data\ServiceLogManager.cs" />
@@ -97,7 +92,8 @@
     <Compile Include="PhysicalAccess\PhysicalAccessService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Data\UtilityManager.cs" />
-    <Compile Include="Scheduler\SchedulerService.cs" />
+    <Compile Include="Scheduler\ReservationManager.cs" />
+    <Compile Include="Scheduler\ResourceManager.cs" />
     <Compile Include="Scheduler\SchedulerServiceClient.cs" />
     <Compile Include="ServiceProvider.cs" />
     <Compile Include="Tasks\TasksClient.cs" />

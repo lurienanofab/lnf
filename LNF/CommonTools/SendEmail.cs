@@ -1,6 +1,9 @@
-﻿using LNF.Models.Mail;
+﻿using LNF.Models.Data;
+using LNF.Models.Mail;
+using System;
 using System.Collections.Generic;
 using System.Net.Mail;
+using System.Text;
 
 namespace LNF.CommonTools
 {
@@ -38,6 +41,24 @@ namespace LNF.CommonTools
         {
             SendSystemEmail(caller, subject, body, DeveloperEmails, false);
         }
+
+        public static void SendErrorEmail(Exception ex, IClient client, string app, string ip, Uri url)
+        {
+            var now = DateTime.Now;
+            var body = new StringBuilder();
+
+            body.AppendLine($"Current date/time: {now:yyyy-MM-dd HH:mm:ss}");
+            body.AppendLine($"Current IP: {ip}");
+            body.AppendLine($"Current url: {url}");
+            body.AppendLine($"Current user: {GetClientName(client)}");
+            body.AppendLine($"Message: {ex.Message}");
+            body.AppendLine("StackTrace:");
+            body.Append(ex.StackTrace);
+
+            SendDeveloperEmail("LNF.CommonTools.SendEmail.SendErrorEmail", $"ERROR in {app} application at {now:yyyy-MM-dd HH:mm:ss}", body.ToString());
+        }
+
+        public static string GetClientName(IClient client) => client == null ? "unknown" : $"{client.DisplayName} [{client.ClientID}]";
 
         public static string SystemEmail => Utility.GetGlobalSetting("SystemEmail");
 

@@ -351,9 +351,19 @@ namespace OnlineServices.Api
             return Result(resp);
         }
 
+        protected ParameterCollection QueryStrings(IDictionary<object, object> dict)
+        {
+            return Parameters(dict, ParameterType.QueryString, new CreateParameterOptions { UseLowerCaseForEnumValues = false });
+        }
+
         protected ParameterCollection QueryStrings(object parameters)
         {
             return Parameters(parameters, ParameterType.QueryString, new CreateParameterOptions { UseLowerCaseForEnumValues = false });
+        }
+
+        protected ParameterCollection UrlSegments(IDictionary<object, object> dict)
+        {
+            return Parameters(dict, ParameterType.UrlSegment, new CreateParameterOptions() { SkipNull = false });
         }
 
         protected ParameterCollection UrlSegments(object parameters)
@@ -363,7 +373,7 @@ namespace OnlineServices.Api
 
         protected ParameterCollection Parameters(object parameters, ParameterType type, CreateParameterOptions opts)
         {
-            var list = new List<Parameter>();
+            var dict = new Dictionary<object, object>();
 
             var props = parameters.GetType().GetProperties();
 
@@ -371,6 +381,20 @@ namespace OnlineServices.Api
             {
                 var name = p.Name;
                 var value = p.GetValue(parameters);
+                dict.Add(name, value);
+            }
+
+            return Parameters(dict, type, opts);
+        }
+
+        protected ParameterCollection Parameters(IDictionary<object, object> dict, ParameterType type, CreateParameterOptions opts)
+        {
+            var list = new List<Parameter>();
+
+            foreach (var kvp in dict)
+            {
+                var name = kvp.Key.ToString();
+                var value = kvp.Value;
                 if (!opts.SkipNull || value != null)
                     list.Add(CreateParameter(name, value, type, opts));
             }

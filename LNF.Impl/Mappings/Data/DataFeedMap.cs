@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Data;
-using FluentNHibernate.Mapping;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class DataFeedMap : ClassMap<DataFeed>
+    internal class DataFeedMap : ClassMap<DataFeed>
     {
-        public DataFeedMap()
+        internal DataFeedMap()
         {
             Schema("sselData.dbo");
             Id(x => x.FeedID);
@@ -17,6 +13,7 @@ namespace LNF.Impl.Mappings.Data
             Map(x => x.FeedAlias);
             Map(x => x.FeedName);
             Map(x => x.FeedQuery).Length(int.MaxValue);
+            Map(x => x.DefaultParameters);
             Map(x => x.Private);
             Map(x => x.Active);
             Map(x => x.Deleted);

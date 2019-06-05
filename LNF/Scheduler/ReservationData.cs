@@ -9,47 +9,69 @@ namespace LNF.Scheduler
     {
         public ReservationData() : this(null, null) { }
 
-        public ReservationData(IEnumerable<Models.Scheduler.ReservationProcessInfoItem> processInfos)
+        public ReservationData(IEnumerable<IReservationProcessInfo> processInfos)
             : this(processInfos, null) { }
 
-        public ReservationData(IEnumerable<ReservationInviteeItem> invitees)
+        public ReservationData(IEnumerable<IReservationInvitee> invitees)
             : this(null, invitees) { }
 
-        public ReservationData(IEnumerable<Models.Scheduler.ReservationProcessInfoItem> processInfos, IEnumerable<ReservationInviteeItem> invitees)
+        public ReservationData(IEnumerable<IReservationProcessInfo> processInfos, IEnumerable<IReservationInvitee> invitees)
         {
-            ProcessInfos = processInfos == null ? new List<Models.Scheduler.ReservationProcessInfoItem>() : processInfos.ToList();
-            Invitees = invitees == null ? new List<ReservationInviteeItem>() : invitees.ToList();
+            ProcessInfos = processInfos == null ? new List<IReservationProcessInfo>() : processInfos.ToList();
+            Invitees = invitees == null ? new List<IReservationInvitee>() : invitees.ToList();
         }
 
         public int ClientID { get; set; }
         public int ResourceID { get; set; }
         public int ActivityID { get; set; }
         public int AccountID { get; set; }
+        public int? RecurrenceID { get; set; }
         public string Notes { get; set; }
         public bool AutoEnd { get; set; }
         public bool KeepAlive { get; set; }
-        public ReservationDuration ReservationDuration { get; set; }
-        public IList<Models.Scheduler.ReservationProcessInfoItem> ProcessInfos { get; }
-        public IList<ReservationInviteeItem> Invitees { get; }
+        public ReservationDuration Duration { get; set; }
+        public IList<IReservationProcessInfo> ProcessInfos { get; }
+        public IList<IReservationInvitee> Invitees { get; }
 
         /// <summary>
-        /// Updates the ReservationItem using the current instance property values. Nothing is done to the database.
+        /// Creates an instance of InsertReservationArgs with the current ReservationData object. Nothing is done to the database.
         /// </summary>
-        public void Update(ReservationItem item)
+        public InsertReservationArgs CreateInsertArgs(DateTime now, int? modifiedByClientId = null)
         {
-            item.ResourceID = ResourceID;
-            item.ClientID = ClientID;
-            item.ActivityID = ActivityID;
-            item.AccountID = AccountID;
-            item.BeginDateTime = ReservationDuration.BeginDateTime;
-            item.EndDateTime = ReservationDuration.EndDateTime;
-            item.Duration = ReservationDuration.Duration.TotalMinutes;
-            item.LastModifiedOn = DateTime.Now;
-            item.Notes = Notes;
-            item.AutoEnd = AutoEnd;
-            item.HasProcessInfo = ProcessInfos.Count > 0;
-            item.HasInvitees = Invitees.Count(x => !x.Removed) > 0;
-            item.KeepAlive = KeepAlive;
+            return new InsertReservationArgs
+            {
+                ClientID = ClientID,
+                AccountID = AccountID,
+                ResourceID = ResourceID,
+                ActivityID = ActivityID,
+                RecurrenceID = RecurrenceID.GetValueOrDefault(-1), //always -1 for non-recurring reservation
+                BeginDateTime = Duration.BeginDateTime,
+                EndDateTime = Duration.EndDateTime,
+                ChargeMultiplier = 1,
+                AutoEnd = AutoEnd,
+                KeepAlive = KeepAlive,
+                HasInvitees = Invitees.Any(x => !x.Removed),
+                HasProcessInfo = ProcessInfos.Any(),
+                Notes = Notes,
+                Now = now,
+                ModifiedByClientID = modifiedByClientId.GetValueOrDefault(ClientID)
+            };
+        }
+
+        public UpdateReservationArgs CreateUpdateArgs(DateTime now, int reservationId, int? modifiedByClientId = null)
+        {
+            return new UpdateReservationArgs
+            {
+                ReservationID = reservationId,
+                AccountID = AccountID,
+                AutoEnd = AutoEnd,
+                KeepAlive = KeepAlive,
+                HasInvitees = Invitees.Any(x => !x.Removed),
+                HasProcessInfo = ProcessInfos.Any(),
+                Notes = Notes,
+                Now = now,
+                ModifiedByClientID = modifiedByClientId.GetValueOrDefault(ClientID)
+            };
         }
     }
 }

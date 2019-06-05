@@ -1,24 +1,16 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Web;
-using System.Reflection;
-using System.IO;
-using System.Text;
-using System.Net.Mail;
-using System.Data;
-using Microsoft.Scripting;
-using Microsoft.Scripting.Hosting;
-using IronPython;
-using IronPython.Hosting;
+﻿using IronPython.Hosting;
 using IronPython.Runtime;
-using LNF;
 using LNF.Repository;
 using LNF.Repository.Data;
-using LNF.CommonTools;
+using Microsoft.Scripting;
+using Microsoft.Scripting.Hosting;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Mail;
+using System.Text;
 
 namespace LNF.Scripting
 {
@@ -37,15 +29,12 @@ namespace LNF.Scripting
 
         private ScriptEngine engine;
         private ScriptScope scope;
-        private Result _Result;
-        private Parameters _Parameters;
-        private Exception _LastException;
 
         public IList<Include> Includes { get; set; }
-        public Parameters Parameters { get { return _Parameters; } }
-        public Exception LastException { get { return _LastException; } }
+        public Parameters Parameters { get; private set; }
+        public Exception LastException { get; private set; }
 
-        public Result Result { get { return _Result; } }
+        public Result Result { get; private set; }
 
         public Engine()
         {
@@ -57,12 +46,13 @@ namespace LNF.Scripting
             Inititialize(includes);
         }
 
-        public void Inititialize(IList<Include> includes, StringBuilder initScript = null)
+        public void Inititialize(IList<Include> includes, StringBuilder initScript = null, Parameters parameters = null)
         {
             Includes = includes;
-            _Parameters = Parameters.Create();
 
-            _Result = new Result();
+            Parameters = parameters ?? Parameters.Empty;
+
+            Result = new Result();
             engine = Python.CreateEngine();
             scope = engine.Runtime.CreateScope();
 
@@ -75,7 +65,7 @@ namespace LNF.Scripting
             }
             catch (Exception ex)
             {
-                _LastException = ex;
+                LastException = ex;
                 return;
             }
 
@@ -99,24 +89,24 @@ namespace LNF.Scripting
 
             try
             {
-                SetVariable("query", new QueryDelegate(this.Query));
-                SetVariable("sqlquery", new SqlQueryDelegate(this.SqlQuery));
+                SetVariable("query", new QueryDelegate(Query));
+                SetVariable("sqlquery", new SqlQueryDelegate(SqlQuery));
                 SetVariable("tools", new Tools());
-                SetVariable("echo", new EchoDelegate(this.Echo));
-                SetVariable("html", new SetHtmlDelegate(this.SetHtml));
-                SetVariable("tag", new CreateTagDelegate(this.CreateTag));
-                SetVariable("data", new SetDataDelegate(this.SetData));
-                SetVariable("feed", new ExecuteFeedDelegate(this.ExecuteFeed));
-                SetVariable("header", new SetHeaderDelegate(this.SetHeader));
-                SetVariable("mail", new SendMailDelegate(this.SendMail));
-                SetVariable("title", new EchoDelegate(this.SetTitle));
-                SetVariable("err", new EchoDelegate(this.SetError));
-                SetVariable("param", new GetParameterValueDelegate(this.GetParameterValue));
+                SetVariable("echo", new EchoDelegate(Echo));
+                SetVariable("html", new SetHtmlDelegate(SetHtml));
+                SetVariable("tag", new CreateTagDelegate(CreateTag));
+                SetVariable("data", new SetDataDelegate(SetData));
+                SetVariable("feed", new ExecuteFeedDelegate(ExecuteFeed));
+                SetVariable("header", new SetHeaderDelegate(SetHeader));
+                SetVariable("mail", new SendMailDelegate(SendMail));
+                SetVariable("title", new EchoDelegate(SetTitle));
+                SetVariable("err", new EchoDelegate(SetError));
+                SetVariable("param", new GetParameterValueDelegate(GetParameterValue));
                 SetVariable("nl", Environment.NewLine);
             }
             catch (Exception ex)
             {
-                _LastException = ex;
+                LastException = ex;
                 return;
             }
         }
@@ -134,16 +124,16 @@ namespace LNF.Scripting
 
         public void Run(string script, IDictionary<object, object> parameters, bool resetResult = true)
         {
-            _LastException = null;
+            LastException = null;
 
             if (resetResult)
-                _Result = new Result();
+                Result = new Result();
 
-            _Result.Exception = null;
+            Result.Exception = null;
 
             Parameters.Merge(parameters);
 
-            _Result.Title = Parameters.Replace(_Result.Title);
+            Result.Title = Parameters.Replace(Result.Title);
 
             try
             {
@@ -152,18 +142,18 @@ namespace LNF.Scripting
             }
             catch (Exception ex)
             {
-                _Result.Exception = ex;
+                Result.Exception = ex;
             }
         }
 
         public void SetError(string text)
         {
-            _Result.Exception = new Exception(text);
+            Result.Exception = new Exception(text);
         }
 
         public void SetTitle(string title)
         {
-            _Result.Title = title;
+            Result.Title = title;
         }
 
         public void SetVariable(string name, object action)
@@ -173,7 +163,7 @@ namespace LNF.Scripting
 
         public void Echo(string text)
         {
-            _Result.Buffer.AppendLine(text);
+            Result.Buffer.AppendLine(text);
         }
 
         public IEnumerable SqlQuery(string query)
@@ -197,30 +187,29 @@ namespace LNF.Scripting
         {
             if (data != null)
             {
-                ResultUtility.SetData(_Result, data, key);
-                IEnumerable list = data as IEnumerable;
-                if (list == null) list = new object[] { data };
+                ResultUtility.SetData(Result, data, key);
+                if (!(data is IEnumerable list)) list = new object[] { data };
                 return list;
             }
             else
             { 
-                return ResultUtility.GetData(_Result, key);
+                return ResultUtility.GetData(Result, key);
             }
         }
 
         public void SetHeader(string name, string text = null, string type = null, string key = "default")
         {
-            ResultUtility.SetHeader(_Result, name, text, type, key);
+            ResultUtility.SetHeader(Result, name, text, type, key);
         }
 
         public void SetHtml(string text)
         {
-            _Result.Html.AppendLine(text);
+            Result.Html.AppendLine(text);
         }
 
         public string CreateTag(string tagName, IDictionary<object, object> attributes = null, string innerHtml = null)
         {
-            string result = ResultUtility.CreateTag(_Result, tagName, attributes, innerHtml);
+            string result = ResultUtility.CreateTag(Result, tagName, attributes, innerHtml);
             return result;
         }
 
@@ -231,8 +220,10 @@ namespace LNF.Scripting
             try
             {
                 SmtpClient client = new SmtpClient("127.0.0.1");
-                MailMessage mm = new MailMessage(from, to, subject, body);
-                mm.IsBodyHtml = isHtml;
+                MailMessage mm = new MailMessage(from, to, subject, body)
+                {
+                    IsBodyHtml = isHtml
+                };
                 client.Send(mm);
                 result.Add("success", true);
                 result.Add("message", string.Empty);

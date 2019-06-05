@@ -1,6 +1,8 @@
 ﻿using LNF.Models.Data;
 using LNF.Models.Scheduler;
 using LNF.Models.Scheduler.Service;
+using System;
+using System.Collections.Generic;
 
 namespace OnlineServices.Api.Scheduler
 {
@@ -23,9 +25,11 @@ namespace OnlineServices.Api.Scheduler
             return Get<MonthlyTaskResult>("webapi/scheduler/service/task-monthly");
         }
 
-        public DataFeedModel<ExpiringCard> GetExpiringCards()
+        public IEnumerable<ExpiringCard> GetExpiringCards()
         {
-            return Get<DataFeedModel<ExpiringCard>>("webapi/scheduler/service/expiring-cards");
+            var feedResult = Get<DataFeedResult>("webapi/scheduler/service/expiring-cards");
+            var feedItems = feedResult.Data.Items(new ExpiringCardConverter());
+            return feedItems;
         }
 
         public int SendExpiringCardsEmail()

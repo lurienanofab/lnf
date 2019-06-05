@@ -27,31 +27,6 @@ namespace LNF.Data
 
         public static DataCommandBase ReadOnlyCommand(CommandType type = CommandType.StoredProcedure) => ReadOnlyDataCommand.Create(type);
 
-        public static bool CanEditFeed(IPrivileged client)
-        {
-            return client.HasPriv(ClientPrivilege.Developer | ClientPrivilege.Administrator);
-        }
-
-        public static bool CanAddFeed(IPrivileged client)
-        {
-            return client.HasPriv(ClientPrivilege.Developer | ClientPrivilege.Administrator);
-        }
-
-        public static bool CanDeleteFeed(IPrivileged client)
-        {
-            return client.HasPriv(ClientPrivilege.Developer | ClientPrivilege.Administrator);
-        }
-
-        public static bool CanViewFeedList()
-        {
-            return true;
-        }
-
-        public static bool CanViewInactiveFeeds(IPrivileged client)
-        {
-            return client.HasPriv(ClientPrivilege.Developer | ClientPrivilege.Administrator);
-        }
-
         public static DataTable GetDataTable(string alias, object parameters)
         {
             string query = Utility.GetQueryString(parameters);
@@ -99,7 +74,7 @@ namespace LNF.Data
             return result;
         }
 
-        public DataSet ExecuteQuery(DataFeed feed, Parameters parameters = null)
+        public DataSet ExecuteQuery(DataFeed feed, Parameters parameters)
         {
             DataSet ds = new DataSet();
             DataTable dt = null;
@@ -157,7 +132,7 @@ namespace LNF.Data
         {
             if (feed != null)
             {
-                if (CanDeleteFeed(client))
+                if (DataFeedItem.CanDeleteFeed(client))
                 {
                     feed.FeedAlias += "$DELETED$" + DateTime.Now.ToString("yyyyMMddHHmmss");
                     feed.Deleted = true;
@@ -165,27 +140,26 @@ namespace LNF.Data
             }
         }
 
-        public string CsvFeedContent(DataFeed feed, string key, Parameters parameters = null)
+        public string CsvFeedContent(DataFeedResult feed, string key)
         {
             if (string.IsNullOrEmpty(key)) key = "default";
 
-            DataSet ds = ExecuteQuery(feed, parameters);
-            DataTable dt = GetTables(ds, key).FirstOrDefault();
+            var dt = feed.Data[key];
 
             StringBuilder sb = new StringBuilder();
             string comma = string.Empty;
-            foreach (DataColumn dc in dt.Columns)
+            foreach (string k in dt.Keys())
             {
-                sb.AppendFormat("{0}\"{1}\"", comma, dc.ColumnName.Replace("\"", "\"\""));
+                sb.AppendFormat("{0}\"{1}\"", comma, k.Replace("\"", "\"\""));
                 comma = ",";
             }
             sb.Append(Environment.NewLine);
-            foreach (DataRow dr in dt.Rows)
+            foreach (var dr in dt)
             {
                 comma = string.Empty;
-                foreach (DataColumn dc in dt.Columns)
+                foreach (string k in dr.Keys())
                 {
-                    sb.AppendFormat("{0}\"{1}\"", comma, dr[dc.ColumnName].ToString().Replace("\"", "\"\""));
+                    sb.AppendFormat("{0}\"{1}\"", comma, dr[k].Replace("\"", "\"\""));
                     comma = ",";
                 }
                 sb.Append(Environment.NewLine);
@@ -194,11 +168,8 @@ namespace LNF.Data
             return sb.ToString();
         }
 
-        public string XmlFeedContent(DataFeed feed, string key, Parameters parameters = null)
+        public string XmlFeedContent(DataFeedResult feed, string key)
         {
-            DataSet ds = ExecuteQuery(feed, parameters);
-            IList<DataTable> tables = GetTables(ds, key);
-
             XmlDocument xdoc = new XmlDocument();
 
             xdoc.LoadXml("<?xml version=\"1.0\"?><data></data>");
@@ -206,26 +177,26 @@ namespace LNF.Data
 
             XmlAttribute attr;
             attr = xdoc.CreateAttribute("name");
-            attr.Value = ds.DataSetName;
+            attr.Value = feed.Name;
             data.Attributes.Append(attr);
 
-            if (tables.Count > 0)
+            if (feed.Data.Count > 0)
             {
-                foreach (DataTable dt in tables)
+                foreach (var kvp in feed.Data)
                 {
                     XmlNode table = xdoc.CreateElement("table");
                     attr = xdoc.CreateAttribute("name");
-                    attr.Value = dt.TableName;
+                    attr.Value = kvp.Key;
                     table.Attributes.Append(attr);
 
-                    foreach (DataRow dr in dt.Rows)
+                    foreach (var item in kvp.Value)
                     {
                         XmlNode row = xdoc.CreateElement("row");
 
-                        foreach (DataColumn dc in dt.Columns)
+                        foreach (var k in item.Keys())
                         {
-                            XmlNode child = xdoc.CreateElement(dc.ColumnName.Replace("/", "_"));
-                            child.InnerText = dr[dc.ColumnName].ToString();
+                            XmlNode child = xdoc.CreateElement(k.Replace("/", "_"));
+                            child.InnerText = item[k].ToString();
                             row.AppendChild(child);
                         }
 
@@ -243,12 +214,9 @@ namespace LNF.Data
             return sw.GetStringBuilder().ToString();
         }
 
-        public string RssFeedContent(DataFeed feed, string key, Parameters parameters = null)
+        public string RssFeedContent(DataFeedResult feed, string key)
         {
             if (string.IsNullOrEmpty(key)) key = "default";
-
-            DataSet ds = ExecuteQuery(feed, parameters);
-            DataTable dt = GetTables(ds, key).FirstOrDefault();
 
             XmlDocument xdoc = new XmlDocument();
             xdoc.LoadXml("<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"><channel></channel></rss>");
@@ -256,14 +224,14 @@ namespace LNF.Data
 
             XmlNode child;
             child = xdoc.CreateElement("title");
-            child.InnerText = ds.DataSetName;
+            child.InnerText = feed.Name;
             channel.AppendChild(child);
 
             child = xdoc.CreateElement("description");
-            if (string.IsNullOrEmpty(feed.FeedDescription))
+            if (string.IsNullOrEmpty(feed.Description))
                 child.InnerText = "LNF On-Line Services Data Feed";
             else
-                child.InnerText = feed.FeedDescription;
+                child.InnerText = feed.Description;
             channel.AppendChild(child);
 
             child = xdoc.CreateElement("link");
@@ -278,27 +246,29 @@ namespace LNF.Data
             child.InnerText = DateTime.UtcNow.ToString("ddd, dd MMM yyyy HH':'mm':'ss '+0000'");
             channel.AppendChild(child);
 
+            var dt = feed.Data[key];
+
             int i = 0;
-            foreach (DataRow dr in dt.Rows)
+            foreach (var dr in dt)
             {
                 XmlNode item = xdoc.CreateElement("item");
 
                 child = xdoc.CreateElement("title");
-                if (dt.Columns.Contains("Title"))
+                if (dr.Keys().Contains("Title"))
                     child.InnerText = dr["Title"].ToString();
                 else
                     child.InnerText = "Missing \"Title\" field.";
                 item.AppendChild(child);
 
                 child = xdoc.CreateElement("description");
-                if (dt.Columns.Contains("Description"))
+                if (dr.Keys().Contains("Description"))
                     child.InnerText = dr["Description"].ToString();
                 else
                     child.InnerText = "Missing \"Description\" field.";
                 item.AppendChild(child);
 
                 child = xdoc.CreateElement("link");
-                if (dt.Columns.Contains("Link"))
+                if (dr.Keys().Contains("Link"))
                     child.InnerText = dr["Link"].ToString();
                 else
                     child.InnerText = "Missing \"Link\" field.";
@@ -309,7 +279,7 @@ namespace LNF.Data
                 item.AppendChild(child);
 
                 child = xdoc.CreateElement("pubDate");
-                if (dt.Columns.Contains("PubDate"))
+                if (dr.Keys().Contains("PubDate"))
                     child.InnerText = Convert.ToDateTime(dr["PubDate"]).ToString("ddd, dd MMM yyyy HH':'mm':'ss '+0000'");
                 else
                     child.InnerText = DateTime.UtcNow.ToString("ddd, dd MMM yyyy HH':'mm':'ss '+0000'");
@@ -327,12 +297,12 @@ namespace LNF.Data
             return sw.GetStringBuilder().ToString();
         }
 
-        public string HtmlFeedContent(DataFeed feed, string key, string format = null, Parameters parameters = null)
+        public string HtmlFeedContent(DataFeedResult feed, string key, string format = null)
         {
             bool fullPage = (format == "table") ? false : true;
 
-            DataSet ds = ExecuteQuery(feed, parameters);
-            IList<DataTable> tables = GetTables(ds, key);
+            //DataSet ds = ExecuteQuery(feed, parameters);
+            //IList<DataTable> tables = GetTables(ds, key);
 
             StringBuilder sb = new StringBuilder();
             if (fullPage)
@@ -349,24 +319,24 @@ namespace LNF.Data
                 sb.AppendLine("<body>");
             }
             sb.AppendLine("<div class=\"lnf-feed-container app\">");
-            foreach (DataTable dt in tables)
+            foreach (var dt in feed.Data)
             {
                 sb.AppendLine("<table class=\"lnf-feed grid table\">");
                 sb.AppendLine("<thead>");
                 sb.AppendLine("<tr>");
-                foreach (DataColumn dc in dt.Columns)
+                foreach (string k in dt.Value.Keys())
                 {
-                    sb.AppendLine($"<th>{dc.ColumnName}</th>");
+                    sb.AppendLine($"<th>{k}</th>");
                 }
                 sb.AppendLine("</tr>");
                 sb.AppendLine("</thead>");
                 sb.AppendLine("<tbody>");
-                foreach (DataRow dr in dt.Rows)
+                foreach (var dr in dt.Value)
                 {
                     sb.AppendLine("<tr>");
-                    foreach (DataColumn dc in dt.Columns)
+                    foreach (string k in dr.Keys())
                     {
-                        sb.AppendLine($"<td>{dr[dc.ColumnName]}</td>");
+                        sb.AppendLine($"<td>{dr[k]}</td>");
                     }
                     sb.AppendLine("</tr>");
                 }
@@ -383,51 +353,46 @@ namespace LNF.Data
             return sb.ToString();
         }
 
-        public string JsonFeedContent(DataFeed feed, string key, string format = null, Parameters parameters = null)
+        public string JsonFeedContent(DataFeedResult feed, string key, string format = null)
         {
             object obj = null;
 
-            if (feed.FeedID != 0)
+            Hashtable data = new Hashtable();
+
+            foreach (var dt in feed.Data)
             {
-                DataSet ds = ExecuteQuery(feed, parameters);
-                IList<DataTable> tables = GetTables(ds, key);
-                Hashtable data = new Hashtable();
-
-                foreach (DataTable dt in tables)
+                ArrayList table = new ArrayList();
+                foreach (var dr in dt.Value)
                 {
-                    ArrayList table = new ArrayList();
-                    foreach (DataRow dr in dt.Rows)
+                    Hashtable hash = new Hashtable();
+                    foreach (string k in dr.Keys())
                     {
-                        Hashtable hash = new Hashtable();
-                        foreach (DataColumn dc in dt.Columns)
-                        {
-                            hash.Add(dc.ColumnName, dr[dc.ColumnName].ToString());
-                        }
-                        table.Add(hash);
+                        hash.Add(k, dr[k]);
                     }
-
-                    data.Add(dt.TableName, table);
+                    table.Add(hash);
                 }
 
-                if (format == "datatables")
-                {
-                    if (string.IsNullOrEmpty(key))
-                        obj = new { aaData = data["default"] };
-                    else
-                        obj = new { aaData = data[key] };
-                }
+                data.Add(dt.Key, table);
+            }
+
+            if (format == "datatables")
+            {
+                if (string.IsNullOrEmpty(key))
+                    obj = new { aaData = data["default"] };
                 else
+                    obj = new { aaData = data[key] };
+            }
+            else
+            {
+                obj = new
                 {
-                    obj = new
-                    {
-                        ID = feed.FeedID,
-                        GUID = feed.FeedGUID,
-                        Name = ds.DataSetName,
-                        feed.Private,
-                        feed.Active,
-                        Data = data
-                    };
-                }
+                    feed.ID,
+                    feed.GUID,
+                    feed.Name,
+                    feed.Private,
+                    feed.Active,
+                    Data = data
+                };
             }
 
             string result = ServiceProvider.Current.Serialization.Json.Serialize(obj);
@@ -435,12 +400,11 @@ namespace LNF.Data
             return result;
         }
 
-        public string IcalFeedContent(DataFeed feed, string key, Parameters parameters = null)
+        public string IcalFeedContent(DataFeedResult feed, string key)
         {
             if (string.IsNullOrEmpty(key)) key = "default";
 
-            DataSet ds = ExecuteQuery(feed, parameters);
-            DataTable dt = GetTables(ds, key).FirstOrDefault();
+            var dt = feed.Data[key];
 
             StringBuilder sb = new StringBuilder();
             string serverIP = ServiceProvider.Current.Context.ServerVariables["LOCAL_ADDR"];
@@ -449,11 +413,11 @@ namespace LNF.Data
             sb.AppendLine("METHOD:PUBLISH");
             sb.AppendLine("PRODID:-//" + serverIP + "//NONSGML LNF-ICAL 1.0//");
             sb.AppendLine("VERSION:2.0");
-            sb.AppendLine("X-WR-CALNAME:" + ds.DataSetName);
+            sb.AppendLine("X-WR-CALNAME:" + feed.Name);
             sb.AppendLine("X-WR-CALDESC:LNF On-Line Services Data Feed");
             sb.AppendLine("X-WR-TIMEZONE:US-Eastern");
             int i = 0;
-            foreach (DataRow dr in dt.Rows)
+            foreach (var dr in dt)
             {
                 /*
                 BEGIN:VEVENT
@@ -465,15 +429,15 @@ namespace LNF.Data
                 END:VEVENT
                 */
                 sb.AppendLine("BEGIN:VEVENT");
-                sb.AppendLine("UID:" + feed.FeedAlias + "@" + serverIP);
+                sb.AppendLine("UID:" + feed.Alias + "@" + serverIP);
                 sb.AppendLine("DTSTAMP:" + buildTime.ToString("yyyyMMdd'T'HHmmss'Z'"));
-                if (dt.Columns.Contains("DESCRIPTION"))
+                if (dt.Keys().Contains("DESCRIPTION"))
                     sb.AppendLine("DESCRIPTION:" + dr["DESCRIPTION"].ToString());
-                if (dt.Columns.Contains("DTSTART"))
+                if (dt.Keys().Contains("DTSTART"))
                     sb.AppendLine("DTSTART:" + Convert.ToDateTime(dr["DTSTART"]).ToUniversalTime().ToString("yyyyMMdd'T'HHmmss'Z'"));
-                if (dt.Columns.Contains("DTSTART"))
+                if (dt.Keys().Contains("DTSTART"))
                     sb.AppendLine("DTEND:" + Convert.ToDateTime(dr["DTSTART"]).ToUniversalTime().ToString("yyyyMMdd'T'HHmmss'Z'"));
-                if (dt.Columns.Contains("SUMMARY"))
+                if (dt.Keys().Contains("SUMMARY"))
                     sb.AppendLine("SUMMARY:" + dr["SUMMARY"].ToString());
                 sb.AppendLine("END:VEVENT");
                 i++;
@@ -483,10 +447,10 @@ namespace LNF.Data
             return sb.ToString();
         }
 
-        public static string FeedItemURL(DataFeed feed, string format)
+        public static string FeedItemURL(DataFeedResult feed, string format)
         {
             string result = ServiceProvider.Current.Context.GetRequestUrl().GetLeftPart(UriPartial.Authority) + ServiceProvider.Current.Context.GetAbsolutePath("~") + "/feed/";
-            result += feed.FeedAlias + "/";
+            result += feed.Alias + "/";
             result += (string.IsNullOrEmpty(format) ? "xml" : format);
             return result;
         }

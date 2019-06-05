@@ -91,6 +91,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository.cs" />
     <Compile Include="Tools.cs" />
+    <Compile Include="WebContextFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">
