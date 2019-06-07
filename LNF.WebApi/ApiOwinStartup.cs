@@ -1,4 +1,5 @@
 ﻿using LNF.Impl.Context;
+using LNF.Impl.DataAccess;
 using LNF.Impl.DependencyInjection.Web;
 using LNF.Repository;
 using Owin;
@@ -12,9 +13,8 @@ namespace LNF.WebApi
 
         public virtual void Configuration(IAppBuilder app)
         {
-            var wc = new WebContext(new WebContextFactory());
-            var ioc = new IOC(wc);
-            ServiceProvider.Current = ioc.Resolver.GetInstance<IProvider>();
+            var ioc = new IOC();
+            ServiceProvider.Configure(ioc.Resolver);
 
             // Data Access setup
             app.Use(async (ctx, next) =>

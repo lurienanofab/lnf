@@ -1,4 +1,5 @@
-﻿using LNF.Impl.DependencyInjection.Default;
+﻿using LNF.Impl.DataAccess;
+using LNF.Impl.DependencyInjection.Default;
 using LNF.Repository;
 using Moq;
 using System;
@@ -45,10 +46,9 @@ namespace LNF.Impl.Testing
 
             ContextBase = CreateHttpContext();
 
-            var ctx = new TestContext(ContextBase);
+            IOC = new IOC();
 
-            IOC = new IOC(ctx);
-            ServiceProvider.Current = IOC.Resolver.GetInstance<ServiceProvider>();
+            ServiceProvider.Configure(IOC.Resolver);
 
             Login(username);
 

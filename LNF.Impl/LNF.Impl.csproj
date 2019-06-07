@@ -142,7 +142,6 @@
     <Compile Include="Data\UtilityManager.cs" />
     <Compile Include="DependencyInjection\Default\IOC.cs" />
     <Compile Include="DependencyInjection\StructureMapResolver.cs" />
-    <Compile Include="DependencyInjection\IIOC.cs" />
     <Compile Include="DependencyInjection\Web\IOC.cs" />
     <Compile Include="Data\OrgManager.cs" />
     <Compile Include="Data\ActiveLogManager.cs" />

@@ -1,13 +1,14 @@
 ﻿using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
 using FluentNHibernate.Conventions.Helpers;
-using LNF.Models;
 using NHibernate;
 using NHibernate.Context;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.IO;
+using System.Web;
 
 namespace LNF.Impl.DataAccess
 {
@@ -17,7 +18,6 @@ namespace LNF.Impl.DataAccess
         void CloseSession();
         ISession Session { get; }
         ISessionFactory GetSessionFactory();
-        IEnumerable<string> GetLogMessages();
         bool ShowSql { get; }
         string UniversalPassword { get; }
         bool IsProduction();
@@ -25,6 +25,8 @@ namespace LNF.Impl.DataAccess
 
     public class SessionManager<T> : ISessionManager where T : ICurrentSessionContext
     {
+        public static SessionManager<T> Current { get; }
+
         private readonly ServiceProviderSection _config;
         private readonly object _locker = new object();
         private readonly ISessionFactory _sessionFactory;
@@ -38,9 +40,11 @@ namespace LNF.Impl.DataAccess
             if (q != null) throw new Exception();
             Remotion.Linq.EagerFetching.FetchManyRequest x = null;
             if (x != null) throw new Exception();
+
+            Current = new SessionManager<T>();
         }
 
-        public SessionManager(IContext context)
+        private SessionManager()
         {
             lock (_locker)
             {
@@ -50,12 +54,14 @@ namespace LNF.Impl.DataAccess
 
                 _config = ServiceProvider.GetConfigurationSection();
 
+                SessionLog.AddLogMessage("IsProduction: {0}", IsProduction());
+
                 if (_config == null)
                     throw new InvalidOperationException("The configuration section 'lnf/settings' is missing.");
 
                 try
                 {
-                    string requestUrl = context.GetRequestUrl().ToString();
+                    var requestUrl = HttpContext.Current.Request.Url.ToString();
                     SessionLog.AddLogMessage("RequestUri: {0}", requestUrl);
                 }
                 catch (Exception ex)
@@ -96,17 +102,13 @@ namespace LNF.Impl.DataAccess
                 SessionLog.AddLogMessage("FactoryID: {0}", _factoryId);
                 SessionLog.AddLogMessage("### New session factory completed at {0:yyyy-MM-dd HH:mm:ss} ({1:#0.0000} seconds)", DateTime.Now, sw.Elapsed.TotalMilliseconds / 1000.0);
 
-                if (!IsProduction())
-                {
-                    foreach (string line in GetLogMessages())
-                        Debug.WriteLine(line);
-                }
+                SessionLog.WriteAll(_config.Log.Name, !IsProduction());
             }
         }
 
         private void HandleMappings(MappingConfiguration cfg)
         {
-            cfg.HbmMappings.AddFromAssemblyOf<ISessionManager>();
+            cfg.HbmMappings.AddFromAssemblyOf<SessionManager<T>>();
 
             cfg.FluentMappings
                 .AddFromAssembly(GetType().Assembly)
@@ -147,8 +149,6 @@ namespace LNF.Impl.DataAccess
         public ISession Session => _sessionFactory.GetCurrentSession();
 
         public ISessionFactory GetSessionFactory() => _sessionFactory;
-
-        public IEnumerable<string> GetLogMessages() => SessionLog.GetLogMessages();
 
         public bool ShowSql => _config.DataAccess.ShowSql;
 

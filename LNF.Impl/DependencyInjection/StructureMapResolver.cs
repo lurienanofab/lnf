@@ -46,8 +46,6 @@ namespace LNF.Impl.DependencyInjection
                 _.For<ISchedulerRepository>().Use<SchedulerRepository>(); // not a singleton
                 //_.For<IUnitOfWork>().Use<NHibernateUnitOfWork>(); // not a singleton
 
-                _.For<IProvider>().Singleton().Use<ServiceProvider>();
-                _.For<IDataAccessService>().Singleton().Use<NHibernateDataAccess>();
                 _.For<ILogService>().Singleton().Use<ServiceLogService>();
                 _.For<IControlService>().Singleton().Use<WagoControlService>();
                 _.For<IEncryptionService>().Singleton().Use<EncryptionService>();
@@ -97,10 +95,11 @@ namespace LNF.Impl.DependencyInjection
                 _.For<IReadRoomDataManager>().Singleton().Use<ReadRoomDataManager>();
                 _.For<IReadStoreDataManager>().Singleton().Use<ReadStoreDataManager>();
 
-
                 _.For<IAuthorizationService>().Singleton().Use<AuthorizationService>();
 
                 _.For<IDependencyResolver>().Singleton().Use(this);
+
+                _.For<IProvider>().Singleton().Use<ServiceProvider>();
             });
         }
 

@@ -41,8 +41,10 @@ namespace LNF.Impl.PhysicalAccess
             using (var conn = new SqlConnection(_connstr))
             using (var cmd = new SqlCommand(sql, conn) { CommandType = type })
             {
+                conn.Open();
                 ApplyParameters(cmd, parameters);
                 var result = cmd.ExecuteScalar();
+                conn.Close();
                 return result;
             }
         }
@@ -52,8 +54,10 @@ namespace LNF.Impl.PhysicalAccess
             using (var conn = new SqlConnection(_connstr))
             using (var cmd = new SqlCommand(sql, conn) { CommandType = type })
             {
+                conn.Open();
                 ApplyParameters(cmd, parameters);
                 var result = cmd.ExecuteNonQuery();
+                conn.Close();
                 return result;
             }
         }

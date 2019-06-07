@@ -1,25 +1,23 @@
 ﻿using LNF.Repository;
+using NHibernate.Context;
 
 namespace LNF.Impl.DataAccess
 {
-    public class NHibernateDataAccess : IDataAccessService
-    {
-        private readonly ISessionManager _sessionManager;
-        
-        public NHibernateDataAccess(ISessionManager sessionManager)
+    public class NHibernateDataAccess<T> : IDataAccessService where T : ICurrentSessionContext
+    {   
+        public NHibernateDataAccess()
         {
-            _sessionManager = sessionManager;
-            Session = new NHibernateSession(_sessionManager);
+            Session = new NHibernateSession(SessionManager<T>.Current);
         }
 
-        public IUnitOfWork StartUnitOfWork() => new NHibernateUnitOfWork(_sessionManager);
+        public IUnitOfWork StartUnitOfWork() => new NHibernateUnitOfWork(SessionManager<T>.Current);
 
         public ISession Session { get; }
 
-        public bool ShowSql => _sessionManager.ShowSql;
+        public bool ShowSql => SessionManager<T>.Current.ShowSql;
 
-        public string UniversalPassword => _sessionManager.UniversalPassword;
+        public string UniversalPassword => SessionManager<T>.Current.UniversalPassword;
 
-        public bool IsProduction() => _sessionManager.IsProduction();
+        public bool IsProduction() => SessionManager<T>.Current.IsProduction();
     }
 }

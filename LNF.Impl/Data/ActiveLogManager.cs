@@ -1,10 +1,10 @@
-﻿using System;
+﻿using LNF.Models.Data;
+using LNF.Repository;
+using LNF.Repository.Data;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
 
 namespace LNF.Impl.Data
 {
@@ -55,7 +55,7 @@ namespace LNF.Impl.Data
             if (record == 0)
                 throw new ArgumentException("Record cannot be zero. If this is a new object it should be saved first.", "record");
 
-            DA.Command(CommandType.Text)
+            Command(CommandType.Text)
                 .Param("Record", record)
                 .ExecuteNonQuery($"UPDATE sselData.dbo.{tableName} SET Active = 1 WHERE {tableName}ID = @Record");
 

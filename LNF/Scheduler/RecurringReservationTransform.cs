@@ -17,66 +17,77 @@ namespace LNF.Scheduler
 
     public static class RecurringReservationTransform
     {
-        public static bool GetRegularFromRecurring(IReservationRecurrence rr, DateTime currentDate, DataTable dtOut)
+        /// <summary>
+        /// Returns true if a new reservation is created.
+        /// </summary>
+        public static bool AddRegularFromRecurring(IList<IReservation> reservations, IReservationRecurrence rr, DateTime startTime)
         {
             // first, find out the pattern type
             if (rr.PatternID == (int)PatternType.Weekly)
             {
-                if (rr.PatternParam1 == (int)currentDate.DayOfWeek)
+                if (rr.PatternParam1 == (int)startTime.DayOfWeek)
                 {
-                    if ((currentDate >= rr.BeginDate && rr.EndDate == null) || (currentDate >= rr.BeginDate && currentDate <= rr.EndDate.Value))
-                        AddNewRow(rr, currentDate, dtOut);
+                    if ((startTime >= rr.BeginDate && rr.EndDate == null) || (startTime >= rr.BeginDate && startTime <= rr.EndDate.Value))
+                        return AddNewRecurringReservation(GetReservationData(rr, startTime), reservations);
                 }
             }
             else if (rr.PatternID == (int)PatternType.Monthly)
             {
-                if ((currentDate >= rr.BeginDate && rr.EndDate == null) || (currentDate >= rr.BeginDate && currentDate <= rr.EndDate))
+                if ((startTime >= rr.BeginDate && rr.EndDate == null) || (startTime >= rr.BeginDate && startTime <= rr.EndDate))
                 {
-                    DateTime d = GetDate(new DateTime(currentDate.Year, currentDate.Month, 1), rr.PatternParam1, (DayOfWeek)rr.PatternParam2);
-                    if (currentDate.Date == d)
-                        AddNewRow(rr, currentDate, dtOut);
+                    DateTime d = GetDate(new DateTime(startTime.Year, startTime.Month, 1), rr.PatternParam1, (DayOfWeek)rr.PatternParam2);
+                    if (startTime.Date == d)
+                        return AddNewRecurringReservation(GetReservationData(rr, startTime), reservations);
                 }
             }
-            else
-                return false; //currently only supports two types
 
-            return true;
+            // currently only supports two types
+
+            return false;
         }
 
-        private static void AddNewRow(IReservationRecurrence rr, DateTime currentDate, DataTable dtOut)
+        private static ReservationData GetReservationData(IReservationRecurrence rr, DateTime startTime)
         {
-            DataRow ndr = dtOut.NewRow();
-            ndr["ReservationID"] = DBNull.Value;
-            ndr["ResourceID"] = rr.ResourceID;
-            ndr["ClientID"] = rr.ClientID;
-            ndr["AccountID"] = rr.AccountID;
-            ndr["ActivityID"] = rr.ActivityID;
-            ndr["BeginDateTime"] = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, rr.BeginTime.Hour, rr.BeginTime.Minute, rr.BeginTime.Second);
-            ndr["EndDateTime"] = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, rr.EndTime.Hour, rr.EndTime.Minute, rr.EndTime.Second);
-            ndr["ActualBeginDateTime"] = DBNull.Value;
-            ndr["ActualEndDateTime"] = DBNull.Value;
-            ndr["ClientIDBegin"] = DBNull.Value;
-            ndr["ClientIDEnd"] = DBNull.Value;
-            ndr["CreatedOn"] = rr.CreatedOn;
-            ndr["LastModifiedOn"] = DateTime.Now;
-            ndr["Duration"] = rr.Duration;
-            ndr["ChargeMultiplier"] = 1;
-            ndr["RecurrenceID"] = rr.RecurrenceID;
-            ndr["ApplyLateChargePenalty"] = 1;
-            ndr["AutoEnd"] = rr.AutoEnd;
-            ndr["KeepAlive"] = rr.KeepAlive;
-            ndr["HasProcessInfo"] = 0;
-            ndr["HasInvitees"] = 0;
-            ndr["IsActive"] = rr.IsActive;
-            ndr["IsStarted"] = false;
-            ndr["IsUnloaded"] = false;
-            ndr["ResourceName"] = rr.ResourceName;
-            ndr["IsSchedulable"] = true;
-            ndr["Editable"] = true;
-            ndr["DisplayName"] = string.Empty;
-            ndr["Notes"] = rr.Notes;
+            var processInfos = GetProcessInfos(rr.RecurrenceID);
+            var invitees = GetInvitees(rr.RecurrenceID);
 
-            dtOut.Rows.Add(ndr);
+            return new ReservationData(processInfos, invitees)
+            {
+                AccountID = rr.AccountID,
+                ActivityID = rr.ActivityID,
+                AutoEnd = rr.AutoEnd,
+                ClientID = rr.ClientID,
+                Duration = new ReservationDuration(startTime, TimeSpan.FromMinutes(rr.Duration)),
+                KeepAlive = rr.KeepAlive,
+                Notes = rr.Notes,
+                RecurrenceID = rr.RecurrenceID,
+                ResourceID = rr.ResourceID
+            };
+        }
+
+        private static bool AddNewRecurringReservation(ReservationData data, IList<IReservation> reservations)
+        {
+            // [2013-05-16 jg] We need find any existing, unended and uncancelled reservations in the
+            // same time slot. This can happen if there are overlapping recurring reservation patterns.
+            // To determine if two reservations overlap I'm using this logic: (StartA < EndB) and(EndA > StartB)
+            var overlapping = reservations.Any(x =>
+                x.IsActive
+                && x.ResourceID == data.ResourceID
+                && (x.BeginDateTime < data.Duration.EndDateTime && x.EndDateTime > data.Duration.BeginDateTime)
+                && x.ActualEndDateTime == null);
+
+            if (!overlapping)
+            {
+                if (!reservations.Any(x => x.RecurrenceID == data.RecurrenceID))
+                {
+                    var util = new ReservationUtility(DateTime.Now, ServiceProvider.Current);
+                    var rsv = util.Create(data);
+                    reservations.Add(rsv);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static IEnumerable<IReservationInvitee> GetInvitees(int recurrenceId)

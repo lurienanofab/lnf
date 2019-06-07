@@ -15,7 +15,7 @@ using System.Configuration;
 
 namespace LNF
 {
-    public interface IProvider: Models.IProvider
+    public interface IProvider : Models.IProvider
     {
         IContext Context { get; }
         IAuthorizationService Authorization { get; }
@@ -76,7 +76,12 @@ namespace LNF
             _resolver = resolver;
         }
 
-        public static IProvider Current { get; set; }
+        public static IProvider Current { get; private set; }
+
+        public static void Configure(IDependencyResolver resolver)
+        {
+            Current = resolver.GetInstance<IProvider>();
+        }
 
         public T Resolve<T>() => _resolver.GetInstance<T>();
 

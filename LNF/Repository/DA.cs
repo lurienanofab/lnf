@@ -64,6 +64,15 @@ namespace LNF.Repository
         public static DataCommandBase Create(CommandType type = CommandType.StoredProcedure) => new ReadOnlyDataCommand(type);
     }
 
+    public class SessionDataCommand : DataCommandBase
+    {
+        private SessionDataCommand(CommandType type) : base(type) { }
+
+        protected override UnitOfWorkAdapter GetAdapter() => ServiceProvider.Current.DataAccess.Session.GetAdapter();
+
+        public static DataCommandBase Create(CommandType type = CommandType.StoredProcedure) => new SessionDataCommand(type);
+    }
+
     public abstract class DataCommandBase
     {
         //private Func<UnitOfWorkAdapter> _adap;

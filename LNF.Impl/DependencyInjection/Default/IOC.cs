@@ -4,16 +4,17 @@ using StructureMap;
 
 namespace LNF.Impl.DependencyInjection.Default
 {
-    public class IOC : IIOC
+    public class IOC
     {
         public IDependencyResolver Resolver { get; }
 
-        public IOC(Models.IContext ctx)
+        public IOC()
         {
             var reg = new Registry();
 
-            reg.For<Models.IContext>().Singleton().Use(ctx);
-            reg.For<ISessionManager>().Singleton().Use<SessionManager<ThreadStaticSessionContext>>();
+            reg.For<Models.IContext>().Singleton().Use<DefaultContext>();
+            reg.For<ISessionManager>().Singleton().Use(SessionManager<ThreadStaticSessionContext>.Current);
+            reg.For<IDataAccessService>().Singleton().Use<NHibernateDataAccess<ThreadStaticSessionContext>>();
 
             Resolver = new StructureMapResolver(reg);
         }

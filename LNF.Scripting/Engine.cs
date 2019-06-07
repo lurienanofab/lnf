@@ -31,7 +31,7 @@ namespace LNF.Scripting
         private ScriptScope scope;
 
         public IList<Include> Includes { get; set; }
-        public Parameters Parameters { get; private set; }
+        public Parameters Parameters { get; } = Parameters.Empty;
         public Exception LastException { get; private set; }
 
         public Result Result { get; private set; }
@@ -50,7 +50,7 @@ namespace LNF.Scripting
         {
             Includes = includes;
 
-            Parameters = parameters ?? Parameters.Empty;
+            Parameters.Merge(parameters);
 
             Result = new Result();
             engine = Python.CreateEngine();

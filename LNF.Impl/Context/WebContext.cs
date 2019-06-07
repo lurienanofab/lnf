@@ -17,9 +17,9 @@ namespace LNF.Impl.Context
 
         public virtual HttpContextBase ContextBase => _factory.CreateContext();
 
-        public WebContext(IHttpContextFactory contextFactory)
+        public WebContext(IHttpContextFactory factory)
         {
-            _factory = contextFactory;
+            _factory = factory;
         }
 
         public override object GetSessionValue(string key)

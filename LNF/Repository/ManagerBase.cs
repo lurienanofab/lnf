@@ -6,7 +6,8 @@ namespace LNF.Repository
     {
         public IProvider Provider { get; }
         public ISession Session => Provider.DataAccess.Session;
-        public DataCommandBase Command(CommandType type = CommandType.StoredProcedure) => DA.Command(type);
+        //public DataCommandBase Command(CommandType type = CommandType.StoredProcedure) => DA.Command(type);
+        public DataCommandBase Command(CommandType type = CommandType.StoredProcedure) => SessionDataCommand.Create(type);
 
         public ManagerBase(IProvider provider)
         {

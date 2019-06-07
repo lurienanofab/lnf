@@ -1756,5 +1756,12 @@ namespace LNF.Impl.Scheduler
 
             return result;
         }
+
+
+
+        private void AddNewRow(IReservationRecurrence rr, DateTime startTime, IList<IReservation> reservations)
+        {
+
+        }
     }
 }

@@ -10,7 +10,6 @@ namespace LNF.Data
 {
     public class AccessCheck
     {
-        public ISession Session { get; }
         public IClient Client { get; private set; }
         public bool IsActive { get { return Client.ClientActive; } }
         public bool HasPhysicalAccessPriv { get { return Client.HasPriv(ClientPrivilege.PhysicalAccess); } }
@@ -18,6 +17,7 @@ namespace LNF.Data
         public bool HasStoreUserPriv { get { return Client.HasPriv(ClientPrivilege.StoreUser); } }
         public bool HasActiveAccounts { get { return Provider.Data.Client.GetActiveAccountCount(Client.ClientID) > 0; } }
         public IProvider Provider { get; }
+        public ISession Session => Provider.DataAccess.Session;
 
         /// <summary>
         /// The reason why access can or cannot be enabled. Set by calling CanEnableAccess()
