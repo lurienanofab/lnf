@@ -1267,6 +1267,11 @@ namespace LNF.Impl.Scheduler
             return result;
         }
 
+        public IReservationRecurrence GetReservationRecurrence(int recurrenceId)
+        {
+            return Session.Single<ReservationRecurrence>(recurrenceId).CreateModel<IReservationRecurrence>();
+        }
+
         public IEnumerable<IReservationRecurrence> GetReservationRecurrencesByResource(int resourceId)
         {
             return Session.Query<ReservationRecurrence>().Where(x => x.Resource.ResourceID == resourceId).CreateModels<IReservationRecurrence>();
@@ -1283,6 +1288,31 @@ namespace LNF.Impl.Scheduler
         {
             var query = Session.Query<ReservationRecurrence>().Where(x => x.Client.ClientID == clientId);
             return query.CreateModels<IReservationRecurrence>();
+        }
+
+        public bool SaveReservationRecurrence(int recurrenceId, int patternId, int param1, int? param2, DateTime beginDate, TimeSpan beginTime, double duration, DateTime? endDate, bool autoEnd, bool keepAlive, string notes)
+        {
+            var rr = Session.Single<ReservationRecurrence>(recurrenceId);
+
+            if (rr == null) return false;
+
+            var endTime = beginTime.Add(TimeSpan.FromMinutes(duration));
+
+            rr.Pattern = Session.Single<RecurrencePattern>(patternId);
+            rr.AutoEnd = autoEnd;
+            rr.KeepAlive = keepAlive;
+            rr.PatternParam1 = param1;
+            rr.PatternParam2 = param2;
+            rr.Notes = notes;
+            rr.BeginDate = beginDate.Date;
+            rr.BeginTime = beginDate.Date.Add(beginTime);
+            rr.Duration = duration;
+            rr.EndDate = endDate;
+            rr.EndTime = beginDate.Date.Add(endTime);
+
+            Session.SaveOrUpdate(rr);
+
+            return true;
         }
 
         public IEnumerable<IReservation> GetRecurringReservations(int recurrenceId, DateTime? sd, DateTime? ed)

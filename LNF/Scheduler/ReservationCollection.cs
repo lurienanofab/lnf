@@ -9,26 +9,23 @@ namespace LNF.Scheduler
 {
     public class ReservationCollection : IEnumerable<IReservation>
     {
-        private IList<IReservation> _items;
+        private IList<IReservation> _items = new List<IReservation>();
 
-        protected IProvider Provider { get; }
+        public IProvider Provider { get; }
 
         public ReservationCollection(IProvider provider)
         {
             Provider = provider;
         }
 
-        public  IList<IReservation> this[DateTime date]
-        {
-            get { return Find(date, true); }
-        }
+        public  IEnumerable<IReservation> this[DateTime date] => Find(date, true);
 
         public void Add(IReservation item)
         {
             _items.Add(item);
         }
 
-        public IList<IReservation> Find(DateTime date, bool includeDeleted)
+        public IEnumerable<IReservation> Find(DateTime date, bool includeDeleted)
         {
             DateTime d = date.Date;
 
@@ -76,16 +73,9 @@ namespace LNF.Scheduler
             _items = Provider.Scheduler.Reservation.SelectByClient(clientId, sd, ed, true).ToList();
         }
 
-        private IList<IReservation> GetItems()
-        {
-            if (_items == null)
-                _items = new List<IReservation>();
-            return _items;
-        }
-
         public IEnumerator<IReservation> GetEnumerator()
         {
-            return GetItems().GetEnumerator();
+            return _items.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

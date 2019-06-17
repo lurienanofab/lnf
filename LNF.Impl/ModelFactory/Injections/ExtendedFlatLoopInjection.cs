@@ -1,13 +1,11 @@
 ﻿using Omu.ValueInjecter;
 using Omu.ValueInjecter.Injections;
 using System;
-using System.Linq;
 
 namespace LNF.Impl.ModelFactory.Injections
 {
     /// <summary>
     /// Handles normal FlatLoopInjections: target.AccountActive <==> source.Account.Active
-    /// Handles target properties that match a source sub property: target.ResourceID <==> source.Resource.ResourceID
     /// Handles target properties that match the sub property type name plus property name: target.AccountActive <==> source.Active (when type of source is Account)
     /// </summary>
     public class ExtendedFlatLoopInjection : ValueInjection
@@ -22,17 +20,12 @@ namespace LNF.Impl.ModelFactory.Injections
             // this will cover target properties that conform to the standard flattened name structure, for example target.AccountActive <==> source.Account.Active
             target.InjectFrom(new FlatLoopInjection(), source);
 
-            var props = sourceType.GetProperties().Where(x => x.PropertyType.IsClass && !x.PropertyType.FullName.StartsWith("System."));
-
-            foreach (var prop in props)
-            {
-                // value is some class like Resource, Activity, Client, Account, etc.
-                object value = prop.GetValue(source);
-
-                // this will cover all target properties that match value properties, for example target.ResourceID <==> source.Resource.ResourceID
-                if (value != null)
-                    target.InjectFrom(value);
-            }
+            // Cannot check for target.ResourceID <==> source.Resource.ResourceID because this causes issues when there 
+            // is a matching property and we do not want the target to be set because they mean different things.
+            // There is no way to differentiate when we want the property to be set and when we don't. For example:
+            // target.ResourceID <==> source.Resource.ResourceID vs target.IsActive vs source.Resource.IsActive
+            // when target is Reservation or ReservationRecurrence. This must be handled specially by ModelBuilders
+            // unfortunately because there is no convention that always works.
 
             // check for target property names like AccountActive when the source is an Account
             var sourceTypeName = sourceType.Name;

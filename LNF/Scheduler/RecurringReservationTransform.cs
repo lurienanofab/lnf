@@ -20,24 +20,26 @@ namespace LNF.Scheduler
         /// <summary>
         /// Returns true if a new reservation is created.
         /// </summary>
-        public static bool AddRegularFromRecurring(IList<IReservation> reservations, IReservationRecurrence rr, DateTime startTime)
+        public static bool AddRegularFromRecurring(ReservationCollection reservations, IReservationRecurrence rr, DateTime d)
         {
+            // reservations should contain canceled reservations
+
             // first, find out the pattern type
             if (rr.PatternID == (int)PatternType.Weekly)
             {
-                if (rr.PatternParam1 == (int)startTime.DayOfWeek)
+                if (rr.PatternParam1 == (int)d.DayOfWeek)
                 {
-                    if ((startTime >= rr.BeginDate && rr.EndDate == null) || (startTime >= rr.BeginDate && startTime <= rr.EndDate.Value))
-                        return AddNewRecurringReservation(GetReservationData(rr, startTime), reservations);
+                    if ((d >= rr.BeginDate && rr.EndDate == null) || (d >= rr.BeginDate && d <= rr.EndDate.Value))
+                        return AddNewRecurringReservation(reservations, GetReservationData(rr, d));
                 }
             }
             else if (rr.PatternID == (int)PatternType.Monthly)
             {
-                if ((startTime >= rr.BeginDate && rr.EndDate == null) || (startTime >= rr.BeginDate && startTime <= rr.EndDate))
+                if ((d >= rr.BeginDate && rr.EndDate == null) || (d >= rr.BeginDate && d <= rr.EndDate))
                 {
-                    DateTime d = GetDate(new DateTime(startTime.Year, startTime.Month, 1), rr.PatternParam1, (DayOfWeek)rr.PatternParam2);
-                    if (startTime.Date == d)
-                        return AddNewRecurringReservation(GetReservationData(rr, startTime), reservations);
+                    DateTime dayOfMonth = GetDate(new DateTime(d.Year, d.Month, 1), rr.PatternParam1, (DayOfWeek)rr.PatternParam2);
+                    if (d.Date == dayOfMonth)
+                        return AddNewRecurringReservation(reservations, GetReservationData(rr, d));
                 }
             }
 
@@ -46,45 +48,48 @@ namespace LNF.Scheduler
             return false;
         }
 
-        private static ReservationData GetReservationData(IReservationRecurrence rr, DateTime startTime)
+        private static ReservationData GetReservationData(IReservationRecurrence rr, DateTime d)
         {
             var processInfos = GetProcessInfos(rr.RecurrenceID);
             var invitees = GetInvitees(rr.RecurrenceID);
 
+            var beginDateTime = new DateTime(d.Year, d.Month, d.Day, rr.BeginTime.Hour, rr.BeginTime.Minute, rr.BeginTime.Second);
+            var duration = TimeSpan.FromMinutes(rr.Duration);
+
             return new ReservationData(processInfos, invitees)
             {
                 AccountID = rr.AccountID,
-                ActivityID = rr.ActivityID,
-                AutoEnd = rr.AutoEnd,
+                ResourceID = rr.ResourceID,
                 ClientID = rr.ClientID,
-                Duration = new ReservationDuration(startTime, TimeSpan.FromMinutes(rr.Duration)),
-                KeepAlive = rr.KeepAlive,
-                Notes = rr.Notes,
+                ActivityID = rr.ActivityID,
                 RecurrenceID = rr.RecurrenceID,
-                ResourceID = rr.ResourceID
+                Duration = new ReservationDuration(beginDateTime, duration),
+                AutoEnd = rr.AutoEnd,
+                KeepAlive = rr.KeepAlive,
+                Notes = rr.Notes
             };
         }
 
-        private static bool AddNewRecurringReservation(ReservationData data, IList<IReservation> reservations)
+        private static bool AddNewRecurringReservation(ReservationCollection reservations, ReservationData data)
         {
             // [2013-05-16 jg] We need find any existing, unended and uncancelled reservations in the
             // same time slot. This can happen if there are overlapping recurring reservation patterns.
             // To determine if two reservations overlap I'm using this logic: (StartA < EndB) and(EndA > StartB)
+            // [2019-06-10 jg] Can also overlap if the RecurrenceID and time slots are the same,
+            // regardless of IsActive. This will prevent previously cancelled recurrences from being
+            // created again.
             var overlapping = reservations.Any(x =>
-                x.IsActive
+                (x.IsActive || x.RecurrenceID == data.RecurrenceID)
                 && x.ResourceID == data.ResourceID
                 && (x.BeginDateTime < data.Duration.EndDateTime && x.EndDateTime > data.Duration.BeginDateTime)
                 && x.ActualEndDateTime == null);
 
             if (!overlapping)
             {
-                if (!reservations.Any(x => x.RecurrenceID == data.RecurrenceID))
-                {
-                    var util = new ReservationUtility(DateTime.Now, ServiceProvider.Current);
-                    var rsv = util.Create(data);
-                    reservations.Add(rsv);
-                    return true;
-                }
+                var util = new ReservationUtility(DateTime.Now, reservations.Provider);
+                var rsv = util.Create(data);
+                reservations.Add(rsv);
+                return true;
             }
 
             return false;

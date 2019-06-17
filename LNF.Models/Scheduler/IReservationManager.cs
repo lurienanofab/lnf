@@ -78,9 +78,11 @@ namespace LNF.Models.Scheduler
         /// </summary>
         int PurgeReservations(int resourceId, DateTime sd, DateTime ed);
 
+        IReservationRecurrence GetReservationRecurrence(int recurrenceId);
         IEnumerable<IReservationRecurrence> GetReservationRecurrencesByResource(int resourceId);
         IEnumerable<IReservationRecurrence> GetReservationRecurrencesByProcessTech(int processTechId);
         IEnumerable<IReservationRecurrence> GetReservationRecurrencesByClient(int clientId);
+        bool SaveReservationRecurrence(int recurrenceId, int patternId, int param1, int? param2, DateTime beginDate, TimeSpan beginTime, double duration, DateTime? endDate, bool autoEnd, bool keepAlive, string notes);
 
         IEnumerable<IReservation> GetRecurringReservations(int recurrenceId, DateTime? sd, DateTime? ed);
 
