@@ -16,8 +16,7 @@ namespace LNF.Tests
         [TestMethod]
         public void CanGetClient()
         {
-            var ctx = new WebContext(new ContextFactory());
-            var ioc = new IOC(ctx);
+            var ioc = new IOC();
             using (ioc.Resolver.GetInstance<IUnitOfWork>())
             {
                 var session = ioc.Resolver.GetInstance<ISession>();
@@ -29,7 +28,7 @@ namespace LNF.Tests
                 Assert.AreEqual("jgett", co.Client.UserName);
             }
 
-            ServiceProvider.Current = ioc.Resolver.GetInstance<ServiceProvider>();
+            ServiceProvider.Configure(ioc.Resolver);
 
             using (DA.StartUnitOfWork())
             {
@@ -53,8 +52,7 @@ namespace LNF.Tests
         [TestMethod]
         public void CanSelectToolBilling()
         {
-            var ctx = new WebContext(new ContextFactory());
-            var ioc = new IOC(ctx);
+            var ioc = new IOC();
             using (ioc.Resolver.GetInstance<IUnitOfWork>())
             {
                 var repo = ioc.Resolver.GetInstance<IToolBillingManager>();

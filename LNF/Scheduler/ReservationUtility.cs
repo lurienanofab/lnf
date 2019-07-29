@@ -106,10 +106,13 @@ namespace LNF.Scheduler
             if (enableInterlock)
             {
                 uint duration = OnTheFlyUtility.GetStateDuration(item.ResourceID);
-                WagoInterlock.ToggleInterlock(item.ResourceID, true, duration);
-                bool interlockState = WagoInterlock.GetPointState(item.ResourceID);
-                if (!interlockState)
-                    throw new InvalidOperationException($"Failed to start interlock for ResourceID {item.ResourceID}.");
+                bool hasInterlock = WagoInterlock.ToggleInterlock(item.ResourceID, true, duration);
+                if (hasInterlock)
+                {
+                    bool interlockState = WagoInterlock.GetPointState(item.ResourceID);
+                    if (!interlockState)
+                        throw new InvalidOperationException($"Failed to start interlock for ResourceID {item.ResourceID}.");
+                }
             }
         }
 

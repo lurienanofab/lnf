@@ -235,6 +235,11 @@ namespace OnlineServices.Api.Data
             return Get<List<ListItem>>("webapi/data/client/manager/active/list");
         }
 
+        public IEnumerable<IClient> GetActiveManagers()
+        {
+            throw new NotImplementedException();
+        }
+
         public void Disable(IClient client)
         {
             throw new NotImplementedException();

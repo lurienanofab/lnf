@@ -16,9 +16,8 @@ namespace LNF.Tests
         [TestInitialize]
         public void TestInitialize()
         {
-            var ctx = new WebContext(new ContextFactory());
-            var ioc = new IOC(ctx);
-            ServiceProvider.Current = ioc.Resolver.GetInstance<IProvider>();
+            var ioc = new IOC();
+            ServiceProvider.Configure(ioc.Resolver);
             _uow = DA.StartUnitOfWork();
         }
 

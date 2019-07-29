@@ -466,5 +466,15 @@ namespace OnlineServices.Api.Scheduler
         {
             throw new NotImplementedException();
         }
+
+        public IReservationRecurrence GetReservationRecurrence(int recurrenceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool SaveReservationRecurrence(int recurrenceId, int patternId, int param1, int? param2, DateTime beginDate, TimeSpan beginTime, double duration, DateTime? endDate, bool autoEnd, bool keepAlive, string notes)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

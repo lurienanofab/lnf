@@ -53,7 +53,7 @@ namespace OnlineServices.Api
             container.Register<ISchedulerService, SchedulerService>(Lifestyle.Scoped);
             container.Register<IResourceManager, ResourceManager>(Lifestyle.Scoped);
             container.Register<IReservationManager, ReservationManager>(Lifestyle.Scoped);
-
+            container.Register<IProcessInfoManager, ProcessInfoManager>(Lifestyle.Scoped);
             container.Register<IMailService, MailService>(Lifestyle.Scoped);
 
             container.Register<IPhysicalAccessService, PhysicalAccessService>(Lifestyle.Scoped);

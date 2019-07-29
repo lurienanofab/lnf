@@ -64,6 +64,7 @@ namespace LNF.Impl.ModelFactory
             Map<Community, CommunityItem, ICommunity>();
             Map<News, INews>(x => MapNews(x));
             Map<Cost, CostItem, ICost>();
+            Map<Holiday, HolidayItem, IHoliday>();
         }
     }
 }

@@ -92,6 +92,7 @@
     <Compile Include="PhysicalAccess\PhysicalAccessService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Data\UtilityManager.cs" />
+    <Compile Include="Scheduler\ProcessInfoManager.cs" />
     <Compile Include="Scheduler\ReservationManager.cs" />
     <Compile Include="Scheduler\ResourceManager.cs" />
     <Compile Include="Scheduler\SchedulerServiceClient.cs" />

@@ -44,9 +44,7 @@ namespace LNF.Models.Scheduler
         public int MinReservTime { get; set; }
         public int MaxReservTime { get; set; }
         public int GracePeriod { get; set; }
-
-        public string ResourceDisplayName => throw new NotImplementedException();
-
+        public string ResourceDisplayName => ResourceItem.GetResourceDisplayName(ResourceName, ResourceID);
         public int ProcessTechID { get; set; }
         public int ProcessTechGroupID { get; set; }
         public string ProcessTechGroupName { get; set; }
@@ -70,5 +68,6 @@ namespace LNF.Models.Scheduler
         public bool HasEffectiveAuth(ClientAuthLevel auths) => ResourceClientItem.HasAuth(EffectiveAuthLevel, auths);
         public bool HasState(ResourceState state) => ResourceItem.HasState(State, state);
         public bool IsEveryone() => ResourceClientItem.IsEveryone(ClientID);
+        public override string ToString() => ResourceDisplayName;
     }
 }

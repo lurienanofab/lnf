@@ -51,6 +51,7 @@ namespace LNF.Models.Data
         string AccountEmail(int clientId, int accountId);
         string AccountPhone(int clientId, int accountId);
         IEnumerable<ListItem> AllActiveManagers();
+        IEnumerable<IClient> GetActiveManagers();
         void Disable(IClient client);
         IBillingType GetBillingType(int clientOrgId);
         int GetMaxChargeTypeID(int clientId);

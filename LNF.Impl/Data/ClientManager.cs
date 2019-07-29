@@ -723,6 +723,11 @@ namespace LNF.Impl.Data
             return result;
         }
 
+        public IEnumerable<IClient> GetActiveManagers()
+        {
+            return Session.Query<ClientOrgInfo>().Where(x => x.IsManager && x.ClientOrgActive).OrderBy(x => x.DisplayName).CreateModels<IClient>();
+        }
+
         public void Disable(IClient client)
         {
             // when we disable a ClientOrg we might have to also disable the Client and/or disable physical access

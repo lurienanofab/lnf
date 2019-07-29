@@ -8,7 +8,10 @@ namespace LNF.CommonTools
     {
         public DataItemValue(object value)
         {
-            Value = value;
+            if (value == DBNull.Value)
+                Value = null;
+            else
+                Value = value;
         }     
 
         public object Value { get; }

@@ -25,14 +25,22 @@ namespace LNF.CommonTools
     public static class WagoInterlock
     {
         // Turn On/Off the points that are associated with the resource
-        public static void ToggleInterlock(int resourceId, bool state, uint duration)
+        public static bool ToggleInterlock(int resourceId, bool state, uint duration)
         {
+            // Not every tool has an interlock setup, so only set point state if
+            // an ActionInstance is found. It's not an error if one is not found.
+
             ActionInstance inst = ActionInstanceUtility.Find(ActionType.Interlock, resourceId);
 
             if (inst != null)
+            {
                 ServiceProvider.Current.Control.SetPointState(inst.GetPoint(), state, duration);
+                return true;
+            }
             else
-                throw new ArgumentException($"No resource was found with ResourceID {resourceId}", "resourceId");
+            { 
+                return false;
+            }
         }
 
         public static void ByPass(int actionId, uint duration)
