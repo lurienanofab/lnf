@@ -10,8 +10,8 @@ namespace LNF.Repository.Data
         public virtual string MenuURL { get; set; }
         public virtual string MenuCssClass { get; set; }
         public virtual int MenuPriv { get; set; }
-        public virtual bool NewWindow { get; set; }
         public virtual bool TopWindow { get; set; }
+        public virtual bool NewWindow { get; set; }
         public virtual bool IsLogout { get; set; }
         public virtual int SortOrder { get; set; }
         public virtual bool Active { get; set; }

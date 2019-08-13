@@ -29,7 +29,7 @@ namespace LNF.Repository
         /// Create a new DataCommand instance.
         /// </summary>
         /// <param name="type">The CommandType used for selects. Also the default CommandType for updates (can be changed in Update action).</param>
-        public static DataCommandBase Command(CommandType type = CommandType.StoredProcedure) => DefaultDataCommand.Create(type);
+        public static IDataCommand Command(CommandType type = CommandType.StoredProcedure) => DefaultDataCommand.Create(type);
 
 
         //The methods that were previously defined here have been moved to LNF.Repository.ISession
@@ -73,7 +73,7 @@ namespace LNF.Repository
         public static DataCommandBase Create(CommandType type = CommandType.StoredProcedure) => new SessionDataCommand(type);
     }
 
-    public abstract class DataCommandBase
+    public abstract class DataCommandBase : IDataCommand
     {
         //private Func<UnitOfWorkAdapter> _adap;
         private bool _mapSchema = false;
@@ -105,13 +105,13 @@ namespace LNF.Repository
         //    else throw new Exception("Use the static Create method or override this class.");
         //}
 
-        public DataCommandBase Timeout(int value)
+        public IDataCommand Timeout(int value)
         {
             _configs["select"].SetCommandTimeout(value);
             return this;
         }
 
-        public DataCommandBase MapSchema()
+        public IDataCommand MapSchema()
         {
             _mapSchema = true;
             return this;
@@ -120,7 +120,7 @@ namespace LNF.Repository
         /// <summary>
         /// Adds parameters to the select command.
         /// </summary>
-        public DataCommandBase Param(object parameters)
+        public IDataCommand Param(object parameters)
         {
             _configs["select"].AddParameter(parameters);
             return this;
@@ -129,7 +129,7 @@ namespace LNF.Repository
         /// <summary>
         /// Adds parameters to the select command.
         /// </summary>
-        public DataCommandBase Param(IDictionary<string, object> parameters)
+        public IDataCommand Param(IDictionary<string, object> parameters)
         {
             _configs["select"].AddParameter(parameters);
             return this;
@@ -138,7 +138,7 @@ namespace LNF.Repository
         /// <summary>
         /// Adds a parameter to the select command.
         /// </summary>
-        public DataCommandBase Param(string name, object value)
+        public IDataCommand Param(string name, object value)
         {
             _configs["select"].AddParameter(name, value);
             return this;
@@ -147,7 +147,7 @@ namespace LNF.Repository
         /// <summary>
         /// Adds a parameter to the select command with the specified parameter direction.
         /// </summary>
-        public DataCommandBase Param(string name, object value, ParameterDirection direction)
+        public IDataCommand Param(string name, object value, ParameterDirection direction)
         {
             _configs["select"].AddParameter(name, value, direction);
             return this;
@@ -156,7 +156,7 @@ namespace LNF.Repository
         /// <summary>
         /// Adds a parameter to the select command if the condition is true.
         /// </summary>
-        public DataCommandBase Param(string name, bool test, object value)
+        public IDataCommand Param(string name, bool test, object value)
         {
             _configs["select"].AddParameter(name, test, value);
             return this;
@@ -165,7 +165,7 @@ namespace LNF.Repository
         /// <summary>
         /// Adds a parameter to the select command using v1 if the condition is true, or v2 if the condition is false.
         /// </summary>
-        public DataCommandBase Param(string name, bool test, object v1, object v2)
+        public IDataCommand Param(string name, bool test, object v1, object v2)
         {
             _configs["select"].AddParameter(name, test, v1, v2);
             return this;
@@ -174,7 +174,7 @@ namespace LNF.Repository
         /// <summary>
         /// Adds parameters to the select command as p1, p2, ...
         /// </summary>
-        public DataCommandBase ParamList(string prefix, IEnumerable values)
+        public IDataCommand ParamList(string prefix, IEnumerable values)
         {
             _configs["select"].AddParameterList(prefix, values);
             return this;
@@ -868,6 +868,13 @@ namespace LNF.Repository
             get => _reader[i];
         }
 
+        public T Value<T>(string key, T defval)
+        {
+            var val = _reader[key];
+            var result = Utility.ConvertTo(val, defval);
+            return result;
+        }
+
         internal ExecuteReaderResult(DbDataAdapter adap) : base(adap)
         {
             Start();
@@ -886,6 +893,13 @@ namespace LNF.Repository
         public void Close()
         {
             _reader.Close();
+        }
+
+        public bool ReadAndClose()
+        {
+            var result = _reader.Read();
+            _reader.Close();
+            return result;
         }
 
         public void Dispose()

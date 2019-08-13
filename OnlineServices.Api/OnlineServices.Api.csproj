@@ -86,10 +86,13 @@
     <Compile Include="Inventory\InventoryClient.cs" />
     <Compile Include="IOC.cs" />
     <Compile Include="JsonNetSerializer.cs" />
+    <Compile Include="Mail\AttachmentManager.cs" />
     <Compile Include="Mail\MailService.cs" />
     <Compile Include="Data\AccountManager.cs" />
     <Compile Include="Data\ClientManager.cs" />
+    <Compile Include="Mail\MassEmailManager.cs" />
     <Compile Include="PhysicalAccess\PhysicalAccessService.cs" />
+    <Compile Include="FileCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Data\UtilityManager.cs" />
     <Compile Include="Scheduler\ProcessInfoManager.cs" />

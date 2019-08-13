@@ -198,6 +198,34 @@ namespace OnlineServices.Api
             return Result(resp);
         }
 
+        protected string Post(string path, FileCollection files)
+        {
+            var req = CreateRestRequest(path, Method.POST);
+
+            if (files.Count > 0)
+            {
+                foreach (var f in files)
+                    req.AddFile(files.Name, f.Data, f.FileName);
+            }
+
+            var resp = HttpClient.Execute(req);
+            return Result(resp);
+        }
+
+        protected T Post<T>(string path, FileCollection files) where T : new()
+        {
+            var req = CreateRestRequest(path, Method.POST);
+
+            if (files.Count > 0)
+            {
+                foreach (var f in files)
+                    req.AddFile(files.Name, f.Data, f.FileName);
+            }
+
+            var resp = HttpClient.Execute<T>(req);
+            return Result(resp);
+        }
+
         protected T Post<T>(string path, object model, ParameterCollection parameters) where T : new()
         {
             var req = CreateRestRequest(path, Method.POST);

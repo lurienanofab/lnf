@@ -397,7 +397,7 @@ namespace LNF.Scheduler
             if (sendToUser) toAddr.AddRange(Provider.Data.Client.ActiveEmails(rsv.ClientID));
 
             if (!string.IsNullOrEmpty(emailForgivenCharge))
-                toAddr.Add(emailForgivenCharge);
+                toAddr.AddRange(emailForgivenCharge.Split(','));
 
             if (toAddr.Count == 0) return;
 

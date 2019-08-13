@@ -55,10 +55,9 @@ namespace LNF.Impl.DependencyInjection
 
                 _.For<IPhysicalAccessService>().Singleton().Use<PhysicalAccessService>();
                 _.For<IWorkerService>().Singleton().Use<WorkerService>();
-                _.For<IMailService>().Singleton().Use<MailService>();
                 
                 // Billing API
-                _.For<IBillingServices>().Singleton().Use<BillingService>();
+                _.For<IBillingService>().Singleton().Use<BillingService>();
                 _.For<IAccountSubsidyManager>().Singleton().Use<AccountSubsidyManager>();
                 _.For<IProcessManager>().Singleton().Use<ProcessManager>();
                 _.For<IReportManager>().Singleton().Use<ReportManager>();
@@ -74,6 +73,7 @@ namespace LNF.Impl.DependencyInjection
                 _.For<IProcessInfoManager>().Singleton().Use<ProcessInfoManager>();
                 _.For<IReservationManager>().Singleton().Use<ReservationManager>();
                 _.For<IResourceManager>().Singleton().Use<ResourceManager>();
+                _.For<IEmailManager>().Singleton().Use<EmailManager>();
 
                 // Data API
                 _.For<IDataService>().Singleton().Use<DataService>();
@@ -88,7 +88,10 @@ namespace LNF.Impl.DependencyInjection
                 _.For<IUtilityManager>().Singleton().Use<UtilityManager>();
                 _.For<IFeedManager>().Singleton().Use<FeedManager>();
 
-                _.For<IEmailManager>().Singleton().Use<EmailManager>();
+                // Mail API
+                _.For<IMailService>().Singleton().Use<MailService>();
+                _.For<IMassEmailManager>().Singleton().Use<MassEmailManager>();
+                _.For<IAttachmentManager>().Singleton().Use<AttachmentManager>();
 
                 _.For<IAdministrativeHelper>().Singleton().Use<AdministrativeHelper>();
                 _.For<IReadToolDataManager>().Singleton().Use<ReadToolDataManager>();

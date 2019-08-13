@@ -53,7 +53,7 @@ namespace LNF
         public IScriptingService Scripting => Resolve<IScriptingService>();
 
         public IDataService Data => Resolve<IDataService>();
-        public IBillingServices Billing => Resolve<IBillingServices>();
+        public IBillingService Billing => Resolve<IBillingService>();
         public IMailService Mail => Resolve<IMailService>();
         public IPhysicalAccessService PhysicalAccess => Resolve<IPhysicalAccessService>();
         public ISchedulerService Scheduler => Resolve<ISchedulerService>();

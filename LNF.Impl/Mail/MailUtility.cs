@@ -13,9 +13,7 @@ namespace LNF.Impl.Mail
 
         static MailUtility()
         {
-            var section = ConfigurationManager.GetSection("lnf/provider") as ServiceProviderSection;
-
-            if (section == null)
+            if (!(ConfigurationManager.GetSection("lnf/provider") is ServiceProviderSection section))
                 throw new Exception("Missing required configuration section: lnf/provider");
 
             Configuration = section.Email;
@@ -35,9 +33,8 @@ namespace LNF.Impl.Mail
 
             AddAttachments(mm.Attachments, args.Attachments);
 
-            var smtp = GetSmtpClient();
-
-            smtp.Send(mm);
+            using (var smtp = GetSmtpClient())
+                smtp.Send(mm);
         }
 
         public static SmtpClient GetSmtpClient()
@@ -82,7 +79,7 @@ namespace LNF.Impl.Mail
             {
                 foreach (var att in atts)
                 {
-                    col.Add(new Attachment(att));
+                    col.Add(new System.Net.Mail.Attachment(att));
                 }
             }
         }

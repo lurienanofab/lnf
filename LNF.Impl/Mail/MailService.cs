@@ -6,6 +6,15 @@ namespace LNF.Impl.Mail
 {
     public class MailService : IMailService
     {
+        public IMassEmailManager MassEmail { get; }
+        public IAttachmentManager Attachment { get; }
+
+        public MailService(IMassEmailManager massEmail, IAttachmentManager attachment)
+        {
+            MassEmail = massEmail;
+            Attachment = attachment;
+        }
+
         public IMessage GetMessage(int messageId)
         {
             return MailRepo.SelectMessage(messageId);

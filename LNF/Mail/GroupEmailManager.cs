@@ -169,6 +169,9 @@ namespace LNF.Mail
             DataTable dtInvalidEmails = InvalidEmailManager.GetInvalidEmailListFiltering();
             DataTable dtClean = dtEmails.Clone();
 
+            if (!dtClean.Columns.Contains("ClientID"))
+                dtClean.Columns.Add("ClientID", typeof(int));
+
             foreach (DataRow dr in dtEmails.Rows)
             {
                 DataRow[] badEmail = dtInvalidEmails.Select("EmailAddress = '" + dr["Email"] + "'");
@@ -186,12 +189,13 @@ namespace LNF.Mail
                             string bademail2 = dr["Email"].ToString().Substring(0, 6);
                             if (bademail1 != "none" && bademail2 != "nobody")
                             {
-                                DataRow newrow = dtClean.NewRow();
-                                newrow["ClientOrgID"] = dr["ClientOrgID"];
-                                newrow["Email"] = dr["Email"];
-                                newrow["DisplayName"] = dr["DisplayName"];
-                                newrow["IsStaff"] = dr["IsStaff"];
-                                dtClean.Rows.Add(newrow);
+                                DataRow ndr = dtClean.NewRow();
+                                ndr["ClientID"] = GetClientID(dr);
+                                ndr["ClientOrgID"] = dr["ClientOrgID"];
+                                ndr["Email"] = dr["Email"];
+                                ndr["DisplayName"] = dr["DisplayName"];
+                                ndr["IsStaff"] = dr["IsStaff"];
+                                dtClean.Rows.Add(ndr);
                             }
                         }
                     }
@@ -199,6 +203,17 @@ namespace LNF.Mail
             }
 
             return RecipientsFromDataTable(dtClean);
+        }
+
+        private static int GetClientID(DataRow dr)
+        {
+            if (dr.Table.Columns.Contains("ClientID"))
+            { 
+                if (dr["ClientID"] != DBNull.Value)
+                    return dr.Field<int>("ClientID");
+            }
+
+            return 0;
         }
 
         public string SendEmail(MassEmail email, int clientId)
@@ -342,6 +357,7 @@ namespace LNF.Mail
         {
             return new MassEmailRecipient()
             {
+                ClientID = dr.Field<int>("ClientID"),
                 Name = dr.Field<string>("DisplayName"),
                 Email = dr.Field<string>("Email"),
                 IsStaff = dr.Field<int>("IsStaff") == 1

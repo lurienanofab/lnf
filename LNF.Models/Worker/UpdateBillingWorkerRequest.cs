@@ -4,6 +4,12 @@ namespace LNF.Models.Worker
 {
     public class UpdateBillingWorkerRequest : WorkerRequest
     {
+        public UpdateBillingWorkerRequest()
+        {
+            Command = "UpdateBilling";
+            Args = new string[0];
+        }
+
         public UpdateBillingWorkerRequest(DateTime period, int clientId, string[] billingTypes)
         {
             Command = "UpdateBilling";

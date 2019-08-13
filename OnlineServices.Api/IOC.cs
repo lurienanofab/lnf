@@ -38,7 +38,7 @@ namespace OnlineServices.Api
             container.Register<IFeedManager, FeedManager>(Lifestyle.Scoped);
 
             // ***** Billing **************************************************
-            container.Register<IBillingServices, BillingService>(Lifestyle.Scoped);
+            container.Register<IBillingService, BillingService>(Lifestyle.Scoped);
             container.Register<IAccountSubsidyManager, AccountSubsidyManager>(Lifestyle.Scoped);
             container.Register<IProcessManager, ProcessManager>(Lifestyle.Scoped);
             container.Register<IReportManager, ReportManager>(Lifestyle.Scoped);
@@ -54,7 +54,11 @@ namespace OnlineServices.Api
             container.Register<IResourceManager, ResourceManager>(Lifestyle.Scoped);
             container.Register<IReservationManager, ReservationManager>(Lifestyle.Scoped);
             container.Register<IProcessInfoManager, ProcessInfoManager>(Lifestyle.Scoped);
+
+            // ***** Mail ************************************************
             container.Register<IMailService, MailService>(Lifestyle.Scoped);
+            container.Register<IAttachmentManager, AttachmentManager>(Lifestyle.Scoped);
+            container.Register<IMassEmailManager, MassEmailManager>(Lifestyle.Scoped);
 
             container.Register<IPhysicalAccessService, PhysicalAccessService>(Lifestyle.Scoped);
 

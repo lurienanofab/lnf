@@ -29,7 +29,7 @@ namespace LNF.Web.Controls.Navigation
         {
             if (Context.Session["SiteMenu"] == null)
             {
-                Context.Session["SiteMenu"] = WebUtility.GetSiteMenu(CurrentUser.ClientID);
+                Context.Session["SiteMenu"] = WebUtility.GetSiteMenu(CurrentUser.ClientID, Target);
             }
 
             return new HtmlString(Convert.ToString(Context.Session["SiteMenu"]));

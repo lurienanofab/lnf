@@ -17,7 +17,7 @@ namespace LNF.Billing
         public bool ShowRemote { get; }
         public bool IncludeAccountsWithNoUsage { get; set; }
         protected IBillingTypeManager BillingTypeManager { get; }
-        protected DataCommandBase Command(CommandType type = CommandType.StoredProcedure) => DA.Command(type);
+        protected IDataCommand Command(CommandType type = CommandType.StoredProcedure) => DA.Command(type);
 
         private IDictionary<string, ExternalInvoiceUsage> _data;
 

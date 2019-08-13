@@ -12,5 +12,10 @@ namespace OnlineServices.Api.Data
             else
                 return Get<List<RoomItem>>("webapi/data/room/active");
         }
+
+        public IEnumerable<IPassbackRoom> GetPassbackRooms()
+        {
+            return Get<List<PassbackRoomItem>>("webapi/data/room/passback");
+        }
     }
 }

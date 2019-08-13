@@ -29,45 +29,60 @@ namespace LNF.Models
             SetNavigateUrl();
         }
 
-        public abstract bool IsKiosk();
-
         public abstract string GetLoginUrl();
 
         public abstract bool IsSecureConnection();
 
-        public string GetTarget()
+        public string GetTarget(IMenu m)
         {
-            if (string.IsNullOrEmpty(Target))
-                return "_self";
+            if (m.TopWindow)
+                return "_top";
+            else if (m.NewWindow)
+                return "_blank";
             else
-                return Target;
+            {
+                if (string.IsNullOrEmpty(Target))
+                    return "_self";
+                else
+                    return Target;
+            }
         }
 
         private void SetLoginUrl()
         {
             var logout = _items.FirstOrDefault(x => x.IsLogout);
             if (logout != null)
-                logout.MenuURL = GetLoginUrl();
+                logout.MenuURL = FormatUrl(GetLoginUrl(), false);
         }
 
         private void SetNavigateUrl()
         {
-            string prefix = IsSecureConnection() ? "https://" : "http://";
+            foreach (var m in _items.Where(x => x.MenuURL != null))
+            {
+                var url = FormatUrl(m.MenuURL, true);
+                m.MenuURL = url;
+            }
+        }
 
+        private string FormatUrl(string url, bool prependScheme)
+        {
             if (string.IsNullOrEmpty(ConfigurationManager.AppSettings["AppServer"]))
                 throw new Exception("AppSetting AppServer is required.");
 
             if (string.IsNullOrEmpty(ConfigurationManager.AppSettings["SchedServer"]))
                 throw new Exception("AppSetting SchedServer is required.");
 
-            var appServer = prefix + ConfigurationManager.AppSettings["AppServer"];
-            var schedServer = prefix + ConfigurationManager.AppSettings["SchedServer"];
+            string scheme = string.Empty;
 
-            foreach (var m in _items.Where(x => x.MenuURL != null))
-            {
-                var url = m.MenuURL.Replace("{AppServer}", appServer).Replace("{SchedServer}", schedServer);
-                m.MenuURL = url;
-            }
+            if (prependScheme)
+                scheme = IsSecureConnection() ? "https://" : "http://";
+
+            var appServer = scheme + ConfigurationManager.AppSettings["AppServer"];
+            var schedServer = scheme + ConfigurationManager.AppSettings["SchedServer"];
+
+            return url
+                .Replace("{AppServer}", appServer)
+                .Replace("{SchedServer}", schedServer);
         }
 
         public IEnumerator<IMenu> GetEnumerator()

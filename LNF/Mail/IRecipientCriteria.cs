@@ -1,8 +1,5 @@
-﻿using System;
+﻿using LNF.Models.Mail;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LNF.Mail
 {

@@ -10,7 +10,7 @@ namespace LNF.Models
     public interface IProvider
     {
         IDataService Data { get; }
-        IBillingServices Billing { get; }
+        IBillingService Billing { get; }
         IMailService Mail { get; }
         IPhysicalAccessService PhysicalAccess { get; }
         ISchedulerService Scheduler { get; }

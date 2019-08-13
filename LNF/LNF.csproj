@@ -124,7 +124,6 @@
     <Compile Include="Mail\GroupEmailManager.cs" />
     <Compile Include="Mail\InvalidEmailManager.cs" />
     <Compile Include="Mail\IRecipientCriteria.cs" />
-    <Compile Include="Mail\MassEmailRecipient.cs" />
     <Compile Include="Feedback\Extensions.cs" />
     <Compile Include="Feedback\FeedbackClientUtility.cs" />
     <Compile Include="Feedback\FeedbackIssueItem.cs" />
@@ -139,6 +138,7 @@
     <Compile Include="Repository\Billing\Extensions.cs" />
     <Compile Include="Repository\Billing\MiscBillingCharge.cs" />
     <Compile Include="Repository\Billing\RoomDataImportLog.cs" />
+    <Compile Include="Repository\IDataCommand.cs" />
     <Compile Include="Repository\IManager.cs" />
     <Compile Include="Repository\ManagerBase.cs" />
     <Compile Include="Repository\Bytes.cs" />

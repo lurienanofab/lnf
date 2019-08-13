@@ -1,5 +1,6 @@
 ﻿using LNF.Mail;
 using LNF.Mail.Criteria;
+using LNF.Models.Mail;
 using LNF.Repository.Data;
 using LNF.Scheduler;
 using System;

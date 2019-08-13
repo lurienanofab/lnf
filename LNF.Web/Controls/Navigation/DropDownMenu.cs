@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LNF.Models.Data;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -50,12 +51,7 @@ namespace LNF.Web.Controls.Navigation
                     CssClass = pmenu.MenuCssClass
                 };
 
-                if (pmenu.TopWindow)
-                    p.Target = "_top";
-                else if (pmenu.NewWindow)
-                    p.Target = "_blank";
-                else
-                    p.Target = Target;
+                SetTarget(p, pmenu);
 
                 var children = DataSource.Where(x => x.MenuParentID == pmenu.MenuID).OrderBy(x => x.SortOrder);
 
@@ -66,12 +62,7 @@ namespace LNF.Web.Controls.Navigation
                         CssClass = cmenu.MenuCssClass
                     };
 
-                    if (cmenu.TopWindow)
-                        c.Target = "_top";
-                    else if (cmenu.NewWindow)
-                        c.Target = "_blank";
-                    else
-                        c.Target = Target;
+                    SetTarget(c, cmenu);
                     
                     p.Items.Add(c);
                 }
@@ -80,6 +71,21 @@ namespace LNF.Web.Controls.Navigation
             }
 
             base.DataBind();
+        }
+
+        private void SetTarget(DropDownMenuItem i, IMenu m)
+        {
+            if (m.TopWindow)
+                i.Target = "_top";
+            else if (m.NewWindow)
+                i.Target = "_blank";
+            else
+            {
+                if (string.IsNullOrEmpty(Target))
+                    i.Target = "_self";
+                else
+                    i.Target = Target;
+            }
         }
 
         protected override void RenderContents(HtmlTextWriter output)

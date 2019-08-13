@@ -22,10 +22,10 @@ namespace LNF.Web.Mvc
             return helper.ViewContext.HttpContext.CurrentUser();
         }
 
-        public static IHtmlString SiteMenu(this HtmlHelper helper, ClientItem client)
+        public static IHtmlString SiteMenu(this HtmlHelper helper, ClientItem client, string target = null)
         {
             if (helper.ViewContext.HttpContext.Session["SiteMenu"] == null)
-                helper.ViewContext.HttpContext.Session["SiteMenu"] = WebUtility.GetSiteMenu(client.ClientID);
+                helper.ViewContext.HttpContext.Session["SiteMenu"] = WebUtility.GetSiteMenu(client.ClientID, target);
 
             return new HtmlString(Convert.ToString(helper.ViewContext.HttpContext.Session["SiteMenu"]));
         }

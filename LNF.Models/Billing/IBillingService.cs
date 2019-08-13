@@ -3,7 +3,7 @@ using LNF.Models.Billing.Reports;
 
 namespace LNF.Models.Billing
 {
-    public interface IBillingServices
+    public interface IBillingService
     {
         IProcessManager Process { get; }
         IApportionmentManager Apportionment { get; }

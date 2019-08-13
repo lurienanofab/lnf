@@ -24,7 +24,7 @@ namespace LNF.Scheduler
         }
 
         /// <summary>
-        /// Checks if the kiosk ip begins with the ResourceIPPrefix (e.g. 192.168.1).
+        /// Checks if the kiosk ip begins with the ResourceIPPrefix (e.g. 192.168.1), or is a defined kiosk IP. Does not check if user is in the lab.
         /// </summary>
         public static bool IsKiosk(string kioskIp)
         {
@@ -45,7 +45,7 @@ namespace LNF.Scheduler
         }
 
         /// <summary>
-        /// Checks if on a kiosk based on ip.
+        /// Checks if on a kiosk based on ip, or if override is true (set in web.config).
         /// </summary>
         public static bool IsOnKiosk(string kioskIp)
         {
@@ -82,14 +82,12 @@ namespace LNF.Scheduler
             _cache.Remove("Kiosks");
         }
 
-        public static string KioskRedirectUrl()
+        public static string KioskRedirectUrl(string ip)
         {
             Dictionary<string, string> table = new Dictionary<string, string>
             {
                 { "192.168.1.14", "inventory" }
             };
-
-            string ip = ServiceProvider.Current.Context.UserHostAddress;
 
             if (table.ContainsKey(ip))
                 return table[ip];

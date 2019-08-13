@@ -3,7 +3,7 @@ using LNF.Models.Billing.Reports;
 
 namespace LNF.Models.Billing
 {
-    public class BillingService : IBillingServices
+    public class BillingService : IBillingService
     {
         public IProcessManager Process { get; }
 

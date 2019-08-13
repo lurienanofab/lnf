@@ -130,7 +130,10 @@
     <Compile Include="Data\DataFeedItem.cs" />
     <Compile Include="Data\IDataFeed.cs" />
     <Compile Include="Data\IFeedManager.cs" />
+    <Compile Include="Data\IPassbackRoom.cs" />
+    <Compile Include="Data\PassbackRoomItem.cs" />
     <Compile Include="IContext.cs" />
+    <Compile Include="IFile.cs" />
     <Compile Include="ListItem.cs" />
     <Compile Include="Data\CommunityItem.cs" />
     <Compile Include="Data\DataService.cs" />
@@ -185,8 +188,14 @@
     <Compile Include="Data\IDryBox.cs" />
     <Compile Include="Data\Utility\IUtilityManager.cs" />
     <Compile Include="IProvider.cs" />
+    <Compile Include="Mail\IAttachmentManager.cs" />
+    <Compile Include="Mail\IMassEmailManager.cs" />
     <Compile Include="Mail\IMessage.cs" />
     <Compile Include="Mail\IRecipient.cs" />
+    <Compile Include="Mail\Attachment.cs" />
+    <Compile Include="Mail\MassEmailRecipient.cs" />
+    <Compile Include="Mail\MassEmailRecipientArgs.cs" />
+    <Compile Include="Mail\MassEmailSendArgs.cs" />
     <Compile Include="Reporting\IClientItemManager.cs" />
     <Compile Include="Reporting\IReportingClient.cs" />
     <Compile Include="Scheduler\ExpiringCardConverter.cs" />

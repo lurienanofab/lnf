@@ -251,11 +251,17 @@ namespace LNF.Web
             else return (DataSet)obj;
         }
 
+        /// <summary>
+        /// Returns the active ClientOrgs for the current user.
+        /// </summary>
         public static IEnumerable<IClient> GetCurrentUserClientOrgs(this HttpContextBase context)
         {
             return CacheManager.Current.GetClientOrgs(context.CurrentUser().ClientID);
         }
 
+        /// <summary>
+        /// Returns the active ClientAccounts for the current user.
+        /// </summary>
         public static IEnumerable<IClientAccount> GetCurrentUserClientAccounts(this HttpContextBase context)
         {
             return CacheManager.Current.GetClientAccounts(context.CurrentUser().ClientID);

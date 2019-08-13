@@ -11,11 +11,6 @@ namespace LNF
     {
         public SiteMenu(IClient client, string target) : base(GetMenuItems(), client, target) { }
 
-        public override bool IsKiosk()
-        {
-            return ServiceProvider.Current.Context.UserHostAddress.StartsWith("192.168.1");
-        }
-
         public override string GetLoginUrl()
         {
             return ServiceProvider.Current.Context.LoginUrl;
