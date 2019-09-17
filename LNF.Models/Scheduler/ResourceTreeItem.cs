@@ -69,5 +69,7 @@ namespace LNF.Models.Scheduler
         public bool HasState(ResourceState state) => ResourceItem.HasState(State, state);
         public bool IsEveryone() => ResourceClientItem.IsEveryone(ClientID);
         public override string ToString() => ResourceDisplayName;
+        public string GetResourceName(ResourceNamePartial part) => ResourceItem.GetResourceName(this, part);
+        public DateTime GetNextGranularity(DateTime now, GranularityDirection dir) => ResourceItem.GetNextGranularity(Granularity, Offset, now, dir);
     }
 }

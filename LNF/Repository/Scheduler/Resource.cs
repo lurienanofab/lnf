@@ -1,5 +1,6 @@
 ﻿using LNF.Models.Scheduler;
 using LNF.Scheduler;
+using System;
 using System.Collections.Generic;
 
 namespace LNF.Repository.Scheduler
@@ -153,5 +154,7 @@ namespace LNF.Repository.Scheduler
         {
             return ResourceItem.GetResourceDisplayName(ResourceName, ResourceID);
         }
+
+        public virtual DateTime GetNextGranularity(DateTime now, GranularityDirection dir) => ResourceItem.GetNextGranularity(Granularity, Offset, now, dir);
     }
 }

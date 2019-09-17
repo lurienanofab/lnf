@@ -162,7 +162,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public ActivityItem GetCurrentActivity(int resourceId)
+        public IActivity GetCurrentActivity(int resourceId)
         {
             var item = _items.FirstOrDefault(x => x.ResourceID == resourceId);
             if (item == null) return null;
@@ -176,7 +176,7 @@ namespace LNF.Scheduler
             var item = _items.FirstOrDefault(x => x.ResourceID == resourceId);
             if (item == null) return null;
             if (item.CurrentClientID == 0) return null;
-            var result = CacheManager.Current.GetClient(item.CurrentClientID);
+            var result = ServiceProvider.Current.Data.Client.GetClient(item.CurrentClientID);
             return result;
         }
 

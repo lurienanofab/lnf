@@ -2,6 +2,7 @@
 using LNF.Models;
 using LNF.Models.Billing;
 using LNF.Models.Data;
+using LNF.Models.Scheduler;
 using LNF.Repository;
 using LNF.Repository.Billing;
 using LNF.Repository.Data;
@@ -10,11 +11,14 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Runtime.Caching;
 
 namespace LNF.Impl.Data
 {
     public class ClientManager : ManagerBase, IClientManager
     {
+        private readonly ObjectCache _cache = new MemoryCache("ClientManagerCache");
+
         public ClientManager(IProvider provider) : base(provider) { }
 
         public IEnumerable<IAccount> ActiveAccounts(int clientId)
@@ -100,16 +104,10 @@ namespace LNF.Impl.Data
 
         public IEnumerable<IClient> FindByCommunity(int flag, bool? active = true)
         {
-            IQueryable<ClientInfo> query;
-
             if (active.HasValue)
-                query = Session.Query<ClientInfo>().Where(x => x.ClientActive == active.Value);
+                return AllClients().Where(x => x.ClientActive == active.Value && (x.Communities & flag) > 0);
             else
-                query = Session.Query<ClientInfo>();
-
-            var result = query.Where(x => (x.Communities & flag) > 0);
-
-            return result.CreateModels<IClient>();
+                return AllClients().Where(x => (x.Communities & flag) > 0);
         }
 
         public IClient FindByDisplayName(string displayName)
@@ -122,9 +120,9 @@ namespace LNF.Impl.Data
             string lname = splitter[0].Trim();
             string fname = splitter[1].Trim();
 
-            var result = Session.Query<ClientInfo>().FirstOrDefault(x => x.LName == lname && x.FName == fname);
+            var result = AllClients().FirstOrDefault(x => x.LName == lname && x.FName == fname);
 
-            return result.CreateModel<IClient>();
+            return result;
         }
 
         public IEnumerable<IClient> FindByManager(int managerClientId, bool? active = true)
@@ -206,30 +204,24 @@ namespace LNF.Impl.Data
                 clientIds = temp.Distinct().ToArray();
             }
 
-            var result = Session.Query<ClientInfo>().Where(x => clientIds.Contains(x.ClientID)).CreateModels<IClient>();
+            var result = AllClients().Where(x => clientIds.Contains(x.ClientID));
 
             return result;
         }
 
         public IEnumerable<IClient> FindByPrivilege(ClientPrivilege priv, bool? active = true)
         {
-            IQueryable<ClientInfo> query;
-
             if (active.HasValue)
-                query = Session.Query<ClientInfo>().Where(x => x.ClientActive == active.Value);
+                return AllClients().Where(x => x.ClientActive == active.Value && (x.Privs & priv) > 0);
             else
-                query = Session.Query<ClientInfo>();
-
-            var result = query.Where(x => (x.Privs & priv) > 0).CreateModels<IClient>();
-
-            return result;
+                return AllClients().Where(x => (x.Privs & priv) > 0);
         }
 
         public IEnumerable<IClient> FindByTools(int[] resourceIds, bool? active = true)
         {
-            var query = Session.Query<ResourceClientInfo>().Where(x => x.ClientID > 0 && resourceIds.Contains(x.ResourceID) && (x.Expiration == null || x.Expiration.Value < DateTime.Now));
-            var join = query.Join(Session.Query<ClientInfo>(), o => o.ClientID, i => i.ClientID, (o, i) => i);
-            var result = join.Where(x => x.ClientActive == active.GetValueOrDefault(x.ClientActive)).CreateModels<IClient>();
+            var query = Session.Query<ResourceClientInfo>().Where(x => x.ClientID > 0 && resourceIds.Contains(x.ResourceID) && (x.Expiration == null || x.Expiration.Value < DateTime.Now)).CreateModels<IResourceClient>();
+            var join = query.Join(AllClients(), o => ((IPrivileged)o).ClientID, i => i.ClientID, (o, i) => i);
+            var result = join.Where(x => x.ClientActive == active.GetValueOrDefault(x.ClientActive));
             return result;
         }
 
@@ -247,23 +239,25 @@ namespace LNF.Impl.Data
             if (limit > 100)
                 throw new ArgumentOutOfRangeException("The parameter 'limit' must not be greater than 100.");
 
-            var query = Session.Query<ClientInfo>().Skip(skip).Take(limit).OrderBy(x => x.DisplayName);
+            var result = AllClients().Skip(skip).Take(limit).OrderBy(x => x.DisplayName);
 
-            return query.CreateModels<IClient>(); ;
+            return result;
         }
 
         public IEnumerable<IClient> GetActiveClients()
         {
-            var ed = DateTime.Now.AddDays(1);
-            var sd = ed.AddMonths(-1);
-            return GetActiveClients(sd, ed);
+            return AllClients().Where(x => x.ClientActive).ToList();
+            //var ed = DateTime.Now.AddDays(1);
+            //var sd = ed.AddMonths(-1);
+            //return GetActiveClients(sd, ed);
         }
 
         public IEnumerable<IClient> GetActiveClients(ClientPrivilege priv)
         {
-            var ed = DateTime.Now.AddDays(1);
-            var sd = ed.AddMonths(-1);
-            return GetActiveClients(sd, ed, priv);
+            return GetActiveClients().Where(x => (x.Privs & priv) > 0).ToList();
+            //var ed = DateTime.Now.AddDays(1);
+            //var sd = ed.AddMonths(-1);
+            //return GetActiveClients(sd, ed, priv);
         }
 
         public IEnumerable<IClient> GetActiveClients(DateTime sd, DateTime ed)
@@ -300,38 +294,27 @@ namespace LNF.Impl.Data
              *  
              */
 
-            var activeLogs = Session.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.EnableDate < ed && (!x.DisableDate.HasValue || x.DisableDate.Value > sd));
+            var activeLogs = Session.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.EnableDate < ed && (!x.DisableDate.HasValue || x.DisableDate.Value > sd)).CreateModels<IActiveLog>();
 
             var join = activeLogs
-                .Join(Session.Query<ClientInfo>(), o => o.Record, i => i.ClientID, (o, i) => i);
+                .Join(AllClients(), o => o.Record, i => i.ClientID, (o, i) => i);
 
-            var result = join.CreateModels<IClient>();
-
-            return result;
+            return join;
         }
 
         public IEnumerable<IClient> GetActiveClients(DateTime sd, DateTime ed, ClientPrivilege priv)
         {
-            var activeLogs = Session.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.EnableDate < ed && (!x.DisableDate.HasValue || x.DisableDate.Value > sd));
+            var activeLogs = Session.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.EnableDate < ed && (!x.DisableDate.HasValue || x.DisableDate.Value > sd)).CreateModels<IActiveLog>();
 
             var join = activeLogs
-                .Join(Session.Query<ClientInfo>(), o => o.Record, i => i.ClientID, (o, i) => i);
+                .Join(AllClients(), o => o.Record, i => i.ClientID, (o, i) => i);
 
-            var result = join.Where(x => (x.Privs & priv) > 0).CreateModels<IClient>();
-
-            return result;
+            return join;
         }
 
-        public IClient GetClient(string username)
-        {
-            return Session.Query<ClientInfo>().FirstOrDefault(x => x.UserName == username).CreateModel<IClient>();
-        }
+        public IClient GetClient(string username) => SingleClient(username);
 
-        public IClient GetClient(int clientId)
-        {
-            var result = Session.Single<ClientInfo>(clientId).CreateModel<IClient>();
-            return result;
-        }
+        public IClient GetClient(int clientId) => SingleClient(clientId);        
 
         public IClient GetClient(int clientId, int rank)
         {
@@ -496,14 +479,22 @@ namespace LNF.Impl.Data
             // have an active account. If access is not enabled, show an alert.
             UpdatePhysicalAccess(c, out alert);
 
+            ClearClientCache();
+
             return c;
         }
 
         public ITechnicalField TechnicalField(int clientId)
         {
-            var client = Session.Single<ClientInfo>(clientId);
+            var client = SingleClient(clientId);
+
             if (client == null) return null;
-            return client.CreateModel<ITechnicalField>();
+
+            return new TechnicalFieldItem
+            {
+                TechnicalFieldID = client.TechnicalInterestID,
+                TechnicalFieldName = client.TechnicalInterestName
+            };
         }
 
         public string TechnicalFieldName(int clientId)
@@ -553,6 +544,8 @@ namespace LNF.Impl.Data
                 Provider.Data.ActiveLog.Enable("Client", c.ClientID);
             else
                 Provider.Data.ActiveLog.Disable("Client", c.ClientID);
+
+            ClearClientCache();
 
             return true;
         }
@@ -648,6 +641,8 @@ namespace LNF.Impl.Data
             else
                 Provider.Data.ActiveLog.Disable("Client", result.ClientID);
 
+            ClearClientCache();
+
             return result;
         }
 
@@ -670,6 +665,8 @@ namespace LNF.Impl.Data
             client.DemDisabilityID = value.DemDisabilityID;
 
             Session.SaveOrUpdate(client);
+
+            ClearClientCache();
 
             return true;
         }
@@ -725,7 +722,21 @@ namespace LNF.Impl.Data
 
         public IEnumerable<IClient> GetActiveManagers()
         {
-            return Session.Query<ClientOrgInfo>().Where(x => x.IsManager && x.ClientOrgActive).OrderBy(x => x.DisplayName).CreateModels<IClient>();
+            return GetActiveManagers(false);
+        }
+
+        public IEnumerable<IClient> GetActiveManagers(bool includeFinancialManagers)
+        {
+            IQueryable<ClientOrgInfo> query;
+
+            if (!includeFinancialManagers)
+                query = Session.Query<ClientOrgInfo>().Where(x => x.IsManager && x.ClientOrgActive).OrderBy(x => x.DisplayName);
+            else
+                query = Session.Query<ClientOrgInfo>().Where(x => (x.IsManager || x.IsFinManager) && x.ClientOrgActive).OrderBy(x => x.DisplayName);
+
+            var result = query.CreateModels<IClient>();
+
+            return result;
         }
 
         public void Disable(IClient client)
@@ -866,7 +877,14 @@ namespace LNF.Impl.Data
                 };
 
                 Session.Insert(clientRemote);
-                Provider.Data.ActiveLog.Enable("Client", client.ClientID);
+
+                if (!client.Active)
+                {
+                    client.Active = true;
+                    Provider.Data.ActiveLog.Enable("Client", client.ClientID);
+                    ClearClientCache();
+                }
+
                 EnableClientRemote(clientRemote.ClientRemoteID, period);
 
                 model.ClientRemoteID = clientRemote.ClientRemoteID;
@@ -933,6 +951,32 @@ namespace LNF.Impl.Data
             }
 
             Session.SaveOrUpdate(alog);
+        }
+
+        private IEnumerable<IClient> AllClients()
+        {
+            IEnumerable<IClient> result;
+
+            if (!_cache.Contains("AllClients"))
+            {
+                result = Session.Query<ClientInfo>().CreateModels<IClient>();
+                _cache.Add("AllClients", result, DateTimeOffset.Now.AddMinutes(5));
+            }
+            else
+            {
+                result = (IEnumerable<IClient>)_cache["AllClients"];
+            }
+
+            return result;
+        }
+
+        private IClient SingleClient(int clientId) => AllClients().FirstOrDefault(x => x.ClientID == clientId);
+
+        private IClient SingleClient(string username) => AllClients().FirstOrDefault(x => x.UserName == username);
+
+        private void ClearClientCache()
+        {
+            _cache.Remove("AllClients");
         }
     }
 }

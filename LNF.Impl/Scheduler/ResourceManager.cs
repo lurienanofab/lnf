@@ -31,6 +31,10 @@ namespace LNF.Impl.Scheduler
 
         public IEnumerable<IResource> SelectByLab(int? labId)
         {
+            // when labId is null use "default labs"
+            // when labId is 0 use "all labs"
+            // when labId > 0 select for single lab
+
             //procResourceSelect @Action='SelectByLabID'
 
             /*if @LabID is null

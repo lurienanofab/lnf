@@ -24,7 +24,7 @@ namespace LNF.Feedback
         {
             if (issue.ReporterID > 0)
             {
-                var client = CacheManager.Current.GetClient(issue.ClientID);
+                var client = ServiceProvider.Current.Data.Client.GetClient(issue.ClientID);
                 if (client != null)
                     return ClientItem.GetDisplayName(client.LName, client.FName);
             }
@@ -36,7 +36,7 @@ namespace LNF.Feedback
         {
             if (issue.ReporterID > 0)
             {
-                var client = CacheManager.Current.GetClient(issue.ClientID);
+                var client = ServiceProvider.Current.Data.Client.GetClient(issue.ClientID);
                 if (client != null)
                 {
                     if (!client.PrimaryOrg)
@@ -61,7 +61,7 @@ namespace LNF.Feedback
         {
             if (issue.ClientID > 0)
             {
-                var client = CacheManager.Current.GetClient(issue.ClientID);
+                var client = ServiceProvider.Current.Data.Client.GetClient(issue.ClientID);
                 if (client != null)
                     return client.DisplayName;
             }

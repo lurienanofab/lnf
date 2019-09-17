@@ -101,7 +101,9 @@ namespace LNF.Impl.ModelFactory
             Map<ReservationInvitee, ReservationInviteeInfo, ReservationInviteeItem, IReservationInvitee>(x => new ReservationInviteeInfo { ReservationID = x.Reservation.ReservationID, InviteeID = x.Invitee.ClientID });
             Map<ReservationInviteeInfo, ReservationInviteeItem, IReservationInvitee>();
             Map<ReservationProcessInfo, ReservationProcessInfoItem, IReservationProcessInfo>();
-            Map<ReservationRecurrence, IReservationRecurrence>(x => MapReservationRecurrence(x));
+            Map<ReservationRecurrenceInfo, ReservationRecurrenceItem, IReservationRecurrence>();
+            Map<ReservationRecurrence, ReservationRecurrenceInfo, ReservationRecurrenceItem, IReservationRecurrence>(x => x.RecurrenceID);
+            Map<Activity, ActivityItem, IActivity>();
         }
     }
 }

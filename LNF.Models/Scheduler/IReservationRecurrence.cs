@@ -28,5 +28,8 @@ namespace LNF.Models.Scheduler
         int RecurrenceID { get; set; }
         int ResourceID { get; set; }
         string ResourceName { get; set; }
+        int ProcessTechID { get; set; }
+        int LabID { get; set; }
+        int BuildingID { get; set; }
     }
 }

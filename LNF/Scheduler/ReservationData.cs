@@ -36,7 +36,7 @@ namespace LNF.Scheduler
         /// <summary>
         /// Creates an instance of InsertReservationArgs with the current ReservationData object. Nothing is done to the database.
         /// </summary>
-        public InsertReservationArgs CreateInsertArgs(DateTime now, int? modifiedByClientId = null)
+        public InsertReservationArgs CreateInsertArgs(DateTime now, int linkedReservationId, int? modifiedByClientId = null)
         {
             return new InsertReservationArgs
             {
@@ -54,6 +54,7 @@ namespace LNF.Scheduler
                 HasProcessInfo = ProcessInfos.Any(),
                 Notes = Notes,
                 Now = now,
+                LinkedReservationID = linkedReservationId,
                 ModifiedByClientID = modifiedByClientId.GetValueOrDefault(ClientID)
             };
         }

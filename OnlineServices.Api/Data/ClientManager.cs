@@ -240,6 +240,11 @@ namespace OnlineServices.Api.Data
             throw new NotImplementedException();
         }
 
+        public IEnumerable<IClient> GetActiveManagers(bool includeFinancialManagers)
+        {
+            throw new NotImplementedException();
+        }
+
         public void Disable(IClient client)
         {
             throw new NotImplementedException();

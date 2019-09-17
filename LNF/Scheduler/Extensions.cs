@@ -14,9 +14,9 @@ namespace LNF.Scheduler
         /// <summary>
         /// Gets all reservation activities. Activities are cached for 1 week.
         /// </summary>
-        public static IEnumerable<ActivityItem> Activities(this CacheManager cm) => cm.GetValue("Activities", () => DA.Current.Query<Activity>().CreateModels<ActivityItem>(), DateTimeOffset.Now.Add(TimeSpan.FromDays(7)));
+        public static IEnumerable<IActivity> Activities(this CacheManager cm) => cm.GetValue("Activities", () => DA.Current.Query<Activity>().CreateModels<IActivity>(), DateTimeOffset.Now.Add(TimeSpan.FromDays(7)));
 
-        public static ActivityItem GetActivity(this CacheManager cm, int activityId)
+        public static IActivity GetActivity(this CacheManager cm, int activityId)
         {
             var result = cm.Activities().FirstOrDefault(x => x.ActivityID == activityId);
 
@@ -26,7 +26,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public static IEnumerable<ActivityItem> AuthorizedActivities(this CacheManager cm, ClientAuthLevel authLevel)
+        public static IEnumerable<IActivity> AuthorizedActivities(this CacheManager cm, ClientAuthLevel authLevel)
         {
             //procActivitySelect @Action = 'SelectAuthorizedActivities'
 
@@ -70,7 +70,7 @@ namespace LNF.Scheduler
 
         public static ClientAuthLevel GetAuthLevel(this CacheManager cm, int resourceId, int clientId)
         {
-            var client = cm.GetClient(clientId);
+            var client = ServiceProvider.Current.Data.Client.GetClient(clientId);
             var resourceClients = cm.ResourceClients(resourceId);
             return ReservationUtility.GetAuthLevel(resourceClients, client);
         }

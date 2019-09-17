@@ -434,6 +434,7 @@
     <Compile Include="Repository\Scheduler\ReservationOnTheFly.cs" />
     <Compile Include="Repository\Scheduler\ReservationProcessInfo.cs" />
     <Compile Include="Repository\Scheduler\ReservationRecurrence.cs" />
+    <Compile Include="Repository\Scheduler\ReservationRecurrenceInfo.cs" />
     <Compile Include="Repository\Scheduler\Resource.cs" />
     <Compile Include="Repository\Scheduler\ResourceActivityAuth.cs" />
     <Compile Include="Repository\Scheduler\ResourceClient.cs" />

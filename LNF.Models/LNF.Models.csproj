@@ -199,6 +199,7 @@
     <Compile Include="Reporting\IClientItemManager.cs" />
     <Compile Include="Reporting\IReportingClient.cs" />
     <Compile Include="Scheduler\ExpiringCardConverter.cs" />
+    <Compile Include="Scheduler\IActivity.cs" />
     <Compile Include="Scheduler\InsertReservationArgs.cs" />
     <Compile Include="Scheduler\IProcessInfoManager.cs" />
     <Compile Include="Scheduler\IReservationManager.cs" />

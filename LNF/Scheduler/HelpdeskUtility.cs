@@ -114,7 +114,7 @@ namespace LNF.Scheduler
 
         public static string GetMessageHeader(IResource res, int clientId, string reservationText, string ticketType)
         {
-            var client = CacheManager.Current.GetClient(clientId);
+            var client = ServiceProvider.Current.Data.Client.GetClient(clientId);
             string result = "Resource ID: " + res.ResourceID.ToString() + Environment.NewLine
                 + "Resource Name: " + res.ResourceName + Environment.NewLine
                 + "Created By: " + ClientItem.GetDisplayName(client.LName, client.FName) + Environment.NewLine

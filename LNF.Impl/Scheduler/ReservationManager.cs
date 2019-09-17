@@ -332,7 +332,7 @@ namespace LNF.Impl.Scheduler
             return r.CreateModel<IReservation>();
         }
 
-        public IReservation InsertForModification(InsertReservationArgs args, IReservation linkedReservation)
+        public IReservation InsertForModification(InsertReservationArgs args)
         {
             // The idea here is that linkedReservation is an existing reservation that has been modified (all propeties already set), and
             // we are using it to create a new reservation for modification. The ReservationID of linkedReservation will be used to link the
@@ -349,12 +349,15 @@ namespace LNF.Impl.Scheduler
             //  @Duration, @Notes, @AutoEnd, 1.00, @RecurrenceID, 1,
             //  @HasProcessInfo, @HasInvitees, @IsActive, 0, 0, @KeepAlive, @MaxReservedDuration, @TotalProcessRuns)
 
+            var linkedReservation = GetExistingReservation(args.LinkedReservationID);
+
             var r = PrivateInsert(args);
 
             r.ChargeMultiplier = linkedReservation.ChargeMultiplier;
             r.OriginalBeginDateTime = linkedReservation.OriginalBeginDateTime.GetValueOrDefault(linkedReservation.BeginDateTime);
             r.OriginalEndDateTime = linkedReservation.OriginalEndDateTime.GetValueOrDefault(linkedReservation.EndDateTime);
             r.OriginalModifiedOn = linkedReservation.OriginalModifiedOn.GetValueOrDefault(linkedReservation.LastModifiedOn);
+            r.MaxReservedDuration = Math.Max(r.MaxReservedDuration, linkedReservation.MaxReservedDuration);
 
             Session.SaveOrUpdate(r);
 
@@ -549,31 +552,43 @@ namespace LNF.Impl.Scheduler
             return Session.NamedQuery("SelectAutoEndReservations").List<ReservationInfo>().AsQueryable().CreateModels<IReservation>();
         }
 
-        public IEnumerable<IReservation> SelectByClient(int clientId, DateTime startDate, DateTime endDate, bool includeDeleted)
+        public IEnumerable<IReservation> SelectByClient(int clientId, DateTime sd, DateTime ed, bool includeDeleted)
         {
             List<IReservation> result = new List<IReservation>();
 
             if (includeDeleted)
             {
-                result.AddRange(Session.Query<Reservation>().Where(x => x.Client.ClientID == clientId && x.BeginDateTime < endDate && x.EndDateTime > startDate).CreateModels<IReservation>());
-                result.AddRange(Session.Query<ReservationInvitee>().Where(x => x.Invitee.ClientID == clientId && x.Reservation.BeginDateTime < endDate && x.Reservation.EndDateTime > startDate).Select(x => x.Reservation).CreateModels<IReservation>());
+                result.AddRange(Session.Query<Reservation>().Where(x => x.Client.ClientID == clientId && x.BeginDateTime < ed && x.EndDateTime > sd).CreateModels<IReservation>());
+                result.AddRange(Session.Query<ReservationInvitee>().Where(x => x.Invitee.ClientID == clientId && x.Reservation.BeginDateTime < ed && x.Reservation.EndDateTime > sd).Select(x => x.Reservation).CreateModels<IReservation>());
             }
             else
             {
-                result.AddRange(Session.Query<Reservation>().Where(x => x.Client.ClientID == clientId && x.BeginDateTime < endDate && x.EndDateTime > startDate && x.IsActive).CreateModels<IReservation>());
-                result.AddRange(Session.Query<ReservationInvitee>().Where(x => x.Invitee.ClientID == clientId && x.Reservation.BeginDateTime < endDate && x.Reservation.EndDateTime > startDate && x.Reservation.IsActive).Select(x => x.Reservation).CreateModels<IReservation>());
+                result.AddRange(Session.Query<Reservation>().Where(x => x.Client.ClientID == clientId && x.BeginDateTime < ed && x.EndDateTime > sd && x.IsActive).CreateModels<IReservation>());
+                result.AddRange(Session.Query<ReservationInvitee>().Where(x => x.Invitee.ClientID == clientId && x.Reservation.BeginDateTime < ed && x.Reservation.EndDateTime > sd && x.Reservation.IsActive).Select(x => x.Reservation).CreateModels<IReservation>());
             }
 
             return result;
         }
 
-        public IEnumerable<IReservation> SelectByDateRange(DateTime startDate, DateTime endDate, int clientId = 0)
+        public IEnumerable<IReservation> SelectByDateRange(DateTime sd, DateTime ed, bool includeDeleted)
         {
-            var result = Session.Query<ReservationInfo>().Where(x =>
-                ((x.BeginDateTime < endDate && x.EndDateTime > startDate) ||
-                (x.ActualBeginDateTime < endDate && x.ActualEndDateTime > startDate)) &&
-                x.ClientID == (clientId > 0 ? clientId : x.ClientID)
-            ).CreateModels<IReservation>();
+            IEnumerable<IReservation> result;
+
+            if (includeDeleted)
+            {
+                result = Session.Query<ReservationInfo>().Where(x =>
+                    ((x.BeginDateTime < ed && x.EndDateTime > sd) ||
+                    (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd))
+                ).CreateModels<IReservation>();
+            }
+            else
+            {
+                result = Session.Query<ReservationInfo>().Where(x =>
+                    ((x.BeginDateTime < ed && x.EndDateTime > sd) ||
+                    (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd))
+                    && x.IsActive
+                ).CreateModels<IReservation>();
+            }
 
             return result;
         }
@@ -592,22 +607,28 @@ namespace LNF.Impl.Scheduler
             return result;
         }
 
-        public IEnumerable<IReservation> SelectByProcessTech(int processTechId, DateTime startDate, DateTime endDate, bool includeDeleted)
+        public IEnumerable<IReservation> SelectByProcessTech(int processTechId, DateTime sd, DateTime ed, bool includeDeleted)
         {
             if (includeDeleted)
-                return Session.Query<ReservationInfo>().Where(x => x.ProcessTechID == processTechId && x.BeginDateTime < endDate && x.EndDateTime > startDate).CreateModels<IReservation>();
+                return Session.Query<ReservationInfo>().Where(x => x.ProcessTechID == processTechId && x.BeginDateTime < ed && x.EndDateTime > sd).CreateModels<IReservation>();
             else
-                return Session.Query<ReservationInfo>().Where(x => x.ProcessTechID == processTechId && x.BeginDateTime < endDate && x.EndDateTime > startDate && x.IsActive).CreateModels<IReservation>();
+                return Session.Query<ReservationInfo>().Where(x => x.ProcessTechID == processTechId && x.BeginDateTime < ed && x.EndDateTime > sd && x.IsActive).CreateModels<IReservation>();
         }
 
-        public IEnumerable<IReservation> SelectByResource(int resourceId, DateTime startDate, DateTime endDate, bool includeDeleted)
+        public IEnumerable<IReservation> SelectByResource(int resourceId, DateTime sd, DateTime ed, bool includeDeleted)
         {
+            IQueryable<ReservationInfo> query;
+
             if (includeDeleted)
-                return Session.Query<ReservationInfo>().Where(x => x.ResourceID == resourceId &&
-                    ((x.BeginDateTime < endDate && x.EndDateTime > startDate) || (x.ActualBeginDateTime < endDate && x.ActualEndDateTime > startDate))).CreateModels<IReservation>();
+                query = Session.Query<ReservationInfo>().Where(x => x.ResourceID == resourceId &&
+                    ((x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd)));
             else
-                return Session.Query<ReservationInfo>().Where(x => x.IsActive && x.ResourceID == resourceId &&
-                    ((x.BeginDateTime < endDate && x.EndDateTime > startDate) || (x.ActualBeginDateTime < endDate && x.ActualEndDateTime > startDate))).CreateModels<IReservation>();
+                query = Session.Query<ReservationInfo>().Where(x => x.IsActive && x.ResourceID == resourceId &&
+                    ((x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd)));
+
+            IEnumerable<IReservation> result = query.CreateModels<IReservation>();
+
+            return result;
         }
 
         public IEnumerable<IReservation> SelectEndableReservations(int resourceId)
@@ -1269,25 +1290,30 @@ namespace LNF.Impl.Scheduler
 
         public IReservationRecurrence GetReservationRecurrence(int recurrenceId)
         {
-            return Session.Single<ReservationRecurrence>(recurrenceId).CreateModel<IReservationRecurrence>();
+            var query = Session.Single<ReservationRecurrenceInfo>(recurrenceId);
+            var result = query.CreateModel<IReservationRecurrence>();
+            return result;
         }
 
         public IEnumerable<IReservationRecurrence> GetReservationRecurrencesByResource(int resourceId)
         {
-            return Session.Query<ReservationRecurrence>().Where(x => x.Resource.ResourceID == resourceId).CreateModels<IReservationRecurrence>();
+            var query = Session.Query<ReservationRecurrenceInfo>().Where(x => x.ResourceID == resourceId);
+            var result = query.CreateModels<IReservationRecurrence>();
+            return result;
         }
 
         public IEnumerable<IReservationRecurrence> GetReservationRecurrencesByProcessTech(int processTechId)
         {
-            var query = Session.Query<Resource>().Where(x => x.ProcessTech.ProcessTechID == processTechId);
-            var join = query.Join(Session.Query<ReservationRecurrence>(), o => o.ResourceID, i => i.Resource.ResourceID, (o, i) => i);
-            return join.CreateModels<IReservationRecurrence>();
+            var query = Session.Query<ReservationRecurrenceInfo>().Where(x => x.ProcessTechID == processTechId);
+            var result = query.CreateModels<IReservationRecurrence>();
+            return result;
         }
 
         public IEnumerable<IReservationRecurrence> GetReservationRecurrencesByClient(int clientId)
         {
-            var query = Session.Query<ReservationRecurrence>().Where(x => x.Client.ClientID == clientId);
-            return query.CreateModels<IReservationRecurrence>();
+            var query = Session.Query<ReservationRecurrenceInfo>().Where(x => x.ClientID == clientId);
+            var result = query.CreateModels<IReservationRecurrence>();
+            return result;
         }
 
         public bool SaveReservationRecurrence(int recurrenceId, int patternId, int param1, int? param2, DateTime beginDate, TimeSpan beginTime, double duration, DateTime? endDate, bool autoEnd, bool keepAlive, string notes)
@@ -1678,7 +1704,8 @@ namespace LNF.Impl.Scheduler
                 {
                     // Granularity			: stored in minutes and entered in minutes
                     // Offset				: stored in hours and entered in hours 
-                    DateTime granStartTime = ResourceUtility.GetNextGranularity(res.CreateModel<IResource>(), args.Now, GranularityDirection.Previous);
+                    //IResource resource = res.CreateModel<IResource>();
+                    DateTime granStartTime = res.GetNextGranularity(args.Now, GranularityDirection.Previous);
 
                     if (args.BeginDateTime < granStartTime)
                     {
@@ -1701,7 +1728,7 @@ namespace LNF.Impl.Scheduler
             //      2) not canceled
             //      3) date ranges overlap
 
-            var conflict = GetReservations(res.ResourceID, args.BeginDateTime, args.EndDateTime, true).FirstOrDefault(x => !x.ActualEndDateTime.HasValue);
+            var conflict = GetReservations(res.ResourceID, args.BeginDateTime, args.EndDateTime, true).FirstOrDefault(x => !x.ActualEndDateTime.HasValue && x.ReservationID != args.LinkedReservationID);
 
             if (conflict != null)
             {

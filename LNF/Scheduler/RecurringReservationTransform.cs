@@ -78,13 +78,23 @@ namespace LNF.Scheduler
             // [2019-06-10 jg] Can also overlap if the RecurrenceID and time slots are the same,
             // regardless of IsActive. This will prevent previously cancelled recurrences from being
             // created again.
-            var overlapping = reservations.Any(x =>
-                (x.IsActive || x.RecurrenceID == data.RecurrenceID)
-                && x.ResourceID == data.ResourceID
-                && (x.BeginDateTime < data.Duration.EndDateTime && x.EndDateTime > data.Duration.BeginDateTime)
-                && x.ActualEndDateTime == null);
 
-            if (!overlapping)
+            // Step 1. Get any overlapping by resource and date range.
+            var overlapping = reservations.Where(x => x.ResourceID == data.ResourceID
+                && (x.BeginDateTime < data.Duration.EndDateTime && x.EndDateTime > data.Duration.BeginDateTime)).ToList();
+
+            // Step 2. Check for any active (uncancelled) or a reservation with the same RecurrenceID (cancelled or uncancelled).
+            //      The idea here is a recurrence should be created if the time slot is unused or there is a cancelled reservation unless
+            //      the cancelled reservation is the same recurrence, in which case we do not want to create the recurrence again.
+            var isOverlapped = overlapping.Any(x => x.IsActive || x.RecurrenceID == data.RecurrenceID);
+
+            //var overlapping = reservations.Any(x =>
+            //    (x.IsActive || x.RecurrenceID == data.RecurrenceID)
+            //    && x.ResourceID == data.ResourceID
+            //    && (x.BeginDateTime < data.Duration.EndDateTime && x.EndDateTime > data.Duration.BeginDateTime)
+            //    && x.ActualEndDateTime == null); <-- this was causing a problem when an existing cancelled recurrence was present because in this case ActualEndDateTime was not null so the recurrence was created again.
+
+            if (!isOverlapped)
             {
                 var util = new ReservationUtility(DateTime.Now, reservations.Provider);
                 var rsv = util.Create(data);

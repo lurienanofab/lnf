@@ -151,7 +151,7 @@ namespace OnlineServices.Api.Scheduler
             throw new NotImplementedException();
         }
 
-        public void InsertForModification(IReservation item, DateTime now, int linkedReservationId, int? modifiedByClientId)
+        public IReservation InsertForModification(InsertReservationArgs args)
         {
             throw new NotImplementedException();
         }
@@ -196,12 +196,12 @@ namespace OnlineServices.Api.Scheduler
             throw new NotImplementedException();
         }
 
-        public IEnumerable<IReservation> SelectByClient(int clientId, DateTime startDate, DateTime endDate, bool includeDeleted)
+        public IEnumerable<IReservation> SelectByClient(int clientId, DateTime sd, DateTime ed, bool includeDeleted)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<IReservation> SelectByDateRange(DateTime startDate, DateTime endDate, int clientId = 0)
+        public IEnumerable<IReservation> SelectByDateRange(DateTime sd, DateTime ed, int clientId = 0)
         {
             throw new NotImplementedException();
         }
@@ -211,12 +211,12 @@ namespace OnlineServices.Api.Scheduler
             throw new NotImplementedException();
         }
 
-        public IEnumerable<IReservation> SelectByProcessTech(int processTechId, DateTime startDate, DateTime endDate, bool includeDeleted)
+        public IEnumerable<IReservation> SelectByProcessTech(int processTechId, DateTime sd, DateTime ed, bool includeDeleted)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<IReservation> SelectByResource(int resourceId, DateTime startDate, DateTime endDate, bool includeDeleted)
+        public IEnumerable<IReservation> SelectByResource(int resourceId, DateTime sd, DateTime ed, bool includeDeleted)
         {
             throw new NotImplementedException();
         }
@@ -387,7 +387,7 @@ namespace OnlineServices.Api.Scheduler
             throw new NotImplementedException();
         }
 
-        public int EndPastUnstarted(int reservationId, DateTime endDate, int? endedByClientId)
+        public int EndPastUnstarted(int reservationId, DateTime ed, int? endedByClientId)
         {
             throw new NotImplementedException();
         }
@@ -473,6 +473,11 @@ namespace OnlineServices.Api.Scheduler
         }
 
         public bool SaveReservationRecurrence(int recurrenceId, int patternId, int param1, int? param2, DateTime beginDate, TimeSpan beginTime, double duration, DateTime? endDate, bool autoEnd, bool keepAlive, string notes)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IReservation> SelectByDateRange(DateTime sd, DateTime ed, bool includeDeleted)
         {
             throw new NotImplementedException();
         }

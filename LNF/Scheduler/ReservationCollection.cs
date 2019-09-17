@@ -25,7 +25,7 @@ namespace LNF.Scheduler
             _items.Add(item);
         }
 
-        public IEnumerable<IReservation> Find(DateTime date, bool includeDeleted)
+        public IEnumerable<IReservation> Find(DateTime date, bool includeCancelled)
         {
             DateTime d = date.Date;
 
@@ -34,10 +34,16 @@ namespace LNF.Scheduler
 
             IEnumerable<IReservation> result = _items.Where(x => (x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd));
 
-            if (includeDeleted)
+            if (includeCancelled)
                 return result.ToList();
             else
                 return result.Where(x => x.IsActive).ToList();
+        }
+
+        public IEnumerable<IReservation> Find(DateTime date, int clientId, bool includeCancelled)
+        {
+            var result = Find(date, includeCancelled);
+            return result.Where(x => x.ClientID == clientId).ToList();
         }
 
         public void SelectByResource(int resourceId, DateTime sd, DateTime ed)
@@ -71,6 +77,17 @@ namespace LNF.Scheduler
                 throw new ArgumentOutOfRangeException("ed");
 
             _items = Provider.Scheduler.Reservation.SelectByClient(clientId, sd, ed, true).ToList();
+        }
+
+        public void SelectByDateRange(DateTime sd, DateTime ed)
+        {
+            if (sd < Reservation.MinReservationBeginDate)
+                throw new ArgumentOutOfRangeException("sd");
+
+            if (ed > Reservation.MaxReservationEndDate)
+                throw new ArgumentOutOfRangeException("ed");
+
+            _items = Provider.Scheduler.Reservation.SelectByDateRange(sd, ed, true).ToList();
         }
 
         public IEnumerator<IReservation> GetEnumerator()

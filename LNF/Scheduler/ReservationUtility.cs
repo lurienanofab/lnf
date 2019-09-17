@@ -137,7 +137,7 @@ namespace LNF.Scheduler
                 return;
 
             // Get the next reservation start time
-            DateTime currentEndDateTime = ResourceUtility.GetNextGranularity(rsv, rsv.ActualEndDateTime.Value, GranularityDirection.Previous);
+            DateTime currentEndDateTime = rsv.GetNextGranularity(rsv.ActualEndDateTime.Value, GranularityDirection.Previous);
 
             // Send email notifications to all clients who want to be notified of open reservation slots
             Provider.EmailManager.EmailOnOpenSlot(rsv, currentEndDateTime, nextBeginDateTime.Value, EmailNotify.Always, endedByClientId.GetValueOrDefault());
@@ -160,9 +160,10 @@ namespace LNF.Scheduler
             {
                 if (CreateForModification(rsv, data.Duration))
                 {
-                    var args = GetInsertReservationArgs(data);
-                    result = Provider.Scheduler.Reservation.InsertForModification(args, rsv);
-                    Provider.Scheduler.Reservation.AppendNotes(rsv.ReservationID, $"Canceled for modification. New ReservationID: {rsv.ReservationID}");
+                    var args = GetInsertReservationArgs(data, rsv.ReservationID);
+                    Provider.Scheduler.Reservation.CancelReservation(rsv.ReservationID, args.ModifiedByClientID);
+                    result = Provider.Scheduler.Reservation.InsertForModification(args);
+                    Provider.Scheduler.Reservation.AppendNotes(rsv.ReservationID, $"Cancelled for modification. New ReservationID: {rsv.ReservationID}");
                     insert = true;
                 }
                 else
@@ -204,7 +205,7 @@ namespace LNF.Scheduler
             if (IsRepairActivity(data.ActivityID))
                 throw new Exception("Use LNF.Web.Scheduler.RepairUtility.StartRepair");
 
-            var args = GetInsertReservationArgs(data);
+            var args = GetInsertReservationArgs(data, 0);
             result = Provider.Scheduler.Reservation.InsertReservation(args);
             HandlePracticeReservation(result, data.Invitees, args.ModifiedByClientID);
 
@@ -244,7 +245,7 @@ namespace LNF.Scheduler
                 return false;
         }
 
-        public InsertReservationArgs GetInsertReservationArgs(ReservationData data) => data.CreateInsertArgs(Now);
+        public InsertReservationArgs GetInsertReservationArgs(ReservationData data, int linkedReservationId) => data.CreateInsertArgs(Now, linkedReservationId);
 
         public UpdateReservationArgs GetUpdateReservationArgs(ReservationData data, int reservationId) => data.CreateUpdateArgs(Now, reservationId);
 

@@ -86,6 +86,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Messaging" />
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
@@ -157,6 +158,7 @@
     <Compile Include="Mappings\Billing\RoomDataImportLogMap.cs" />
     <Compile Include="Mappings\Ordering\StoreManagerReportItemMap.cs" />
     <Compile Include="Mappings\Scheduler\ReservationInviteeInfoMap.cs" />
+    <Compile Include="Mappings\Scheduler\ReservationRecurrenceInfoMap.cs" />
     <Compile Include="ModelFactory\BillingModelBuilder.cs" />
     <Compile Include="ModelFactory\DataModelBuilder.cs" />
     <Compile Include="ModelFactory\Injections\NullableUseDefaultInjection.cs" />

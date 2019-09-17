@@ -51,7 +51,11 @@ namespace LNF.Models.Data
         string AccountEmail(int clientId, int accountId);
         string AccountPhone(int clientId, int accountId);
         IEnumerable<ListItem> AllActiveManagers();
+        /// <summary>
+        /// Returns technical managers only.
+        /// </summary>
         IEnumerable<IClient> GetActiveManagers();
+        IEnumerable<IClient> GetActiveManagers(bool includeFinancialManagers);
         void Disable(IClient client);
         IBillingType GetBillingType(int clientOrgId);
         int GetMaxChargeTypeID(int clientId);

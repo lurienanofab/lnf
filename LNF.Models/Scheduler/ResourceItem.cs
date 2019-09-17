@@ -44,6 +44,10 @@ namespace LNF.Models.Scheduler
         public int GracePeriod { get; set; }
         public override string ToString() => GetResourceDisplayName(ResourceName, ResourceID);
 
+        public DateTime GetNextGranularity(DateTime now, GranularityDirection dir) => GetNextGranularity(Granularity, Offset, now, dir);
+
+        public string GetResourceName(ResourceNamePartial part) => GetResourceName(this, part);
+
         public string ResourceDisplayName => GetResourceDisplayName(ResourceName, ResourceID);
 
         public bool HasState(ResourceState state) => HasState(State, state);
@@ -51,5 +55,38 @@ namespace LNF.Models.Scheduler
         public static bool HasState(ResourceState s1, ResourceState s2) => s1 == s2;
 
         public static string GetResourceDisplayName(string resourceName, int resourceId) => string.Format("{0} [{1}]", resourceName, resourceId);
+
+        public static string GetResourceName(IResource res, ResourceNamePartial part)
+        {
+            switch (part)
+            {
+                case ResourceNamePartial.ResourceName:
+                    return res.ResourceName;
+                case ResourceNamePartial.ProcessTechName:
+                    return res.ProcessTechName + ": " + res.ResourceName;
+                case ResourceNamePartial.LabName:
+                    return res.LabDisplayName + ": " + res.ProcessTechName + ": " + res.ResourceName;
+                case ResourceNamePartial.BuildingName:
+                    return res.BuildingName + ": " + res.LabDisplayName + ": " + res.ProcessTechName + ": " + res.ResourceName;
+                default:
+                    throw new NotSupportedException($"Unknown ResourceNamePartial value: {part}");
+            }
+        }
+
+        public static DateTime GetNextGranularity(int gran, int offset, DateTime now, GranularityDirection dir)
+        {
+            // get number of minutes between now and beginning of day (midnight + offset) of passed-in date
+            DateTime dayBegin = now.Date.AddHours(offset);
+
+            double repairBeginMinutes = now.Subtract(dayBegin).TotalMinutes;
+
+            if (repairBeginMinutes % gran == 0)
+                return now; //this is a granularity boundary
+            else
+            {
+                int numGrans = Convert.ToInt32(repairBeginMinutes / gran);
+                return dayBegin.AddMinutes((numGrans + (int)dir) * gran);
+            }
+        }
     }
 }

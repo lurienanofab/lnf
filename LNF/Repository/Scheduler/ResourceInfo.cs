@@ -48,29 +48,9 @@ namespace LNF.Repository.Scheduler
         public virtual int GracePeriod { get; set; }
         public virtual bool HasState(ResourceState state) => ResourceItem.HasState(State, state);
         public virtual string ResourceDisplayName => ResourceItem.GetResourceDisplayName(ResourceName, ResourceID);
-
-        public virtual DateTime GetNextGranularity(DateTime actual, int dir)
-        {
-            // get number of minutes between now and beginning of day (midnight + offset) of passed-in date
-            DateTime dayBegin = new DateTime(actual.Year, actual.Month, actual.Day);
-            dayBegin = dayBegin.AddHours(Offset);
-
-            double repairBeginMinutes = actual.Subtract(dayBegin).TotalMinutes;
-
-            if (repairBeginMinutes % Granularity == 0)
-                return actual; // this is a granularity boundary
-            else
-            {
-                int numOfGrans = Convert.ToInt32(repairBeginMinutes / Granularity);
-                return dayBegin.AddMinutes((numOfGrans + dir) * Granularity);
-            }
-        }
-
-        public virtual string GetImageUrl()
-        {
-            return string.Format("//ssel-sched.eecs.umich.edu/sselscheduler/images/Resource/Resource{0:000000}.png", ResourceID);
-        }
-
+        public virtual string GetResourceName(ResourceNamePartial part) => ResourceItem.GetResourceName(this, part);
+        public virtual DateTime GetNextGranularity(DateTime now, GranularityDirection dir) => ResourceItem.GetNextGranularity(Granularity, Offset, now, dir);
+        public virtual string GetImageUrl() => $"//ssel-sched.eecs.umich.edu/sselscheduler/images/Resource/Resource{ResourceID:000000}.png";
         public override string ToString() => ResourceDisplayName;
     }
 }

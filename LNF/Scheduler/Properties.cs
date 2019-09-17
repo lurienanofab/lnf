@@ -25,7 +25,7 @@ namespace LNF.Scheduler
 
         public IClient Admin
         {
-            get { return CacheManager.Current.GetClient(int.Parse(GetValue("AdminID"))); }
+            get { return ServiceProvider.Current.Data.Client.GetClient(int.Parse(GetValue("AdminID"))); }
             set { SetValue("AdminID", value.ClientID); }
         }
 
@@ -144,13 +144,13 @@ namespace LNF.Scheduler
         }
     }
 
-    public class ActivityCollection : IEnumerable<ActivityItem>
+    public class ActivityCollection : IEnumerable<IActivity>
     {
-        private Dictionary<string, ActivityItem> _items;
+        private Dictionary<string, IActivity> _items;
 
-        public ActivityCollection(ActivityItem processing, ActivityItem practice, ActivityItem repair, ActivityItem characterization, ActivityItem staffSupport, ActivityItem schedMaintenance, ActivityItem demonstration, ActivityItem futurePractice, ActivityItem remoteProcessing, ActivityItem fdt)
+        public ActivityCollection(IActivity processing, IActivity practice, IActivity repair, IActivity characterization, IActivity staffSupport, IActivity schedMaintenance, IActivity demonstration, IActivity futurePractice, IActivity remoteProcessing, IActivity fdt)
         {
-            _items = new Dictionary<string, ActivityItem>
+            _items = new Dictionary<string, IActivity>
             {
                 { "processing", processing },
                 { "practice", practice },
@@ -165,67 +165,67 @@ namespace LNF.Scheduler
             };
         }
 
-        public ActivityItem Processing
+        public IActivity Processing
         {
             get { return _items["processing"]; }
             set { _items["processing"] = value; }
         }
 
-        public ActivityItem Practice
+        public IActivity Practice
         {
             get { return _items["practice"]; }
             set { _items["practice"] = value; }
         }
 
-        public ActivityItem Repair
+        public IActivity Repair
         {
             get { return _items["repair"]; }
             set { _items["repair"] = value; }
         }
 
-        public ActivityItem Characterization
+        public IActivity Characterization
         {
             get { return _items["characterization"]; }
             set { _items["characterization"] = value; }
         }
 
-        public ActivityItem StaffSupport
+        public IActivity StaffSupport
         {
             get { return _items["staffSupport"]; }
             set { _items["staffSupport"] = value; }
         }
 
-        public ActivityItem ScheduledMaintenance
+        public IActivity ScheduledMaintenance
         {
             get { return _items["schedMaintenance"]; }
             set { _items["schedMaintenance"] = value; }
         }
 
-        public ActivityItem Demonstration
+        public IActivity Demonstration
         {
             get { return _items["demonstration"]; }
             set { _items["demonstration"] = value; }
         }
 
-        public ActivityItem FuturePractice
+        public IActivity FuturePractice
         {
             get { return _items["futurePractice"]; }
             set { _items["futurePractice"] = value; }
         }
 
-        public ActivityItem RemoteProcessing
+        public IActivity RemoteProcessing
         {
             get { return _items["remoteProcessing"]; }
             set { _items["remoteProcessing"] = value; }
         }
 
-        public ActivityItem FacilityDownTime
+        public IActivity FacilityDownTime
         {
             get { return _items["fdt"]; }
             set { _items["fdt"] = value; }
         }
 
-        public IEnumerator<ActivityItem> GetEnumerator()
+        public IEnumerator<IActivity> GetEnumerator()
         {
             return _items.Select(x => x.Value).GetEnumerator();
         }

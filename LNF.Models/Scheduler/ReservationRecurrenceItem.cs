@@ -63,5 +63,11 @@ namespace LNF.Models.Scheduler
         public double Duration { get; set; }
 
         public string Notes { get; set; }
+
+        public int ProcessTechID { get; set; }
+
+        public int LabID { get; set; }
+
+        public int BuildingID { get; set; }
     }
 }

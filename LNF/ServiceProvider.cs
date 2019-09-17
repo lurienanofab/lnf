@@ -118,12 +118,12 @@ namespace LNF
         protected T RequireProperty<T>(string propertyName, T defval)
         {
             if (this[propertyName] == null)
-                throw new InvalidOperationException($"The attribute '{propertyName}' is required.");
+                throw new InvalidOperationException($"The attribute '{propertyName}' is required. [{GetType().FullName}]");
 
             var result = GetProperty(propertyName, defval);
 
             if (result.Equals(defval))
-                throw new InvalidOperationException($"The attribute '{propertyName}' is required.");
+                throw new InvalidOperationException($"The attribute '{propertyName}' is required. [{GetType().FullName}]");
 
             return result;
         }

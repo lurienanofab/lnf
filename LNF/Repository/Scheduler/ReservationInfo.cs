@@ -127,5 +127,9 @@ namespace LNF.Repository.Scheduler
         public virtual string ResourceDisplayName => ResourceItem.GetResourceDisplayName(ResourceName, ResourceID);
         public virtual string NameWithShortCode => AccountItem.GetNameWithShortCode(AccountName, ShortCode);
         public virtual string DisplayName => ClientItem.GetDisplayName(LName, FName);
+
+        public virtual string GetResourceName(ResourceNamePartial part) => ResourceItem.GetResourceName(this, part);
+
+        public virtual DateTime GetNextGranularity(DateTime now, GranularityDirection dir) => ResourceItem.GetNextGranularity(Granularity, Offset, now, dir);
     }
 }

@@ -48,7 +48,7 @@ namespace LNF.Impl.Billing
 
             foreach (int id in clientIds)
             {
-                var client = CacheManager.Current.GetClient(id);
+                var client = Provider.Data.Client.GetClient(id);
                 string recip = client.Email;
                 string subj = "Lab access data anomaly - please check!";
                 string body = client.DisplayName + ":<br /><br />"
@@ -134,7 +134,11 @@ namespace LNF.Impl.Billing
 
         public void UpdateRoomBillingEntries(DateTime period, int clientId, int roomId, int accountId, decimal entries)
         {
-            RoomBilling rb = Session.Query<RoomBilling>().First(x => x.Period == period && x.ClientID == clientId && x.RoomID == roomId && x.AccountID == accountId);
+            RoomBilling rb = Session.Query<RoomBilling>().FirstOrDefault(x => x.Period == period && x.ClientID == clientId && x.RoomID == roomId && x.AccountID == accountId);
+
+            if (rb == null)
+                throw new Exception($"Cannot find RoomBilling record for Period = #{period:yyyy-MM-dd}#, ClientID = {clientId}, RoomID = {roomId}, AccountID = {accountId}");
+
             rb.Entries = entries;
 
             RoomBillingUserApportionData appData = Session.Query<RoomBillingUserApportionData>().FirstOrDefault(x => x.Period == period && x.Client.ClientID == clientId && x.Room.RoomID == roomId && x.Account.AccountID == accountId);

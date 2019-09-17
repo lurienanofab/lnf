@@ -1,6 +1,6 @@
 ﻿namespace LNF.Models.Scheduler
 {
-    public class ActivityItem
+    public class ActivityItem : IActivity
     {
         public int ActivityID { get; set; }
         public string ActivityName { get; set; }

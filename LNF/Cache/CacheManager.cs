@@ -41,17 +41,20 @@ namespace LNF.Cache
         /// <summary>
         /// Gets all active clients. Clients are cached for 5 minutes.
         /// </summary>
-        public IEnumerable<IClient> Clients() => GetValue("Clients", () => DA.Current.Query<ClientInfo>().Where(x => x.ClientActive).CreateModels<IClient>(), DateTimeOffset.Now.AddMinutes(5));
+        [Obsolete("Use Provider.Data.Client.GetActiveClients instead.")]
+        public IEnumerable<IClient> Clients() => ServiceProvider.Current.Data.Client.GetActiveClients();
 
         /// <summary>
         /// Gets one active client by ClientID. Clients are cached for 5 minutes.
         /// </summary>
-        public IClient GetClient(int clientId) => Clients().FirstOrDefault(x => x.ClientID == clientId);
+        [Obsolete("Use Provider.Data.Client.GetClient instead.")]
+        public IClient GetClient(int clientId) => ServiceProvider.Current.Data.Client.GetClient(clientId);
 
         /// <summary>
         /// Gets one active client by UserName. Clients are cached for 5 minutes.
         /// </summary>
-        public IClient GetClient(string username) => Clients().FirstOrDefault(x => x.UserName == username);
+        [Obsolete("Use Provider.Data.Client.GetClient instead.")]
+        public IClient GetClient(string username) => ServiceProvider.Current.Data.Client.GetClient(username);
 
         /// <summary>
         /// The currently logged in user. Returns null if no one is logged in.

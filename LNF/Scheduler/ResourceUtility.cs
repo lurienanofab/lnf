@@ -7,12 +7,6 @@ using System;
 
 namespace LNF.Scheduler
 {
-    public enum GranularityDirection
-    {
-        Previous = 0,
-        Next = 1
-    }
-
     public static class ResourceUtility
     {
         public static void UpdateState(int resourceId, ResourceState state, string stateNotes)
@@ -85,33 +79,6 @@ namespace LNF.Scheduler
                 res.WikiPageUrl = model.WikiPageUrl;
                 res.IsReady = true;
                 res.UnloadTime = Utility.GetNullableMinutesFromTimeSpan(TimeSpan.FromMinutes(model.UnloadTime.GetValueOrDefault()));
-            }
-        }
-
-        /// <summary>
-        /// Returns the next grain boundary in the past or future
-        /// </summary>
-        /// <param name="granularity">The time increment in minutes a resource can be reserved</param>
-        /// <param name="offset">The offset hours that specify the beginning of the day for a resource</param>
-        /// <param name="actualTime">The point in time to determine the next or previous granularity</param>
-        /// <param name="granDir">The direction (next or pervious) to search in</param>
-        /// <returns>The DateTime value of the next or previous granularity</returns>
-        public static DateTime GetNextGranularity(IResource res, DateTime actualTime, GranularityDirection granDir)
-        {
-            TimeSpan granularity = TimeSpan.FromMinutes(res.Granularity);
-            TimeSpan offset = TimeSpan.FromHours(res.Offset);
-
-            // get number of minutes between now and beginning of day (midnight + offset) of passed-in date
-            DateTime dayBegin = new DateTime(actualTime.Year, actualTime.Month, actualTime.Day).Add(offset);
-
-            double repairBeginMinutes = actualTime.Subtract(dayBegin).TotalMinutes;
-
-            if (repairBeginMinutes % granularity.TotalMinutes == 0)
-                return actualTime; //this is a granularity boundary
-            else
-            {
-                int numOfGrans = Convert.ToInt32(repairBeginMinutes / granularity.TotalMinutes);
-                return dayBegin.AddMinutes((numOfGrans + (int)granDir) * granularity.TotalMinutes);
             }
         }
 

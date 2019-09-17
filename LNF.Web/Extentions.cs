@@ -136,7 +136,7 @@ namespace LNF.Web
                     {
                         if (int.TryParse(qs["cid"], out int cid))
                         {
-                            model = CacheManager.Current.GetClient(cid);
+                            model = ServiceProvider.Current.Data.Client.GetClient(cid);
                             if (model != null)
                             {
                                 var user = new GenericPrincipal(new GenericIdentity(model.UserName), model.Roles());
@@ -184,7 +184,7 @@ namespace LNF.Web
                 context.RemoveCacheData();
                 context.RemoveAllSessionValues();
 
-                result = CacheManager.Current.GetClient(username);
+                result = ServiceProvider.Current.Data.Client.GetClient(username);
 
                 context.Session[SessionKeys.CurrentUser] = result; //might be null, that's ok
                 context.Session[SessionKeys.Cache] = Guid.NewGuid().ToString("n");

@@ -18,6 +18,7 @@ namespace LNF.Models.Scheduler
         public bool HasProcessInfo { get; set; }
         public string Notes { get; set; }
         public DateTime Now { get; set; }
+        public int LinkedReservationID { get; set; }
         public int ModifiedByClientID { get; set; }
         public TimeSpan Duration => EndDateTime - BeginDateTime;
     }
