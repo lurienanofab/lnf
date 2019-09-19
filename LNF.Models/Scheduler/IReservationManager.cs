@@ -32,9 +32,9 @@ namespace LNF.Models.Scheduler
         IEnumerable<IReservation> SelectAutoEnd();
         IEnumerable<IReservation> SelectByClient(int clientId, DateTime sd, DateTime ed, bool includeDeleted);
         IEnumerable<IReservation> SelectByDateRange(DateTime sd, DateTime ed, bool includeDeleted);
-        IEnumerable<IReservation> SelectByGroup(int groupId);
         IEnumerable<IReservation> SelectByProcessTech(int processTechId, DateTime sd, DateTime ed, bool includeDeleted);
         IEnumerable<IReservation> SelectByResource(int resourceId, DateTime sd, DateTime ed, bool includeDeleted);
+        IEnumerable<IReservation> SelectByGroup(int groupId);
         IEnumerable<IReservation> SelectEndableReservations(int resourceId);
         IEnumerable<IReservation> SelectExisting(int resourceId);
         IEnumerable<IReservation> SelectHistory(int clientId, DateTime sd, DateTime ed);
@@ -105,5 +105,10 @@ namespace LNF.Models.Scheduler
         void InsertReservationInvitee(int reservationId, int inviteeId);
 
         IEnumerable<IReservationInvitee> ToReservationInviteeList(DataTable dt, int reservationId);
+
+        /// <summary>
+        /// Returns the ReservationIDs in the given array to which the given client was invited.
+        /// </summary>
+        int[] FilterInvitedReservations(int[] reservationIds, int clientId);
     }
 }

@@ -1596,6 +1596,13 @@ namespace LNF.Impl.Scheduler
             Session.Delete(ri);
         }
 
+        public int[] FilterInvitedReservations(int[] reservationIds, int clientId)
+        {
+            var query = Session.Query<ReservationInvitee>().Where(x => reservationIds.Contains(x.Reservation.ReservationID) && x.Invitee.ClientID == clientId);
+            var result = query.Select(x => x.Reservation.ReservationID).ToArray();
+            return result;
+        }
+
         private ReservationHistory InsertReservationHistory(string action, string actionSource, Reservation rsv, int? modifiedByClientId = null, int? linkedReservationId = null)
         {
             // procReservationHistoryInsert [note that @Reservations is a user-defined type (basically a temp table)]
@@ -1814,11 +1821,9 @@ namespace LNF.Impl.Scheduler
             return result;
         }
 
-
-
         private void AddNewRow(IReservationRecurrence rr, DateTime startTime, IList<IReservation> reservations)
         {
-
+            throw new NotImplementedException();
         }
     }
 }

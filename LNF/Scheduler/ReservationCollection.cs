@@ -10,83 +10,86 @@ namespace LNF.Scheduler
     public class ReservationCollection : IEnumerable<IReservation>
     {
         private IList<IReservation> _items = new List<IReservation>();
+        private int[] _invited = null;
 
         public IProvider Provider { get; }
+        public int ClientID { get; }
 
-        public ReservationCollection(IProvider provider)
+        public ReservationCollection(IProvider provider, int clientId)
         {
             Provider = provider;
+            ClientID = clientId;
         }
-
-        public  IEnumerable<IReservation> this[DateTime date] => Find(date, true);
 
         public void Add(IReservation item)
         {
             _items.Add(item);
         }
 
-        public IEnumerable<IReservation> Find(DateTime date, bool includeCancelled)
+        public int[] GetInvited()
         {
-            DateTime d = date.Date;
+            if (_items == null)
+                throw new Exception("No reservations have been selected yet.");
 
-            DateTime sd = d;
-            DateTime ed = d.AddDays(1);
+            if (_invited == null)
+            {
+                var ids = _items.Select(x => x.ReservationID).ToArray();
+                _invited = Provider.Scheduler.Reservation.FilterInvitedReservations(ids, ClientID);
+            }
 
-            IEnumerable<IReservation> result = _items.Where(x => (x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd));
-
-            if (includeCancelled)
-                return result.ToList();
-            else
-                return result.Where(x => x.IsActive).ToList();
+            return _invited;
         }
 
-        public IEnumerable<IReservation> Find(DateTime date, int clientId, bool includeCancelled)
+        public IEnumerable<IReservation> Find(DateTime sd, DateTime ed, bool includeAllClients, bool includeCancelled)
         {
-            var result = Find(date, includeCancelled);
-            return result.Where(x => x.ClientID == clientId).ToList();
+            IList<IReservation> step1;
+            IList<IReservation> step2;
+            IList<IReservation> step3;
+
+            step1 = _items.Where(x => (x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd)).ToList();
+
+            if (includeAllClients)
+                step2 = step1.ToList();
+            else
+                step2 = step1.Where(x => x.ClientID == ClientID || GetInvited().Contains(x.ReservationID)).ToList();
+
+            if (includeCancelled)
+                step3 = step2.ToList();
+            else
+                step3 = step2.Where(x => x.IsActive).ToList();
+
+            return step3;
+        }
+
+        public IEnumerable<IReservation> Find(DateTime d, bool includeAllClients, bool includeCancelled)
+        {
+            DateTime sd = d.Date;
+            DateTime ed = sd.AddDays(1);
+
+            return Find(sd, ed, includeAllClients, includeCancelled);
         }
 
         public void SelectByResource(int resourceId, DateTime sd, DateTime ed)
         {
-            if (sd < Reservation.MinReservationBeginDate)
-                throw new ArgumentOutOfRangeException("sd");
-
-            if (ed > Reservation.MaxReservationEndDate)
-                throw new ArgumentOutOfRangeException("ed");
-
+            AssertDatesAreValid(sd, ed);
             _items = Provider.Scheduler.Reservation.SelectByResource(resourceId, sd, ed, true).ToList();
         }
 
         public void SelectByProcessTech(int processTechId, DateTime sd, DateTime ed)
         {
-            if (sd < Reservation.MinReservationBeginDate)
-                throw new ArgumentOutOfRangeException("sd");
-
-            if (ed > Reservation.MaxReservationEndDate)
-                throw new ArgumentOutOfRangeException("ed");
-
+            AssertDatesAreValid(sd, ed);
             _items = Provider.Scheduler.Reservation.SelectByProcessTech(processTechId, sd, ed, true).ToList();
         }
 
-        public void SelectByClient(int clientId, DateTime sd, DateTime ed)
+        public void SelectByClient(DateTime sd, DateTime ed)
         {
-            if (sd < Reservation.MinReservationBeginDate)
-                throw new ArgumentOutOfRangeException("sd");
-
-            if (ed > Reservation.MaxReservationEndDate)
-                throw new ArgumentOutOfRangeException("ed");
-
-            _items = Provider.Scheduler.Reservation.SelectByClient(clientId, sd, ed, true).ToList();
+            AssertDatesAreValid(sd, ed);
+            _items = Provider.Scheduler.Reservation.SelectByClient(ClientID, sd, ed, true).ToList();
         }
 
         public void SelectByDateRange(DateTime sd, DateTime ed)
         {
-            if (sd < Reservation.MinReservationBeginDate)
-                throw new ArgumentOutOfRangeException("sd");
-
-            if (ed > Reservation.MaxReservationEndDate)
-                throw new ArgumentOutOfRangeException("ed");
-
+            AssertDatesAreValid(sd, ed);
             _items = Provider.Scheduler.Reservation.SelectByDateRange(sd, ed, true).ToList();
         }
 
@@ -98,6 +101,15 @@ namespace LNF.Scheduler
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        private void AssertDatesAreValid(DateTime sd, DateTime ed)
+        {
+            if (sd < Reservation.MinReservationBeginDate)
+                throw new ArgumentOutOfRangeException("sd");
+
+            if (ed > Reservation.MaxReservationEndDate)
+                throw new ArgumentOutOfRangeException("ed");
         }
     }
 }
