@@ -23,12 +23,12 @@ namespace OnlineServices.Api.Mail
 
         public IEnumerable<IMessage> GetMessages(DateTime sd, DateTime ed, int clientId = 0)
         {
-            return Get<List<MessageItem>>("webapi/mail/message/{messageId}", QueryStrings(new { sd, ed, clientId }));
+            return Get<List<MessageItem>>("webapi/mail/message", QueryStrings(new { sd, ed, clientId }));
         }
 
         public IEnumerable<IRecipient> GetRecipients(int messageId)
         {
-            return Get<List<RecipientItem>>("message/{messageId}/recipient", UrlSegments(new { messageId }));
+            return Get<List<RecipientItem>>("webapi/mail/message/{messageId}/recipient", UrlSegments(new { messageId }));
         }
 
         public void SendMessage(SendMessageArgs args)

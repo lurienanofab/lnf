@@ -6,6 +6,7 @@ namespace LNF.Models.Scheduler
     public interface IResourceManager
     {
         IResource GetResource(int resourceId);
+        IEnumerable<IResource> Select();
         IEnumerable<IResource> SelectActive();
         IEnumerable<IResource> SelectByLab(int? labId);
         string GetInterlockStatus(int resourceId);
@@ -23,5 +24,6 @@ namespace LNF.Models.Scheduler
         int[] GetMaxReservationTime(int granularity, int minReservTime);
         int[] GetGracePeriodHour(int granularity, int minReservTime);
         int[] GetGracePeriodMinute(int granularity, int minReservTime, int gracePeriodHour);
+        IEnumerable<IResource> GetResources(IEnumerable<int> ids);
     }
 }

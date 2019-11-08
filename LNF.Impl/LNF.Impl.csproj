@@ -156,6 +156,7 @@
     <Compile Include="Mail\MassEmailManager.cs" />
     <Compile Include="Mappings\Billing\MiscBillingChargeMap.cs" />
     <Compile Include="Mappings\Billing\RoomDataImportLogMap.cs" />
+    <Compile Include="Mappings\Data\InvalidEmailListMap.cs" />
     <Compile Include="Mappings\Ordering\StoreManagerReportItemMap.cs" />
     <Compile Include="Mappings\Scheduler\ReservationInviteeInfoMap.cs" />
     <Compile Include="Mappings\Scheduler\ReservationRecurrenceInfoMap.cs" />

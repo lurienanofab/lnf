@@ -203,36 +203,47 @@ namespace LNF.Billing
             else
                 query = DA.Current.Query<ReservationInfo>().Where(x => x.ResourceID == resourceId && x.ChargeBeginDateTime < range.EndDate && x.ChargeEndDateTime > range.StartDate);
 
-            var result = query.ToList().Select(x => new Reservation()
-            {
-                ReservationID = x.ReservationID,
-                ResourceID = x.ResourceID,
-                ResourceName = x.ResourceName,
-                ProcessTechID = x.ProcessTechID,
-                ProcessTechName = x.ProcessTechName,
-                ClientID = x.ClientID,
-                UserName = x.UserName,
-                DisplayName = ClientItem.GetDisplayName(x.LName, x.FName),
-                ActivityID = x.ActivityID,
-                ActivityName = x.ActivityName,
-                AccountID = x.AccountID,
-                AccountName = x.AccountName,
-                ShortCode = x.ShortCode,
-                IsActive = x.IsActive,
-                IsStarted = x.IsStarted,
-                BeginDateTime = x.BeginDateTime,
-                EndDateTime = x.EndDateTime,
-                ActualBeginDateTime = x.ActualBeginDateTime,
-                ActualEndDateTime = x.ActualEndDateTime,
-                ChargeBeginDateTime = x.ChargeBeginDateTime,
-                ChargeEndDateTime = x.ChargeEndDateTime,
-                LastModifiedOn = x.LastModifiedOn,
-                IsCancelledBeforeCutoff = x.IsCancelledBeforeCutoff,
-                ChargeMultiplier = x.ChargeMultiplier,
-                Cost = ResourceCost.CreateResourceCosts(costs.Where(c => (c.RecordID == x.ResourceID || c.RecordID == 0) && c.ChargeTypeID == x.ChargeTypeID)).FirstOrDefault()
-            }).ToList();
+            var result = query.ToList().Select(x => CreateReservation(x, costs)).ToList();
 
             return result;
+        }
+
+        private static Reservation CreateReservation(ReservationInfo rsv, IEnumerable<ICost> costs)
+        {
+            var filtered = costs.Where(c => (c.RecordID == rsv.ResourceID || c.RecordID == 0) && c.ChargeTypeID == rsv.ChargeTypeID).ToList();
+            IResourceCost rc = ResourceCost.CreateResourceCosts(filtered).FirstOrDefault();
+
+            if (rc == null)
+                throw new Exception($"Cannot determine cost for Resource: [{rsv.ResourceID}] {rsv.ResourceName}");
+
+            return new Reservation()
+            {
+                ReservationID = rsv.ReservationID,
+                ResourceID = rsv.ResourceID,
+                ResourceName = rsv.ResourceName,
+                ProcessTechID = rsv.ProcessTechID,
+                ProcessTechName = rsv.ProcessTechName,
+                ClientID = rsv.ClientID,
+                UserName = rsv.UserName,
+                DisplayName = ClientItem.GetDisplayName(rsv.LName, rsv.FName),
+                ActivityID = rsv.ActivityID,
+                ActivityName = rsv.ActivityName,
+                AccountID = rsv.AccountID,
+                AccountName = rsv.AccountName,
+                ShortCode = rsv.ShortCode,
+                IsActive = rsv.IsActive,
+                IsStarted = rsv.IsStarted,
+                BeginDateTime = rsv.BeginDateTime,
+                EndDateTime = rsv.EndDateTime,
+                ActualBeginDateTime = rsv.ActualBeginDateTime,
+                ActualEndDateTime = rsv.ActualEndDateTime,
+                ChargeBeginDateTime = rsv.ChargeBeginDateTime,
+                ChargeEndDateTime = rsv.ChargeEndDateTime,
+                LastModifiedOn = rsv.LastModifiedOn,
+                IsCancelledBeforeCutoff = rsv.IsCancelledBeforeCutoff,
+                ChargeMultiplier = rsv.ChargeMultiplier,
+                Cost = rc
+            };
         }
 
         public class Reservation
@@ -276,6 +287,7 @@ namespace LNF.Billing
                 {
                     PriorityGroup = rsv.PriorityGroup,
                     ReservationID = rsv.ReservationID,
+                    DisplayName = rsv.DisplayName,
                     IsStarted = rsv.IsStarted,
                     IsActive = rsv.IsActive,
                     IsRepair = rsv.ActivityID == repairActivityId,
@@ -292,6 +304,7 @@ namespace LNF.Billing
 
             public int PriorityGroup { get; private set; }
             public int ReservationID { get; private set; }
+            public string DisplayName { get; private set; }
             public bool IsStarted { get; private set; }
             public bool IsActive { get; private set; }
             public bool IsRepair { get; private set; }

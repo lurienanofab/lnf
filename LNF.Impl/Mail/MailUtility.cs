@@ -21,20 +21,21 @@ namespace LNF.Impl.Mail
 
         public static void Send(SendMessageArgs args)
         {
-            MailMessage mm = new MailMessage { From = GetFromAddress(args) };
-
-            AddAddresses(mm.To, args.To);
-            AddAddresses(mm.CC, args.Cc);
-            AddAddresses(mm.Bcc, args.Bcc);
-
-            mm.Subject = args.Subject;
-            mm.Body = args.Body;
-            mm.IsBodyHtml = args.IsHtml;
-
-            AddAttachments(mm.Attachments, args.Attachments);
-
             using (var smtp = GetSmtpClient())
+            using (var mm = new MailMessage { From = GetFromAddress(args) })
+            {
+                AddAddresses(mm.To, args.To);
+                AddAddresses(mm.CC, args.Cc);
+                AddAddresses(mm.Bcc, args.Bcc);
+
+                mm.Subject = args.Subject;
+                mm.Body = args.Body;
+                mm.IsBodyHtml = args.IsHtml;
+
+                AddAttachments(mm.Attachments, args.Attachments);
+
                 smtp.Send(mm);
+            }
         }
 
         public static SmtpClient GetSmtpClient()

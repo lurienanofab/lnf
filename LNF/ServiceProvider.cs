@@ -6,6 +6,7 @@ using LNF.Models.Billing;
 using LNF.Models.Data;
 using LNF.Models.Mail;
 using LNF.Models.PhysicalAccess;
+using LNF.Models.Reporting;
 using LNF.Models.Scheduler;
 using LNF.Models.Worker;
 using LNF.Repository;
@@ -58,6 +59,7 @@ namespace LNF
         public IPhysicalAccessService PhysicalAccess => Resolve<IPhysicalAccessService>();
         public ISchedulerService Scheduler => Resolve<ISchedulerService>();
         public IWorkerService Worker => Resolve<IWorkerService>();
+        public IReportingService Reporting => Resolve<IReportingService>();
 
         public ISchedulerRepository SchedulerRepository => Resolve<ISchedulerRepository>();
         public IReservationManager ReservationManager => Resolve<IReservationManager>();

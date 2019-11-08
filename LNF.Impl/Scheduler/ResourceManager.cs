@@ -21,11 +21,29 @@ namespace LNF.Impl.Scheduler
             return Session.Single<ResourceInfo>(resourceId).CreateModel<IResource>();
         }
 
+        public IEnumerable<IResource> GetResources(IEnumerable<int> ids)
+        {
+            return Session.Query<ResourceInfo>().Where(x => ids.Contains(x.ResourceID)).CreateModels<IResource>();
+        }
+
+        public IEnumerable<IResource> Select()
+        {
+            return Session.Query<ResourceInfo>()
+                .OrderBy(x => x.BuildingName)
+                .ThenBy(x => x.LabName)
+                .ThenBy(x => x.ProcessTechName)
+                .ThenBy(x => x.ResourceName)
+                .CreateModels<IResource>();
+        }
+
         public IEnumerable<IResource> SelectActive()
         {
             return Session.Query<ResourceInfo>()
                 .Where(x => x.ResourceIsActive)
-                .OrderBy(x => x.ResourceName)
+                .OrderBy(x => x.BuildingName)
+                .ThenBy(x => x.LabName)
+                .ThenBy(x => x.ProcessTechName)
+                .ThenBy(x => x.ResourceName)
                 .CreateModels<IResource>();
         }
 

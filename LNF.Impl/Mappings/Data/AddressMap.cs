@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using FluentNHibernate.Mapping;
 using LNF.Repository.Data;
-using FluentNHibernate.Mapping;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class AddressMap : ClassMap<Address>
+    internal class AddressMap : ClassMap<Address>
     {
-        public AddressMap()
+        internal AddressMap()
         {
             Schema("sselData.dbo");
             Id(x => x.AddressID);

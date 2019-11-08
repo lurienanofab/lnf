@@ -45,7 +45,7 @@ namespace LNF.Reporting
             return result;
         }
 
-        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, ReportingClientItem manager, bool includeRemote)
+        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, IReportingClient manager, bool includeRemote)
         {
             return CreateManagerUsageSummary(period, manager.ClientID, manager.UserName, manager.LName, manager.FName, includeRemote);
         }
@@ -56,7 +56,7 @@ namespace LNF.Reporting
             return CreateManagerUsageSummary(period, clientId, username, lname, fname, items);
         }
 
-        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, ReportingClientItem manager, IEnumerable<ManagerUsageSummaryItem> items)
+        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, IReportingClient manager, IEnumerable<ManagerUsageSummaryItem> items)
         {
             return CreateManagerUsageSummary(period, manager.ClientID, manager.UserName, manager.LName, manager.FName, items);
         }
@@ -238,7 +238,7 @@ namespace LNF.Reporting
             return sort;
         }
 
-        public static UserUsageSummary CreateUserUsageSummary(DateTime period, Models.Reporting.ReportingClientItem client)
+        public static UserUsageSummary CreateUserUsageSummary(DateTime period, IReportingClient client)
         {
             bool showDisclaimer = false;
 

@@ -391,12 +391,12 @@ namespace OnlineServices.Api
 
         protected ParameterCollection UrlSegments(IDictionary<object, object> dict)
         {
-            return Parameters(dict, ParameterType.UrlSegment, new CreateParameterOptions() { SkipNull = false });
+            return Parameters(dict, ParameterType.UrlSegment, new CreateParameterOptions { SkipNull = false });
         }
 
         protected ParameterCollection UrlSegments(object parameters)
         {
-            return Parameters(parameters, ParameterType.UrlSegment, new CreateParameterOptions() { SkipNull = false });
+            return Parameters(parameters, ParameterType.UrlSegment, new CreateParameterOptions { SkipNull = false });
         }
 
         protected ParameterCollection Parameters(object parameters, ParameterType type, CreateParameterOptions opts)

@@ -1,4 +1,5 @@
 ﻿using LNF.Models.Data;
+using LNF.Models.Mail;
 using LNF.Repository;
 using LNF.Repository.Data;
 
@@ -65,6 +66,7 @@ namespace LNF.Impl.ModelFactory
             Map<News, INews>(x => MapNews(x));
             Map<Cost, CostItem, ICost>();
             Map<Holiday, HolidayItem, IHoliday>();
+            Map<InvalidEmailList, InvalidEmailItem, IInvalidEmail>();
         }
     }
 }

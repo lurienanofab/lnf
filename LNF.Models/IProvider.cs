@@ -2,6 +2,7 @@
 using LNF.Models.Data;
 using LNF.Models.Mail;
 using LNF.Models.PhysicalAccess;
+using LNF.Models.Reporting;
 using LNF.Models.Scheduler;
 using LNF.Models.Worker;
 
@@ -15,6 +16,7 @@ namespace LNF.Models
         IPhysicalAccessService PhysicalAccess { get; }
         ISchedulerService Scheduler { get; }
         IWorkerService Worker { get; }
+        IReportingService Reporting { get; }
         bool IsProduction();
     }
 }

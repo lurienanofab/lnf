@@ -138,6 +138,7 @@
     <Compile Include="Repository\Billing\Extensions.cs" />
     <Compile Include="Repository\Billing\MiscBillingCharge.cs" />
     <Compile Include="Repository\Billing\RoomDataImportLog.cs" />
+    <Compile Include="Repository\Data\InvalidEmailList.cs" />
     <Compile Include="Repository\IDataCommand.cs" />
     <Compile Include="Repository\IManager.cs" />
     <Compile Include="Repository\ManagerBase.cs" />

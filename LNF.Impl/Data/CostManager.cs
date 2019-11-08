@@ -80,8 +80,13 @@ namespace LNF.Impl.Data
 
         public IEnumerable<ICost> FindToolCosts(int resourceId, DateTime? cutoff = null, int? chargeTypeId = null)
         {
+            // This method takes a non-null resourceId so zero means 'all tools' but
+            // FindCosts takes a null resourceId so null means 'all tools', so we
+            // have to convert resourceId to a nullable variable.
+            int? rid = resourceId > 0 ? resourceId : default(int?);
+
             string[] tables = new[] { "ToolCost", "ToolOvertimeCost" };
-            var result = FindCosts(tables, cutoff, resourceId, chargeTypeId);
+            var result = FindCosts(tables, cutoff, rid, chargeTypeId);
             return result;
         }
 

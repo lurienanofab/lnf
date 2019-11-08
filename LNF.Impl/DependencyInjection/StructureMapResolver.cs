@@ -29,6 +29,8 @@ using LNF.Repository;
 using LNF.Scheduler;
 using StructureMap;
 using System;
+using LNF.Models.Reporting;
+using LNF.Impl.Reporting;
 
 namespace LNF.Impl.DependencyInjection
 {
@@ -92,6 +94,10 @@ namespace LNF.Impl.DependencyInjection
                 _.For<IMailService>().Singleton().Use<MailService>();
                 _.For<IMassEmailManager>().Singleton().Use<MassEmailManager>();
                 _.For<IAttachmentManager>().Singleton().Use<AttachmentManager>();
+
+                // Reporting API
+                _.For<IReportingService>().Singleton().Use<ReportingService>();
+                _.For<IClientItemManager>().Singleton().Use<ClientItemManager>();
 
                 _.For<IAdministrativeHelper>().Singleton().Use<AdministrativeHelper>();
                 _.For<IReadToolDataManager>().Singleton().Use<ReadToolDataManager>();

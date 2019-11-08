@@ -481,5 +481,10 @@ namespace OnlineServices.Api.Scheduler
         {
             throw new NotImplementedException();
         }
+
+        public int[] FilterInvitedReservations(int[] reservationIds, int clientId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
