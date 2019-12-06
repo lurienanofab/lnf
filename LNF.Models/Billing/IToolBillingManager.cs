@@ -2,6 +2,7 @@
 using LNF.Models.Scheduler;
 using System;
 using System.Collections.Generic;
+using System.Data;
 
 namespace LNF.Models.Billing
 {
@@ -21,18 +22,19 @@ namespace LNF.Models.Billing
         void CalculateReservationFee(IToolBilling item);
         void CalculateUsageFeeCharged(IToolBilling item);
         IEnumerable<IToolDataRaw> DataFiltered(DateTime sd, DateTime ed, int clientId, int resourceId);
-        IEnumerable<IToolDataRaw> DataRaw(DateTime period, IEnumerable<IReservation> reservations);
+        IEnumerable<IToolDataRaw> DataRaw(DateTime period, IEnumerable<IToolBillingReservation> reservations);
         IEnumerable<IToolBilling> ForSUBReport(DateTime StartPeriod, DateTime EndPeriod, IList<SubLineItem> lineItems);
         int MinimumDaysForApportionment(IClient co, IRoom r, DateTime period);
         decimal RatePeriodCharge(IToolBilling item, decimal duration);
         IEnumerable<IToolBilling> SelectToolBilling(DateTime period);
         IEnumerable<IToolBilling> SelectToolBilling(DateTime period, int clientId);
-        int UpdateAccountByReservationToolBilling(IReservation rsv);
-        int UpdateAccountByReservationToolData(IReservation rsv);
-        int UpdateAccountByReservationToolDataClean(IReservation rsv);
+        int UpdateAccountByReservationToolBilling(IToolBillingReservation rsv);
+        int UpdateAccountByReservationToolData(IToolBillingReservation rsv);
+        int UpdateAccountByReservationToolDataClean(IToolBillingReservation rsv);
         int UpdateBillingType(int clientId, int accountId, int billingTypeId, DateTime period);
-        int UpdateChargeMultiplierByReservationToolBilling(IReservation rsv);
-        int UpdateChargeMultiplierByReservationToolData(IReservation rsv);
-        int UpdateChargeMultiplierByReservationToolDataClean(IReservation rsv);
+        int UpdateChargeMultiplierByReservationToolBilling(IToolBillingReservation rsv);
+        int UpdateChargeMultiplierByReservationToolData(IToolBillingReservation rsv);
+        int UpdateChargeMultiplierByReservationToolDataClean(IToolBillingReservation rsv);
+        IEnumerable<IToolBillingReservation> SelectReservations(DateTime startDate, DateTime endDate, int resourceId);
     }
 }

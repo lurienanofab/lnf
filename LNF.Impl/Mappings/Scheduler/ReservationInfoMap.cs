@@ -45,9 +45,6 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.LabDisplayName);
             Map(x => x.LabDescription);
             Map(x => x.LabIsActive);
-            Map(x => x.RoomID);
-            Map(x => x.RoomName);
-            Map(x => x.RoomDisplayName);
             Map(x => x.BuildingID);
             Map(x => x.BuildingName);
             Map(x => x.BuildingDescription);
@@ -58,8 +55,6 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.MName);
             Map(x => x.FName);
             Map(x => x.Privs);
-            Map(x => x.Phone);
-            Map(x => x.Email);
             Map(x => x.AccountID);
             Map(x => x.AccountName);
             Map(x => x.ShortCode);
@@ -77,11 +72,7 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.ChargeBeginDateTime);
             Map(x => x.ChargeEndDateTime);
             Map(x => x.ClientIDBegin);
-            Map(x => x.ClientBeginLName);
-            Map(x => x.ClientBeginFName);
             Map(x => x.ClientIDEnd);
-            Map(x => x.ClientEndLName);
-            Map(x => x.ClientEndFName);
             Map(x => x.CreatedOn);
             Map(x => x.LastModifiedOn);
             Map(x => x.Duration);

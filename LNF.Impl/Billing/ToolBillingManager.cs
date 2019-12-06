@@ -606,5 +606,89 @@ namespace LNF.Impl.Billing
             else
                 return Session.Query<Repository.Billing.ToolBilling>();
         }
+
+        public IEnumerable<IToolDataRaw> DataRaw(DateTime period, IEnumerable<IToolBillingReservation> reservations)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int UpdateAccountByReservationToolBilling(IToolBillingReservation rsv)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int UpdateAccountByReservationToolData(IToolBillingReservation rsv)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int UpdateAccountByReservationToolDataClean(IToolBillingReservation rsv)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int UpdateChargeMultiplierByReservationToolBilling(IToolBillingReservation rsv)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int UpdateChargeMultiplierByReservationToolData(IToolBillingReservation rsv)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int UpdateChargeMultiplierByReservationToolDataClean(IToolBillingReservation rsv)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IToolBillingReservation> SelectReservations(DateTime startDate, DateTime endDate, int resourceId)
+        {
+            var dt = DA.Command(CommandType.StoredProcedure)
+                .Param("Action", "SelectReservationsForTransferredDuration")
+                .Param("StartDate", startDate)
+                .Param("EndDate", endDate)
+                .Param("ResourceID", resourceId > 0, resourceId)
+                .FillDataTable("sselScheduler.dbo.procReservationSelect");
+
+            var result = new List<ToolBillingReservation>();
+
+            foreach(DataRow dr in dt.Rows)
+            {
+                var item = new ToolBillingReservation
+                {
+                    ReservationID = dr.Field<int>("ReservationID"),
+                    ResourceID = dr.Field<int>("ResourceID"),
+                    ResourceName = dr.Field<string>("ResourceName"),
+                    ProcessTechID = dr.Field<int>("ProcessTechID"),
+                    ProcessTechName = dr.Field<string>("ProcessTechName"),
+                    ClientID = dr.Field<int>("ClientID"),
+                    UserName = dr.Field<string>("UserName"),
+                    LName = dr.Field<string>("LName"),
+                    FName = dr.Field<string>("FName"),
+                    ActivityID = dr.Field<int>("ActivityID"),
+                    ActivityName = dr.Field<string>("ActivityName"),
+                    AccountID = dr.Field<int>("AccountID"),
+                    AccountName = dr.Field<string>("AccountName"),
+                    ShortCode = dr.Field<string>("ShortCode"),
+                    ChargeTypeID = dr.Field<int>("ChargeTypeID"),
+                    IsActive = dr.Field<bool>("IsActive"),
+                    IsStarted = dr.Field<bool>("IsStarted"),
+                    BeginDateTime = dr.Field<DateTime>("BeginDateTime"),
+                    EndDateTime = dr.Field<DateTime>("EndDateTime"),
+                    ActualBeginDateTime = dr.Field<DateTime?>("ActualBeginDateTime"),
+                    ActualEndDateTime = dr.Field<DateTime?>("ActualEndDateTime"),
+                    CancelledDateTime = dr.Field<DateTime?>("CancelledDateTime"),
+                    ChargeBeginDateTime = dr.Field<DateTime>("ChargeBeginDateTime"),
+                    ChargeEndDateTime = dr.Field<DateTime>("ChargeEndDateTime"),
+                    LastModifiedOn = dr.Field<DateTime>("LastModifiedOn"),
+                    ChargeMultiplier = dr.Field<double>("ChargeMultiplier")
+                };
+
+                result.Add(item);
+            }
+
+            return result;
+        }
     }
 }

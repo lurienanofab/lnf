@@ -13,8 +13,6 @@ namespace LNF.Models.Scheduler
         public string MName { get; set; }
         public string FName { get; set; }
         public string DisplayName => ClientItem.GetDisplayName(LName, FName);
-        public string Phone { get; set; }
-        public string Email { get; set; }
         public ClientPrivilege Privs { get; set; }
         public int AccountID { get; set; }
         public string AccountName { get; set; }
@@ -34,11 +32,7 @@ namespace LNF.Models.Scheduler
         public DateTime ChargeBeginDateTime => GetChargeBeginDateTime(BeginDateTime, ActualBeginDateTime);
         public DateTime ChargeEndDateTime => GetChargeEndDateTime(EndDateTime, ActualEndDateTime);
         public int? ClientIDBegin { get; set; }
-        public string ClientBeginLName { get; set; }
-        public string ClientBeginFName { get; set; }
         public int? ClientIDEnd { get; set; }
-        public string ClientEndLName { get; set; }
-        public string ClientEndFName { get; set; }
         public DateTime CreatedOn { get; set; }
         public DateTime LastModifiedOn { get; set; }
         public double Duration { get; set; }

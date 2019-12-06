@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Data;
+﻿using FluentNHibernate.Mapping;
+using LNF.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {

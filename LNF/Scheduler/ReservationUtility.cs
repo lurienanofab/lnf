@@ -695,11 +695,14 @@ namespace LNF.Scheduler
                 int clientId = item.ClientID;
                 int accountId = item.AccountID;
 
-                if (!string.IsNullOrEmpty(item.Phone))
-                    toolTip += string.Format("<div><b>Phone: {0}</b></div>", item.Phone);
+                string phone = "?phone?";
+                string email = "?email?";
 
-                if (!string.IsNullOrEmpty(item.Email))
-                    toolTip += string.Format("<div><b>Email: {0}</b></div>", item.Email);
+                if (!string.IsNullOrEmpty(phone))
+                    toolTip += string.Format("<div><b>Phone: {0}</b></div>", phone);
+
+                if (!string.IsNullOrEmpty(email))
+                    toolTip += string.Format("<div><b>Email: {0}</b></div>", email);
             }
 
             // reservations in the past should have actual times, but may not - need to check for this

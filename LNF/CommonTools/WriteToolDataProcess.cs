@@ -3,7 +3,6 @@ using LNF.Models.Billing.Process;
 using LNF.Models.Data;
 using LNF.Models.Scheduler;
 using LNF.Repository;
-using LNF.Scheduler;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -28,6 +27,13 @@ namespace LNF.CommonTools
 
         private DataSet _ds;
 
+        public WriteToolDataProcess(DateTime period, int clientId = 0, int resourceId = 0)
+        {
+            Period = period;
+            ClientID = clientId;
+            ResourceID = resourceId;
+        }
+
         protected override WriteToolDataProcessResult CreateResult()
         {
             return new WriteToolDataProcessResult
@@ -36,14 +42,6 @@ namespace LNF.CommonTools
                 ClientID = ClientID,
                 ResourceID = ResourceID
             };
-        }
-
-        // force using the static constructor
-        public WriteToolDataProcess(DateTime period, int clientId = 0, int resourceId = 0)
-        {
-            Period = period;
-            ClientID = clientId;
-            ResourceID = resourceId;
         }
 
         public override int DeleteExisting()
@@ -549,6 +547,7 @@ namespace LNF.CommonTools
             //adjust ToolData to add the days and months data
             return DA.Command()
                 .Param("Period", Period)
+                .Param("ClientID", ClientID > 0, ClientID)
                 .ExecuteNonQuery("dbo.ToolData_Adjust").Value;
         }
 
@@ -556,40 +555,47 @@ namespace LNF.CommonTools
         {
             var costs = ServiceProvider.Current.Data.Cost.FindToolCosts(ResourceID, range.EndDate);
 
-            var dt = DA.Command(CommandType.Text)
-                .Param("sDate", range.StartDate)
-                .Param("eDate", range.EndDate)
-                .Param("ResourceID", ResourceID > 0, ResourceID)
-                .FillDataTable("SELECT * FROM sselScheduler.dbo.v_ReservationInfo WHERE ChargeBeginDateTime < @eDate AND ChargeEndDateTime > @sDate");
+            var reservations = ServiceProvider.Current.Billing.Tool.SelectReservations(range.StartDate, range.EndDate, ResourceID);
 
-            var result = dt.AsEnumerable().Select(x => new ReservationDateRange.Reservation
+            var result = new List<ReservationDateRange.Reservation>();
+
+            foreach (var r in reservations)
             {
-                ReservationID = x.Field<int>("ReservationID"),
-                ResourceID = x.Field<int>("ResourceID"),
-                ResourceName = x.Field<string>("ResourceName"),
-                ProcessTechID = x.Field<int>("ProcessTechID"),
-                ProcessTechName = x.Field<string>("ProcessTechName"),
-                ClientID = x.Field<int>("ClientID"),
-                UserName = x.Field<string>("UserName"),
-                DisplayName = ClientItem.GetDisplayName(x.Field<string>("LName"), x.Field<string>("FName")),
-                ActivityID = x.Field<int>("ActivityID"),
-                ActivityName = x.Field<string>("ActivityName"),
-                AccountID = x.Field<int>("AccountID"),
-                AccountName = x.Field<string>("AccountName"),
-                ShortCode = x.Field<string>("ShortCode"),
-                IsActive = x.Field<bool>("IsActive"),
-                IsStarted = x.Field<bool>("IsStarted"),
-                BeginDateTime = x.Field<DateTime>("BeginDateTime"),
-                EndDateTime = x.Field<DateTime>("EndDateTime"),
-                ActualBeginDateTime = x.Field<DateTime?>("ActualBeginDateTime"),
-                ActualEndDateTime = x.Field<DateTime?>("ActualEndDateTime"),
-                ChargeBeginDateTime = x.Field<DateTime>("ChargeBeginDateTime"),
-                ChargeEndDateTime = x.Field<DateTime>("ChargeEndDateTime"),
-                LastModifiedOn = x.Field<DateTime>("LastModifiedOn"),
-                IsCancelledBeforeCutoff = ReservationItem.GetIsCancelledBeforeCutoff(x.Field<DateTime?>("CancelledDateTime"), x.Field<DateTime>("BeginDateTime")),
-                ChargeMultiplier = x.Field<double>("ChargeMultiplier"),
-                Cost = ResourceCost.CreateResourceCosts(costs.Where(c => (c.RecordID == x.Field<int>("ResourceID") || c.RecordID == 0) && c.ChargeTypeID == x.Field<int>("ChargeTypeID"))).FirstOrDefault()
-            }).ToList();
+                string displayName = ClientItem.GetDisplayName(r.LName, r.FName);
+                bool isCancelledBeforeCutoff = ReservationItem.GetIsCancelledBeforeCutoff(r.CancelledDateTime, r.BeginDateTime);
+                IResourceCost cost = ResourceCost.CreateResourceCosts(costs.Where(c => (c.RecordID == r.ResourceID || c.RecordID == 0) && c.ChargeTypeID == r.ChargeTypeID)).FirstOrDefault();
+
+                var item = new ReservationDateRange.Reservation
+                {
+                    ReservationID = r.ReservationID,
+                    ResourceID = r.ResourceID,
+                    ResourceName = r.ResourceName,
+                    ProcessTechID = r.ProcessTechID,
+                    ProcessTechName = r.ProcessTechName,
+                    ClientID = r.ClientID,
+                    UserName = r.UserName,
+                    DisplayName = displayName,
+                    ActivityID = r.ActivityID,
+                    ActivityName = r.ActivityName,
+                    AccountID = r.AccountID,
+                    AccountName = r.AccountName,
+                    ShortCode = r.ShortCode,
+                    IsActive = r.IsActive,
+                    IsStarted = r.IsStarted,
+                    BeginDateTime = r.BeginDateTime,
+                    EndDateTime = r.EndDateTime,
+                    ActualBeginDateTime = r.ActualBeginDateTime,
+                    ActualEndDateTime = r.ActualEndDateTime,
+                    ChargeBeginDateTime = r.ChargeBeginDateTime,
+                    ChargeEndDateTime = r.ChargeEndDateTime,
+                    LastModifiedOn = r.LastModifiedOn,
+                    IsCancelledBeforeCutoff = isCancelledBeforeCutoff,
+                    ChargeMultiplier = r.ChargeMultiplier,
+                    Cost = cost
+                };
+
+                result.Add(item);
+            }
 
             return result;
         }

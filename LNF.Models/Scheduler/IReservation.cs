@@ -11,8 +11,6 @@ namespace LNF.Models.Scheduler
         string MName { get; set; }
         string FName { get; set; }
         string DisplayName { get; }
-        string Phone { get; set; }
-        string Email { get; set; }
         int AccountID { get; set; }
         string AccountName { get; set; }
         string ShortCode { get; set; }
@@ -31,11 +29,7 @@ namespace LNF.Models.Scheduler
         DateTime ChargeBeginDateTime { get; }
         DateTime ChargeEndDateTime { get; }
         int? ClientIDBegin { get; set; }
-        string ClientBeginLName { get; set; }
-        string ClientBeginFName { get; set; }
         int? ClientIDEnd { get; set; }
-        string ClientEndLName { get; set; }
-        string ClientEndFName { get; set; }
         DateTime CreatedOn { get; set; }
         DateTime LastModifiedOn { get; set; }
         double Duration { get; set; }

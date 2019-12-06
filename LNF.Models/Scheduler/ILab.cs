@@ -2,13 +2,10 @@
 {
     public interface ILab : IBuilding
     {
+        int LabID { get; set; }
+        string LabName { get; set; }
         string LabDescription { get; set; }
         string LabDisplayName { get; set; }
-        int LabID { get; set; }
         bool LabIsActive { get; set; }
-        string LabName { get; set; }
-        string RoomDisplayName { get; set; }
-        int RoomID { get; set; }
-        string RoomName { get; set; }
     }
 }

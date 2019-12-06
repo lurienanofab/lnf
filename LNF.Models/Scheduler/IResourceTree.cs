@@ -3,7 +3,7 @@ using System;
 
 namespace LNF.Models.Scheduler
 {
-    public interface IResourceTree : IClient, IResource, IAuthorized
+    public interface IResourceTree : IResource, IAuthorized, IPrivileged
     {
         int CurrentReservationID { get; set; }
         int CurrentClientID { get; set; }
@@ -21,7 +21,7 @@ namespace LNF.Models.Scheduler
         DateTime? Expiration { get; set; }
         int? EmailNotify { get; set; }
         int? PracticeResEmailNotify { get; set; }
+        int ResourceClientClientID { get; set; }
         bool HasEffectiveAuth(ClientAuthLevel auths);
-
     }
 }

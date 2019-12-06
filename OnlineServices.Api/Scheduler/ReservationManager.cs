@@ -486,5 +486,15 @@ namespace OnlineServices.Api.Scheduler
         {
             throw new NotImplementedException();
         }
+
+        public DateTime? GetLastRepairEndTime(int resourceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public double GetReservableMinutes(int resourceId, int clientId, TimeSpan reservFence, TimeSpan maxAlloc, DateTime now)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

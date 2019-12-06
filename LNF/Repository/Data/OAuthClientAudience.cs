@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml.Linq;
-using LNF.Repository;
 
-namespace LNF.Data
+namespace LNF.Repository.Data
 {
     public class OAuthClientAudience : IDataItem
     {
@@ -30,6 +28,28 @@ namespace LNF.Data
         public virtual bool IsOrigin(Uri uri)
         {
             return Configuration.Element("origins").Elements("add").Any(x => x.Attribute("key").Value == "uri" && x.Attribute("value").Value == uri.ToString());
+        }
+
+        public virtual string[] Redirects()
+        {
+            return Configuration
+                 .Element("root")
+                 .Element("redirects")
+                 .Descendants("add")
+                 .Where(x => x.Attribute("key").Value == "uri")
+                 .Select(x => x.Attribute("value").Value)
+                 .ToArray();
+        }
+
+        public virtual string[] Origins()
+        {
+            return Configuration
+                 .Element("root")
+                 .Element("origins")
+                 .Descendants("add")
+                 .Where(x => x.Attribute("key").Value == "uri")
+                 .Select(x => x.Attribute("value").Value)
+                 .ToArray();
         }
 
         public static XElement CreateConfiguration(IEnumerable<string> redirectUris, IEnumerable<string> originUris)

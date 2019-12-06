@@ -3,7 +3,7 @@ using System;
 
 namespace LNF.Models.Scheduler
 {
-    public class ResourceTreeItem : ClientItem, IResourceTree
+    public class ResourceTreeItem : IResourceTree
     {
         public int CurrentReservationID { get; set; }
         public int CurrentClientID { get; set; }
@@ -51,25 +51,31 @@ namespace LNF.Models.Scheduler
         public string ProcessTechDescription { get; set; }
         public bool ProcessTechIsActive { get; set; }
         public string ProcessTechName { get; set; }
+        public int LabID { get; set; }
+        public string LabName { get; set; }
         public string LabDescription { get; set; }
         public string LabDisplayName { get; set; }
-        public int LabID { get; set; }
         public bool LabIsActive { get; set; }
-        public string LabName { get; set; }
-        public string RoomDisplayName { get; set; }
-        public int RoomID { get; set; }
-        public string RoomName { get; set; }
         public string BuildingDescription { get; set; }
         public int BuildingID { get; set; }
         public bool BuildingIsActive { get; set; }
         public string BuildingName { get; set; }
+        public int ClientID { get; set; }
         public ClientAuthLevel AuthLevel { get; set; }
-        public bool HasAuth(ClientAuthLevel auths) => ResourceClientItem.HasAuth(AuthLevel, auths);
-        public bool HasEffectiveAuth(ClientAuthLevel auths) => ResourceClientItem.HasAuth(EffectiveAuthLevel, auths);
-        public bool HasState(ResourceState state) => ResourceItem.HasState(State, state);
-        public bool IsEveryone() => ResourceClientItem.IsEveryone(ClientID);
-        public override string ToString() => ResourceDisplayName;
-        public string GetResourceName(ResourceNamePartial part) => ResourceItem.GetResourceName(this, part);
+        public string UserName { get; set; }
+        public ClientPrivilege Privs { get; set; }
+        public int ResourceClientClientID { get; set; }
+
         public DateTime GetNextGranularity(DateTime now, GranularityDirection dir) => ResourceItem.GetNextGranularity(Granularity, Offset, now, dir);
+
+        public string GetResourceName(ResourceNamePartial part) => ResourceItem.GetResourceName(this, part);
+
+        public bool HasAuth(ClientAuthLevel auths) => ResourceClientItem.HasAuth(AuthLevel, auths);
+
+        public bool HasEffectiveAuth(ClientAuthLevel auths) => ResourceClientItem.HasAuth(EffectiveAuthLevel, auths);
+
+        public bool HasState(ResourceState state) => ResourceItem.HasState(State, state);
+
+        public bool IsEveryone() => ResourceClientItem.IsEveryone(ResourceClientClientID);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using LNF.Cache;
+using LNF.Models.Data;
 using LNF.Models.Scheduler;
 using LNF.Scheduler;
 using System;
@@ -7,7 +8,7 @@ using System.Linq;
 
 namespace LNF.Repository.Scheduler
 {
-    public class ResourceTree : IDataItem
+    public class ResourceTree : IResourceTree, IDataItem
     {
         public virtual int ResourceID { get; set; }
         public virtual string ResourceName { get; set; }
@@ -40,14 +41,15 @@ namespace LNF.Repository.Scheduler
         public virtual int ReservFence { get; set; }
         public virtual int MaxAlloc { get; set; }
         public virtual int MinCancelTime { get; set; }
-        public virtual int AutoEnd { get; set; }
-        public virtual int UnloadTime { get; set; }
+        public virtual int ResourceAutoEnd { get; set; }
+        public virtual int? UnloadTime { get; set; }
         public virtual int Granularity { get; set; }
         public virtual int Offset { get; set; }
         public virtual bool IsReady { get; set; }
         public virtual int MinReservTime { get; set; }
         public virtual int MaxReservTime { get; set; }
         public virtual int GracePeriod { get; set; }
+        public virtual int? OTFSchedTime { get; set; }
         public virtual int CurrentReservationID { get; set; }
         public virtual int CurrentClientID { get; set; }
         public virtual int CurrentActivityID { get; set; }
@@ -60,7 +62,7 @@ namespace LNF.Repository.Scheduler
         public virtual string CurrentNotes { get; set; }
         public virtual int ClientID { get; set; }
         public virtual string UserName { get; set; }
-        public virtual int Privs { get; set; }
+        public virtual ClientPrivilege Privs { get; set; }
         public virtual int Communities { get; set; }
         public virtual string DisplayName { get; set; }
         public virtual bool ClientActive { get; set; }
@@ -75,6 +77,8 @@ namespace LNF.Repository.Scheduler
         public virtual DateTime? Expiration { get; set; }
         public virtual int? EmailNotify { get; set; }
         public virtual int? PracticeResEmailNotify { get; set; }
+        public virtual int ResourceClientClientID { get; set; }
+        public virtual string ResourceDisplayName => ResourceItem.GetResourceDisplayName(ResourceName, ResourceID);
 
         public override bool Equals(object obj)
         {
@@ -87,10 +91,7 @@ namespace LNF.Repository.Scheduler
             return new { ResourceID, ClientID }.GetHashCode();
         }
 
-        public override string ToString()
-        {
-            return ResourceItem.GetResourceDisplayName(ResourceName, ResourceID);
-        }
+        public override string ToString() => ResourceDisplayName;
 
         public virtual IEnumerable<ResourceClientInfo> GetToolEngineers()
         {
@@ -103,5 +104,19 @@ namespace LNF.Repository.Scheduler
         {
             return CacheManager.Current.GetResourceCost(ResourceID, chargeTypeId);
         }
+
+        public virtual bool HasEffectiveAuth(ClientAuthLevel auths) => ResourceClientItem.HasAuth(EffectiveAuthLevel, auths);
+
+        public virtual bool IsStaff() => this.HasPriv(ClientPrivilege.Staff);
+
+        public virtual bool HasState(ResourceState state) => ResourceItem.HasState(State, state);
+
+        public virtual string GetResourceName(ResourceNamePartial part) => ResourceItem.GetResourceName(this, part);
+
+        public virtual DateTime GetNextGranularity(DateTime now, GranularityDirection dir) => ResourceItem.GetNextGranularity(Granularity, Offset, now, dir);
+
+        public virtual bool HasAuth(ClientAuthLevel auths) => ResourceClientItem.HasAuth(AuthLevel, auths);
+
+        public virtual bool IsEveryone() => ResourceClientItem.IsEveryone(ClientID);
     }
 }

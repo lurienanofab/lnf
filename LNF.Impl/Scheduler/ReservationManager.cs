@@ -695,7 +695,7 @@ namespace LNF.Impl.Scheduler
             return result;
         }
 
-        public DateTime? SelectLastRepairEndTime(int resourceId)
+        public DateTime? GetLastRepairEndTime(int resourceId)
         {
             // This is all that happens in procReservationSelect @Action = 'SelectLastRepairReservEndTime'
 
@@ -763,8 +763,6 @@ namespace LNF.Impl.Scheduler
                     LName = dr.Field<string>("LName"),
                     MName = dr.Field<string>("MName"),
                     FName = dr.Field<string>("FName"),
-                    Phone = dr.Field<string>("Phone"),
-                    Email = dr.Field<string>("Email"),
                     Privs = dr.Field<ClientPrivilege>("Privs"),
                     AccountID = dr.Field<int>("AccountID"),
                     AccountName = dr.Field<string>("AccountName"),
@@ -781,11 +779,7 @@ namespace LNF.Impl.Scheduler
                     ActualBeginDateTime = dr.Field<DateTime?>("ActualBeginDateTime"),
                     ActualEndDateTime = dr.Field<DateTime?>("ActualEndDateTime"),
                     ClientIDBegin = dr.Field<int?>("ClientIDBegin"),
-                    ClientBeginLName = dr.Field<string>("ClientBeginLName"),
-                    ClientBeginFName = dr.Field<string>("ClientBeginFName"),
                     ClientIDEnd = dr.Field<int?>("ClientIDEnd"),
-                    ClientEndLName = dr.Field<string>("ClientEndLName"),
-                    ClientEndFName = dr.Field<string>("ClientEndFName"),
                     CreatedOn = dr.Field<DateTime>("CreatedOn"),
                     LastModifiedOn = dr.Field<DateTime>("LastModifiedOn"),
                     Duration = dr.Field<double>("Duration"),
@@ -840,9 +834,6 @@ namespace LNF.Impl.Scheduler
                     ResourceID = dr.Field<int>("ResourceID"),
                     ResourceIsActive = dr.Field<bool>("ResourceIsActive"),
                     ResourceName = dr.Field<string>("ResourceName"),
-                    RoomDisplayName = dr.Field<string>("RoomDisplayName"),
-                    RoomID = dr.Field<int>("RoomID"),
-                    RoomName = dr.Field<string>("RoomName"),
                     State = dr.Field<ResourceState>("State"),
                     StateNotes = dr.Field<string>("StateNotes"),
                     UnloadTime = dr.Field<int?>("UnloadTime"),
@@ -858,7 +849,7 @@ namespace LNF.Impl.Scheduler
             return Session.NamedQuery("SelectPastUnstartedReservations").List<ReservationInfo>().AsQueryable().CreateModels<IReservation>();
         }
 
-        public double SelectReservableMinutes(int resourceId, int clientId, TimeSpan reservFence, TimeSpan maxAlloc, DateTime now)
+        public double GetReservableMinutes(int resourceId, int clientId, TimeSpan reservFence, TimeSpan maxAlloc, DateTime now)
         {
             // this is all that happens in udf_SelectReservableMinutes
 
@@ -1009,7 +1000,7 @@ namespace LNF.Impl.Scheduler
                 rsv.EndDateTime = ed;
                 rsv.ActualBeginDateTime = sd;
                 rsv.ActualEndDateTime = ed;
-                rsv.AppendNotes(notes);
+                rsv.Notes = notes;
 
                 Session.SaveOrUpdate(rsv);
 
@@ -1163,7 +1154,7 @@ namespace LNF.Impl.Scheduler
             //DECLARE @ReservableMinutes int
             //SET @ReservableMinutes = dbo.udf_SelectReservableMinutes (@ResourceID, @ClientID, GETDATE())
 
-            double reservableMinutes = SelectReservableMinutes(res.ResourceID, clientId, TimeSpan.FromMinutes(res.ReservFence), TimeSpan.FromMinutes(res.MaxAlloc), DateTime.Now);
+            double reservableMinutes = GetReservableMinutes(res.ResourceID, clientId, TimeSpan.FromMinutes(res.ReservFence), TimeSpan.FromMinutes(res.MaxAlloc), DateTime.Now);
 
             //IF @ReservableMinutes < 0 
             //BEGIN

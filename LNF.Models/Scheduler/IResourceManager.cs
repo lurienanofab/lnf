@@ -25,5 +25,6 @@ namespace LNF.Models.Scheduler
         int[] GetGracePeriodHour(int granularity, int minReservTime);
         int[] GetGracePeriodMinute(int granularity, int minReservTime, int gracePeriodHour);
         IEnumerable<IResource> GetResources(IEnumerable<int> ids);
+        IEnumerable<IResourceTree> GetResourceTree(int clientId);
     }
 }

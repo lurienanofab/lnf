@@ -106,5 +106,10 @@ namespace OnlineServices.Api.Scheduler
         {
             return Get<List<int>>("webapi/scheduler/resource/grace-period-minute", QueryStrings(new { granularity, minReservTime, gracePeriodHour })).ToArray();
         }
+
+        public IEnumerable<IResourceTree> GetResourceTree(int clientId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

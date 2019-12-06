@@ -8,11 +8,11 @@ using System.Linq;
 
 namespace LNF.Scheduler
 {
-    public class ResourceTreeItemCollection : IEnumerable<ResourceTreeItem>
+    public class ResourceTreeItemCollection : IEnumerable<IResourceTree>
     {
-        private IEnumerable<ResourceTreeItem> _items;
+        private IEnumerable<IResourceTree> _items;
 
-        public ResourceTreeItemCollection(IEnumerable<ResourceTreeItem> items)
+        public ResourceTreeItemCollection(IEnumerable<IResourceTree> items)
         {
             _items = items;
         }
@@ -52,8 +52,6 @@ namespace LNF.Scheduler
                 x.LabDisplayName,
                 x.LabDescription,
                 x.LabIsActive,
-                x.RoomID,
-                x.RoomName,
                 x.BuildingID,
                 x.BuildingName,
                 x.BuildingIsActive
@@ -66,8 +64,6 @@ namespace LNF.Scheduler
                 LabDisplayName = x.LabDisplayName,
                 LabDescription = x.LabDescription,
                 LabIsActive = x.LabIsActive,
-                RoomID = x.RoomID,
-                RoomName = x.RoomName,
                 BuildingID = x.BuildingID,
                 BuildingName = x.BuildingName,
                 BuildingIsActive = x.BuildingIsActive
@@ -91,8 +87,6 @@ namespace LNF.Scheduler
                 x.LabDisplayName,
                 x.LabDescription,
                 x.LabIsActive,
-                x.RoomID,
-                x.RoomName,
                 x.BuildingID,
                 x.BuildingName,
                 x.BuildingIsActive
@@ -118,7 +112,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public IEnumerable<ResourceTreeItem> Resources()
+        public IEnumerable<IResourceTree> Resources()
         {
             var result = _items.OrderBy(x => x.LabID).ToList();
             return result;
@@ -130,7 +124,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public ResourceTreeItem Find(int resourceId)
+        public IResourceTree Find(int resourceId)
         {
             var result = _items.FirstOrDefault(x => x.ResourceID == resourceId);
             if (result == null)
@@ -180,7 +174,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public IEnumerator<ResourceTreeItem> GetEnumerator()
+        public IEnumerator<IResourceTree> GetEnumerator()
         {
             return _items.GetEnumerator();
         }

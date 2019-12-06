@@ -72,6 +72,7 @@ namespace LNF.Scheduler
         public void SelectByResource(int resourceId, DateTime sd, DateTime ed)
         {
             AssertDatesAreValid(sd, ed);
+            //_items = Provider.Scheduler.Reservation.SelectByResource(resourceId, sd, ed, true).ToList();
             _items = Provider.Scheduler.Reservation.SelectByResource(resourceId, sd, ed, true).ToList();
         }
 

@@ -90,6 +90,14 @@ namespace LNF.Impl.Scheduler
             return result.CreateModels<IResource>();
         }
 
+        public IEnumerable<IResourceTree> GetResourceTree(int clientId)
+        {
+            var query = Session.NamedQuery("SelectResourceTree").SetParameter("ClientID", clientId);
+            var list = query.List<ResourceTree>();
+            var result = list.CreateModels<IResourceTree>();
+            return result;
+        }
+
         public IEnumerable<IResourceClient> GetResourceClients(int resourceId)
         {
             return LNF.Scheduler.ResourceClientInfoUtility.GetResourceClients(resourceId).CreateModels<IResourceClient>();

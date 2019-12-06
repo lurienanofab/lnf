@@ -154,9 +154,9 @@
     <Compile Include="Logging\FileLogMessage.cs" />
     <Compile Include="Logging\ILogMessage.cs" />
     <Compile Include="Logging\Logger.cs" />
-    <Compile Include="Data\OAuthClient.cs" />
-    <Compile Include="Data\OAuthClientAudience.cs" />
-    <Compile Include="Data\OAuthClientAuthorization.cs" />
+    <Compile Include="Repository\Data\OAuthClient.cs" />
+    <Compile Include="Repository\Data\OAuthClientAudience.cs" />
+    <Compile Include="Repository\Data\OAuthClientAuthorization.cs" />
     <Compile Include="Logging\Service\DatabaseLogMessage.cs" />
     <Compile Include="Logging\Service\IClient.cs" />
     <Compile Include="Logging\Log.cs" />

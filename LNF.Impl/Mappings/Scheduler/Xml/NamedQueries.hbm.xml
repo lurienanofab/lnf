@@ -25,4 +25,8 @@
   <sql-query name="EndReservation">
     <![CDATA[EXEC sselScheduler.dbo.procReservationUpdate @Action='End', @ReservationID=:ReservationID, @ClientID=:ClientID]]>
   </sql-query>
+  <sql-query name="SelectResourceTree">
+    <return class="ResourceTree"/>
+    <![CDATA[EXEC sselScheduler.dbo.procResourceTreeSelect @ClientID=:ClientID]]>
+  </sql-query>
 </hibernate-mapping>

@@ -10,26 +10,6 @@ namespace LNF.Impl.ModelFactory
     {
         public SchedulerModelBuilder(ISession session) : base(session) { }
 
-        private ILab MapLab(Lab source)
-        {
-            int roomId = 0;
-            string roomName = string.Empty;
-            string roomDisplayName = string.Empty;
-
-            if (source.Room != null)
-            {
-                roomId = source.Room.RoomID;
-                roomName = source.Room.RoomName;
-                roomDisplayName = source.Room.DisplayName;
-            }
-
-            var result = MapFrom<LabItem>(source);
-            result.RoomID = roomId;
-            result.RoomName = roomName;
-            result.RoomDisplayName = roomDisplayName;
-            return result;
-        }
-
         private IProcessTech MapProcessTech(ProcessTech source)
         {
             var result = MapFrom<ProcessTechItem>(source);
@@ -38,9 +18,6 @@ namespace LNF.Impl.ModelFactory
             result.BuildingName = source.Lab.Building.BuildingName;
             result.BuildingDescription = source.Lab.Building.Description;
             result.BuildingIsActive = source.Lab.Building.IsActive;
-            result.RoomID = source.Lab.Room.RoomID;
-            result.RoomName = source.Lab.Room.RoomName;
-            result.RoomDisplayName = source.Lab.Room.DisplayName;
             return result;
         }
 
@@ -86,10 +63,11 @@ namespace LNF.Impl.ModelFactory
         public override void AddMaps()
         {
             Map<Building, BuildingItem, IBuilding>();
-            Map<Lab, ILab>(x => MapLab(x));
+            Map<Lab, LabItem, ILab>();
             Map<ProcessTech, IProcessTech>(x => MapProcessTech(x));
             Map<Resource, ResourceInfo, ResourceItem, IResource>(x => x.ResourceID);
             Map<ResourceInfo, ResourceItem, IResource>();
+            Map<ResourceTree, ResourceTreeItem, IResourceTree>();
             Map<Reservation, ReservationInfo, ReservationItem, IReservation>(x => x.ReservationID);
             Map<ReservationInfo, ReservationItem, IReservation>();
             Map<Reservation, IReservationWithInvitees>(x => MapReservationWithInvitees(x));

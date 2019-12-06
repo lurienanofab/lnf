@@ -1,4 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
+using LNF.Models.Data;
 using LNF.Models.Scheduler;
 using LNF.Repository.Scheduler;
 
@@ -37,14 +38,14 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.IsSchedulable);
             Map(x => x.HelpdeskEmail);
             Map(x => x.WikiPageUrl);
-            Map(x => x.State);
+            Map(x => x.State).CustomType<ResourceState>();
             Map(x => x.StateNotes);
             Map(x => x.AuthDuration);
             Map(x => x.AuthState);
             Map(x => x.ReservFence);
             Map(x => x.MaxAlloc);
             Map(x => x.MinCancelTime);
-            Map(x => x.AutoEnd);
+            Map(x => x.ResourceAutoEnd);
             Map(x => x.UnloadTime);
             Map(x => x.Granularity);
             Map(x => x.Offset);
@@ -52,6 +53,7 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.MinReservTime);
             Map(x => x.MaxReservTime);
             Map(x => x.GracePeriod);
+            Map(x => x.OTFSchedTime);
             Map(x => x.CurrentReservationID);
             Map(x => x.CurrentClientID);
             Map(x => x.CurrentActivityID);
@@ -63,7 +65,7 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.CurrentEndDateTime);
             Map(x => x.CurrentNotes);
             Map(x => x.UserName);
-            Map(x => x.Privs);
+            Map(x => x.Privs).CustomType<ClientPrivilege>();
             Map(x => x.Communities);
             Map(x => x.DisplayName);
             Map(x => x.ClientActive);
@@ -72,12 +74,13 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.Phone);
             Map(x => x.MaxChargeTypeID);
             Map(x => x.ResourceClientID);
-            Map(x => x.AuthLevel);
-            Map(x => x.EveryoneAuthLevel);
-            Map(x => x.EffectiveAuthLevel);
+            Map(x => x.AuthLevel).CustomType<ClientAuthLevel>();
+            Map(x => x.EveryoneAuthLevel).CustomType<ClientAuthLevel>();
+            Map(x => x.EffectiveAuthLevel).CustomType<ClientAuthLevel>();
             Map(x => x.Expiration);
             Map(x => x.EmailNotify);
             Map(x => x.PracticeResEmailNotify);
+            Map(x => x.ResourceClientClientID);
         }
     }
 }

@@ -68,6 +68,7 @@
     <Compile Include="Billing\IBillingTypeManager.cs" />
     <Compile Include="Billing\IMiscBillingCharge.cs" />
     <Compile Include="Billing\IMiscBillingManager.cs" />
+    <Compile Include="Billing\IToolBillingReservation.cs" />
     <Compile Include="Billing\IRoomBilling.cs" />
     <Compile Include="Billing\IRoomDataImportLog.cs" />
     <Compile Include="Billing\IRoomBillingManager.cs" />
@@ -105,6 +106,7 @@
     <Compile Include="Billing\Reports\IReportManager.cs" />
     <Compile Include="Billing\Reports\ReportEmail.cs" />
     <Compile Include="Billing\Reports\RegularExceptionItem.cs" />
+    <Compile Include="Billing\ToolBillingReservation.cs" />
     <Compile Include="Billing\RoomBillingItem.cs" />
     <Compile Include="Billing\RoomDataCleanItem.cs" />
     <Compile Include="Billing\RoomDataImportLogItem.cs" />

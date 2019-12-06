@@ -39,12 +39,12 @@ namespace LNF.Models.Scheduler
         IEnumerable<IReservation> SelectExisting(int resourceId);
         IEnumerable<IReservation> SelectHistory(int clientId, DateTime sd, DateTime ed);
         IEnumerable<IReservation> SelectHistoryToForgiveForRepair(int resourceId, DateTime sd, DateTime ed);
-        DateTime? SelectLastRepairEndTime(int resourceId);
         IEnumerable<IReservation> SelectOverwritable(int resourceId, DateTime sd, DateTime ed);
         IEnumerable<IReservation> SelectPastEndableRepair();
         IEnumerable<IReservation> SelectPastUnstarted();
-        double SelectReservableMinutes(int resourceId, int clientId, TimeSpan reservFence, TimeSpan maxAlloc, DateTime now);
         IEnumerable<IReservation> SelectReservationsByPeriod(DateTime period);
+        DateTime? GetLastRepairEndTime(int resourceId);
+        double GetReservableMinutes(int resourceId, int clientId, TimeSpan reservFence, TimeSpan maxAlloc, DateTime now);
         void StartReservation(int reservationId, int? modifiedByClientId);
         IReservation UpdateReservation(UpdateReservationArgs args);
         void UpdateAccount(int reservationId, int accountId, int? modifiedByClientId);

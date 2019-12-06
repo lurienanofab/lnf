@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
 
-namespace LNF.Data
+namespace LNF.Repository.Data
 {
     public class OAuthClientAuthorization : IDataItem
     {

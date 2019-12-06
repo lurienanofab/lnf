@@ -53,6 +53,11 @@ namespace OnlineServices.Api.Billing
             throw new NotImplementedException();
         }
 
+        public IEnumerable<IToolDataRaw> DataRaw(DateTime period, IEnumerable<IToolBillingReservation> reservations)
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<IToolBilling> ForSUBReport(DateTime StartPeriod, DateTime EndPeriod, IList<SubLineItem> lineItems)
         {
             throw new NotImplementedException();
@@ -98,6 +103,11 @@ namespace OnlineServices.Api.Billing
             throw new NotImplementedException();
         }
 
+        public IEnumerable<IToolBillingReservation> SelectReservations(DateTime startDate, DateTime endDate, int resourceId)
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<IToolBilling> SelectToolBilling(DateTime period)
         {
             throw new NotImplementedException();
@@ -113,12 +123,27 @@ namespace OnlineServices.Api.Billing
             throw new NotImplementedException();
         }
 
+        public int UpdateAccountByReservationToolBilling(IToolBillingReservation rsv)
+        {
+            throw new NotImplementedException();
+        }
+
         public int UpdateAccountByReservationToolData(IReservation rsv)
         {
             throw new NotImplementedException();
         }
 
+        public int UpdateAccountByReservationToolData(IToolBillingReservation rsv)
+        {
+            throw new NotImplementedException();
+        }
+
         public int UpdateAccountByReservationToolDataClean(IReservation rsv)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int UpdateAccountByReservationToolDataClean(IToolBillingReservation rsv)
         {
             throw new NotImplementedException();
         }
@@ -133,12 +158,27 @@ namespace OnlineServices.Api.Billing
             throw new NotImplementedException();
         }
 
+        public int UpdateChargeMultiplierByReservationToolBilling(IToolBillingReservation rsv)
+        {
+            throw new NotImplementedException();
+        }
+
         public int UpdateChargeMultiplierByReservationToolData(IReservation rsv)
         {
             throw new NotImplementedException();
         }
 
+        public int UpdateChargeMultiplierByReservationToolData(IToolBillingReservation rsv)
+        {
+            throw new NotImplementedException();
+        }
+
         public int UpdateChargeMultiplierByReservationToolDataClean(IReservation rsv)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int UpdateChargeMultiplierByReservationToolDataClean(IToolBillingReservation rsv)
         {
             throw new NotImplementedException();
         }

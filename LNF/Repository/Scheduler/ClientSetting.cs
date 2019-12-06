@@ -1,6 +1,7 @@
 ﻿using LNF.Cache;
 using LNF.Models.Scheduler;
 using LNF.Scheduler;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace LNF.Repository.Scheduler
@@ -38,7 +39,7 @@ namespace LNF.Repository.Scheduler
         {
             if (_resourceTree == null)
             {
-                var items = DA.Current.Query<ResourceTree>().Where(x => x.ClientID == ClientID).CreateModels<ResourceTreeItem>();
+                var items = ServiceProvider.Current.Scheduler.Resource.GetResourceTree(ClientID);
                 _resourceTree = new ResourceTreeItemCollection(items);
             }
 
