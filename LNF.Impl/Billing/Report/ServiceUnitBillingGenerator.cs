@@ -1,7 +1,6 @@
-﻿using LNF.CommonTools;
-using LNF.Models.Billing;
-using LNF.Models.Billing.Reports.ServiceUnitBilling;
-using LNF.Repository;
+﻿using LNF.Billing;
+using LNF.Billing.Reports.ServiceUnitBilling;
+using LNF.CommonTools;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -9,9 +8,9 @@ using System.Linq;
 
 namespace LNF.Impl.Billing.Report
 {
-    public abstract class ServiceUnitBillingGenerator<T> : ReportGenerator<T> where T : ServiceUnitBillingReport
+    public abstract class ServiceUnitBillingGenerator<T> : ReportGenerator<T> where T : ServiceUnitBillingReport, new()
     {
-        protected ServiceUnitBillingGenerator(T report):base(report) { }
+        protected ServiceUnitBillingGenerator(T report) : base(report) { }
 
         protected override void LoadReportItems(DataView dv)
         {
@@ -221,7 +220,7 @@ namespace LNF.Impl.Billing.Report
                 combinedItems = new List<ServiceUnitBillingReportItem>();
 
             combinedItems.AddRange(items);
-            
+
             Report.CombinedItems = combinedItems.ToArray();
         }
 

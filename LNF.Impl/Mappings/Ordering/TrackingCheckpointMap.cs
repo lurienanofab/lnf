@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Ordering;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Ordering;
 
 namespace LNF.Impl.Mappings.Ordering
 {
-    public class TrackingCheckpointMap : ClassMap<TrackingCheckpoint>
+    internal class TrackingCheckpointMap : ClassMap<TrackingCheckpoint>
     {
-        public TrackingCheckpointMap()
+        internal TrackingCheckpointMap()
         {
             Schema("IOF.dbo");
             Id(x => x.TrackingCheckpointID);

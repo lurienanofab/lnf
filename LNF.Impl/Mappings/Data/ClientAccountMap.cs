@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class ClientAccountMap : ClassMap<ClientAccount>
+    internal class ClientAccountMap : ClassMap<ClientAccount>
     {
-        public ClientAccountMap()
+        internal ClientAccountMap()
         {
             Schema("sselData.dbo");
             Id(x => x.ClientAccountID);

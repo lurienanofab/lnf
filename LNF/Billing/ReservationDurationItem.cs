@@ -1,18 +1,16 @@
-﻿using LNF.Models.Scheduler;
-using LNF.Repository.Scheduler;
-using System;
+﻿using System;
 
 namespace LNF.Billing
 {
     public class ReservationDurationItem
     {
-        public ReservationDurationItem(ReservationDateRange.Reservation rsv, TimeSpan utilizedDuration)
+        public ReservationDurationItem(ReservationDateRangeItem rsv, TimeSpan utilizedDuration)
         {
             Reservation = rsv;
             UtilizedDuration = utilizedDuration;
         }
 
-        public ReservationDateRange.Reservation Reservation { get; }
+        public ReservationDateRangeItem Reservation { get; }
 
         /// <summary>
         /// The total chargeable time minus the transferred duration (includes overtime).

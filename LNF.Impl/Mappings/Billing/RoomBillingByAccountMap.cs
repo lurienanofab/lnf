@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Billing;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {
-    public class RoomBillingByAccountMap : ClassMap<RoomBillingByAccount>
+    internal class RoomBillingByAccountMap : ClassMap<RoomBillingByAccount>
     {
-        public RoomBillingByAccountMap()
+        internal RoomBillingByAccountMap()
         {
             ReadOnly();
             Schema("Billing.dbo");

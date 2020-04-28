@@ -1,4 +1,4 @@
-﻿using LNF.Models.Billing.Reports.ServiceUnitBilling;
+﻿using LNF.Billing.Reports.ServiceUnitBilling;
 using System.Data;
 
 namespace LNF.Impl.Billing.Report
@@ -21,7 +21,7 @@ namespace LNF.Impl.Billing.Report
             else
                 queryParameters = new { Action = "ForSUBReport", Report.StartPeriod, Report.EndPeriod, Report.ClientID };
 
-            var ds = DataAccess.RoomBillingSelect(queryParameters);
+            var ds = DataAccess.RoomBillingSelect(Session, queryParameters);
 
             DataTable dtBillingData = ds.Tables[0];
             dtBillingData.Columns.Add("LineCost", typeof(double));

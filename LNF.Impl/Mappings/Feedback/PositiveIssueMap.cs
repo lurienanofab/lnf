@@ -1,8 +1,8 @@
-﻿using LNF.Repository.Feedback;
+﻿using LNF.Impl.Repository.Feedback;
 
 namespace LNF.Impl.Mappings.Feedback
 {
-    internal class PositiveIssueMap : FeedbackIssueClassMap<PositiveIssue>
+    internal class PositiveIssueMap : FeedbackIssueMap<PositiveIssue>
     {
         internal PositiveIssueMap()
         {

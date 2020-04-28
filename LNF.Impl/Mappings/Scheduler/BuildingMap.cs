@@ -1,17 +1,17 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Scheduler;
+using LNF.Impl.Repository.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {
-    public class BuildingMap : ClassMap<Building>
+    internal class BuildingMap : ClassMap<Building>
     {
-        public BuildingMap()
+        internal BuildingMap()
         {
             Schema("sselScheduler.dbo");
             Id(x => x.BuildingID);
             Map(x => x.BuildingName);
-            Map(x => x.Description);
-            Map(x => x.IsActive);
+            Map(x => x.BuildingDescription, "Description");
+            Map(x => x.BuildingIsActive, "IsActive");
         }
     }
 }

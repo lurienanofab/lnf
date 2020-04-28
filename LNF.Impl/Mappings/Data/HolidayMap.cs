@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class HolidayMap:ClassMap<Holiday>
+    internal class HolidayMap:ClassMap<Holiday>
     {
-        public HolidayMap()
+        internal HolidayMap()
         {
             Schema("sselData.dbo");
             Id(x => x.HolidayID);

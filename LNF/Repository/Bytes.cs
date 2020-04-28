@@ -22,11 +22,7 @@ namespace LNF.Repository
         public override bool Equals(object obj)
         {
             if (obj == null) return false;
-
-            var arr = obj as byte[];
-
-            if (arr == null) return false;
-
+            if (!(obj is byte[] arr)) return false;
             return Enumerable.SequenceEqual(arr, _value);
         }
 

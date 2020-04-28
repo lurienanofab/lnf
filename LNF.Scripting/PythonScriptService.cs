@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data;
-using LNF;
+﻿using LNF.Data;
+using System;
 
 namespace LNF.Scripting
 {
-    public class PythonScriptService : IScriptingService
+    public class PythonScriptService : IScriptEngine
     {
-        public Result Run(string script, Parameters parameters = null)
+        public ScriptResult Run(string script, ScriptParameters parameters = null)
         {
             if (string.IsNullOrEmpty(script))
                 throw new Exception("No script was provided");
@@ -20,11 +15,6 @@ namespace LNF.Scripting
             eng.Run(script, parameters);
           
             return eng.Result;
-        }
-
-        public void Dispose()
-        {
-
         }
     }
 }

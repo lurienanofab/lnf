@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Ordering;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Ordering;
 
 namespace LNF.Impl.Mappings.Ordering
 {
-    public class PurchaseOrderCategoryMap : ClassMap<PurchaseOrderCategory>
+    internal class PurchaseOrderCategoryMap : ClassMap<PurchaseOrderCategory>
     {
-        public PurchaseOrderCategoryMap()
+        internal PurchaseOrderCategoryMap()
         {
             Schema("IOF.dbo");
             Table("Category");

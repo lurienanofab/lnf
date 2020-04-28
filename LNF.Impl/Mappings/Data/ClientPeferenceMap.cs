@@ -1,15 +1,15 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class ClientPeferenceMap : ClassMap<ClientPreference>
+    internal class ClientPeferenceMap : ClassMap<ClientPreference>
     {
-        public ClientPeferenceMap()
+        internal ClientPeferenceMap()
         {
             Schema("sselData.dbo");
             Id(x => x.ClientPreferenceID);
-            References(x => x.Client, "ClientID");
+            Map(x => x.ClientID);
             Map(x => x.Preferences);
             Map(x => x.ApplicationName);
         }

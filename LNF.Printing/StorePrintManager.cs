@@ -1,18 +1,16 @@
 ﻿using iTextSharp.text;
 using iTextSharp.text.pdf;
-using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Store;
 using LNF.Store;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace LNF.Printing
 {
     public static class StorePrintManager
     {
-        public static byte[] GetStoreOrderPdf(StoreOrder order)
+        public static byte[] GetStoreOrderPdf(IStoreOrder order)
         {
             MemoryStream ms1 = new MemoryStream();
             MemoryStream ms2 = new MemoryStream();
@@ -60,7 +58,7 @@ namespace LNF.Printing
             return p;
         }
 
-        private static PdfPTable GetHeader(StoreOrder order)
+        private static PdfPTable GetHeader(IStoreOrder order)
         {
             PdfPTable container = new PdfPTable(1)
             {
@@ -85,7 +83,7 @@ namespace LNF.Printing
             return container;
         }
 
-        private static PdfPCell GetOrderInfo(StoreOrder order)
+        private static PdfPCell GetOrderInfo(IStoreOrder order)
         {
             PdfPTable table = new PdfPTable(1);
 
@@ -106,7 +104,7 @@ namespace LNF.Printing
 
             //fourth row
             innerTable.AddCell(new PdfPCell(BoldPhrase("Pickup:")) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
-            innerTable.AddCell(new PdfPCell(NormalPhrase(order.GetPickupLocation())) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
+            innerTable.AddCell(new PdfPCell(NormalPhrase(StoreOrders.GetPickupLocation(order))) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
 
             PdfPCell innerCell = new PdfPCell(innerTable)
             {
@@ -125,15 +123,13 @@ namespace LNF.Printing
             return outerCell;
         }
 
-        private static PdfPCell GetCustomerInfo(StoreOrder order)
+        private static PdfPCell GetCustomerInfo(IStoreOrder order)
         {
             PdfPTable outerTable = new PdfPTable(1);
 
             PdfPTable innerTable = new PdfPTable(new float[] { 0.3F, 0.7F });
 
-            var mgr = ServiceProvider.Current.Data.Client;
-
-            var c = order.Client.CreateModel<IClient>();
+            var c = ServiceProvider.Current.Data.Client.GetClient(order.ClientID);
 
             //header row
             innerTable.AddCell(HeaderCell("CUSTOMER INFO"));
@@ -152,7 +148,7 @@ namespace LNF.Printing
 
             //fourth row
             innerTable.AddCell(new PdfPCell(BoldPhrase("Account:")) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
-            innerTable.AddCell(new PdfPCell(NormalPhrase(order.Account.Name)) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
+            innerTable.AddCell(new PdfPCell(NormalPhrase(order.AccountName)) { Border = Rectangle.NO_BORDER, FixedHeight = 16 });
 
             PdfPCell innerCell = new PdfPCell(innerTable)
             {
@@ -171,7 +167,7 @@ namespace LNF.Printing
             return outerCell;
         }
 
-        private static PdfPTable GetPageFooter(StoreOrder order, int pageNumber, int totalPages, float width)
+        private static PdfPTable GetPageFooter(IStoreOrder order, int pageNumber, int totalPages, float width)
         {
             PdfPTable tbl = new PdfPTable(3)
             {
@@ -196,9 +192,9 @@ namespace LNF.Printing
             return tbl;
         }
 
-        private static void GetDetail(Document doc, StoreOrder order)
+        private static void GetDetail(Document doc, IStoreOrder order)
         {
-            IList<StoreOrderDetail> details = order.GetDetails();
+            IList<IStoreOrderDetail> details = StoreOrderDetails.GetDetails(order.SOID).ToList();
 
             if (details != null && details.Count > 0)
             {
@@ -242,7 +238,7 @@ namespace LNF.Printing
                     //    doc.Add(GetFooter(order, true));
                 }
 
-                foreach (StoreOrderDetail item in details)
+                foreach (IStoreOrderDetail item in details)
                 {
                     float h = (pageNumber == 0) ? firstPageHeight : secondPageHeight;
 
@@ -258,8 +254,8 @@ namespace LNF.Printing
                         }
                     }
 
-                    innerTable.AddCell(DetailItemCell(item.Item.ManufacturerPN, bc));
-                    innerTable.AddCell(DetailItemCell(item.Item.Description, bc));
+                    innerTable.AddCell(DetailItemCell(item.ManufacturerPN, bc));
+                    innerTable.AddCell(DetailItemCell(item.Description, bc));
                     innerTable.AddCell(DetailItemCell(item.Quantity.ToString(), bc, Element.ALIGN_CENTER));
                     innerTable.AddCell(DetailItemCell(item.GetUnitPrice().ToString("C"), bc, Element.ALIGN_RIGHT));
                     innerTable.AddCell(DetailItemCell((item.Quantity * item.GetUnitPrice()).ToString("C"), bc, Element.ALIGN_RIGHT));
@@ -311,7 +307,7 @@ namespace LNF.Printing
             return table;
         }
 
-        private static PdfPTable GetFooter(StoreOrder order, bool empty = false)
+        private static PdfPTable GetFooter(IStoreOrder order, bool empty = false)
         {
             PdfPTable table = new PdfPTable(1)
             {
@@ -322,7 +318,7 @@ namespace LNF.Printing
             if (!empty)
             {
                 phrase.Add(new Chunk("Total Balance: ", new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.BLACK)));
-                phrase.Add(new Chunk(order.GetTotal().ToString("C"), new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL, BaseColor.BLACK)));
+                phrase.Add(new Chunk(StoreOrders.GetTotal(order).ToString("C"), new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL, BaseColor.BLACK)));
             }
 
             table.AddCell(new PdfPCell(phrase)
@@ -394,7 +390,7 @@ namespace LNF.Printing
             return Rectangle.TOP_BORDER + Rectangle.RIGHT_BORDER + Rectangle.BOTTOM_BORDER + Rectangle.LEFT_BORDER;
         }
 
-        private static string GetOrderType(StoreOrder order)
+        private static string GetOrderType(IStoreOrder order)
         {
             //need some way to tell if order is kit or regular
             bool isKit = false;

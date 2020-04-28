@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class OAuthClientMap : ClassMap<OAuthClient>
+    internal class OAuthClientMap : ClassMap<OAuthClient>
     {
-        public OAuthClientMap()
+        internal OAuthClientMap()
         {
             Schema("sselData.dbo");
             Id(x => x.OAuthClientID);

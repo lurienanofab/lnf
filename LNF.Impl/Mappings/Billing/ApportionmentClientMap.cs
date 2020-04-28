@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Billing;
+using LNF.Impl.Repository.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {
-    public class ApportionmentClientMap : ClassMap<ApportionmentClient>
+    internal class ApportionmentClientMap : ClassMap<ApportionmentClient>
     {
-        public ApportionmentClientMap()
+        internal ApportionmentClientMap()
         {
             ReadOnly();
             Id(x => x.ClientID);

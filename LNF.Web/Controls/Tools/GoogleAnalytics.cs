@@ -14,10 +14,7 @@ namespace LNF.Web.Controls.Tools
             RenderContents(writer);
         }
 
-        protected bool IsProduction
-        {
-            get { return ServiceProvider.Current.IsProduction(); }
-        }
+        protected bool IsProduction => ServiceProvider.Current.IsProduction();
 
         protected override void CreateChildControls()
         {

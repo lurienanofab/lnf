@@ -1,6 +1,5 @@
-﻿using LNF.Repository;
+﻿using LNF.Logging;
 using System;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -11,13 +10,6 @@ namespace LNF.CommonTools
     // This is created to monitor the activity inside the CommonTools code
     public class EventLogger
     {
-        public enum LogMessageTypes
-        {
-            Error = 1,
-            Warning = 2,
-            Info = 3
-        }
-
         public static void WriteToWindowsEvent(string Message)
         {
             string Log = "Application";
@@ -35,15 +27,7 @@ namespace LNF.CommonTools
 
         public static void WriteToSystemLog(int clientId, Guid messageGuid, LogMessageTypes messageType, string message)
         {
-            string sql = "INSERT SystemLog (ClientID, LogMessageGUID, LogMessageDateTime, LogMessageType, LogMessageText) VALUES (@ClientID, @LogMessageGUID, GETDATE(), @LogMessageType, @LogMessageText)";
-
-            DA.Command(CommandType.Text).Param(new
-            {
-                ClientID = Utility.DBNullIf(clientId, clientId == 0),
-                LogMessageGUID = messageGuid,
-                LogMessageType = LogMessageTypeToString(messageType),
-                LogMessageText = message
-            }).ExecuteNonQuery(sql);
+            ServiceProvider.Current.Log.WriteToSystemLog(clientId, messageGuid, messageType, message);
         }
 
         public static void WriteToHTML(string message)
@@ -53,21 +37,6 @@ namespace LNF.CommonTools
             StreamWriter sw = new StreamWriter(fs);
             sw.WriteLine(message);
             sw.Close();
-        }
-
-        public static string LogMessageTypeToString(LogMessageTypes MessageType)
-        {
-            switch (MessageType)
-            {
-                case LogMessageTypes.Error:
-                    return "error";
-                case LogMessageTypes.Warning:
-                    return "warning";
-                case LogMessageTypes.Info:
-                    return "info";
-                default:
-                    return "undefined";
-            }
         }
     }
 

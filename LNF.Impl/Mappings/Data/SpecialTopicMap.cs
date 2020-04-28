@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Data;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class SpecialTopicMap : ClassMap<SpecialTopic>
+    internal class SpecialTopicMap : ClassMap<SpecialTopic>
     {
-        public SpecialTopicMap()
+        internal SpecialTopicMap()
         {
             Schema("sselData.dbo");
             Id(x => x.SpecialTopicID);

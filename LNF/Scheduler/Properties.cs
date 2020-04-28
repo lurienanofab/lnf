@@ -1,7 +1,5 @@
 ﻿using LNF.Cache;
 using LNF.Data;
-using LNF.Models.Data;
-using LNF.Models.Scheduler;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -61,7 +59,9 @@ namespace LNF.Scheduler
             set { SetValue("ManualEntryDurationActivities", string.Join(",", value)); }
         }
 
-        private Properties(IEnumerable<SchedulerPropertyItem> props)
+        public bool EnforceMaxSchedulableHoursOnRemoteProcessingInvitees() => bool.Parse(GetValue("EnforceMaxSchedHoursOnRemoteProcessingInvitees"));
+
+        private Properties(IEnumerable<ISchedulerProperty> props)
         {
             _props = props;
             Timestamp = DateTime.Now;
@@ -76,7 +76,7 @@ namespace LNF.Scheduler
 
         public static Properties Current { get; }
 
-        private IEnumerable<SchedulerPropertyItem> _props;
+        private IEnumerable<ISchedulerProperty> _props;
         private ActivityCollection _activities;
 
         public void Save()

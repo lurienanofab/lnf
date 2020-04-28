@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Control;
+using LNF.Impl.Repository.Control;
 
 namespace LNF.Impl.Mappings.Control
 {
-    public class BlockMap : ClassMap<Block>
+    internal class BlockMap : ClassMap<Block>
     {
-        public BlockMap()
+        internal BlockMap()
         {
             Schema("sselControl.dbo");
             Table("IOBlock");

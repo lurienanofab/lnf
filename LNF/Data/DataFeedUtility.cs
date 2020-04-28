@@ -1,8 +1,4 @@
-﻿using LNF.CommonTools;
-using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
-using LNF.Scripting;
+﻿using LNF.Repository;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -29,7 +25,7 @@ namespace LNF.Data
 
         public static DataTable GetDataTable(string alias, object parameters)
         {
-            string query = Utility.GetQueryString(parameters);
+            string query = CommonTools.Utility.GetQueryString(parameters);
             string url = $"http://ssel-sched.eecs.umich.edu/data/feed/{alias}/xml/{query}";
             DataSet ds = new DataSet();
             ds.ReadXml(url);
@@ -40,7 +36,7 @@ namespace LNF.Data
         public static string GetCSV(string alias, object parameters, string host = "ssel-sched.eecs.umich.edu")
         {
             string result = string.Empty;
-            string query = Utility.GetQueryString(parameters);
+            string query = CommonTools.Utility.GetQueryString(parameters);
             string url = $"http://{host}/data/feed/{alias}/csv/{query}";
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
             using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
@@ -74,7 +70,7 @@ namespace LNF.Data
             return result;
         }
 
-        public DataSet ExecuteQuery(DataFeed feed, Parameters parameters)
+        public DataSet ExecuteQuery(IDataFeed feed, ScriptParameters parameters)
         {
             DataSet ds = new DataSet();
             DataTable dt = null;
@@ -104,7 +100,7 @@ namespace LNF.Data
             }
             else
             {
-                Result result = Provider.Scripting.Run(feed.FeedQuery, parameters);
+                ScriptResult result = Provider.Data.Feed.ScriptEngine.Run(feed.FeedQuery, parameters);
                 if (result.Exception != null)
                     throw result.Exception;
                 foreach (var kvp in result.DataSet)
@@ -128,7 +124,7 @@ namespace LNF.Data
             return result;
         }
 
-        public static void DeleteFeed(DataFeed feed, IPrivileged client)
+        public static void DeleteFeed(IDataFeed feed, IPrivileged client)
         {
             if (feed != null)
             {
@@ -214,7 +210,7 @@ namespace LNF.Data
             return sw.GetStringBuilder().ToString();
         }
 
-        public string RssFeedContent(DataFeedResult feed, string key)
+        public string RssFeedContent(DataFeedResult feed, string key, Uri requestUri, string absolutePath)
         {
             if (string.IsNullOrEmpty(key)) key = "default";
 
@@ -235,7 +231,7 @@ namespace LNF.Data
             channel.AppendChild(child);
 
             child = xdoc.CreateElement("link");
-            child.InnerText = ServiceProvider.Current.Context.GetRequestUrl().GetLeftPart(UriPartial.Authority);
+            child.InnerText = requestUri.GetLeftPart(UriPartial.Authority);
             channel.AppendChild(child);
 
             child = xdoc.CreateElement("lastBuildDate");
@@ -275,7 +271,7 @@ namespace LNF.Data
                 item.AppendChild(child);
 
                 child = xdoc.CreateElement("guid");
-                child.InnerText = DataFeedUtility.FeedItemURL(feed, "rss") + "&i=" + i.ToString();
+                child.InnerText = DataFeedUtility.FeedItemURL(feed, "rss", requestUri, absolutePath) + "&i=" + i.ToString();
                 item.AppendChild(child);
 
                 child = xdoc.CreateElement("pubDate");
@@ -395,19 +391,19 @@ namespace LNF.Data
                 };
             }
 
-            string result = ServiceProvider.Current.Serialization.Json.Serialize(obj);
+            string result = ServiceProvider.Current.Utility.Serialization.Json.Serialize(obj);
 
             return result;
         }
 
-        public string IcalFeedContent(DataFeedResult feed, string key)
+        public string IcalFeedContent(DataFeedResult feed, string key, string localAddr)
         {
             if (string.IsNullOrEmpty(key)) key = "default";
 
             var dt = feed.Data[key];
 
             StringBuilder sb = new StringBuilder();
-            string serverIP = ServiceProvider.Current.Context.ServerVariables["LOCAL_ADDR"];
+            string serverIP = localAddr;
             DateTime buildTime = DateTime.UtcNow;
             sb.AppendLine("BEGIN:VCALENDAR");
             sb.AppendLine("METHOD:PUBLISH");
@@ -447,9 +443,9 @@ namespace LNF.Data
             return sb.ToString();
         }
 
-        public static string FeedItemURL(DataFeedResult feed, string format)
+        public static string FeedItemURL(DataFeedResult feed, string format, Uri requestUri, string absolutePath)
         {
-            string result = ServiceProvider.Current.Context.GetRequestUrl().GetLeftPart(UriPartial.Authority) + ServiceProvider.Current.Context.GetAbsolutePath("~") + "/feed/";
+            string result = requestUri.GetLeftPart(UriPartial.Authority) + absolutePath + "/feed/";
             result += feed.Alias + "/";
             result += (string.IsNullOrEmpty(format) ? "xml" : format);
             return result;

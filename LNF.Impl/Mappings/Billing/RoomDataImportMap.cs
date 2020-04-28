@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Billing;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {
-    public class RoomDataImportMap:ClassMap<RoomDataImport>
+    internal class RoomDataImportMap:ClassMap<RoomDataImport>
     {
-        public RoomDataImportMap()
+        internal RoomDataImportMap()
         {
             Schema("Billing.dbo");
             Id(x => x.RoomDataImportID);

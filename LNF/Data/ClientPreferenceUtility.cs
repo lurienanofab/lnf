@@ -1,8 +1,5 @@
 ﻿using LNF.CommonTools;
-using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
-using LNF.Repository.Scheduler;
+using LNF.Scheduler;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -19,28 +16,20 @@ namespace LNF.Data
             Provider = provider;
         }
 
-        public static ClientPreference Find(int clientId, string app)
+        public static IClientPreference Find(int clientId, string app)
         {
             //It's possible to have client.ClientID == 0 if no user is logged in. In this case result will be null.
             if (clientId == 0)
                 return null;
 
-            ClientPreference result = DA.Current.Query<ClientPreference>().FirstOrDefault(x => x.Client.ClientID == clientId && x.ApplicationName == app);
-
-            if (result == null)
-            {
-                result = new ClientPreference() { Client = DA.Current.Single<Client>(clientId), ApplicationName = app };
-                DA.Current.Insert(result);
-            }
-
-            return result;
+            return ServiceProvider.Current.Data.Client.GetClientPreference(clientId, app);
         }
 
         public IList<IAccount> OrderAccountsByUserPreference(IClient client, IEnumerable<IAccount> accounts = null)
         {
             if (accounts == null)
             {
-                accounts = Provider.Data.Client.ActiveAccounts(client.ClientID);
+                accounts = Provider.Data.Client.GetActiveAccounts(client.ClientID);
             }
 
             if (accounts == null) return null;
@@ -50,6 +39,13 @@ namespace LNF.Data
 
         public static IList<T> OrderListByUserPreference<T>(IClient client, IEnumerable<T> items, Func<T, int> id, Func<T, string> defaultOrder)
         {
+            //for now the acct order prefence is stored in sselScheduler.dbo.ClientSetting but we should move this to sselData.dbo.ClientPreference
+            IClientSetting cs = ServiceProvider.Current.Scheduler.ClientSetting.GetClientSettingOrDefault(client.ClientID);
+            return OrderListByUserPreference<T>(cs, items, id, defaultOrder);
+        }
+
+        public static IList<T> OrderListByUserPreference<T>(IClientSetting cs, IEnumerable<T> items, Func<T, int> id, Func<T, string> sort)
+        {
             List<T> result = new List<T>();
 
             if (items.Count() == 0)
@@ -57,11 +53,8 @@ namespace LNF.Data
 
             string pref = string.Empty;
 
-            //for now the acct order prefence is stored in sselScheduler.dbo.ClientSetting but we should move this to sselData.dbo.ClientPreference
-            ClientSetting cs = DA.Current.Query<ClientSetting>().FirstOrDefault(x => x.ClientID == client.ClientID);
-
             if (null == cs)
-                return items.OrderBy(defaultOrder).ToList();
+                return items.OrderBy(sort).ToList();
 
             pref = cs.AccountOrder;
 
@@ -72,12 +65,12 @@ namespace LNF.Data
             int[] accountOrder = Utility.ConvertStringToIntArray(pref);
 
             if (accountOrder == null)
-                return items.OrderBy(defaultOrder).ToList();
+                return items.OrderBy(sort).ToList();
 
-            return OrderListByUserPreference(accountOrder, items, id, defaultOrder);
+            return OrderListByUserPreference(accountOrder, items, id, sort);
         }
 
-        public static IList<T> OrderListByUserPreference<T>(int[] accountOrder, IEnumerable<T> items, Func<T, int> id, Func<T, string> defaultOrder)
+        public static IList<T> OrderListByUserPreference<T>(int[] accountOrder, IEnumerable<T> items, Func<T, int> id, Func<T, string> sort)
         {
             List<T> list = items.ToList();
             List<T> result = new List<T>();
@@ -96,7 +89,7 @@ namespace LNF.Data
             }
 
             if (list.Count > 0)
-                result.AddRange(list.OrderBy(defaultOrder).ToList());
+                result.AddRange(list.OrderBy(sort).ToList());
 
             return result;
         }

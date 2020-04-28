@@ -1,4 +1,4 @@
-﻿using LNF.Models.Authorization;
+﻿using LNF.Authorization;
 using Newtonsoft.Json;
 using System;
 

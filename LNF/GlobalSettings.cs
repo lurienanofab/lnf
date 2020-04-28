@@ -1,11 +1,7 @@
-﻿using System;
+﻿using LNF.Data;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
 
 namespace LNF
 {
@@ -27,12 +23,12 @@ namespace LNF
 
         public GlobalSettingsItemCollection()
         {
-            GlobalSettings[] query = DA.Current.Query<GlobalSettings>().ToArray();
+            IGlobalSetting[] query = ServiceProvider.Current.Data.GlobalSetting.GetGlobalSettings().ToArray();
 
             _Items = new Dictionary<string, string>();
             if (query != null && query.Length > 0)
             {
-                foreach (GlobalSettings gs in query)
+                foreach (var gs in query)
                 {
                     _Items.Add(gs.SettingName, gs.SettingValue);
                 }

@@ -1,5 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Billing;
+using LNF.Impl.Repository.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {

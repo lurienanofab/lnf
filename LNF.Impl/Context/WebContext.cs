@@ -1,5 +1,6 @@
-﻿using LNF.Repository;
-using LNF.Repository.Data;
+﻿using LNF.Impl.DataAccess;
+using LNF.Impl.Repository.Data;
+using LNF.Util.Encryption;
 using System;
 using System.Collections;
 using System.Collections.Specialized;
@@ -17,7 +18,11 @@ namespace LNF.Impl.Context
 
         public virtual HttpContextBase ContextBase => _factory.CreateContext();
 
-        public WebContext(IHttpContextFactory factory)
+        protected IEncryptionUtility Encryption { get; }
+
+        public WebContext(ISessionManager mgr) : this(new WebContextFactory(), mgr) { }
+
+        internal WebContext(IHttpContextFactory factory, ISessionManager mgr) : base(mgr)
         {
             _factory = factory;
         }
@@ -154,15 +159,22 @@ namespace LNF.Impl.Context
         {
             string pw;
 
-            if (!string.IsNullOrEmpty(ServiceProvider.Current.DataAccess.UniversalPassword) && password.Equals(ServiceProvider.Current.DataAccess.UniversalPassword))
+            string unipw = Configuration.Current.DataAccess.UniversalPassword;
+
+            if (!string.IsNullOrEmpty(unipw) && password.Equals(unipw))
                 pw = null;
             else
-                pw = ServiceProvider.Current.Encryption.EncryptText(password);
+                pw = Encryption.EncryptText(password);
 
             string ip = UserHostAddress;
 
             string sql = "EXEC sselData.dbo.Client_Select @Action='LoginCheck', @UserName=:username, @Password=:pw, @IPAddress=:ip";
-            Client client = DA.Current.SqlQuery(sql).SetParameters(new { username, pw, ip }).List<Client>().FirstOrDefault();
+            Client client = Session.CreateSQLQuery(sql)
+                .SetParameter("username", username)
+                .SetParameter("pw", pw)
+                .SetParameter("ip", ip)
+                .List<Client>()
+                .FirstOrDefault();
 
             return client;
         }

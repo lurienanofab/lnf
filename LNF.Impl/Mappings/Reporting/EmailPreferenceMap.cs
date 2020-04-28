@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Reporting;
+using LNF.Impl.Repository.Reporting;
 
 namespace LNF.Impl.Mappings.Reporting
 {
     internal class EmailPreferenceMap:ClassMap<EmailPreference>
     {
-        public EmailPreferenceMap()
+        internal EmailPreferenceMap()
         {
             Schema("Reporting.dbo");
             Id(x => x.EmailPreferenceID);

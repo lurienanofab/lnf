@@ -1,11 +1,6 @@
-﻿using LNF.Cache;
-using LNF.CommonTools;
+﻿using LNF.CommonTools;
 using LNF.Data;
 using LNF.Helpdesk;
-using LNF.Models.Data;
-using LNF.Models.Scheduler;
-using LNF.Repository;
-using LNF.Repository.Scheduler;
 using System;
 using System.Configuration;
 using System.Data;
@@ -31,7 +26,7 @@ namespace LNF.Scheduler
             get { return Url + "/api/scheduler.php"; }
         }
 
-        public static DataTable GetTickets(Resource resource)
+        public static DataTable GetTickets(IResource resource)
         {
             if (resource == null)
                 return new Helpdesk.Service(ApiUrl, ApiKey).SelectTickets();
@@ -44,11 +39,11 @@ namespace LNF.Scheduler
             return new Helpdesk.Service(ApiUrl, ApiKey).SelectTicketDetail(ticketId);
         }
 
-        public static CreateTicketResult CreateTicket(IClient currentUser, IResource res, Reservation rsv, int clientId, string reservationText, string subjectText, string messageText, string ticketType)
+        public static CreateTicketResult CreateTicket(IClient currentUser, IResource res, IReservation rsv, int clientId, string reservationText, string subjectText, string messageText, string ticketType, Uri requestUri)
         {
             TicketPriorty pri = TicketPriortyFromString(ticketType);
 
-            string bodyText = GetMessageBody(res, rsv, clientId, reservationText, messageText, ticketType);
+            string bodyText = GetMessageBody(res, rsv, clientId, reservationText, messageText, ticketType, requestUri);
 
             Helpdesk.Service service = new Helpdesk.Service(ApiUrl, ApiKey);
 
@@ -72,7 +67,7 @@ namespace LNF.Scheduler
                     priority: pri
                 );
 
-                SendHardwareIssueEmail(res, rsv, clientId, reservationText, subjectText, messageText, pri);
+                SendHardwareIssueEmail(res, rsv, clientId, reservationText, subjectText, messageText, pri, requestUri);
 
                 return result;
             }
@@ -82,11 +77,11 @@ namespace LNF.Scheduler
             }
         }
 
-        public static void SendHardwareIssueEmail(IResource res, Reservation reservation, int clientId, string reservationText, string subject, string message, TicketPriorty pri)
+        public static void SendHardwareIssueEmail(IResource res, IReservation reservation, int clientId, string reservationText, string subject, string message, TicketPriorty pri, Uri requestUri)
         {
             if (pri == TicketPriorty.HardwareIssue)
             {
-                string body = GetMessageBody(res, reservation, clientId, reservationText, message, TicketPriorityToString(pri));
+                string body = GetMessageBody(res, reservation, clientId, reservationText, message, TicketPriorityToString(pri), requestUri);
                 SendHardwareIssueEmail(res, clientId, subject, body);
             }
         }
@@ -101,7 +96,7 @@ namespace LNF.Scheduler
         public static string[] GetCcEmailsForHardwareIssue(IResource resource, int clientId)
         {
             //all tool users who are not the Client, no need to send an email to themself
-            ResourceClientInfo[] toolUsers = DA.Current.Query<ResourceClientInfo>().Where(x => x.ResourceID == resource.ResourceID && x.ClientID != -1 && x.ClientID != clientId).ToArray();
+            IResourceClient[] toolUsers = ServiceProvider.Current.Scheduler.Resource.GetResourceClients(resource.ResourceID).Where(x => !x.IsClientOrEveryone(clientId)).ToArray();
 
             //no tool engineers, they will get the email alert from the helpdesk system
             toolUsers = toolUsers.Where(x => (x.AuthLevel & ClientAuthLevel.ToolEngineer) == 0).ToArray();
@@ -117,18 +112,18 @@ namespace LNF.Scheduler
             var client = ServiceProvider.Current.Data.Client.GetClient(clientId);
             string result = "Resource ID: " + res.ResourceID.ToString() + Environment.NewLine
                 + "Resource Name: " + res.ResourceName + Environment.NewLine
-                + "Created By: " + ClientItem.GetDisplayName(client.LName, client.FName) + Environment.NewLine
+                + "Created By: " + Clients.GetDisplayName(client.LName, client.FName) + Environment.NewLine
                 + "Reservation: " + reservationText + Environment.NewLine
                 + "Type: " + ticketType;
             return result;
         }
 
-        public static string GetMessageBody(IResource res, Reservation rsv, int clientId, string reservationText, string messageText, string ticketType)
+        public static string GetMessageBody(IResource res, IReservation rsv, int clientId, string reservationText, string messageText, string ticketType, Uri requestUri)
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(GetMessageHeader(res, clientId, reservationText, ticketType));
             if (rsv != null)
-                sb.AppendLine(string.Format("Reservation History: {0}/sselonline/?view=/sselscheduler/ReservationHistory.aspx?ReservationID={1}", ServiceProvider.Current.Context.GetRequestUrl().GetLeftPart(UriPartial.Authority), rsv.ReservationID));
+                sb.AppendLine(string.Format("Reservation History: {0}/sselonline/?view=/sselscheduler/ReservationHistory.aspx?ReservationID={1}", requestUri.GetLeftPart(UriPartial.Authority), rsv.ReservationID));
             sb.AppendLine(Environment.NewLine + "--------------------------------------------------" + Environment.NewLine);
             sb.AppendLine(messageText);
             return sb.ToString();

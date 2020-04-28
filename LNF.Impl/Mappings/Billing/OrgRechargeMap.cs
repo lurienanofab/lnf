@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Billing;
+using LNF.Impl.Repository.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {
-    public class OrgRechargeMap : ClassMap<OrgRecharge>
+    internal class OrgRechargeMap : ClassMap<OrgRecharge>
     {
-        public OrgRechargeMap()
+        internal OrgRechargeMap()
         {
             Schema("Billing.dbo");
             Id(x => x.OrgRechargeID);

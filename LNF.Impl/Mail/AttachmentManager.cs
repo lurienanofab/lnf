@@ -1,4 +1,4 @@
-﻿using LNF.Models.Mail;
+﻿using LNF.Mail;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -6,7 +6,7 @@ using System.IO;
 
 namespace LNF.Impl.Mail
 {
-    public class AttachmentManager : IAttachmentManager
+    public class AttachmentManager : IAttachmentUtility
     {
         public static string GetSecurePath()
         {

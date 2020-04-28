@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Billing;
+using LNF.Impl.Repository.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {
-    public class BillingTypeMap : ClassMap<BillingType>
+    internal class BillingTypeMap : ClassMap<BillingType>
     {
-        public BillingTypeMap()
+        internal BillingTypeMap()
         {
             Schema("sselData.dbo");
             Id(x => x.BillingTypeID);

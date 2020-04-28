@@ -1,4 +1,4 @@
-﻿using LNF.Models.Worker;
+﻿using LNF.Worker;
 using System;
 using System.Messaging;
 

@@ -7,6 +7,9 @@ using System.Text;
 
 namespace LNF.CommonTools
 {
+    /// <summary>
+    /// Used in Reservation.aspx.vb to estimate reservation fees for the create reservation confirmation message.
+    /// </summary>
     public class Compile
     {
         // these are public so conFormula has access to them for display purposes

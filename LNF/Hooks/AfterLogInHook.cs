@@ -1,43 +1,37 @@
-﻿using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
+﻿using LNF.Data;
 
 namespace LNF.Hooks
 {
     public abstract class AfterLogInHook : Hook<AfterLogInHookContext, AfterLogInHookResult>
     {
+        public AfterLogInHook(IProvider provider) : base(provider) { }
+
         abstract override protected void Execute();
     }
 
     public class AfterLogInHookContext : HookContext
     {
-        private Client _client;
+        private IClient _client;
 
         public IClient LoggedInClient { get; }
 
         public bool IsKiosk { get; }
 
-        public AfterLogInHookContext(IClient loggedInClient, bool isKiosk)
+        public AfterLogInHookContext(IProvider provider, IClient loggedInClient, bool isKiosk) : base(provider)
         {
-            _client = DA.Current.Single<Client>(loggedInClient.ClientID);
+            _client = Provider.Data.Client.GetClient(loggedInClient.ClientID);
             LoggedInClient = loggedInClient;
             IsKiosk = isKiosk;
         }
 
-        public bool HasTakenSafetyTest()
-        {
-            return _client.HasTakenSafetyTest();
-        }
+        public bool HasTakenSafetyTest() => _client.IsSafetyTest;
 
-        public bool HasWatchedEthicalVideo()
-        {
-            return _client.HasWatchedEthicalVideo();
-        }
+        public bool HasWatchedEthicalVideo() => _client.IsChecked;
     }
 
     public class AfterLogInHookResult : HookResult
     {
-        public Client Client { get; set; }
+        public IClient Client { get; set; }
         public bool Redirect { get; set; }
         public string RedirectUrl { get; set; }
     }

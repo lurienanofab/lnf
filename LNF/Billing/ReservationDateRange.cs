@@ -1,53 +1,58 @@
-﻿using LNF.Models.Data;
-using LNF.Models.Scheduler;
-using LNF.Repository;
-using LNF.Repository.Scheduler;
+﻿using LNF.CommonTools;
+using LNF.Data;
 using LNF.Scheduler;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace LNF.Billing
 {
-    public class ReservationDateRange
+    public class ReservationDateRange : IEnumerable<ReservationDateRangeItem>
     {
         private int[] _buffer;
-        private Dictionary<int, Tuple<int, int>> _lookup;
+        private Dictionary<int, BufferSegment> _lookup;
+        private readonly List<ReservationDateRangeItem> _reservations = new List<ReservationDateRangeItem>();
 
-        //public DateTime StartDate { get; private set; }
-        //public DateTime EndDate { get; private set; }
-        public DateRange Range { get; }
-        public IEnumerable<Reservation> Reservations { get; }
+        public DateRange DateRange { get; }
 
-        public ReservationDateRange(DateTime period) : this(0, period, period.AddMonths(1)) { }
+        //public ReservationDateRange(DateTime period) : this(0, period, period.AddMonths(1)) { }
 
-        public ReservationDateRange(DateTime sd, DateTime ed) : this(0, sd, ed) { }
+        //public ReservationDateRange(DateTime sd, DateTime ed) : this(0, sd, ed) { }
 
-        public ReservationDateRange(int resourceId, DateTime sd, DateTime ed) : this(resourceId, new DateRange(sd, ed)) { }
+        //public ReservationDateRange(int resourceId, DateTime sd, DateTime ed) : this(resourceId, new DateRange(sd, ed)) { }
 
-        public ReservationDateRange(DateRange range) : this(0, range) { }
+        //public ReservationDateRange(DateRange range) : this(0, range) { }
 
-        public ReservationDateRange(int resourceId, DateRange range) : this(GetReservations(resourceId, range), range) { }
+        //public ReservationDateRange(int resourceId, DateRange range) : this(GetReservations(resourceId, range), range) { }
 
-        public ReservationDateRange(IEnumerable<Reservation> reservations, DateRange range)
+        public ReservationDateRange(IEnumerable<ReservationDateRangeItem> reservations) : this(reservations, DateRange.GetDateRange(reservations)) { }
+
+        //public ReservationDateRange(IEnumerable<ReservationDateRangeItem> reservations, DateTime period) : this(reservations, GetDateRange(period)) { }
+
+        public ReservationDateRange(IEnumerable<ReservationDateRangeItem> reservations, DateRange range)
         {
-            Range = range;
+            DateRange = range;
 
-            int size = Convert.ToInt32(Range.Span.TotalSeconds);
+            int size = Convert.ToInt32(DateRange.Span.TotalSeconds);
             _buffer = new int[size];
 
-            Reservations = reservations;
+            _reservations = reservations.ToList();
         }
+
+        public int Count => _reservations.Count;
 
         public void Clear()
         {
             Array.Clear(_buffer, 0, _buffer.Length);
-            _lookup = new Dictionary<int, Tuple<int, int>>();
+
+            // the key is a ReservationID
+            _lookup = new Dictionary<int, BufferSegment>();
         }
 
-        public IEnumerable<Reservation> Apply(int priorityGroup, IEnumerable<Reservation> reservations)
+        public IEnumerable<ReservationDateRangeItem> Apply(int priorityGroup, IEnumerable<ReservationDateRangeItem> reservations)
         {
-            List<Reservation> result = new List<Reservation>();
+            List<ReservationDateRangeItem> result = new List<ReservationDateRangeItem>();
 
             foreach (var rsv in reservations)
             {
@@ -57,7 +62,7 @@ namespace LNF.Billing
                 int a = Math.Max(GetIndex(sd), 0);
                 int b = Math.Min(GetIndex(ed), _buffer.Length);
 
-                _lookup.Add(rsv.ReservationID, new Tuple<int, int>(a, b));
+                _lookup.Add(rsv.ReservationID, new BufferSegment(a, b));
 
                 for (int x = a; x < b; x++)
                     _buffer[x] = rsv.ReservationID;
@@ -72,13 +77,8 @@ namespace LNF.Billing
 
         private int GetIndex(DateTime d)
         {
-            TimeSpan span = d - Range.StartDate;
+            TimeSpan span = d - DateRange.StartDate;
             return Convert.ToInt32(span.TotalSeconds);
-        }
-
-        public ReservationDurations CreateReservationDurations()
-        {
-            return new ReservationDurations(this);
         }
 
         public TimeSpan GetUtilizedDuration(int reservationId)
@@ -90,11 +90,11 @@ namespace LNF.Billing
             if (!_lookup.ContainsKey(reservationId))
                 return TimeSpan.Zero;
 
-            var tuple = _lookup[reservationId];
+            var bufferSegment = _lookup[reservationId];
 
             int totalSeconds = 0;
 
-            for (int x = tuple.Item1; x < tuple.Item2; x++)
+            for (int x = bufferSegment.Start; x < bufferSegment.End; x++)
             {
                 if (_buffer[x] == reservationId)
                     totalSeconds += 1;
@@ -105,7 +105,7 @@ namespace LNF.Billing
             return result;
         }
 
-        public DurationInfo GetDurationInfo(Reservation rsv)
+        public DurationInfo GetDurationInfo(ReservationDateRangeItem rsv)
         {
             return DurationInfo.Create(rsv, GetDurationParts(rsv.ReservationID, rsv.ChargeBeginDateTime, rsv.ChargeEndDateTime, rsv.EndDateTime));
         }
@@ -121,7 +121,7 @@ namespace LNF.Billing
 
             for (int x = start; x < end; x++)
             {
-                var d = Range.StartDate.AddSeconds(x);
+                var d = DateRange.StartDate.AddSeconds(x);
                 var id = _buffer[x];
 
                 string current;
@@ -145,25 +145,294 @@ namespace LNF.Billing
             return result;
         }
 
+        private static IEnumerable<ReservationDateRangeItem> GetReservations(int resourceId, DateRange range)
+        {
+            var costs = ServiceProvider.Current.Data.Cost.FindToolCosts(resourceId, range.EndDate);
+
+            var reservations = ServiceProvider.Current.Scheduler.Reservation.GetReservations(range.StartDate, range.EndDate, resourceId: resourceId);
+
+            var result = reservations.ToList().Select(x => CreateReservation(x, costs)).ToList();
+
+            return result;
+        }
+
+        private static ReservationDateRangeItem CreateReservation(IReservation rsv, IEnumerable<ICost> costs)
+        {
+            var filtered = costs.Where(c => (c.RecordID == rsv.ResourceID || c.RecordID == 0) && c.ChargeTypeID == rsv.ChargeTypeID).ToList();
+            IResourceCost rc = ResourceCost.CreateResourceCosts(filtered).FirstOrDefault();
+
+            if (rc == null)
+                throw new Exception($"Cannot determine cost for Resource: [{rsv.ResourceID}] {rsv.ResourceName}");
+
+            return new ReservationDateRangeItem()
+            {
+                ReservationID = rsv.ReservationID,
+                ResourceID = rsv.ResourceID,
+                ClientID = rsv.ClientID,
+                ActivityID = rsv.ActivityID,
+                AccountID = rsv.AccountID,
+                ChargeTypeID = rsv.ChargeTypeID,
+                IsActive = rsv.IsActive,
+                IsStarted = rsv.IsStarted,
+                BeginDateTime = rsv.BeginDateTime,
+                EndDateTime = rsv.EndDateTime,
+                ActualBeginDateTime = rsv.ActualBeginDateTime,
+                ActualEndDateTime = rsv.ActualEndDateTime,
+                ChargeBeginDateTime = rsv.ChargeBeginDateTime,
+                ChargeEndDateTime = rsv.ChargeEndDateTime,
+                LastModifiedOn = rsv.LastModifiedOn,
+                IsCancelledBeforeCutoff = rsv.IsCancelledBeforeCutoff,
+                ChargeMultiplier = rsv.ChargeMultiplier,
+                Cost = rc
+            };
+        }
+
+        public IEnumerator<ReservationDateRangeItem> GetEnumerator()
+        {
+            return _reservations.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+    }
+
+    public class ReservationDateRangeItem
+    {
+        public int PriorityGroup { get; set; }
+        public int ReservationID { get; set; }
+        public int ResourceID { get; set; }
+        public int ClientID { get; set; }
+        public int ActivityID { get; set; }
+        public int AccountID { get; set; }
+        public string AccountName { get; set; }
+        public string ShortCode { get; set; }
+        public int ChargeTypeID { get; set; }
+        public bool IsStarted { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime BeginDateTime { get; set; }
+        public DateTime EndDateTime { get; set; }
+        public DateTime? ActualBeginDateTime { get; set; }
+        public DateTime? ActualEndDateTime { get; set; }
+        public DateTime ChargeBeginDateTime { get; set; }
+        public DateTime ChargeEndDateTime { get; set; }
+        public DateTime LastModifiedOn { get; set; }
+        public bool IsCancelledBeforeCutoff { get; set; }
+        public double ChargeMultiplier { get; set; }
+        public IResourceCost Cost { get; set; }
+        public DateTime ActDate => ActualBeginDateTime.GetValueOrDefault(BeginDateTime).Date;
+
+        public override string ToString()
+        {
+            return $"[{ReservationID}:{ResourceID}] {ChargeBeginDateTime:yyyy-MM-dd HH:mm:ss} - {ChargeEndDateTime:yyyy-MM-dd HH:mm:ss}";
+        }
+
+        public static IEnumerable<ReservationDateRangeItem> GetReservationDateRangeItems(IEnumerable<IToolBillingReservation> reservations, IEnumerable<ICost> costs, DateRange range)
+        {
+            var result = reservations.Select(r => Create(
+                r.ReservationID,
+                r.ResourceID,
+                r.ClientID,
+                r.ActivityID,
+                r.AccountID,
+                r.AccountName,
+                r.ShortCode,
+                r.ChargeTypeID,
+                r.IsActive,
+                r.IsStarted,
+                r.BeginDateTime,
+                r.EndDateTime,
+                r.ActualBeginDateTime,
+                r.ActualEndDateTime,
+                r.LastModifiedOn,
+                r.CancelledDateTime,
+                r.ChargeMultiplier,
+                costs)).ToList();
+
+            return result;
+        }
+
+        public static IEnumerable<ReservationDateRangeItem> GetReservationDateRangeItems(IEnumerable<IReservation> reservations, IEnumerable<ICost> costs, DateRange range)
+        {
+            //var costs = ServiceProvider.Current.Data.Cost.FindToolCosts(ResourceID, range.EndDate);
+            //var reservations = ServiceProvider.Current.Billing.Tool.SelectReservations(range.StartDate, range.EndDate, ResourceID);
+
+            var result = reservations.Select(r => Create(
+                r.ReservationID,
+                r.ResourceID,
+                r.ClientID,
+                r.ActivityID,
+                r.AccountID,
+                r.AccountName,
+                r.ShortCode,
+                r.ChargeTypeID,
+                r.IsActive,
+                r.IsStarted,
+                r.BeginDateTime,
+                r.EndDateTime,
+                r.ActualBeginDateTime,
+                r.ActualEndDateTime,
+                r.LastModifiedOn,
+                r.CancelledDateTime,
+                r.ChargeMultiplier,
+                costs)).ToList();
+
+            return result;
+        }
+
+        public static ReservationDateRangeItem Create(int reservationId, int resourceId, int clientId, int activityId, int accountId, string accountName, string shortCode, int chargeTypeId, bool isActive, bool isStarted, DateTime beginDateTime, DateTime endDateTime, DateTime? actualBeginDateTime, DateTime? actualEndDateTime, DateTime lastModifiedOn, DateTime? cancelledDateTime, double chargeMultiplier, IEnumerable<ICost> costs)
+        {
+            // we need to truncate dates to remove milliseconds or else we end up with very small
+            // transfer durations (the difference between charged and utilized durations)
+
+            var truncatedCancelledDateTime = Utility.Truncate(cancelledDateTime);
+            var truncatedBeginDateTime = Utility.Truncate(beginDateTime);
+            var truncatedEndDateTime = Utility.Truncate(endDateTime);
+            var truncatedActualBeginDateTime = Utility.Truncate(actualBeginDateTime);
+            var truncatedActualEndDateTime = Utility.Truncate(actualEndDateTime);
+
+            bool isCancelledBeforeCutoff = ReservationItem.GetIsCancelledBeforeCutoff(truncatedCancelledDateTime, truncatedBeginDateTime);
+            IResourceCost cost = ResourceCost.CreateResourceCosts(costs.Where(c => (c.RecordID == resourceId || c.RecordID == 0) && c.ChargeTypeID == chargeTypeId)).FirstOrDefault();
+
+            var chargeBeginDateTime = (truncatedActualBeginDateTime.HasValue && truncatedActualBeginDateTime < truncatedBeginDateTime) ? truncatedActualBeginDateTime.Value : truncatedBeginDateTime;
+            var chargeEndDateTime = (truncatedActualEndDateTime.HasValue && truncatedActualEndDateTime > truncatedEndDateTime) ? truncatedActualEndDateTime.Value : truncatedEndDateTime;
+
+            var item = new ReservationDateRangeItem
+            {
+                ReservationID = reservationId,
+                ResourceID = resourceId,
+                ClientID = clientId,
+                ActivityID = activityId,
+                AccountID = accountId,
+                AccountName =accountName,
+                ShortCode = shortCode,
+                ChargeTypeID = chargeTypeId,
+                IsActive = isActive,
+                IsStarted = isStarted,
+                BeginDateTime = truncatedBeginDateTime,
+                EndDateTime = truncatedEndDateTime,
+                ActualBeginDateTime = truncatedActualBeginDateTime,
+                ActualEndDateTime = truncatedActualEndDateTime,
+                ChargeBeginDateTime = chargeBeginDateTime,
+                ChargeEndDateTime = chargeEndDateTime,
+                LastModifiedOn = lastModifiedOn,
+                IsCancelledBeforeCutoff = isCancelledBeforeCutoff,
+                ChargeMultiplier = chargeMultiplier,
+                Cost = cost
+            };
+
+            return item;
+        }
+    }
+
+    public struct DurationInfo
+    {
+        public static DurationInfo Create(ReservationDateRangeItem rsv, IEnumerable<DurationPart> parts)
+        {
+            int repairActivityId = 14;
+
+            return new DurationInfo()
+            {
+                PriorityGroup = rsv.PriorityGroup,
+                ReservationID = rsv.ReservationID,
+                //DisplayName = rsv.DisplayName,
+                IsStarted = rsv.IsStarted,
+                IsActive = rsv.IsActive,
+                IsRepair = rsv.ActivityID == repairActivityId,
+                BeginDateTime = rsv.BeginDateTime,
+                EndDateTime = rsv.EndDateTime,
+                ActualBeginDateTime = rsv.ActualBeginDateTime,
+                ActualEndDateTime = rsv.ActualEndDateTime,
+                ChargeBeginDateTime = rsv.ChargeBeginDateTime,
+                ChargeEndDateTime = rsv.ChargeEndDateTime,
+                ChargeMultiplier = rsv.ChargeMultiplier,
+                Parts = parts
+            };
+        }
+
+        public int PriorityGroup { get; private set; }
+        public int ReservationID { get; private set; }
+        //public string DisplayName { get; private set; }
+        public bool IsStarted { get; private set; }
+        public bool IsActive { get; private set; }
+        public bool IsRepair { get; private set; }
+        public DateTime BeginDateTime { get; private set; }
+        public DateTime EndDateTime { get; private set; }
+        public DateTime? ActualBeginDateTime { get; private set; }
+        public DateTime? ActualEndDateTime { get; private set; }
+        public DateTime ChargeBeginDateTime { get; private set; }
+        public DateTime ChargeEndDateTime { get; private set; }
+        public double ChargeMultiplier { get; private set; }
+        public IEnumerable<DurationPart> Parts { get; private set; }
+    }
+
+    public struct BufferSegment
+    {
+        public BufferSegment(int start, int end)
+        {
+            Start = start;
+            End = end;
+        }
+
+        public int Start { get; }
+        public int End { get; }
+    }
+
+    public class DurationPart
+    {
+        public string DurationType { get; set; }
+        public TimeSpan Duration { get; set; }
+    }
+
+    public struct DateRange
+    {
+        public DateTime StartDate { get; }
+        public DateTime EndDate { get; }
+        public TimeSpan Span { get { return EndDate - StartDate; } }
+
+        public DateRange(DateTime period) : this(period, period.AddMonths(1)) { }
+
+        public DateRange(DateTime sd, DateTime ed)
+        {
+
+            StartDate = sd;
+            EndDate = ed;
+        }
+
+        public static bool operator ==(DateRange dr1, DateRange dr2)
+        {
+            return dr1.StartDate == dr2.StartDate && dr1.EndDate == dr2.EndDate;
+        }
+
+        public static bool operator !=(DateRange dr1, DateRange dr2)
+        {
+            return !(dr1.StartDate == dr2.StartDate && dr1.EndDate == dr2.EndDate);
+        }
+
+        public override bool Equals(object obj)
+        {
+            var dr = (DateRange)obj;
+            return dr == this;
+        }
+
+        public override int GetHashCode()
+        {
+            return new { StartDate, EndDate }.GetHashCode();
+        }
+
         /// <summary>
         /// Gets the minimum start date and maximum end date of all overlapping reservations. Set parameter resourceId to zero to ignore.
         /// </summary>
-        public static DateRange ExpandRange(int resourceId, DateTime sd, DateTime ed)
+        public static DateRange ExpandRange(IEnumerable<IReservation> reservations, DateTime sd, DateTime ed)
         {
-            IQueryable<ReservationInfo> query = null;
-
             int count = 0;
             int max = 100;
 
             while (count < max)
             {
-                if (resourceId == 0)
-                    query = DA.Current.Query<ReservationInfo>().Where(x => x.ChargeBeginDateTime < ed && x.ChargeEndDateTime > sd);
-                else
-                    query = DA.Current.Query<ReservationInfo>().Where(x => x.ResourceID == resourceId && x.ChargeBeginDateTime < ed && x.ChargeEndDateTime > sd);
-
-                var minBeginDateTime = query.Min(x => (DateTime?)x.ChargeBeginDateTime);
-                var maxEndDateTime = query.Max(x => (DateTime?)x.ChargeEndDateTime);
+                var minBeginDateTime = reservations.Min(x => (DateTime?)x.ChargeBeginDateTime);
+                var maxEndDateTime = reservations.Max(x => (DateTime?)x.ChargeEndDateTime);
 
                 bool ok = true;
 
@@ -192,173 +461,13 @@ namespace LNF.Billing
             return expanded;
         }
 
-        private static IEnumerable<Reservation> GetReservations(int resourceId, DateRange range)
+        public static DateRange GetDateRange(IEnumerable<ReservationDateRangeItem> reservations)
         {
-            var costs = ServiceProvider.Current.Data.Cost.FindToolCosts(resourceId, range.EndDate);
-
-            IQueryable<ReservationInfo> query = null;
-
-            if (resourceId == 0)
-                query = DA.Current.Query<ReservationInfo>().Where(x => x.ChargeBeginDateTime < range.EndDate && x.ChargeEndDateTime > range.StartDate);
-            else
-                query = DA.Current.Query<ReservationInfo>().Where(x => x.ResourceID == resourceId && x.ChargeBeginDateTime < range.EndDate && x.ChargeEndDateTime > range.StartDate);
-
-            var result = query.ToList().Select(x => CreateReservation(x, costs)).ToList();
-
-            return result;
+            var min = reservations.Min(x => x.ChargeBeginDateTime).Date;
+            var max = reservations.Max(x => x.ChargeEndDateTime).Date.AddDays(1);
+            return new DateRange(min, max);
         }
 
-        private static Reservation CreateReservation(ReservationInfo rsv, IEnumerable<ICost> costs)
-        {
-            var filtered = costs.Where(c => (c.RecordID == rsv.ResourceID || c.RecordID == 0) && c.ChargeTypeID == rsv.ChargeTypeID).ToList();
-            IResourceCost rc = ResourceCost.CreateResourceCosts(filtered).FirstOrDefault();
-
-            if (rc == null)
-                throw new Exception($"Cannot determine cost for Resource: [{rsv.ResourceID}] {rsv.ResourceName}");
-
-            return new Reservation()
-            {
-                ReservationID = rsv.ReservationID,
-                ResourceID = rsv.ResourceID,
-                ResourceName = rsv.ResourceName,
-                ProcessTechID = rsv.ProcessTechID,
-                ProcessTechName = rsv.ProcessTechName,
-                ClientID = rsv.ClientID,
-                UserName = rsv.UserName,
-                DisplayName = ClientItem.GetDisplayName(rsv.LName, rsv.FName),
-                ActivityID = rsv.ActivityID,
-                ActivityName = rsv.ActivityName,
-                AccountID = rsv.AccountID,
-                AccountName = rsv.AccountName,
-                ShortCode = rsv.ShortCode,
-                IsActive = rsv.IsActive,
-                IsStarted = rsv.IsStarted,
-                BeginDateTime = rsv.BeginDateTime,
-                EndDateTime = rsv.EndDateTime,
-                ActualBeginDateTime = rsv.ActualBeginDateTime,
-                ActualEndDateTime = rsv.ActualEndDateTime,
-                ChargeBeginDateTime = rsv.ChargeBeginDateTime,
-                ChargeEndDateTime = rsv.ChargeEndDateTime,
-                LastModifiedOn = rsv.LastModifiedOn,
-                IsCancelledBeforeCutoff = rsv.IsCancelledBeforeCutoff,
-                ChargeMultiplier = rsv.ChargeMultiplier,
-                Cost = rc
-            };
-        }
-
-        public class Reservation
-        {
-            public int PriorityGroup { get; set; }
-            public int ReservationID { get; set; }
-            public int ResourceID { get; set; }
-            public string ResourceName { get; set; }
-            public int ProcessTechID { get; set; }
-            public string ProcessTechName { get; set; }
-            public int ClientID { get; set; }
-            public string UserName { get; set; }
-            public string DisplayName { get; set; }
-            public int ActivityID { get; set; }
-            public string ActivityName { get; set; }
-            public int AccountID { get; set; }
-            public string AccountName { get; set; }
-            public string ShortCode { get; set; }
-            public bool IsStarted { get; set; }
-            public bool IsActive { get; set; }
-            public DateTime BeginDateTime { get; set; }
-            public DateTime EndDateTime { get; set; }
-            public DateTime? ActualBeginDateTime { get; set; }
-            public DateTime? ActualEndDateTime { get; set; }
-            public DateTime ChargeBeginDateTime { get; set; }
-            public DateTime ChargeEndDateTime { get; set; }
-            public DateTime LastModifiedOn { get; set; }
-            public bool IsCancelledBeforeCutoff { get; set; }
-            public double ChargeMultiplier { get; set; }
-            public IResourceCost Cost { get; set; }
-            public DateTime ActDate => ActualBeginDateTime.GetValueOrDefault(BeginDateTime).Date;
-        }
-
-        public struct DurationInfo
-        {
-            public static DurationInfo Create(Reservation rsv, IEnumerable<DurationPart> parts)
-            {
-                int repairActivityId = 14;
-
-                return new DurationInfo()
-                {
-                    PriorityGroup = rsv.PriorityGroup,
-                    ReservationID = rsv.ReservationID,
-                    DisplayName = rsv.DisplayName,
-                    IsStarted = rsv.IsStarted,
-                    IsActive = rsv.IsActive,
-                    IsRepair = rsv.ActivityID == repairActivityId,
-                    BeginDateTime = rsv.BeginDateTime,
-                    EndDateTime = rsv.EndDateTime,
-                    ActualBeginDateTime = rsv.ActualBeginDateTime,
-                    ActualEndDateTime = rsv.ActualEndDateTime,
-                    ChargeBeginDateTime = rsv.ChargeBeginDateTime,
-                    ChargeEndDateTime = rsv.ChargeEndDateTime,
-                    ChargeMultiplier = rsv.ChargeMultiplier,
-                    Parts = parts
-                };
-            }
-
-            public int PriorityGroup { get; private set; }
-            public int ReservationID { get; private set; }
-            public string DisplayName { get; private set; }
-            public bool IsStarted { get; private set; }
-            public bool IsActive { get; private set; }
-            public bool IsRepair { get; private set; }
-            public DateTime BeginDateTime { get; private set; }
-            public DateTime EndDateTime { get; private set; }
-            public DateTime? ActualBeginDateTime { get; private set; }
-            public DateTime? ActualEndDateTime { get; private set; }
-            public DateTime ChargeBeginDateTime { get; private set; }
-            public DateTime ChargeEndDateTime { get; private set; }
-            public double ChargeMultiplier { get; private set; }
-            public IEnumerable<DurationPart> Parts { get; private set; }
-        }
-
-        public class DurationPart
-        {
-            public string DurationType { get; set; }
-            public TimeSpan Duration { get; set; }
-        }
-
-        public struct DateRange
-        {
-            public DateTime StartDate { get; }
-            public DateTime EndDate { get; }
-            public TimeSpan Span { get { return EndDate - StartDate; } }
-
-            public DateRange(DateTime period) : this(period, period.AddMonths(1)) { }
-
-            public DateRange(DateTime sd, DateTime ed)
-            {
-
-                StartDate = sd;
-                EndDate = ed;
-            }
-
-            public static bool operator ==(DateRange dr1, DateRange dr2)
-            {
-                return dr1.StartDate == dr2.StartDate && dr1.EndDate == dr2.EndDate;
-            }
-
-            public static bool operator !=(DateRange dr1, DateRange dr2)
-            {
-                return !(dr1.StartDate == dr2.StartDate && dr1.EndDate == dr2.EndDate);
-            }
-
-            public override bool Equals(object obj)
-            {
-                var dr = (DateRange)obj;
-                return dr == this;
-            }
-
-            public override int GetHashCode()
-            {
-                return new { StartDate, EndDate }.GetHashCode();
-            }
-        }
+        public static DateRange GetDateRange(DateTime period) => new DateRange(period, period.AddMonths(1));
     }
 }

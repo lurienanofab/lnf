@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Billing;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {
-    public class RoomBillingUserApportionDataMap : ClassMap<RoomBillingUserApportionData>
+    internal class RoomBillingUserApportionDataMap : ClassMap<RoomBillingUserApportionData>
     {
-        public RoomBillingUserApportionDataMap()
+        internal RoomBillingUserApportionDataMap()
         {
             Id(x => x.RoomBillingUserApportionDataID, "AppID");
             Map(x => x.Period);

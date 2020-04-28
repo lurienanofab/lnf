@@ -1,7 +1,4 @@
-﻿using LNF.Models.Data;
-using LNF.Models.PhysicalAccess;
-using LNF.Repository;
-using LNF.Repository.Data;
+﻿using LNF.PhysicalAccess;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,34 +7,31 @@ namespace LNF.Data
 {
     public class AccessCheck
     {
-        public IClient Client { get; private set; }
-        public bool IsActive { get { return Client.ClientActive; } }
-        public bool HasPhysicalAccessPriv { get { return Client.HasPriv(ClientPrivilege.PhysicalAccess); } }
-        public bool HasLabUserPriv { get { return Client.HasPriv(ClientPrivilege.LabUser); } }
-        public bool HasStoreUserPriv { get { return Client.HasPriv(ClientPrivilege.StoreUser); } }
-        public bool HasActiveAccounts { get { return Provider.Data.Client.GetActiveAccountCount(Client.ClientID) > 0; } }
-        public IProvider Provider { get; }
-        public ISession Session => Provider.DataAccess.Session;
+        public IPhysicalAccessService PhysicalAccess { get; }
+        public IClient Client { get; }
+        public IGlobalCost GlobalCost { get; }
+        public bool IsActive => Client.ClientActive;
+        public bool HasPhysicalAccessPriv => Client.HasPriv(ClientPrivilege.PhysicalAccess);
+        public bool HasLabUserPriv => Client.HasPriv(ClientPrivilege.LabUser);
+        public bool HasStoreUserPriv => Client.HasPriv(ClientPrivilege.StoreUser);
+        public bool HasActiveAccounts { get; }
 
         /// <summary>
         /// The reason why access can or cannot be enabled. Set by calling CanEnableAccess()
         /// </summary>
         public string Reason { get; private set; }
 
-        private AccessCheck(IProvider provider)
+        private AccessCheck(IPhysicalAccessService physicalAccess, IClient cost, IGlobalCost globalCost, bool hasActiveAccounts)
         {
-            Provider = provider;
+            PhysicalAccess = physicalAccess;
+            Client = cost;
+            GlobalCost = globalCost;
+            HasActiveAccounts = hasActiveAccounts;
         }
 
-        public static AccessCheck Create(IClient c, IProvider provider)
+        public static AccessCheck Create(IPhysicalAccessService physicalAccess, IClient client, IGlobalCost globalCost, bool hasActiveAccounts)
         {
-            AccessCheck result = new AccessCheck(provider)
-            {
-                Client = c,
-                Reason = null
-            };
-
-            return result;
+            return new AccessCheck(physicalAccess, client, globalCost, hasActiveAccounts);
         }
 
         public bool CanEnableAccess()
@@ -74,7 +68,7 @@ namespace LNF.Data
 
         public IEnumerable<Badge> GetBadges()
         {
-            return ServiceProvider.Current.PhysicalAccess.GetBadge(Client.ClientID);
+            return PhysicalAccess.GetBadge(Client.ClientID);
         }
 
         /// <summary>
@@ -90,8 +84,7 @@ namespace LNF.Data
         /// </summary>
         public bool AllowReenable()
         {
-            GlobalCost gc = Session.Query<GlobalCost>().FirstOrDefault();
-            bool result = ServiceProvider.Current.PhysicalAccess.GetAllowReenable(Client.ClientID, gc.AccessToOld);
+            bool result = PhysicalAccess.GetAllowReenable(Client.ClientID, GlobalCost.AccessToOld);
             return result;
         }
 
@@ -107,12 +100,12 @@ namespace LNF.Data
 
         public void EnablePhysicalAccess()
         {
-            ServiceProvider.Current.PhysicalAccess.EnableAccess(Client);
+            PhysicalAccess.EnableAccess(Client);
         }
 
         public void DisablePhysicalAccess()
         {
-            ServiceProvider.Current.PhysicalAccess.DisableAccess(Client, DateTime.Now);
+            PhysicalAccess.DisableAccess(Client, DateTime.Now);
         }
     }
 }

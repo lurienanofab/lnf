@@ -15,12 +15,18 @@ namespace LNF
             TypeName = typeName;
             PropertyMessage = propertyMessage;
         }
+
+        public ItemNotFoundException(string typeName, string idName, object idValue) : this(typeName, $"{idName}: {idValue}") { }
+
+        public ItemNotFoundException(string typeName, object id) : this(typeName, "id", id) { }
+
+        public ItemNotFoundException(Type t, object id) : this(t.Name, id) { }
     }
 
     public class ItemNotFoundException<TSource, TProperty> : ItemNotFoundException
     {
         public ItemNotFoundException(Expression<Func<TSource, TProperty>> expression, TProperty value)
-            : base(typeof(TSource).Name, $"{GetPropertyName(expression)} = {value}") { }
+            : base(typeof(TSource).Name, GetPropertyName(expression), value) { }
 
         private static string GetPropertyName(Expression<Func<TSource, TProperty>> expression)
         {

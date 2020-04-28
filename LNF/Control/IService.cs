@@ -1,5 +1,4 @@
-﻿using LNF.Repository.Control;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.ServiceModel;
@@ -32,9 +31,9 @@ namespace LNF.Control
                 typeof(PointState),
                 typeof(BlockState),
                 typeof(ActionType),
-                typeof(Point),
-                typeof(Block),
-                typeof(ActionInstance)
+                typeof(IPoint),
+                typeof(IBlock),
+                typeof(IActionInstance)
             };
         }
     }

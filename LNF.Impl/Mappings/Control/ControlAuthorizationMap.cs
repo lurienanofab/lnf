@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Control;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Control;
 
 namespace LNF.Impl.Mappings.Control
 {
-    public class ControlAuthorizationMap : ClassMap<ControlAuthorization>
+    internal class ControlAuthorizationMap : ClassMap<ControlAuthorization>
     {
-        public ControlAuthorizationMap()
+        internal ControlAuthorizationMap()
         {
             Schema("sselControl.dbo");
             Table("[Authorization]");

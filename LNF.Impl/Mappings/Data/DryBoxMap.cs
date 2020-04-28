@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class DryBoxMap : ClassMap<DryBox>
+    internal class DryBoxMap : ClassMap<DryBox>
     {
-        public DryBoxMap()
+        internal DryBoxMap()
         {
             Id(x => x.DryBoxID);
             Map(x => x.DryBoxName);

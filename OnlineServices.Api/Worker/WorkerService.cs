@@ -1,5 +1,4 @@
-﻿using LNF.Models;
-using LNF.Models.Worker;
+﻿using LNF.Worker;
 
 namespace OnlineServices.Api.Worker
 {

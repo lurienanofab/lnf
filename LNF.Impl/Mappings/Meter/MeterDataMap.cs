@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Meter;
+using LNF.Impl.Repository.Meter;
 
 namespace LNF.Impl.Mappings.Meter
 {
-    public class MeterDataMap : ClassMap<MeterData>
+    internal class MeterDataMap : ClassMap<MeterData>
     {
-        public MeterDataMap()
+        internal MeterDataMap()
         {
             Schema("Meter.dbo");
             Id(x => x.MeterDataID);

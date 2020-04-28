@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Inventory;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Inventory;
 
 namespace LNF.Impl.Mappings.Inventory
 {
-    public class ItemUpdateMap : ClassMap<ItemUpdate>
+    internal class ItemUpdateMap : ClassMap<ItemUpdate>
     {
-        public ItemUpdateMap()
+        internal ItemUpdateMap()
         {
             Schema("InventoryControl.dbo");
             Id(x => x.ItemUpdateID);
-            References(x => x.Item);
+            Map(x => x.ItemID);
             Map(x => x.BeforeQty);
             Map(x => x.UpdateQty);
             Map(x => x.AfterQty);

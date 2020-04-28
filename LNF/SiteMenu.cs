@@ -1,32 +1,15 @@
-﻿using LNF.Models;
-using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
+﻿using LNF.Data;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace LNF
 {
     public class SiteMenu : SiteMenuBase
     {
-        public SiteMenu(IClient client, string target) : base(GetMenuItems(), client, target) { }
+        public SiteMenu(IClient client, string target, string loginUrl, bool isSecureConnection) : base(client, target, loginUrl, isSecureConnection) { }
 
-        public override string GetLoginUrl()
+        protected override IEnumerable<IMenu> GetMenuItems()
         {
-            return ServiceProvider.Current.Context.LoginUrl;
-        }
-
-        public override bool IsSecureConnection()
-        {
-            return ServiceProvider.Current.Context.GetRequestIsSecureConnection();
-        }
-
-        public static IEnumerable<IMenu> GetMenuItems()
-        {
-            return DA.Current.Query<Menu>()
-                .Where(x => x.Active && !x.Deleted)
-                .OrderBy(x => x.SortOrder)
-                .CreateModels<IMenu>();
+            return ServiceProvider.Current.Data.Menu.GetMenuItems();
         }
     }
 }

@@ -1,5 +1,5 @@
-﻿using LNF.Models.Data;
-using LNF.Models.PhysicalAccess;
+﻿using LNF.Data;
+using LNF.PhysicalAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -157,6 +157,18 @@ namespace LNF.Impl.PhysicalAccess
         public IEnumerable<Area> GetAreas()
         {
             string sql = "SELECT ID, AREA_NAME FROM LNF.dbo.Areas";
+
+            var dt = Repository.Prowatch.FillDataTable(sql);
+
+            IList<Area> result = Utility.CreateAreas(dt);
+
+            return result;
+        }
+
+        public IEnumerable<Area> GetAreas(int[] areaIds)
+        {
+            string list = string.Join(",", areaIds);
+            string sql = $"SELECT ID, AREA_NAME FROM LNF.dbo.Areas WHERE ID IN ({list})";
 
             var dt = Repository.Prowatch.FillDataTable(sql);
 

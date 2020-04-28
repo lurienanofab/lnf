@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using LNF.Repository.Feedback;
+﻿using LNF.Impl.Repository.Feedback;
 
 namespace LNF.Impl.Mappings.Feedback
 {
-    internal class NegativeIssueMap : FeedbackIssueClassMap<NegativeIssue>
+    internal class NegativeIssueMap : FeedbackIssueMap<NegativeIssue>
     {
-        public NegativeIssueMap()
+        internal NegativeIssueMap()
         {
             Table("NegativeIssue");
             Map(x => x.ClientID, "ViolatorID");

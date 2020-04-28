@@ -1,5 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Scheduler;
+using LNF.Impl.Repository.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {
@@ -9,7 +9,7 @@ namespace LNF.Impl.Mappings.Scheduler
         {
             Schema("sselScheduler.dbo");
             Id(x => x.ResourceClientID);
-            References(x => x.Resource, "ResourceID");
+            Map(x => x.ResourceID);
             Map(x => x.ClientID);
             Map(x => x.AuthLevel);
             Map(x => x.Expiration);

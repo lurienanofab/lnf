@@ -1,15 +1,21 @@
-﻿using System;
+﻿using LNF.Impl.Repository.Scheduler;
+using LNF.Reporting;
+using NHibernate;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using LNF.Reporting;
-using LNF.Repository;
-using LNF.Repository.Scheduler;
 
 namespace LNF.Impl.Reporting
 {
     public class ToolUtilizationDetail : DefaultReport<ResourceCriteria>
     {
+        protected ISession Session { get; }
+
+        public ToolUtilizationDetail(ISession session)
+        {
+            Session = session;
+        }
+
         public override void WriteCriteria(StringBuilder sb)
         {
             Criteria.CreateWriter(sb)
@@ -42,7 +48,7 @@ namespace LNF.Impl.Reporting
 
         public IList<GenericListItem> GetResourceSelectItems()
         {
-            IList<Resource> query = DA.Current.Query<Resource>().Where(x => x.IsActive).ToList();
+            IList<Resource> query = Session.Query<Resource>().Where(x => x.IsActive).ToList();
             List<GenericListItem> result = new List<GenericListItem>();
             result.AddRange(query
                 .OrderBy(x => x.ResourceName)

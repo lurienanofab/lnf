@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Inventory;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Inventory;
 
 namespace LNF.Impl.Mappings.Inventory
 {
-    public class ItemInventoryLocationMap : ClassMap<ItemInventoryLocation>
+    internal class ItemInventoryLocationMap : ClassMap<ItemInventoryLocation>
     {
-        public ItemInventoryLocationMap()
+        internal ItemInventoryLocationMap()
         {
             Schema("InventoryControl.dbo");
             Id(x => x.ItemInventoryLocationID);
-            References(x => x.InventoryLocation);
-            References(x => x.Item);
+            Map(x => x.InventoryLocationID);
+            Map(x => x.ItemID);
         }
     }
 }

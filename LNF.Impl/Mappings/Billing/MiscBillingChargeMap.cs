@@ -1,5 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Billing;
+using LNF.Impl.Repository.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {
@@ -9,9 +9,9 @@ namespace LNF.Impl.Mappings.Billing
         {
             Table("MiscBillingCharge");
             Id(x => x.ExpID);
-            References(x => x.Client);
-            References(x => x.Account);
-            Map(x => x.SubType, "SUBType");
+            Map(x => x.ClientID);
+            Map(x => x.AccountID);
+            Map(x => x.SUBType);
             Map(x => x.Period);
             Map(x => x.ActDate);
             Map(x => x.Description);

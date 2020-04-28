@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Scheduler;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {
-    public class ReservationHistoryMap : ClassMap<ReservationHistory>
+    internal class ReservationHistoryMap : ClassMap<ReservationHistory>
     {
-        public ReservationHistoryMap()
+        internal ReservationHistoryMap()
         {
             Schema("sselScheduler.dbo");
             Id(x => x.ReservationHistoryID);

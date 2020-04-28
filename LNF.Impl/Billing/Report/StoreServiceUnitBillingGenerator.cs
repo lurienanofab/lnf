@@ -1,6 +1,5 @@
-﻿using LNF.CommonTools;
-using LNF.Models.Billing.Reports.ServiceUnitBilling;
-using LNF.Repository;
+﻿using LNF.Billing.Reports.ServiceUnitBilling;
+using LNF.CommonTools;
 using System.Data;
 
 namespace LNF.Impl.Billing.Report
@@ -27,7 +26,7 @@ namespace LNF.Impl.Billing.Report
                 else
                     queryParameters = new { Action = "ForSUBReportWithTwoCreditAccounts", Report.StartPeriod, Report.EndPeriod, Report.ClientID };
 
-                ds = DataAccess.StoreBillingSelect(queryParameters);
+                ds = DataAccess.StoreBillingSelect(Session, queryParameters);
 
                 if (ds == null) return;
 
@@ -57,7 +56,7 @@ namespace LNF.Impl.Billing.Report
                 else
                     queryParameters = new { Action = "ForSUBReport", Report.StartPeriod, Report.EndPeriod, Report.ClientID };
 
-                ds = DataAccess.StoreBillingSelect(queryParameters);
+                ds = DataAccess.StoreBillingSelect(Session, queryParameters);
 
                 if (ds == null) return;
 

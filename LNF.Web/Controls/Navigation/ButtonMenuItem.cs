@@ -1,34 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.Common;
+﻿using LNF.Authorization;
 using System.Web.UI.WebControls;
 
 namespace LNF.Web.Controls.Navigation
 {
     public class ButtonMenuItem
     {
-        private Authorization.AppPage _Page;
-
-        public ButtonMenuItem(Authorization.AppPage page)
+        public ButtonMenuItem(PageAuthorization.AppPage page)
         {
-            _Page = page;
+            Page = page;
         }
 
-        public Authorization.AppPage Page
-        {
-            get { return _Page; }
-        }
+        public PageAuthorization.AppPage Page { get; }
 
         public Button CreateButton()
         {
-            System.Web.UI.WebControls.Button result = new System.Web.UI.WebControls.Button();
-            result.ID = "btnNav" + _Page.ID;
-            result.CssClass = "command-button";
-            result.Text = _Page.ButtonText;
-            result.ToolTip = _Page.ToolTip;
-            result.OnClientClick = "window.location = '" + _Page.PageUrl + "'; return false;";
+            Button result = new Button
+            {
+                ID = "btnNav" + Page.ID,
+                CssClass = "command-button",
+                Text = Page.ButtonText,
+                ToolTip = Page.ToolTip,
+                OnClientClick = "window.location = '" + Page.PageUrl + "'; return false;"
+            };
+
             return result;
         }
     }

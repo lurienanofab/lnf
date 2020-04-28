@@ -7,26 +7,29 @@ namespace LNF.CommonTools
 {
     public class SQLDBAccess : UnitOfWorkAdapter
     {
-        private DbProviderFactory _factory;
-
         public DbConnection Connection { get; private set; }
         public DbTransaction Transaction { get; private set; }
 
         public static SQLDBAccess Create(string key)
         {
+            var factory = DbProviderFactories.GetFactory("System.Data.SqlClient");
+            var conn = factory.CreateConnection();
+            conn.ConnectionString = ConfigurationManager.ConnectionStrings[key].ConnectionString;
+            return Create(conn);
+        }
+
+        public static SQLDBAccess Create(DbConnection conn)
+        {
             var result = new SQLDBAccess();
-            result.Configure(key);
+            result.Configure(conn);
             return result;
         }
 
         private SQLDBAccess() { }
 
-        private void Configure(string key)
+        private void Configure(DbConnection conn)
         {
-            _factory = DbProviderFactories.GetFactory("System.Data.SqlClient");
-
-            Connection = _factory.CreateConnection();
-            Connection.ConnectionString = ConfigurationManager.ConnectionStrings[key].ConnectionString;
+            Connection = conn;
             Connection.Open();
 
             Transaction = Connection.BeginTransaction(IsolationLevel.ReadCommitted);
@@ -40,7 +43,7 @@ namespace LNF.CommonTools
 
         private DbCommand CreateCommand()
         {
-            DbCommand result = _factory.CreateCommand();
+            DbCommand result = Connection.CreateCommand();
             result.Connection = Connection;
             result.Transaction = Transaction;
             result.CommandText = string.Empty;

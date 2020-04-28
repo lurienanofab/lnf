@@ -1,11 +1,12 @@
 ﻿using LNF.Data;
 using LNF.Hooks;
-using LNF.Models.Data;
 
 namespace LNF.Impl.Hooks
 {
     public class PostLoginCheckerHook : AfterLogInHook
     {
+        public PostLoginCheckerHook(IProvider provider) : base(provider) { }
+
         protected override void Execute()
         {
             if (Context.LoggedInClient == null) return;

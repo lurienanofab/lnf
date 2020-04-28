@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Inventory;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Inventory;
 
 namespace LNF.Impl.Mappings.Inventory
 {
-    public class CheckOutCategoryMap : ClassMap<CheckOutCategory>
+    internal class CheckOutCategoryMap : ClassMap<CheckOutCategory>
     {
-        public CheckOutCategoryMap()
+        internal CheckOutCategoryMap()
         {
             Schema("InventoryControl.dbo");
             Id(x => x.CheckOutCategoryID);

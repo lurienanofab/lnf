@@ -1,21 +1,17 @@
-﻿using LNF.Repository;
-using LNF.Repository.Control;
-using System;
-using System.Linq;
+﻿using System;
 
 namespace LNF.Control
 {
     public static class Extentions
     {
-        public static Point GetPoint(this ActionInstance inst)
+        public static IPoint GetPoint(this IActionInstance inst)
         {
-            return ActionInstanceUtility.GetPoint(inst);
+            return ActionInstances.GetPoint(inst);
         }
 
-        public static ActionInstance GetInstance(this Point point, ActionType action)
+        public static IActionInstance GetInstance(this IPoint point, ActionType action)
         {
-            var inst = DA.Current.Query<ActionInstance>().FirstOrDefault(x => x.Point == point.PointID && x.ActionName == Enum.GetName(typeof(ActionType), action));
-            return inst;
+            return ServiceProvider.Current.Control.GetActionInstance(action, point);
         }
 
         public static T EnsureSuccess<T>(this T resp) where T : ControlResponse
@@ -25,7 +21,7 @@ namespace LNF.Control
             return resp;
         }
 
-        public static BlockResponse CreateBlockResponse(this Block block)
+        public static BlockResponse CreateBlockResponse(this IBlock block)
         {
             BlockResponse result = new BlockResponse
             {
@@ -37,7 +33,7 @@ namespace LNF.Control
             };
 
             if (block != null)
-            { 
+            {
                 result.BlockID = block.BlockID;
                 result.BlockState = block.CreateBlockState();
             }
@@ -45,7 +41,7 @@ namespace LNF.Control
             return result;
         }
 
-        public static BlockResponse CreateBlockResponse(this Block block, Exception ex)
+        public static BlockResponse CreateBlockResponse(this IBlock block, Exception ex)
         {
             BlockResponse result = block.CreateBlockResponse();
             result.Error = true;
@@ -53,7 +49,7 @@ namespace LNF.Control
             return result;
         }
 
-        public static PointResponse CreatePointResponse(this Point point)
+        public static PointResponse CreatePointResponse(this IPoint point)
         {
             PointResponse result = new PointResponse
             {
@@ -66,14 +62,14 @@ namespace LNF.Control
 
             if (point != null)
             {
-                result.BlockID = point.Block.BlockID;
+                result.BlockID = point.BlockID;
                 result.PointID = point.PointID;
             }
 
             return result;
         }
 
-        public static PointResponse CreatePointResponse(this Point point, Exception ex)
+        public static PointResponse CreatePointResponse(this IPoint point, Exception ex)
         {
             PointResponse result = point.CreatePointResponse();
             result.Error = true;
@@ -81,7 +77,7 @@ namespace LNF.Control
             return result;
         }
 
-        public static BlockState CreateBlockState(this Block block)
+        public static BlockState CreateBlockState(this IBlock block)
         {
             if (block == null)
                 throw new ArgumentNullException("block");
@@ -97,13 +93,12 @@ namespace LNF.Control
             return result;
         }
 
-        public static PointState CreatePointState(this Point point, bool state)
+        public static PointState CreatePointState(this IPoint point, bool state)
         {
             PointState result = new PointState
             {
                 PointID = point.PointID,
-                BlockID = point.Block.BlockID,
-                PointName = point.Name,
+                BlockID = point.BlockID,
                 State = state
             };
 

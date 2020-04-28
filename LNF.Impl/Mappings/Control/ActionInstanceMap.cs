@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Control;
-using LNF.Repository.Control;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Control;
 
 namespace LNF.Impl.Mappings.Control
 {
-    public class ActionInstanceMap:ClassMap<ActionInstance>
+    internal class ActionInstanceMap:ClassMap<ActionInstance>
     {
-        public ActionInstanceMap()
+        internal ActionInstanceMap()
         {
             Schema("sselControl.dbo");
             Table("v_ActionInstance");

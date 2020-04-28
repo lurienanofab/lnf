@@ -1,15 +1,20 @@
-﻿using LNF.Models.Billing.Reports.ServiceUnitBilling;
+﻿using LNF.Billing.Reports.ServiceUnitBilling;
 using System.Data;
 
 namespace LNF.Impl.Billing.Report
 {
     public class RoomJournalUnitGenerator : JournalUnitGenerator<RoomJU>
     {
-        private RoomJournalUnitGenerator(RoomJU report) : base(report) { }
+        private readonly NHibernate.ISession _session;
 
-        public static RoomJournalUnitGenerator Create(RoomJU report)
+        private RoomJournalUnitGenerator(NHibernate.ISession session, RoomJU report) : base(report)
         {
-            return new RoomJournalUnitGenerator(report);
+            _session = session;
+        }
+
+        public static RoomJournalUnitGenerator Create(NHibernate.ISession session, RoomJU report)
+        {
+            return new RoomJournalUnitGenerator(session, report);
         }
 
         protected override void GenerateDataTables()
@@ -21,7 +26,7 @@ namespace LNF.Impl.Billing.Report
             else
                 queryParameters = new { Action = "ForSUBReport", Report.StartPeriod, Report.EndPeriod, Report.ClientID };
 
-            var ds = DataAccess.RoomBillingSelect(queryParameters);
+            var ds = DataAccess.RoomBillingSelect(_session, queryParameters);
 
             DataTable dtBillingData = ds.Tables[0];
             ClientAccountData = ds.Tables[1];

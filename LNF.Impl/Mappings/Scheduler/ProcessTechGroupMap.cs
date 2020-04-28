@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Scheduler;
+using LNF.Impl.Repository.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {
-    public class ProcessTechGroupMap : ClassMap<ProcessTechGroup>
+    internal class ProcessTechGroupMap : ClassMap<ProcessTechGroup>
     {
-        public ProcessTechGroupMap()
+        internal ProcessTechGroupMap()
         {
             Schema("sselScheduler.dbo");
             Id(x => x.ProcessTechGroupID);

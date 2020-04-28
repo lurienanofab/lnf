@@ -1,6 +1,5 @@
 ﻿using LNF.Billing;
 using LNF.CommonTools;
-using LNF.Models.Billing;
 using System;
 using System.Data;
 using System.Linq;
@@ -9,7 +8,7 @@ namespace LNF.Impl.Billing.Report
 {
     public static class ReportUtility
     {
-        public static IBillingTypeManager BillingTypeManager => ServiceProvider.Current.Billing.BillingType;
+        public static IBillingTypeRepository BillingTypeManager => ServiceProvider.Current.Billing.BillingType;
 
         [Obsolete("Use LNF.CommonTools.LineCostUtility.CalculateToolLineCost instead.")]
         public static void ApplyToolFormula(DataTable dt, DateTime startPeriod, DateTime endPeriod)
@@ -27,7 +26,7 @@ namespace LNF.Impl.Billing.Report
                 roomId = dr.Field<int>("RoomID");
                 isStarted = dr.Field<bool>("IsStarted");
 
-                if (BillingTypeManager.IsMonthlyUserBillingType(billingTypeId))
+                if (BillingTypes.IsMonthlyUserBillingType(billingTypeId))
                 {
                     //Monthly User, charge mask maker for everyone
                     if (roomId == 6)
@@ -115,7 +114,7 @@ namespace LNF.Impl.Billing.Report
                 roomId = dr.Field<int>("RoomID");
 
                 //1. Find out all Monthly type users and apply to Clean room
-                if (BillingTypeManager.IsMonthlyUserBillingType(billingTypeId))
+                if (BillingTypes.IsMonthlyUserBillingType(billingTypeId))
                 {
                     if (roomId == 6)
                         dr["LineCost"] = dr.Field<decimal>("MonthlyRoomCharge");
@@ -123,7 +122,7 @@ namespace LNF.Impl.Billing.Report
                         dr["LineCost"] = dr.Field<decimal>("RoomCharge") + dr.Field<decimal>("EntryCharge");
                 }
                 //2. The growers are charged with room fee only when they reserve and activate a tool
-                else if (BillingTypeManager.IsGrowerUserBillingType(billingTypeId))
+                else if (BillingTypes.IsGrowerUserBillingType(billingTypeId))
                 {
                     if (roomId == 4)
                         dr["LineCost"] = dr.Field<decimal>("RoomCharge"); //Organics bay must be charged for growers as well
@@ -131,7 +130,7 @@ namespace LNF.Impl.Billing.Report
                         dr["LineCost"] = (dr.Field<decimal>("AccountDays") * dr.Field<decimal>("RoomRate")) + dr.Field<decimal>("EntryCharge");
 
                 }
-                else if (billingTypeId == BillingTypeManager.Other.BillingTypeID)
+                else if (billingTypeId == BillingTypes.Other.BillingTypeID)
                 {
                     dr["LineCost"] = 0;
                 }
@@ -143,7 +142,7 @@ namespace LNF.Impl.Billing.Report
             }
         }
 
-        public static void ApplyFilter(DataTable dtClientAccount, BillingCategory billingCategory)
+        public static void ApplyFilter(NHibernate.ISession session, DataTable dtClientAccount, BillingCategory billingCategory)
         {
             string filter;
 
@@ -160,7 +159,7 @@ namespace LNF.Impl.Billing.Report
 
             int accountId = 0;
 
-            DataRow[] query = DataAccess.AccountSelect(new { Action = "GetAllNonBillingAccounts" }).Select(filter);
+            DataRow[] query = DataAccess.AccountSelect(session, new { Action = "GetAllNonBillingAccounts" }).Select(filter);
 
             foreach (DataRow dr in dtClientAccount.Rows)
             {
@@ -170,7 +169,7 @@ namespace LNF.Impl.Billing.Report
             }
         }
 
-        public static void ApplyMiscCharge(DataTable dt, DataTable dtClientAccount, DateTime startPeriod, DateTime endPeriod, BillingCategory billingCategory, int clientId)
+        public static void ApplyMiscCharge(NHibernate.ISession session, DataTable dt, DataTable dtClientAccount, DateTime startPeriod, DateTime endPeriod, BillingCategory billingCategory, int clientId)
         {
             int primaryOrgId = 17;
 
@@ -183,7 +182,7 @@ namespace LNF.Impl.Billing.Report
             else
                 queryParameters = new { Action = "GetAllByPeriodAndSUBTypeAndOrgID", StartPeriod = startPeriod, EndPeriod = endPeriod, SUBType = billingCategoryName, OrgID = primaryOrgId, ClientID = clientId };
 
-            DataTable dtMisc = DataAccess.MiscBillingChargeSelect(queryParameters);
+            DataTable dtMisc = DataAccess.MiscBillingChargeSelect(session, queryParameters);
 
             DataRow ndr;
             DataRow[] rows;

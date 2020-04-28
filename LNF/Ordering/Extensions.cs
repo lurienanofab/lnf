@@ -1,7 +1,4 @@
-﻿using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
-using LNF.Repository.Ordering;
+﻿using LNF.Data;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,36 +6,36 @@ namespace LNF.Ordering
 {
     public static class PurchaseOrderItemExtensions
     {
-        public static PurchaseOrderDetail GetMostRecentlyOrderedDetail(this PurchaseOrderItem item)
+        public static IPurchaseOrderDetail GetMostRecentlyOrderedDetail(this IPurchaseOrderItem item)
         {
-            return item.Details
-                    .Where(x => x.PurchaseOrder.Status != Status.Cancelled)
-                    .OrderByDescending(x => x.PurchaseOrder.CreatedDate)
-                    .FirstOrDefault();
+            return ServiceProvider.Current.Ordering.Item.GetDetails(item.ItemID)
+                .Where(x => x.StatusID != OrderStatus.Cancelled)
+                .OrderByDescending(x => x.CreatedDate)
+                .FirstOrDefault();
         }
     }
 
     public static class PurchaseOrderExtensions
     {
-        public static PurchaseOrderItem GetDuplicateItem(this PurchaseOrder po, string partNum, string description, int itemId)
+        public static IPurchaseOrderItem GetDuplicateItem(this IPurchaseOrder po, string partNum, string description, int itemId)
         {
-            string cleanPartNum = PurchaseOrderItem.CleanString(partNum);
-            string cleanDescription = PurchaseOrderItem.CleanString(description);
+            string cleanPartNum = PurchaseOrderItems.CleanString(partNum);
+            string cleanDescription = PurchaseOrderItems.CleanString(description);
 
-            var items = po.Vendor.Items.Where(x => x.Active);
+            var items = ServiceProvider.Current.Ordering.Vendor.GetItems(po.VendorID).Where(x => x.Active).ToList();
 
             // check if PartNum is empty
             if (!string.IsNullOrEmpty(cleanPartNum))
             {
                 // is there a duplicate PartNum?
-                PurchaseOrderItem match = items.FirstOrDefault(x => PurchaseOrderItem.CleanString(x.PartNum) == cleanPartNum && x.ItemID != itemId);
+                var match = items.FirstOrDefault(x => PurchaseOrderItems.CleanString(x.PartNum) == cleanPartNum && x.ItemID != itemId);
                 if (match != null)
                     return match;
             }
             else
             {
                 // is there a duplicate description?
-                PurchaseOrderItem match = items.FirstOrDefault(x => PurchaseOrderItem.CleanString(x.Description) == cleanDescription && x.ItemID != itemId);
+                var match = items.FirstOrDefault(x => PurchaseOrderItems.CleanString(x.Description) == cleanDescription && x.ItemID != itemId);
                 if (match != null)
                     return match;
             }
@@ -46,23 +43,23 @@ namespace LNF.Ordering
             return null;
         }
 
-        public static Client GetRealApprover(this PurchaseOrder item)
+        public static IClient GetRealApprover(this IPurchaseOrder po)
         {
             //may be null because RealApproverID is nullable
-            if (!item.RealApproverID.HasValue) return null;
-            return DA.Current.Single<Client>(item.RealApproverID.Value);
+            if (!po.RealApproverID.HasValue) return null;
+            return ServiceProvider.Current.Data.Client.GetClient(po.RealApproverID.Value);
         }
 
-        public static Client GetPurchaser(this PurchaseOrder item)
+        public static IClient GetPurchaser(this IPurchaseOrder po)
         {
             //may be null because PurchaserID is nullable
-            if (!item.PurchaserID.HasValue) return null;
-            return DA.Current.Single<Client>(item.PurchaserID.Value);
+            if (!po.PurchaserID.HasValue) return null;
+            return ServiceProvider.Current.Data.Client.GetClient(po.PurchaserID.Value);
         }
 
-        public static int GetPurchaserClientID(this PurchaseOrder item)
+        public static int GetPurchaserClientID(this IPurchaseOrder po)
         {
-            var c = item.GetPurchaser();
+            var c = po.GetPurchaser();
 
             if (c == null)
                 return 0;
@@ -70,136 +67,131 @@ namespace LNF.Ordering
                 return c.ClientID;
         }
 
-        public static Account GetAccount(this PurchaseOrder item)
+        public static IAccount GetAccount(this IPurchaseOrder po)
         {
             //may be null if no account is specified yet
-            if (!item.AccountID.HasValue) return null;
-            return DA.Current.Single<Account>(item.AccountID.Value);
+            if (!po.AccountID.HasValue) return null;
+            return ServiceProvider.Current.Data.Account.GetAccount(po.AccountID.Value);
         }
 
-        public static string GetShortCode(this PurchaseOrder item)
+        public static string GetShortCode(this IPurchaseOrder po)
         {
             //may be null if no account is specified yet
-            var acct = item.GetAccount();
+            var acct = po.GetAccount();
             return (acct == null) ? string.Empty : acct.ShortCode;
         }
 
-        public static bool IsInventoryControlled(this PurchaseOrder item)
+        public static bool IsInventoryControlled(this IPurchaseOrder po)
         {
-            return item.Details.Any(x => x.Item.InventoryItemID.HasValue);
+            var details = ServiceProvider.Current.Ordering.PurchaseOrder.GetDetails(po.POID);
+            return details.Any(x => x.InventoryItemID.HasValue);
         }
     }
 
     public static class VendorExtensions
     {
-        public static IList<PurchaseOrderDetail> GetMostRecentlyOrderedDetails(this Vendor vendor)
+        public static IList<IPurchaseOrderDetail> GetMostRecentlyOrderedDetails(this IVendor vendor)
         {
-            return vendor.Items.Select(x => x.GetMostRecentlyOrderedDetail()).Where(x => x != null).ToList();
+            var items = ServiceProvider.Current.Ordering.Vendor.GetItems(vendor.VendorID);
+            return items.Select(x => x.GetMostRecentlyOrderedDetail()).Where(x => x != null).ToList();
         }
 
-        public static Client GetClient(this Vendor item)
+        public static IClient GetClient(this IVendor vendor)
         {
             //this may retrun null if ClientID = 0 (store manager)
-            return DA.Current.Single<Client>(item.ClientID);
+            return ServiceProvider.Current.Data.Client.GetClient(vendor.ClientID);
         }
     }
 
     public static class ApproverExtensions
     {
-        public static ClientInfo GetApprover(this Approver item)
+        public static IClient GetApprover(this IApprover approver)
         {
-            ClientInfo result = DA.Current.Query<ClientInfo>().FirstOrDefault(x => x.ClientID == item.ApproverID);
-            return result;
+            return ServiceProvider.Current.Data.Client.GetClient(approver.ApproverID);
         }
 
-        public static ClientInfo GetClient(this Approver item)
+        public static IClient GetClient(this IApprover approver)
         {
-            ClientInfo result = DA.Current.Query<ClientInfo>().FirstOrDefault(x => x.ClientID == item.ClientID);
-            return result;
+            return ServiceProvider.Current.Data.Client.GetClient(approver.ClientID);
         }
 
-        public static string GetApproverDisplayName(this Approver item)
+        public static string GetApproverDisplayName(this IApprover approver)
         {
-            ClientInfo client = item.GetApprover();
+            var client = approver.GetApprover();
             return (client == null) ? string.Empty : client.DisplayName;
         }
     }
 
     public static class ClientExtenstions
     {
-        public static IQueryable<Approver> GetApprovers(this Client item)
+        public static IEnumerable<IApprover> GetApprovers(this IClient client)
         {
-            return DA.Current.Query<Approver>().Where(x => x.ClientID == item.ClientID && x.Active);
+            return ServiceProvider.Current.Ordering.Approver.GetActiveApprovers(client.ClientID).ToList();
         }
 
-        public static IEnumerable<Client> GetAvailableApprovers(this Client item)
+        public static IEnumerable<IClient> GetAvailableApprovers(this IClient client)
         {
-            IList<Approver> approvers = item.GetApprovers().ToList();
-            IList<Client> admins = DA.Current.Query<Client>().Where(x => x.Active && (x.Privs & ClientPrivilege.Administrator) > 0).ToList();
-            IList<Client> result = admins.Where(acct => !approvers.Any(x => x.ApproverID == acct.ClientID)).ToList();
+            var approvers = client.GetApprovers().ToList();
+            var admins = ServiceProvider.Current.Data.Client.GetActiveClients(ClientPrivilege.Administrator).ToList();
+            var result = admins.Where(acct => !approvers.Any(x => x.ApproverID == acct.ClientID)).ToList();
             return result;
         }
     }
 
     public static class PurchaseOrderAccountExtensions
     {
-        public static Account GetAccount(this PurchaseOrderAccount item)
+        public static IAccount GetAccount(this IPurchaseOrderAccount acct)
         {
-            return DA.Current.Single<Account>(item.AccountID);
+            return ServiceProvider.Current.Data.Account.GetAccount(acct.AccountID);
         }
 
-        public static string GetAccountName(this PurchaseOrderAccount item)
+        public static string GetAccountName(this IPurchaseOrderAccount acct)
         {
-            Account acct = item.GetAccount();
+            var a = acct.GetAccount();
 
-            if (acct == null)
+            if (a == null)
                 return string.Empty;
             else
-                return acct.Name;
+                return a.AccountName;
         }
 
-        public static string GetShortCode(this PurchaseOrderAccount item)
+        public static string GetShortCode(this IPurchaseOrderAccount acct)
         {
-            Account acct = item.GetAccount();
+            var a = acct.GetAccount();
 
-            if (acct == null)
+            if (a == null)
                 return string.Empty;
             else
-                return acct.ShortCode.Trim();
+                return a.ShortCode.Trim();
         }
 
-        public static string GetFullAccountName(this PurchaseOrderAccount item)
+        public static string GetFullAccountName(this IPurchaseOrderAccount acct)
         {
-            Account acct = item.GetAccount();
+            var a = acct.GetAccount();
 
-            if (acct == null)
+            if (a == null)
                 return string.Empty;
             else
-                return acct.GetFullAccountName();
+                return Accounts.GetFullAccountName(a);
         }
 
-        public static string GetOrgName(this PurchaseOrderAccount item)
+        public static string GetOrgName(this IPurchaseOrderAccount acct)
         {
-            Account acct = item.GetAccount();
+            var a = acct.GetAccount();
 
-            if (acct == null)
+            if (a == null)
                 return string.Empty;
             else
-                return acct.Org.OrgName;
+                return a.OrgName;
         }
     }
 
     public static class PurchaseOrderCategoryExtensions
     {
-        public static PurchaseOrderCategory GetParent(this PurchaseOrderCategory item)
+        public static IPurchaseOrderCategory GetParent(this IPurchaseOrderCategory category)
         {
             //may return null because ParentID can be zero (for top level categories)
-            return DA.Current.Single<PurchaseOrderCategory>(item.ParentID);
+            return ServiceProvider.Current.Ordering.Category.GetParent(category.ParentID);
         }
-    }
-
-    public static class StatusExtensions
-    {
-
     }
 }

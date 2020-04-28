@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Billing;
+using LNF.Impl.Repository.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {
-    public class ApportionmentDefaultMap : ClassMap<ApportionmentDefault>
+    internal class ApportionmentDefaultMap : ClassMap<ApportionmentDefault>
     {
-        public ApportionmentDefaultMap()
+        internal ApportionmentDefaultMap()
         {
             Schema("sselData.dbo");
             Id(x => x.ApportionmentDefaultID, "AppID");

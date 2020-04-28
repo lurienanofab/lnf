@@ -1,6 +1,5 @@
 ﻿using LNF.Cache;
-using LNF.Models.Data;
-using LNF.Models.Scheduler;
+using LNF.Data;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,7 +21,7 @@ namespace LNF.Scheduler
             get { return _items.Count(); }
         }
 
-        public IEnumerable<BuildingItem> Buildings()
+        public IEnumerable<IBuilding> Buildings()
         {
             var distinct = _items.Select(x => new
             {
@@ -43,7 +42,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public IEnumerable<LabItem> Labs()
+        public IEnumerable<ILab> Labs()
         {
             var distinct = _items.Select(x => new
             {
@@ -72,7 +71,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public IList<ProcessTechItem> ProcessTechs()
+        public IEnumerable<IProcessTech> ProcessTechs()
         {
             var distinct = _items.Select(x => new
             {
@@ -132,7 +131,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public BuildingItem GetBuilding(int buildingId)
+        public IBuilding GetBuilding(int buildingId)
         {
             var result = Buildings().FirstOrDefault(x => x.BuildingID == buildingId);
             if (result == null)
@@ -140,7 +139,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public LabItem GetLab(int labId)
+        public ILab GetLab(int labId)
         {
             var result = Labs().FirstOrDefault(x => x.LabID == labId);
             if (result == null)
@@ -148,7 +147,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public ProcessTechItem GetProcessTech(int procTechId)
+        public IProcessTech GetProcessTech(int procTechId)
         {
             var result = ProcessTechs().FirstOrDefault(x => x.ProcessTechID == procTechId);
             if (result == null)

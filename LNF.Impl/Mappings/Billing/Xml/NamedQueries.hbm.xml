@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<hibernate-mapping assembly="LNF" namespace="LNF.Repository.Billing" xmlns="urn:nhibernate-mapping-2.2">
+<hibernate-mapping assembly="LNF.Impl" namespace="LNF.Impl.Repository.Billing" xmlns="urn:nhibernate-mapping-2.2">
     <!--xxxxx Apportionment xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
     <sql-query name="SelectApportionmentClients">
         <return class="ApportionmentClient"/>

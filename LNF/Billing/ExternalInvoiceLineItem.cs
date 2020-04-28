@@ -1,4 +1,4 @@
-﻿using LNF.Models.Data;
+﻿using LNF.Data;
 using System;
 
 namespace LNF.Billing
@@ -23,7 +23,7 @@ namespace LNF.Billing
 
         public string DisplayName
         {
-            get { return ClientItem.GetDisplayName(LName, FName); }
+            get { return Clients.GetDisplayName(LName, FName); }
         }
 
         public double LineTotal

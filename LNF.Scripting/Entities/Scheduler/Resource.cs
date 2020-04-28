@@ -1,15 +1,16 @@
-﻿using System;
+﻿using LNF.Scheduler;
+using System;
 using System.Threading.Tasks;
 
 namespace LNF.Scripting.Entities.Scheduler
 {
     public class Resource
     {
-        private LNF.Repository.Scheduler.Resource item;
+        private IResource item;
 
-        internal Resource(LNF.Repository.Scheduler.Resource i)
+        internal Resource(IResource i)
         {
-            this.item = i;
+            item = i;
         }
 
         public int ResourceID { get { return item.ResourceID; } }

@@ -1,5 +1,4 @@
-﻿using LNF.Models;
-using System.Data;
+﻿using System.Data;
 
 namespace LNF.CommonTools
 {

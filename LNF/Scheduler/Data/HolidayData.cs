@@ -1,5 +1,4 @@
-﻿using LNF.Repository;
-using System;
+﻿using System;
 using System.Data;
 
 namespace LNF.Scheduler.Data
@@ -14,15 +13,31 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectHolidays(DateTime now)
         {
-            return DA.Command()
-                .MapSchema()
-                .Param(new { Action = "Check", sDate = now.AddDays(-14) })
-                .FillDataTable("dbo.Holiday_Select");
+            var holidays = ServiceProvider.Current.Data.Holiday.GetHolidays(now);
+
+            var dt = new DataTable();
+
+            dt.Columns.Add("HolidayID", typeof(int));
+            dt.Columns.Add("Description", typeof(string));
+            dt.Columns.Add("HolidayDate", typeof(DateTime));
+
+            dt.PrimaryKey = new[] { dt.Columns["HolidayID"] };
+
+            foreach(var h in holidays)
+            {
+                var ndr = dt.NewRow();
+                ndr.SetField("HolidayID", h.HolidayID);
+                ndr.SetField("Description", h.Description);
+                ndr.SetField("HolidayDate", h.HolidayDate);
+                dt.Rows.Add(ndr);
+            }
+
+            return dt;
         }
+
         public static bool IsHoliday(DateTime now)
         {
-            using (var reader = DA.Command().Param(new { Action = "IsHoliday", sDate = now }).ExecuteReader("dbo.Holiday_Select"))
-                return reader.Read();
+            return ServiceProvider.Current.Data.Holiday.IsHoliday(now);
         }
     }
 }

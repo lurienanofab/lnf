@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Billing;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {
-    public class TieredSubsidyBillingDetailMap : ClassMap<TieredSubsidyBillingDetail>
+    internal class TieredSubsidyBillingDetailMap : ClassMap<TieredSubsidyBillingDetail>
     {
-        public TieredSubsidyBillingDetailMap()
+        internal TieredSubsidyBillingDetailMap()
         {
             Id(x => x.TierBillingDetailID);
             Map(x => x.Period);

@@ -1,14 +1,11 @@
-﻿using System;
+﻿using LNF.Authorization;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.ComponentModel;
+using System.Data;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.ComponentModel;
-using System.Data;
-using LNF.Cache;
 
 namespace LNF.Web.Controls.Navigation
 {
@@ -16,24 +13,14 @@ namespace LNF.Web.Controls.Navigation
     [ToolboxData("<{0}:ButtonMenu runat=server></{0}:ButtonMenu>")]
     public class ButtonMenu : CompositeDataBoundControl
     {
-        private List<ButtonMenuColumn> _Columns = new List<ButtonMenuColumn>();
-        private Authorization _Authorization;
-
         public HttpContextBase ContextBase { get; }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
         [NotifyParentProperty(true)]
         [PersistenceMode(PersistenceMode.InnerProperty)]
-        public List<ButtonMenuColumn> Columns
-        {
-            get { return _Columns; }
-        }
+        public List<ButtonMenuColumn> Columns { get; private set; } = new List<ButtonMenuColumn>();
 
-        public new Authorization DataSource
-        {
-            get { return _Authorization; }
-            set { _Authorization = value; }
-        }
+        public new PageAuthorization DataSource { get; set; }
 
         protected override HtmlTextWriterTag TagKey
         {
@@ -53,11 +40,11 @@ namespace LNF.Web.Controls.Navigation
 
         public void LoadAuth()
         {
-            List<Authorization.Group> groups = _Authorization.GroupsToList();
+            List<PageAuthorization.Group> groups = DataSource.GroupsToList();
             if (groups.Count > 0)
             {
-                _Columns = new List<ButtonMenuColumn>();
-                foreach (Authorization.Group g in groups)
+                Columns = new List<ButtonMenuColumn>();
+                foreach (PageAuthorization.Group g in groups)
                 {
                     ButtonMenuColumn bmc = new ButtonMenuColumn { Header = g.GroupName };
                 }
@@ -70,7 +57,7 @@ namespace LNF.Web.Controls.Navigation
             TableRow row = new TableRow();
             TableCell cell;
             count = 0;
-            foreach (ButtonMenuColumn bmc in _Columns)
+            foreach (ButtonMenuColumn bmc in Columns)
             {
                 cell = new TableCell { VerticalAlign = VerticalAlign.Top };
                 cell.Style.Add("padding-right", "20px");
@@ -94,7 +81,7 @@ namespace LNF.Web.Controls.Navigation
                         Panel panBtn = new Panel();
                         panBtn.Style.Add("padding-bottom", "15px");
 
-                        ButtonMenuItem bmi = new ButtonMenuItem(new Authorization.AppPage(drv));
+                        ButtonMenuItem bmi = new ButtonMenuItem(new PageAuthorization.AppPage(drv));
 
                         panBtn.Controls.Add(bmi.CreateButton());
 
@@ -113,7 +100,7 @@ namespace LNF.Web.Controls.Navigation
 
             //Add the exit application button
             row = new TableRow();
-            foreach (ButtonMenuColumn bmc in _Columns)
+            foreach (ButtonMenuColumn bmc in Columns)
             {
                 cell = new TableCell();
                 cell.Style.Add("padding-right", "20px");

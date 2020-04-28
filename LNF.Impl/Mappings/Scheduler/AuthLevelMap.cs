@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Scheduler;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {
-    public class AuthLevelMap : ClassMap<AuthLevel>
+    internal class AuthLevelMap : ClassMap<AuthLevel>
     {
-        public AuthLevelMap()
+        internal AuthLevelMap()
         {
             Schema("sselScheduler.dbo");
             Id(x => x.AuthLevelID).GeneratedBy.Assigned();

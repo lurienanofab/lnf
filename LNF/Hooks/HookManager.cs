@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Reflection;
 
 namespace LNF.Hooks
@@ -43,7 +41,7 @@ namespace LNF.Hooks
             where Tcontext : HookContext
             where Tresult: HookResult, new()
         {
-            HookManager.RunHooks(context, new Tresult(), handler);
+            RunHooks(context, new Tresult(), handler);
         }
 
         public static void RunHooks<Tcontext, Tresult>(Tcontext context, Tresult result, Expression<Action<Tcontext, Tresult>> handler = null)
@@ -60,6 +58,7 @@ namespace LNF.Hooks
             {
                 h.Execute(context, result);
             }
+
             if (handler != null)
                 handler.Compile().Invoke(context, result);
         }

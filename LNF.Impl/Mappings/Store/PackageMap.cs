@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Store;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Store;
 
 namespace LNF.Impl.Mappings.Store
 {
-    public class PackageMap : ClassMap<Package>
+    internal class PackageMap : ClassMap<Package>
     {
-        public PackageMap()
+        internal PackageMap()
         {
             Schema("sselMAS.dbo");
             Id(x => x.PackageID);

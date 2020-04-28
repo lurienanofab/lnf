@@ -1,5 +1,5 @@
 ﻿using LNF.CommonTools;
-using LNF.Scheduler;
+using LNF.DataAccess;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,6 +15,7 @@ namespace LNF.Repository
         /// <summary>
         /// Gets an ISession instance that uses the current data access context.
         /// </summary>
+        [Obsolete("Move to LNF.Impl")]
         public static ISession Current => ServiceProvider.Current.DataAccess.Session;
 
         /// <summary>
@@ -23,12 +24,11 @@ namespace LNF.Repository
         /// <returns></returns>
         public static IDisposable StartUnitOfWork() => ServiceProvider.Current.DataAccess.StartUnitOfWork();
 
-        public static ISchedulerRepository SchedulerRepository => ServiceProvider.Current.SchedulerRepository;
-
         /// <summary>
         /// Create a new DataCommand instance.
         /// </summary>
         /// <param name="type">The CommandType used for selects. Also the default CommandType for updates (can be changed in Update action).</param>
+        [Obsolete("Use Session.Command() instead.")]
         public static IDataCommand Command(CommandType type = CommandType.StoredProcedure) => DefaultDataCommand.Create(type);
 
 
@@ -36,21 +36,11 @@ namespace LNF.Repository
         //I think these methods should only be defined once, so now they are accessed via Current
     }
 
-    [Obsolete("Use DefaultDataCommand instead.")]
-    public class DataCommand : DataCommandBase
-    {
-        private DataCommand(CommandType type) : base(type) { }
-
-        protected override UnitOfWorkAdapter GetAdapter() => DA.Current.GetAdapter();
-
-        public static DataCommandBase Create(CommandType type = CommandType.StoredProcedure) => new DataCommand(type);
-    }
-
     public class DefaultDataCommand : DataCommandBase
     {
         private DefaultDataCommand(CommandType type) : base(type) { }
 
-        protected override UnitOfWorkAdapter GetAdapter() => SQLDBAccess.Create("cnSselData");
+        protected override IUnitOfWorkAdapter GetAdapter() => SQLDBAccess.Create("cnSselData");
 
         public static DataCommandBase Create(CommandType type = CommandType.StoredProcedure) => new DefaultDataCommand(type);
     }
@@ -59,7 +49,7 @@ namespace LNF.Repository
     {
         private ReadOnlyDataCommand(CommandType type) : base(type) { }
 
-        protected override UnitOfWorkAdapter GetAdapter() => SQLDBAccess.Create("cnSselDataReadOnly");
+        protected override IUnitOfWorkAdapter GetAdapter() => SQLDBAccess.Create("cnSselDataReadOnly");
 
         public static DataCommandBase Create(CommandType type = CommandType.StoredProcedure) => new ReadOnlyDataCommand(type);
     }
@@ -68,7 +58,7 @@ namespace LNF.Repository
     {
         private SessionDataCommand(CommandType type) : base(type) { }
 
-        protected override UnitOfWorkAdapter GetAdapter() => ServiceProvider.Current.DataAccess.Session.GetAdapter();
+        protected override IUnitOfWorkAdapter GetAdapter() => throw new NotImplementedException(); //ServiceProvider.Current.DataAccess.Session.GetAdapter();
 
         public static DataCommandBase Create(CommandType type = CommandType.StoredProcedure) => new SessionDataCommand(type);
     }
@@ -99,7 +89,7 @@ namespace LNF.Repository
             _configs["delete"].SetCommandType(type);
         }
 
-        protected abstract UnitOfWorkAdapter GetAdapter();
+        protected abstract IUnitOfWorkAdapter GetAdapter();
         //{
         //    if (_adap != null) return _adap();
         //    else throw new Exception("Use the static Create method or override this class.");
@@ -117,63 +107,42 @@ namespace LNF.Repository
             return this;
         }
 
-        /// <summary>
-        /// Adds parameters to the select command.
-        /// </summary>
         public IDataCommand Param(object parameters)
         {
             _configs["select"].AddParameter(parameters);
             return this;
         }
 
-        /// <summary>
-        /// Adds parameters to the select command.
-        /// </summary>
         public IDataCommand Param(IDictionary<string, object> parameters)
         {
             _configs["select"].AddParameter(parameters);
             return this;
         }
 
-        /// <summary>
-        /// Adds a parameter to the select command.
-        /// </summary>
         public IDataCommand Param(string name, object value)
         {
             _configs["select"].AddParameter(name, value);
             return this;
         }
 
-        /// <summary>
-        /// Adds a parameter to the select command with the specified parameter direction.
-        /// </summary>
         public IDataCommand Param(string name, object value, ParameterDirection direction)
         {
             _configs["select"].AddParameter(name, value, direction);
             return this;
         }
 
-        /// <summary>
-        /// Adds a parameter to the select command if the condition is true.
-        /// </summary>
         public IDataCommand Param(string name, bool test, object value)
         {
             _configs["select"].AddParameter(name, test, value);
             return this;
         }
 
-        /// <summary>
-        /// Adds a parameter to the select command using v1 if the condition is true, or v2 if the condition is false.
-        /// </summary>
         public IDataCommand Param(string name, bool test, object v1, object v2)
         {
             _configs["select"].AddParameter(name, test, v1, v2);
             return this;
         }
 
-        /// <summary>
-        /// Adds parameters to the select command as p1, p2, ...
-        /// </summary>
         public IDataCommand ParamList(string prefix, IEnumerable values)
         {
             _configs["select"].AddParameterList(prefix, values);
@@ -304,7 +273,7 @@ namespace LNF.Repository
             }
         }
 
-        private UnitOfWorkAdapter GetSelectAdapter(string commandText)
+        private IUnitOfWorkAdapter GetSelectAdapter(string commandText)
         {
             var adap = GetAdapter();
             adap.MapTableSchema = _mapSchema;
@@ -313,14 +282,14 @@ namespace LNF.Repository
             return adap;
         }
 
-        private UnitOfWorkAdapter GetSelectAdapter(string commandText, DataSet ds)
+        private IUnitOfWorkAdapter GetSelectAdapter(string commandText, DataSet ds)
         {
             var adap = GetSelectAdapter(commandText);
             MapSchema(adap, ds);
             return adap;
         }
 
-        private UnitOfWorkAdapter GetUpdateAdapter(Action<UpdateConfiguration> action)
+        private IUnitOfWorkAdapter GetUpdateAdapter(Action<UpdateConfiguration> action)
         {
             var adap = GetAdapter();
 
@@ -335,13 +304,13 @@ namespace LNF.Repository
             return adap;
         }
 
-        private void MapSchema(UnitOfWorkAdapter adap, DataTable dt)
+        private void MapSchema(IUnitOfWorkAdapter adap, DataTable dt)
         {
             if (adap.MapTableSchema)
                 adap.FillSchema(dt, SchemaType.Source);
         }
 
-        private void MapSchema(UnitOfWorkAdapter adap, DataSet ds)
+        private void MapSchema(IUnitOfWorkAdapter adap, DataSet ds)
         {
             if (adap.MapTableSchema)
                 adap.FillSchema(ds, SchemaType.Source);
@@ -623,7 +592,7 @@ namespace LNF.Repository
                 _lists.Add(key, plist);
         }
 
-        internal void Configure(IDbCommand command)
+        internal void Configure(DbCommand command)
         {
             command.CommandType = _commandType;
             command.CommandText = FormatCommandText();
@@ -662,6 +631,11 @@ namespace LNF.Repository
             }
 
             return result;
+        }
+
+        internal void Configure(object selectCommand)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -742,13 +716,13 @@ namespace LNF.Repository
 
         private DbParameterCollection _parameters;
 
-        protected DbDataAdapter Adapter { get; }
+        protected IUnitOfWorkAdapter Adapter { get; }
 
         protected abstract void Execute();
 
         public TimeSpan TimeTaken { get; protected set; }
 
-        internal ExecuteResult(DbDataAdapter adap)
+        internal ExecuteResult(IUnitOfWorkAdapter adap)
         {
             Adapter = adap;
         }
@@ -772,7 +746,7 @@ namespace LNF.Repository
             if (!_parameters.Contains(name))
                 return defval;
 
-            var p = _parameters[name];
+            var p = (DbParameter)_parameters[name];
 
             if (p == null)
                 return defval;
@@ -783,11 +757,11 @@ namespace LNF.Repository
 
     public class ExecuteFillDataTableResult : ExecuteResult
     {
-        private DbDataAdapter _adap;
+        private IUnitOfWorkAdapter _adap;
 
         public DataTable Result { get; private set; }
 
-        public ExecuteFillDataTableResult(DataTable dt, DbDataAdapter adap) : base(adap)
+        public ExecuteFillDataTableResult(DataTable dt, IUnitOfWorkAdapter adap) : base(adap)
         {
             _adap = adap;
             Result = dt;
@@ -805,7 +779,7 @@ namespace LNF.Repository
         public string SourceTable { get; }
         public DataSet Result { get; private set; }
 
-        public ExecuteFillDataSetResult(DataSet ds, DbDataAdapter adap, string srcTable = null) : base(adap)
+        public ExecuteFillDataSetResult(DataSet ds, IUnitOfWorkAdapter adap, string srcTable = null) : base(adap)
         {
             Result = ds;
             SourceTable = srcTable;
@@ -827,7 +801,7 @@ namespace LNF.Repository
     {
         public T Value { get; private set; }
 
-        internal ExecuteScalarResult(DbDataAdapter adap) : base(adap)
+        internal ExecuteScalarResult(IUnitOfWorkAdapter adap) : base(adap)
         {
             Start();
         }
@@ -843,7 +817,7 @@ namespace LNF.Repository
     {
         public int Value { get; private set; }
 
-        internal ExecuteNonQueryResult(DbDataAdapter adap) : base(adap)
+        internal ExecuteNonQueryResult(IUnitOfWorkAdapter adap) : base(adap)
         {
             Start();
         }
@@ -875,7 +849,7 @@ namespace LNF.Repository
             return result;
         }
 
-        internal ExecuteReaderResult(DbDataAdapter adap) : base(adap)
+        internal ExecuteReaderResult(IUnitOfWorkAdapter adap) : base(adap)
         {
             Start();
         }
@@ -925,7 +899,7 @@ namespace LNF.Repository
         public BatchCommandConfiguration Update { get; }
         public BatchCommandConfiguration Delete { get; }
 
-        internal BatchConfiguration(DbDataAdapter adap, IDictionary<string, CommandConfiguration> configs)
+        internal BatchConfiguration(IUnitOfWorkAdapter adap, IDictionary<string, CommandConfiguration> configs)
         {
             Select = new BatchCommandConfiguration(adap, adap.SelectCommand, configs["select"]);
             Insert = new BatchCommandConfiguration(adap, adap.InsertCommand, configs["insert"]);
@@ -936,11 +910,11 @@ namespace LNF.Repository
 
     public class BatchCommandConfiguration : CommandConfiguration
     {
-        private readonly DbDataAdapter _adap;
+        private readonly IUnitOfWorkAdapter _adap;
         private readonly DbCommand _command;
         private readonly CommandConfiguration _config;
 
-        internal BatchCommandConfiguration(DbDataAdapter adap, DbCommand command, CommandConfiguration config)
+        internal BatchCommandConfiguration(IUnitOfWorkAdapter adap, DbCommand command, CommandConfiguration config)
         {
             _adap = adap;
             _command = command;

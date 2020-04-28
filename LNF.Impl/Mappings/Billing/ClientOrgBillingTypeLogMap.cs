@@ -1,17 +1,17 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Billing;
+using LNF.Impl.Repository.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {
-    public class ClientOrgBillingTypeLogMap : ClassMap<ClientOrgBillingTypeLog>
+    internal class ClientOrgBillingTypeLogMap : ClassMap<ClientOrgBillingTypeLog>
     {
-        public ClientOrgBillingTypeLogMap()
+        internal ClientOrgBillingTypeLogMap()
         {
             Schema("sselData.dbo");
             Table("ClientOrgBillingTypeTS");
             Id(x => x.ClientOrgBillingTypeLogID, "ClientOrgBillingTypeID");
-            References(x => x.ClientOrg);
-            References(x => x.BillingType);
+            Map(x => x.ClientOrgID);
+            Map(x => x.BillingTypeID);
             Map(x => x.EffDate);
             Map(x => x.DisableDate);
         }

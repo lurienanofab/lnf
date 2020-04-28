@@ -1,7 +1,7 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Models.Data;
-using LNF.Models.Scheduler;
-using LNF.Repository.Scheduler;
+using LNF.Data;
+using LNF.Impl.Repository.Scheduler;
+using LNF.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {

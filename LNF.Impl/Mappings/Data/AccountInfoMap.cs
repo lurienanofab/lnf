@@ -1,4 +1,4 @@
-﻿using LNF.Repository.Data;
+﻿using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
@@ -12,6 +12,7 @@ namespace LNF.Impl.Mappings.Data
         protected override void SetTable()
         {
             Table("v_AccountInfo");
+            ReadOnly();
         }
 
         protected override void SetCache()

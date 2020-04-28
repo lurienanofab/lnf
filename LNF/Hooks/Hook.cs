@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace LNF.Hooks
 {
@@ -10,18 +7,11 @@ namespace LNF.Hooks
         where TContext : HookContext
         where TResult : HookResult
     {
-        private TContext _Context;
-        private TResult _Result;
+        public IProvider Provider { get; }
 
-        public TContext Context
-        {
-            get { return _Context; }
-        }
+        public TContext Context { get; private set; }
 
-        public TResult Result
-        {
-            get { return _Result; }
-        }
+        public TResult Result { get; private set; }
 
         public virtual int Priority
         {
@@ -38,12 +28,15 @@ namespace LNF.Hooks
             return typeof(TResult);
         }
 
-        internal Hook() { }
+        internal Hook(IProvider provider)
+        {
+            Provider = provider;
+        }
 
         public void Execute(TContext context, TResult result)
         {
-            _Context = context;
-            _Result = result;
+            Context = context;
+            Result = result;
             Execute();
         }
 

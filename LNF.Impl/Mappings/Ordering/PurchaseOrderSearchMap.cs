@@ -1,5 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Ordering;
+using LNF.Impl.Repository.Ordering;
 
 namespace LNF.Impl.Mappings.Ordering
 {

@@ -1,85 +1,61 @@
-﻿using LNF.Repository;
-using LNF.Repository.Inventory;
-using System;
+﻿using System;
 
 namespace LNF.Inventory
 {
-    public static class InventoryItemExtensions
-    {
-        public static Item GetItem(this InventoryItem item)
-        {
-            return DA.Current.Single<Item>(item.ItemID);
-        }
-
-        public static ItemInventoryType GetItemInventoryType(this InventoryItem item)
-        {
-            return DA.Current.Single<ItemInventoryType>(item.ItemInventoryTypeID);
-        }
-
-        public static InventoryType GetInventoryType(this InventoryItem item)
-        {
-            return DA.Current.Single<InventoryType>(item.InventoryTypeID);
-        }
-    }
-
     public static class InventoryLocationExtensions
     {
-        public static string GetFullLocationName(this InventoryLocation item)
+        public static string GetFullLocationName(this IInventoryLocation item)
         {
-            var result = InventoryLocationUtility.GetFullLocationName(item);
+            var result = InventoryLocations.GetFullLocationName(item);
             return result;
         }
     }
 
     public static class ItemExtensions
     {
-        public static Item UpdateInventory(this Item item, string description, int stockQuantity, int? minStockQuantity, int? maxStockQuantity)
+        public static IItemInventoryType GetItemInventoryType(this IInventoryItem item)
         {
-            if (item.StockQuantity != stockQuantity)
-            {
-                ItemUpdate iu = new ItemUpdate
-                {
-                    Item = item,
-                    BeforeQty = item.StockQuantity,
-                    UpdateQty = stockQuantity,
-                    AfterQty = stockQuantity,
-                    UpdateDateTime = DateTime.Now,
-                    UpdateAction = "UpdateInventory"
-                };
-                DA.Current.Insert(iu);
-            }
-
-            item.Description = description;
-            item.StockQuantity = stockQuantity;
-            item.MinStockQuantity = minStockQuantity;
-            item.MaxStockQuantity = maxStockQuantity;
-
-            return item;
+            return ServiceProvider.Current.Inventory.Item.GetItemInventoryType(item.ItemInventoryTypeID);
         }
 
-        public static void CheckOut(this Item item, int quantity, ItemInventoryLocation itemLoc, int clientId)
+        public static IInventoryType GetInventoryType(this IInventoryItem item)
         {
-            int newqty = item.StockQuantity - quantity;
-            if (item.StockQuantity != newqty)
+            return ServiceProvider.Current.Inventory.Item.GetInventoryType(item.InventoryTypeID);
+        }
+
+        public static IInventoryItem UpdateInventory(this IInventoryItem item, string description, int stockQuantity, int? minStockQuantity, int? maxStockQuantity)
+        {
+            var afterQuantity = item.GetAfterQuantity(stockQuantity, "UpdateInventory");
+
+            if (item.StockQuantity != afterQuantity)
+                ServiceProvider.Current.Inventory.Item.UpdateInventory(item.ItemID, stockQuantity, afterQuantity, "UpdateInventory", 0, 0);
+
+            return ServiceProvider.Current.Inventory.Item
+                .UpdateItem(item.ItemID, description, stockQuantity, minStockQuantity, maxStockQuantity);
+        }
+
+        public static double GetAfterQuantity(this IInventoryItem item, double updateQuantity, string updateAction)
+        {
+            if (updateAction == "UpdateInventory")
+                return updateQuantity;
+            else if (updateAction == "CheckOut")
+                return item.StockQuantity - updateQuantity;
+            else
+                throw new NotImplementedException();
+        }
+
+        public static IInventoryItem CheckOut(this IInventoryItem item, int updateQuantity, IItemInventoryLocation itemLoc, int clientId)
+        {
+            var afterQuantity = item.GetAfterQuantity(updateQuantity, "CheckOut");
+            int locId = (itemLoc == null) ? 0 : itemLoc.ItemInventoryLocationID;
+
+            if (item.StockQuantity != afterQuantity)
             {
-                int locId = (itemLoc == null) ? 0 : itemLoc.ItemInventoryLocationID;
-
-                ItemUpdate iu = new ItemUpdate
-                {
-                    Item = item,
-                    BeforeQty = item.StockQuantity,
-                    UpdateQty = quantity,
-                    AfterQty = newqty,
-                    UpdateDateTime = DateTime.Now,
-                    UpdateAction = "CheckOut",
-                    ItemInventoryLocationID = locId,
-                    ClientID = clientId
-                };
-
-                DA.Current.Insert(iu);
-
-                item.StockQuantity = newqty;
+                ServiceProvider.Current.Inventory.Item.UpdateInventory(item.ItemID, updateQuantity, afterQuantity, "CheckOut", locId, clientId);
+                return ServiceProvider.Current.Inventory.Item.UpdateItem(item.ItemID, item.Description, Convert.ToInt32(afterQuantity), null, null);
             }
+
+            return item;
         }
     }
 

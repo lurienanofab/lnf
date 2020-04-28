@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<hibernate-mapping assembly="LNF" namespace="LNF.Repository.Control" xmlns="urn:nhibernate-mapping-2.2">
+<hibernate-mapping assembly="LNF.Impl" namespace="LNF.Impl.Repository.Control" xmlns="urn:nhibernate-mapping-2.2">
   <sql-query name="SelectUnloadReservations">
     <return class="UnloadReservation">
       <return-property column="ReservationID" name="ReservationID" />

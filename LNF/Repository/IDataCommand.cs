@@ -22,13 +22,42 @@ namespace LNF.Repository
         ExecuteFillDataTableResult GetDataTableResult(DataTable dt, string commandText);
         ExecuteFillDataTableResult GetDataTableResult(string commandText);
         IDataCommand MapSchema();
-        IDataCommand Param(IDictionary<string, object> parameters);
+
+        /// <summary>
+        /// Adds parameters to the select command.
+        /// </summary>
         IDataCommand Param(object parameters);
-        IDataCommand Param(string name, bool test, object value);
-        IDataCommand Param(string name, bool test, object v1, object v2);
+
+        /// <summary>
+        /// Adds parameters to the select command.
+        /// </summary>
+        IDataCommand Param(IDictionary<string, object> parameters);
+
+        /// <summary>
+        /// Adds a parameter to the select command.
+        /// </summary>
         IDataCommand Param(string name, object value);
+
+        /// <summary>
+        /// Adds a parameter to the select command with the specified parameter direction.
+        /// </summary>
         IDataCommand Param(string name, object value, ParameterDirection direction);
+
+        /// <summary>
+        /// Adds a parameter to the select command if the condition is true.
+        /// </summary>
+        IDataCommand Param(string name, bool test, object value);
+
+        /// <summary>
+        /// Adds a parameter to the select command using v1 if the condition is true, or v2 if the condition is false.
+        /// </summary>
+        IDataCommand Param(string name, bool test, object v1, object v2);
+
+        /// <summary>
+        /// Adds parameters to the select command as IN (p1, p2, ...)
+        /// </summary>
         IDataCommand ParamList(string prefix, IEnumerable values);
+
         IDataCommand Timeout(int value);
         int Update(DataRow[] dataRows, Action<UpdateConfiguration> action);
         int Update(DataSet ds, Action<UpdateConfiguration> action);

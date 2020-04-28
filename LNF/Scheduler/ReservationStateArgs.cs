@@ -1,12 +1,4 @@
-﻿using LNF.Models.Data;
-using LNF.Models.Scheduler;
-using LNF.PhysicalAccess;
-using LNF.Repository;
-using LNF.Repository.Data;
-using LNF.Repository.Scheduler;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 
 namespace LNF.Scheduler
 {

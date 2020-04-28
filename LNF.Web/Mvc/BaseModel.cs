@@ -1,5 +1,4 @@
 ﻿using LNF.Data;
-using LNF.Models.Data;
 using LNF.Web.Mvc.UI;
 
 namespace LNF.Web.Mvc

@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Meter;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Meter;
 
 namespace LNF.Impl.Mappings.Meter
 {
-    public class MeterServiceLogMap : ClassMap<MeterServiceLog>
+    internal class MeterServiceLogMap : ClassMap<MeterServiceLog>
     {
-        public MeterServiceLogMap()
+        internal MeterServiceLogMap()
         {
             Schema("Meter.dbo");
             Table("ServiceLog");

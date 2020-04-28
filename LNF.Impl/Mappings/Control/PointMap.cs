@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Control;
+using LNF.Impl.Repository.Control;
 
 namespace LNF.Impl.Mappings.Control
 {
-    public class PointMap : ClassMap<Point>
+    internal class PointMap : ClassMap<Point>
     {
-        public PointMap()
+        internal PointMap()
         {
             Schema("sselControl.dbo");
             Id(x => x.PointID);

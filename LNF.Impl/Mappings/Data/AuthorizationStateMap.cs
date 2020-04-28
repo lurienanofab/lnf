@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.GoogleApi
 {
-    public class AuthorizationStateMap : ClassMap<GoogleAuthorization>
+    internal class AuthorizationStateMap : ClassMap<GoogleAuthorization>
     {
-        public AuthorizationStateMap()
+        internal AuthorizationStateMap()
         {
             Schema("sselData.dbo");
             Id(x => x.GoogleAuthorizationID);

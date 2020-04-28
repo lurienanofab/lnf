@@ -39,7 +39,7 @@ namespace LNF
         public dynamic AsDynamic(out bool selected)
         {
             selected = Selected;
-            var result = new { Value = this.Value, Text = this.Text };
+            var result = new { Value, Text };
             return result;
         }
     }

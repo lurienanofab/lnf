@@ -1,32 +1,41 @@
-﻿using LNF.CommonTools;
-using LNF.Models.Billing;
-using LNF.Models.Billing.Reports.ServiceUnitBilling;
-using LNF.Repository;
-using LNF.Repository.Data;
+﻿using LNF.Billing;
+using LNF.Billing.Reports.ServiceUnitBilling;
+using LNF.CommonTools;
+using LNF.Data;
+using NHibernate;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 
 namespace LNF.Impl.Billing.Report
 {
     public abstract class ReportGenerator<T> where T : ReportBase
     {
         private DataTable dtManagers;
-        protected IBillingTypeManager BillingTypeManager => ServiceProvider.Current.Billing.BillingType;
         protected List<DataTable> _ReportTables = new List<DataTable>();
         protected List<DataView> _ReportViews = new List<DataView>();
         protected string _CreditAccount;
         protected string _CreditAccountShortCode;
+
+        protected ISession Session { get; }
+        protected IGlobalCost GlobalCost { get; }
         protected DataTable ClientAccountData { get; set; }
 
-        protected T Report { get; private set; }
+        protected T Report { get; }
+
+        public ReportGenerator(ISession session)
+        {
+            Session = session;
+        }
 
         protected DataTable ManagersData
         {
             get
             {
                 if (dtManagers == null)
-                    dtManagers = DataAccess.ClientAccountSelect(new { Action = "AllWithManagerName", sDate = Report.StartPeriod, eDate = Report.EndPeriod });
+                { 
+                    dtManagers = DataAccess.ClientAccountSelect(Session, new { Action = "AllWithManagerName", sDate = Report.StartPeriod, eDate = Report.EndPeriod });
+                }
+
                 return dtManagers;
             }
         }
@@ -38,17 +47,17 @@ namespace LNF.Impl.Billing.Report
         {
             Report = report;
 
-            var gc = DA.Current.Query<GlobalCost>().First();
+            GlobalCost = ServiceProvider.Current.Data.Cost.GetActiveGlobalCost();
 
-            _CreditAccountShortCode = gc.LabCreditAccount.ShortCode;
+            _CreditAccountShortCode = GlobalCost.LabCreditAccountShortCode;
 
             switch (Report.ReportType)
             {
                 case ReportTypes.JU:
-                    _CreditAccount = gc.SubsidyCreditAccount.Number;
+                    _CreditAccount = GlobalCost.SubsidyCreditAccountNumber;
                     break;
                 case ReportTypes.SUB:
-                    _CreditAccount = gc.LabCreditAccount.Number;
+                    _CreditAccount = GlobalCost.LabCreditAccountNumber;
                     break;
             }
         }
@@ -82,7 +91,7 @@ namespace LNF.Impl.Billing.Report
 
         protected void ApplyFilter()
         {
-            ReportUtility.ApplyFilter(ClientAccountData, Report.BillingCategory);
+            ReportUtility.ApplyFilter(Session, ClientAccountData, Report.BillingCategory);
         }
 
         protected void ApplyFormula(DataTable dt)
@@ -90,10 +99,10 @@ namespace LNF.Impl.Billing.Report
             switch (Report.BillingCategory)
             {
                 case BillingCategory.Tool:
-                    BillingTypeManager.CalculateToolLineCost(dt);
+                    ToolBillingUtility.CalculateToolLineCost(dt);
                     break;
                 case BillingCategory.Room:
-                    BillingTypeManager.CalculateRoomLineCost(dt);
+                    RoomBillingUtility.CalculateRoomLineCost(dt);
                     break;
                 case BillingCategory.Store:
                     //do nothing
@@ -103,7 +112,7 @@ namespace LNF.Impl.Billing.Report
 
         protected void ApplyMiscCharge(DataTable dt, int id)
         {
-            ReportUtility.ApplyMiscCharge(dt, ClientAccountData, Report.StartPeriod, Report.EndPeriod, Report.BillingCategory, id);
+            ReportUtility.ApplyMiscCharge(Session, dt, ClientAccountData, Report.StartPeriod, Report.EndPeriod, Report.BillingCategory, id);
         }
 
         protected string ManagerName(DataRow dr)

@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Configuration;
-using LNF.Repository;
-using LNF.Repository.Reporting;
 using System.Linq;
-using LNF.Models.Scheduler;
 
 namespace LNF.Scheduler
 {
@@ -35,7 +32,7 @@ namespace LNF.Scheduler
             string name = ConfigurationManager.AppSettings["AfterHoursName"];
             if (string.IsNullOrEmpty(name)) name = "A";
 
-            var afterHours = DA.Current.Query<AfterHours>().Where(x => x.AfterHoursName == name).ToList();
+            var afterHours = ServiceProvider.Current.Reporting.AfterHours.GetAfterHours(name);
 
             int beginDayOfWeekIndex = (int)BeginDateTime.DayOfWeek + 1; //for DayOfWeekIndex Sunday = 1, but in c# DayOfWeek Sunday = 0
 

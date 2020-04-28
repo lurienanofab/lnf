@@ -1,7 +1,5 @@
-﻿using LNF.Impl.Context;
-using LNF.Impl.DataAccess;
-using LNF.Impl.DependencyInjection.Web;
-using LNF.Repository;
+﻿using LNF.DataAccess;
+using LNF.Impl;
 using Owin;
 using System.Web.Http;
 
@@ -10,16 +8,17 @@ namespace LNF.WebApi
     public abstract class ApiOwinStartup
     {
         protected HttpConfiguration config;
+        protected DependencyResolver resolver;
 
         public virtual void Configuration(IAppBuilder app)
         {
-            var ioc = new IOC();
-            ServiceProvider.Configure(ioc.Resolver);
+            resolver = new WebResolver();
+            ServiceProvider.Setup(resolver.GetInstance<IProvider>());
 
             // Data Access setup
             app.Use(async (ctx, next) =>
             {
-                using (DA.StartUnitOfWork())
+                using (resolver.GetInstance<IUnitOfWork>())
                     await next.Invoke();
             });
 

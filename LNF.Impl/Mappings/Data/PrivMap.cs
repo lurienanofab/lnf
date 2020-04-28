@@ -1,12 +1,12 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Models.Data;
-using LNF.Repository.Data;
+using LNF.Data;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class PrivMap : ClassMap<Priv>
+    internal class PrivMap : ClassMap<Priv>
     {
-        public PrivMap()
+        internal PrivMap()
         {
             Schema("sselData.dbo");
             Id(x => x.PrivFlag, "Priv").GeneratedBy.Assigned().CustomType<ClientPrivilege>();

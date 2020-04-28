@@ -1,4 +1,4 @@
-﻿using LNF.Models.Inventory;
+﻿using LNF.Inventory;
 using System.Collections.Generic;
 
 namespace OnlineServices.Api.Inventory
@@ -7,34 +7,34 @@ namespace OnlineServices.Api.Inventory
     {
         internal InventoryClient() : base(GetApiBaseUrl()) { }
 
-        public IEnumerable<CategoryModel> GetCategories()
+        public IEnumerable<Category> GetCategories()
         {
-            return Get<List<CategoryModel>>("webapi/inventory/category");
+            return Get<List<Category>>("webapi/inventory/category");
         }
 
-        public CategoryModel GetCategory(int catId)
+        public Category GetCategory(int catId)
         {
-            return Get<CategoryModel>("webapi/inventory/category/{catId}", UrlSegments(new { catId }));
+            return Get<Category>("webapi/inventory/category/{catId}", UrlSegments(new { catId }));
         }
 
-        public IEnumerable<InventoryTypeModel> GetInventoryTypes()
+        public IEnumerable<InventoryType> GetInventoryTypes()
         {
-            return Get<List<InventoryTypeModel>>("webapi/inventory/inventory-type");
+            return Get<List<InventoryType>>("webapi/inventory/inventory-type");
         }
 
-        public InventoryTypeModel GetInventoryType(int inventoryTypeId)
+        public InventoryType GetInventoryType(int inventoryTypeId)
         {
-            return Get<InventoryTypeModel>("webapi/inventory/inventory-type/{inventoryTypeId}", UrlSegments(new { inventoryTypeId }));
+            return Get<InventoryType>("webapi/inventory/inventory-type/{inventoryTypeId}", UrlSegments(new { inventoryTypeId }));
         }
 
-        public IEnumerable<ItemModel> GetItems()
+        public IEnumerable<IInventoryItem> GetItems()
         {
-            return Get<List<ItemModel>>("webapi/inventory/item");
+            return Get<List<InventoryItem>>("webapi/inventory/item");
         }
 
-        public ItemModel GetItem(int itemId)
+        public IInventoryItem GetItem(int itemId)
         {
-            return Get<ItemModel>("webapi/inventory/item/{itemId}", UrlSegments(new { itemId }));
+            return Get<InventoryItem>("webapi/inventory/item/{itemId}", UrlSegments(new { itemId }));
         }
     }
 }

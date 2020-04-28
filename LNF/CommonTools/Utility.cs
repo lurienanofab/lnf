@@ -1,9 +1,6 @@
 ﻿using LNF.Cache;
 using LNF.Data;
-using LNF.Models.Data;
-using LNF.Models.Scheduler;
-using LNF.Repository;
-using LNF.Repository.Data;
+using LNF.Scheduler;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,6 +8,7 @@ using System.Configuration;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -305,7 +303,7 @@ namespace LNF.CommonTools
 
         public static string ToJson(object obj)
         {
-            string result = ServiceProvider.Current.Serialization.Json.Serialize(obj);
+            string result = ServiceProvider.Current.Utility.Serialization.Json.Serialize(obj);
             return result;
         }
 
@@ -368,64 +366,60 @@ namespace LNF.CommonTools
                 return false;
         }
 
-        public static IEnumerable<IHoliday> GetHolidays(DateTime sd, DateTime ed)
+        public static IEnumerable<IHoliday> GetHolidays(DateTime sd, DateTime ed) => ServiceProvider.Current.Data.Holiday.GetHolidays(sd, ed);
+
+        public static bool IsKiosk(string userHostAddress)
         {
-            var holidays = DA.Current.Query<Holiday>().Where(x => x.HolidayDate >= sd && x.HolidayDate < ed).CreateModels<IHoliday>();
-            return holidays;
+            return Scheduler.Kiosks.IsKiosk(userHostAddress);
         }
 
-        public static bool IsKiosk()
+        public static bool IsMobile(string userAgent, string preferredMobileView)
         {
-            return Scheduler.KioskUtility.IsKiosk(ServiceProvider.Current.Context.UserHostAddress);
-        }
-
-        public static bool IsMobile()
-        {
-            if (PreferredMobileView() == "standard")
+            if (preferredMobileView == "standard")
                 return false;
             else
-                return IsTablet() | IsPhone();
+                return IsTablet(userAgent, preferredMobileView) | IsPhone(userAgent, preferredMobileView);
         }
 
-        public static bool IsTablet()
+        public static bool IsTablet(string userAgent, string preferredMobileView)
         {
             bool result = false;
 
-            if (PreferredMobileView() == "tablet")
+            if (preferredMobileView == "tablet")
                 return true;
 
-            if (!string.IsNullOrEmpty(ServiceProvider.Current.Context.GetRequestUserAgent()) && ServiceProvider.Current.Context.GetRequestUserAgent().ToLower().Contains("ipad"))
+            if (!string.IsNullOrEmpty(userAgent) && userAgent.ToLower().Contains("ipad"))
                 return true;
 
-            if (!string.IsNullOrEmpty(ServiceProvider.Current.Context.GetRequestUserAgent()) && ServiceProvider.Current.Context.GetRequestUserAgent().ToLower().Contains("android") && !ServiceProvider.Current.Context.GetRequestUserAgent().ToLower().Contains("mobile"))
+            if (!string.IsNullOrEmpty(userAgent) && userAgent.ToLower().Contains("android") && !userAgent.ToLower().Contains("mobile"))
                 return true;
 
             return result;
         }
 
-        public static bool IsPhone()
+        public static bool IsPhone(string userAgent, string preferredMobileView)
         {
             bool result = false;
 
-            if (PreferredMobileView() == "phone")
+            if (preferredMobileView == "phone")
                 return true;
 
-            if (ServiceProvider.Current.Context.GetRequestUserAgent().ToLower().Contains("iphone"))
+            if (userAgent.ToLower().Contains("iphone"))
                 return true;
 
-            if (ServiceProvider.Current.Context.GetRequestUserAgent().ToLower().Contains("android") && ServiceProvider.Current.Context.GetRequestUserAgent().ToLower().Contains("mobile"))
+            if (userAgent.ToLower().Contains("android") && userAgent.ToLower().Contains("mobile"))
                 return true;
 
             return result;
         }
 
-        public static string PreferredMobileView()
+        public static string PreferredMobileView(Func<string, string> getCookieValue)
         {
             string result = string.Empty;
 
-            if (ServiceProvider.Current.Context.GetRequestCookieValue("lnf_mobile_pref_view") != null)
+            if (getCookieValue("lnf_mobile_pref_view") != null)
             {
-                result = ServiceProvider.Current.Context.GetRequestCookieValue("lnf_mobile_pref_view");
+                result = getCookieValue("lnf_mobile_pref_view");
             }
 
             return result;
@@ -809,7 +803,7 @@ namespace LNF.CommonTools
 
         public static string GetGlobalSetting(string name)
         {
-            var gs = DA.Current.Query<GlobalSettings>().FirstOrDefault(x => x.SettingName == name);
+            var gs = ServiceProvider.Current.Data.GlobalSetting.GetGlobalSetting(name);
             if (gs == null) return null;
             return gs.SettingValue;
         }
@@ -829,6 +823,32 @@ namespace LNF.CommonTools
             var list = new List<T>();
             if (item != null) list.Add(item);
             var result = list.AsQueryable();
+            return result;
+        }
+
+        public static DateTime Truncate(DateTime date)
+        {
+            return new DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second, date.Kind);
+        }
+
+        public static DateTime? Truncate(DateTime? date)
+        {
+            if (date == null)
+                return null;
+
+            return Truncate(date.Value);
+        }
+
+        //https://stackoverflow.com/questions/857705/get-all-derived-types-of-a-type
+        public static Type[] GetAssignableFromType<T>(IEnumerable<Assembly> assemblies)
+        {
+            var result = (from domainAssembly in assemblies
+                    // alternative: from domainAssembly in domainAssembly.GetExportedTypes()
+                    from assemblyType in domainAssembly.GetExportedTypes()
+                    where typeof(T).IsAssignableFrom(assemblyType)
+                    where assemblyType.IsSubclassOf(typeof(T)) && !assemblyType.IsAbstract
+                    select assemblyType).ToArray();
+
             return result;
         }
     }

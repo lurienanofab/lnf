@@ -1,6 +1,5 @@
 ﻿using LNF.CommonTools;
 using LNF.Data;
-using LNF.Models.Data;
 using LNF.Web.Mvc.UI;
 using LNF.Web.Mvc.Utility;
 using System;
@@ -78,13 +77,13 @@ namespace LNF.Web.Mvc
                 sb.AppendLine(string.Format("<a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">{0} {1} <span class=\"caret\"></span></a>", currentUser.FName, currentUser.LName));
                 sb.AppendLine("<ul class=\"dropdown-menu\" role=\"menu\">");
                 sb.AppendLine(string.Format("<li><a href=\"{0}\">Preferences</a></li>", VirtualPathUtility.ToAbsolute("~/preferences")));
-                sb.AppendLine(string.Format("<li><a href=\"{0}\">Sign Out</a></li>", ServiceProvider.Current.Context.LoginUrl));
+                sb.AppendLine(string.Format("<li><a href=\"{0}\">Sign Out</a></li>", ServiceProvider.Current.LoginUrl()));
                 sb.AppendLine("</ul>");
                 sb.AppendLine("</li>");
             }
             else
             {
-                sb.AppendLine(string.Format("<li><a href=\"{0}\">Sign In</a></li>", ServiceProvider.Current.Context.LoginUrl));
+                sb.AppendLine(string.Format("<li><a href=\"{0}\">Sign In</a></li>", ServiceProvider.Current.LoginUrl()));
             }
             sb.AppendLine("</ul>");
 

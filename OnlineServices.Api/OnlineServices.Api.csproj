@@ -41,13 +41,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp, Version=106.6.9.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
-      <HintPath>..\packages\RestSharp.106.6.9\lib\net452\RestSharp.dll</HintPath>
+    <Reference Include="RestSharp, Version=106.0.0.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.106.10.1\lib\net452\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="SimpleInjector, Version=4.6.0.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
-      <HintPath>..\packages\SimpleInjector.4.6.0\lib\net45\SimpleInjector.dll</HintPath>
+    <Reference Include="SimpleInjector, Version=4.9.0.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.4.9.0\lib\net45\SimpleInjector.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -64,42 +64,81 @@
     <Compile Include="ApiRequestException.cs" />
     <Compile Include="Authorization\AuthorizationAccess.cs" />
     <Compile Include="Authorization\AuthorizationService.cs" />
-    <Compile Include="Billing\AccountSubsidyManager.cs" />
-    <Compile Include="Billing\ApportionmentManager.cs" />
-    <Compile Include="Billing\BillingTypeManager.cs" />
-    <Compile Include="Billing\MiscBillingManager.cs" />
-    <Compile Include="Billing\ProcessManager.cs" />
-    <Compile Include="Billing\ReportManager.cs" />
-    <Compile Include="Billing\RoomBillingManager.cs" />
-    <Compile Include="Billing\StoreBillingManager.cs" />
-    <Compile Include="Billing\ToolBillingManager.cs" />
-    <Compile Include="Control\InterlockManager.cs" />
+    <Compile Include="Billing\AccountSubsidy.cs" />
+    <Compile Include="Billing\AccountSubsidyRepository.cs" />
+    <Compile Include="Billing\ApportionmentRepository.cs" />
+    <Compile Include="Billing\BillingTypeRepository.cs" />
+    <Compile Include="Billing\MiscBillingCharge.cs" />
+    <Compile Include="Billing\MiscBillingRepository.cs" />
+    <Compile Include="Billing\MiscDataRepository.cs" />
+    <Compile Include="Billing\OrgRechargeRepository.cs" />
+    <Compile Include="Billing\ProcessRepository.cs" />
+    <Compile Include="Billing\RegularException.cs" />
+    <Compile Include="Billing\ReportRepository.cs" />
+    <Compile Include="Billing\RoomBillingRepository.cs" />
+    <Compile Include="Billing\RoomDataRepository.cs" />
+    <Compile Include="Billing\StoreBillingRepository.cs" />
+    <Compile Include="Billing\StoreDataRepository.cs" />
+    <Compile Include="Billing\ToolBillingRepository.cs" />
+    <Compile Include="Billing\ToolDataRepository.cs" />
     <Compile Include="Control\ControlService.cs" />
-    <Compile Include="Data\ActiveLogManager.cs" />
-    <Compile Include="Data\CostManager.cs" />
-    <Compile Include="Data\DataApi.cs" />
-    <Compile Include="Data\DryBoxManager.cs" />
-    <Compile Include="Data\FeedManager.cs" />
-    <Compile Include="Data\OrgManager.cs" />
-    <Compile Include="Data\RoomManager.cs" />
-    <Compile Include="Data\ServiceLogManager.cs" />
+    <Compile Include="DataAccess\DataAccessService.cs" />
+    <Compile Include="Data\Account.cs" />
+    <Compile Include="Data\ActiveLogRepository.cs" />
+    <Compile Include="Data\GlobalSettingRepository.cs" />
+    <Compile Include="Data\HelpRepository.cs" />
+    <Compile Include="Data\HolidayRepository.cs" />
+    <Compile Include="Data\MenuRepository.cs" />
+    <Compile Include="EncryptionUtility.cs" />
+    <Compile Include="Feedback\FeedbackService.cs" />
+    <Compile Include="Inventory\Category.cs" />
+    <Compile Include="Inventory\CategoryRepository.cs" />
+    <Compile Include="Inventory\InventoryItem.cs" />
+    <Compile Include="Inventory\InventoryItemRepository.cs" />
+    <Compile Include="Inventory\InventoryType.cs" />
+    <Compile Include="Logging\LoggingService.cs" />
+    <Compile Include="Mail\Message.cs" />
+    <Compile Include="Mail\Recipient.cs" />
+    <Compile Include="Ordering\ApproverRepository.cs" />
+    <Compile Include="Ordering\PurchaseOrderCategoryRepository.cs" />
+    <Compile Include="Ordering\PurchaseOrderItemRepository.cs" />
+    <Compile Include="Ordering\PurchaseOrderRepository.cs" />
+    <Compile Include="Ordering\PurchaserRepository.cs" />
+    <Compile Include="Ordering\TrackingRepository.cs" />
+    <Compile Include="Ordering\VendorRepository.cs" />
+    <Compile Include="Provider.cs" />
+    <Compile Include="Reporting\AfterHoursRepository.cs" />
+    <Compile Include="Reporting\ClientItemRepository.cs" />
+    <Compile Include="Reporting\ClientManagerLogRepository.cs" />
+    <Compile Include="Reporting\ManagerUsageChargeRepository.cs" />
+    <Compile Include="Scheduler\ActivityRepository.cs" />
+    <Compile Include="Scheduler\ClientSettingRepository.cs" />
+    <Compile Include="Scheduler\EmailRepository.cs" />
+    <Compile Include="Scheduler\KioskRepository.cs" />
+    <Compile Include="Scheduler\ReservationInvitee.cs" />
+    <Compile Include="Scheduler\SchedulerPropertyRepository.cs" />
+    <Compile Include="Store\StoreService.cs" />
+    <Compile Include="Utility\AutoEndUtility.cs" />
+    <Compile Include="Data\CostRepository.cs" />
+    <Compile Include="Data\DryBoxRepository.cs" />
+    <Compile Include="Data\FeedRepository.cs" />
+    <Compile Include="Data\OrgRepository.cs" />
+    <Compile Include="Data\RoomRepository.cs" />
+    <Compile Include="Data\ServiceLogRepository.cs" />
     <Compile Include="Inventory\InventoryClient.cs" />
-    <Compile Include="IOC.cs" />
     <Compile Include="JsonNetSerializer.cs" />
     <Compile Include="Mail\AttachmentManager.cs" />
     <Compile Include="Mail\MailService.cs" />
-    <Compile Include="Data\AccountManager.cs" />
-    <Compile Include="Data\ClientManager.cs" />
+    <Compile Include="Data\AccountRepository.cs" />
+    <Compile Include="Data\ClientRepository.cs" />
     <Compile Include="Mail\MassEmailManager.cs" />
     <Compile Include="PhysicalAccess\PhysicalAccessService.cs" />
-    <Compile Include="FileCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Data\UtilityManager.cs" />
-    <Compile Include="Scheduler\ProcessInfoManager.cs" />
-    <Compile Include="Scheduler\ReservationManager.cs" />
-    <Compile Include="Scheduler\ResourceManager.cs" />
-    <Compile Include="Scheduler\SchedulerServiceClient.cs" />
-    <Compile Include="ServiceProvider.cs" />
+    <Compile Include="Utility\SerializationUtility.cs" />
+    <Compile Include="Utility\SiteMenuUtility.cs" />
+    <Compile Include="Scheduler\ProcessInfoRepository.cs" />
+    <Compile Include="Scheduler\ReservationRepository.cs" />
+    <Compile Include="Scheduler\ResourceRepository.cs" />
     <Compile Include="Tasks\TasksClient.cs" />
     <Compile Include="Worker\WorkerService.cs" />
   </ItemGroup>
@@ -108,9 +147,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LNF.Models\LNF.Models.csproj">
-      <Project>{98c7f73d-ef9d-4a87-8b79-a1208085cfbd}</Project>
-      <Name>LNF.Models</Name>
+    <ProjectReference Include="..\LNF\LNF.csproj">
+      <Project>{e3b73410-869b-4ba2-99ac-ad6708a27ade}</Project>
+      <Name>LNF</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

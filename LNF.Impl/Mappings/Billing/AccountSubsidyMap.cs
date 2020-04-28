@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Billing;
+using LNF.Impl.Repository.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {
-    public class AccountSubsidyMap:ClassMap<AccountSubsidy>
+    internal class AccountSubsidyMap:ClassMap<AccountSubsidy>
     {
-        public AccountSubsidyMap()
+        internal AccountSubsidyMap()
         {
             Schema("Billing.dbo");
             Id(x => x.AccountSubsidyID);

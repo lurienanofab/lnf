@@ -1,7 +1,4 @@
-﻿using LNF.Cache;
-using LNF.Data;
-using LNF.Models.Data;
-using LNF.Models.Scheduler;
+﻿using LNF.Data;
 using LNF.Repository;
 using System;
 using System.Data;
@@ -11,6 +8,7 @@ namespace LNF.Scheduler.Data
     /// <summary>
     /// A class for handling ResourceClient data using the System.Data namespace.
     /// </summary>
+    [Obsolete("What uses this?")]
     public static class ResourceClientData
     {
         /// <summary>
@@ -60,23 +58,6 @@ namespace LNF.Scheduler.Data
                 .Param("Action", "SelectByClient")
                 .Param("ClientID", clientId)
                 .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
-        }
-
-        /// <summary>
-        /// Returns all resource clients that the current client may view reserv histories of
-        /// </summary>
-        public static DataTable SelectReservationHistoryClient(IPrivileged client)
-        {
-            //var hasPriv = client.HasPriv(ClientPrivilege.Staff | ClientPrivilege.Administrator | ClientPrivilege.Developer);
-
-            // allow everyone to see other users history
-            var hasPriv = true;
-
-            var dt = DA.Command(CommandType.Text)
-                .Param("ClientID", !hasPriv, client.ClientID, DBNull.Value)
-                .FillDataTable("SELECT ClientID, LName + ', ' + FName AS DisplayName FROM dbo.Client WHERE (Privs & 3) > 0 AND Active = 1 AND ClientID = ISNULL(@ClientID, ClientID) ORDER BY LName, FName");
-
-            return dt;
         }
 
         /// <summary>
@@ -194,11 +175,7 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static int UpdateExpiration(int resourceClientId, DateTime expirationDate)
         {
-            return DA.Command()
-                .Param("Action", "UpdateExpiration")
-                .Param("ResourceClientID", resourceClientId)
-                .Param("Expiration", expirationDate)
-                .ExecuteNonQuery("sselScheduler.dbo.procResourceClientUpdate").Value;
+            return ServiceProvider.Current.Scheduler.Resource.UpdateExpiration(resourceClientId, expirationDate);
         }
 
         /// <summary>

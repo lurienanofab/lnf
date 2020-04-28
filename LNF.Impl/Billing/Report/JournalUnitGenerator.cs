@@ -1,6 +1,6 @@
-﻿using LNF.CommonTools;
-using LNF.Models.Billing;
-using LNF.Models.Billing.Reports.ServiceUnitBilling;
+﻿using LNF.Billing;
+using LNF.Billing.Reports.ServiceUnitBilling;
+using LNF.CommonTools;
 using System;
 using System.Collections.Generic;
 using System.Data;

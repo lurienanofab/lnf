@@ -1,4 +1,5 @@
-using LNF.Repository;
+using System;
+using System.Collections.Generic;
 using System.Data;
 
 namespace LNF.Scheduler.Data
@@ -13,14 +14,44 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectProcessInfo(int resourceId)
         {
-            var dt = DA.Command()
-                .Param(new { ResourceID = resourceId })
-                .FillDataTable("sselScheduler.dbo.procProcessInfoSelect");
+            var items = ServiceProvider.Current.Scheduler.ProcessInfo.GetProcessInfos(resourceId);
+
+            var dt = new DataTable();
+            dt.Columns.Add("ProcessInfoID", typeof(int));
+            dt.Columns.Add("ResourceID", typeof(int));
+            dt.Columns.Add("ResourceName", typeof(string));
+            dt.Columns.Add("ProcessInfoName", typeof(string));
+            dt.Columns.Add("ParamName", typeof(string));
+            dt.Columns.Add("ValueName", typeof(string));
+            dt.Columns.Add("Special", typeof(string));
+            dt.Columns.Add("AllowNone", typeof(bool));
+            dt.Columns.Add("Order", typeof(int));
+            dt.Columns.Add("RequireValue", typeof(bool));
+            dt.Columns.Add("RequireSelection", typeof(bool));
+            dt.Columns.Add("MaxAllowed", typeof(int));
 
             dt.Columns["ProcessInfoID"].AutoIncrement = true;
             dt.Columns["ProcessInfoID"].AutoIncrementSeed = 1;
             dt.Columns["ProcessInfoID"].AutoIncrementStep = 1;
             dt.PrimaryKey = new[] { dt.Columns["ProcessInfoID"] };
+
+            foreach (var i in items)
+            {
+                var ndr = dt.NewRow();
+                ndr.SetField("ProcessInfoID", i.ProcessInfoID);
+                ndr.SetField("ResourceID", i.ResourceID);
+                ndr.SetField("ResourceName", i.ResourceName);
+                ndr.SetField("ProcessInfoName", i.ProcessInfoName);
+                ndr.SetField("ParamName", i.ParamName);
+                ndr.SetField("ValueName", i.ValueName);
+                ndr.SetField("Special", i.Special);
+                ndr.SetField("AllowNone", i.AllowNone);
+                ndr.SetField("Order", i.Order);
+                ndr.SetField("RequireValue", i.RequireValue);
+                ndr.SetField("RequireSelection", i.RequireSelection);
+                ndr.SetField("MaxAllowed", i.MaxAllowed);
+                dt.Rows.Add(ndr);
+            }
 
             return dt;
         }
@@ -28,36 +59,28 @@ namespace LNF.Scheduler.Data
         /// <summary>
         /// Insert/Update/Delete ProcessInfo
         /// </summary>
-        public static void Update(DataTable dt)
+        public static void Update(IEnumerable<IProcessInfo> insert, IEnumerable<IProcessInfo> update, IEnumerable<IProcessInfo> delete)
         {
-            DA.Command().Update(dt, x =>
+            ServiceProvider.Current.Scheduler.ProcessInfo.Update(insert, update, delete);
+        }
+
+        public static IProcessInfo CreateProcessInfo(DataRow dr)
+        {
+            return new ProcessInfoItem
             {
-                x.Insert.SetCommandText("sselScheduler.dbo.procProcessInfoInsert");
-                x.Insert.AddParameter("ProcessInfoID", SqlDbType.Int, ParameterDirection.Output);
-                x.Insert.AddParameter("ResourceID", SqlDbType.Int);
-                x.Insert.AddParameter("ProcessInfoName", SqlDbType.NVarChar, 50);
-                x.Insert.AddParameter("ParamName", SqlDbType.NVarChar, 50);
-                x.Insert.AddParameter("ValueName", SqlDbType.NVarChar, 50);
-                x.Insert.AddParameter("Special", SqlDbType.NVarChar, 50);
-                x.Insert.AddParameter("AllowNone", SqlDbType.Bit);
-                x.Insert.AddParameter("RequireValue", SqlDbType.Bit);
-                x.Insert.AddParameter("RequireSelection", SqlDbType.Bit);
-                x.Insert.AddParameter("Order", SqlDbType.Int);
-
-                x.Update.SetCommandText("sselScheduler.dbo.procProcessInfoUpdate");
-                x.Update.AddParameter("ProcessInfoID", SqlDbType.Int);
-                x.Update.AddParameter("ProcessInfoName", SqlDbType.NVarChar, 50);
-                x.Update.AddParameter("ParamName", SqlDbType.NVarChar, 50);
-                x.Update.AddParameter("ValueName", SqlDbType.NVarChar, 50);
-                x.Update.AddParameter("Special", SqlDbType.NVarChar, 50);
-                x.Update.AddParameter("AllowNone", SqlDbType.Bit);
-                x.Update.AddParameter("RequireValue", SqlDbType.Bit);
-                x.Update.AddParameter("RequireSelection", SqlDbType.Bit);
-                x.Update.AddParameter("Order", SqlDbType.Int);
-
-                x.Delete.SetCommandText("sselScheduler.dbo.procProcessInfoDelete");
-                x.Delete.AddParameter("ProcessInfoID", SqlDbType.Int);
-            });
+                ProcessInfoID = dr.Field<int>("ProcessInfoID"),
+                ResourceID = dr.Field<int>("ResourceID"),
+                ResourceName = dr.Field<string>("ResourceName"),
+                ProcessInfoName = dr.Field<string>("ProcessInfoName"),
+                ParamName = dr.Field<string>("ParamName"),
+                ValueName = dr.Field<string>("ValueName"),
+                Special = dr.Field<string>("Special"),
+                AllowNone = dr.Field<bool>("AllowNone"),
+                Order = dr.Field<int>("Order"),
+                RequireValue = dr.Field<bool>("RequireValue"),
+                RequireSelection = dr.Field<bool>("RequireSelection"),
+                MaxAllowed = dr.Field<int>("MaxAllowed")
+            };
         }
     }
 }

@@ -1,7 +1,5 @@
-﻿using LNF.Models.Mail;
-using System;
+﻿using LNF.Mail;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Net;
 using System.Net.Mail;
 
@@ -9,14 +7,11 @@ namespace LNF.Impl.Mail
 {
     public static class MailUtility
     {
-        public static EmailServiceElement Configuration { get; }
+        private readonly static EmailServiceElement _config;
 
         static MailUtility()
         {
-            if (!(ConfigurationManager.GetSection("lnf/provider") is ServiceProviderSection section))
-                throw new Exception("Missing required configuration section: lnf/provider");
-
-            Configuration = section.Email;
+            _config = Configuration.Current.Email;
         }
 
         public static void Send(SendMessageArgs args)
@@ -40,12 +35,12 @@ namespace LNF.Impl.Mail
 
         public static SmtpClient GetSmtpClient()
         {
-            var client = new SmtpClient(Configuration.Host, Configuration.Port);
+            var client = new SmtpClient(_config.Host, _config.Port);
 
-            if (!string.IsNullOrEmpty(Configuration.Username) && !string.IsNullOrEmpty(Configuration.Password))
+            if (!string.IsNullOrEmpty(_config.Username) && !string.IsNullOrEmpty(_config.Password))
             {
-                client.Credentials = new NetworkCredential(Configuration.Username, Configuration.Password);
-                client.EnableSsl = Configuration.EnableSsl;
+                client.Credentials = new NetworkCredential(_config.Username, _config.Password);
+                client.EnableSsl = _config.EnableSsl;
             }
 
             return client;
@@ -80,7 +75,7 @@ namespace LNF.Impl.Mail
             {
                 foreach (var att in atts)
                 {
-                    col.Add(new System.Net.Mail.Attachment(att));
+                    col.Add(new global::System.Net.Mail.Attachment(att));
                 }
             }
         }

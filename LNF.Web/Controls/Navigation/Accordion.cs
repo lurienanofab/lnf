@@ -74,9 +74,9 @@ namespace LNF.Web.Controls.Navigation
 
         protected override void RenderContents(HtmlTextWriter output)
         {
-            if (!this.Visible) return;
+            if (!Visible) return;
 
-            this.Page.ClientScript.RegisterStartupScript(typeof(Page), this.ID + "_script", this.Script(), true);
+            Page.ClientScript.RegisterStartupScript(typeof(Page), ID + "_script", Script(), true);
 
             foreach (AccordionParentItem p in _ParentItems)
             {

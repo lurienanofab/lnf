@@ -1,13 +1,14 @@
-﻿using LNF.Models.Authorization;
-using LNF.Models.Authorization.Credentials;
-using LNF.Repository;
+﻿using LNF.Authorization;
+using LNF.Authorization.Credentials;
+using LNF.Impl.DataAccess;
+using LNF.Impl.Repository;
 using System;
 
 namespace LNF.Impl.Authorization
 {
-    public class AuthorizationService : ManagerBase, IAuthorizationService
+    public class AuthorizationService : RepositoryBase, IAuthorizationService
     {
-        public AuthorizationService(IProvider provider) : base(provider) { }
+        public AuthorizationService(ISessionManager mgr) : base(mgr) { }
 
         public IAuthorizationAccess Authorize(ICredentials credentials)
         {

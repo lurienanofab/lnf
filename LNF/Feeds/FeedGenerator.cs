@@ -1,7 +1,5 @@
-﻿using LNF.Help;
-using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
+﻿using LNF.Data;
+using LNF.Help;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -20,11 +18,11 @@ namespace LNF.Feeds
         {
             public static class StaffHours
             {
-                public static string GetUrl(FeedFormats format, string UserName)
+                public static string GetUrl(FeedFormats format, string userName, Uri requestUri)
                 {
                     string result = string.Empty;
-                    result = ServiceProvider.Current.Context.GetRequestUrl().GetLeftPart(UriPartial.Authority);
-                    result += "/feeds/help/staffhours/" + FeedFormatToString(format) + "/" + UserName;
+                    result = requestUri.GetLeftPart(UriPartial.Authority);
+                    result += "/feeds/help/staffhours/" + FeedFormatToString(format) + "/" + userName;
                     return result;
                 }
 
@@ -76,25 +74,25 @@ namespace LNF.Feeds
                     return result;
                 }
 
-                public static Feed CreateFeed(FeedFormats format, string UserName)
+                public static Feed CreateFeed(FeedFormats format, string userName)
                 {
                     switch (format)
                     {
                         case FeedFormats.Calendar:
                             DataTable dt = FeedGenerator.InitCalendarTable();
                             Dictionary<string, object> search_params = new Dictionary<string, object>();
-                            StaffDirectory sd = null;
-                            if (!string.IsNullOrEmpty(UserName))
-                                sd = DA.Current.Query<StaffDirectory>().FirstOrDefault(x => x.Client.UserName == UserName);
+                            IStaffDirectory sd = null;
+                            if (!string.IsNullOrEmpty(userName))
+                                sd = ServiceProvider.Current.Data.Client.GetStaffDirectory(userName);
                             if (sd != null)
                             {
                                 DateTime[] week = WeekArray(sd.LastUpdate);
                                 StaffTimeInfoCollection staffTime = new StaffTimeInfoCollection(sd.HoursXML);
-                                IClient c = sd.Client.CreateModel<IClient>();
-                                StaffDirectoryItem sdi = new StaffDirectoryItem()
+                                IClient c = ServiceProvider.Current.Data.Client.GetClient(sd.ClientID);
+                                StaffDirectoryEntry sdi = new StaffDirectoryEntry()
                                 {
                                     StaffDirectoryID = sd.StaffDirectoryID,
-                                    Name = sd.Client.DisplayName,
+                                    Name = sd.DisplayName,
                                     Hours = staffTime.ToString(),
                                     Email = c.Email,
                                     Phone = c.Phone,
@@ -120,7 +118,7 @@ namespace LNF.Feeds
                                         dr["CREATED"] = ":" + sd.LastUpdate.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
                                         dr["LAST-MODIFIED"] = ":" + sd.LastUpdate.ToUniversalTime().ToString("yyyyMMddTHHmmssZ");
                                         dr["STATUS"] = ":CONFIRMED";
-                                        dr["SUMMARY"] = ":" + sd.Client.LName + " " + TimeRangeToString(dtstart, dtend);
+                                        dr["SUMMARY"] = ":" + sd.LName + " " + TimeRangeToString(dtstart, dtend);
                                         dr["DESCRIPTION"] = ":Lunch: " + TimeRangeToString(lunchStart, lunchEnd);
                                         //BEGIN:VEVENT
                                         //DTSTART;TZID=America/New_York:20120914T080000
@@ -162,40 +160,22 @@ namespace LNF.Feeds
         {
             public static class Reservations
             {
-                public static string GetUrl(FeedFormats format, string UserName, string ResourceID, string FileName)
+                public static string GetUrl(FeedFormats format, string userName, string resourceId, string fileName, Uri requestUri)
                 {
                     string result = string.Empty;
-                    result = ServiceProvider.Current.Context.GetRequestUrl().GetLeftPart(UriPartial.Authority);
-                    result += "/feeds/scheduler/reservations/" + FeedGenerator.FeedFormatToString(format) + "/" + UserName + "/" + ResourceID + "/" + FileName;
+                    result = requestUri.GetLeftPart(UriPartial.Authority);
+                    result += "/feeds/scheduler/reservations/" + FeedFormatToString(format) + "/" + userName + "/" + resourceId + "/" + fileName;
                     return result;
                 }
 
-                public static IEnumerable<ReservationFeed> AllReservationInDateRange(DateTime sd, DateTime ed, int resourceId = 0)
+                public static IEnumerable<IReservationFeed> AllReservationInDateRange(DateTime sd, DateTime ed, int resourceId = 0)
                 {
-                    IQueryable<ReservationFeed> query;
-
-                    if (resourceId == 0)
-                        query = DA.Current.Query<ReservationFeed>().Where(x => x.BeginDateTime >= sd && x.EndDateTime < ed);
-                    else
-                        query = DA.Current.Query<ReservationFeed>().Where(x => x.BeginDateTime >= sd && x.EndDateTime < ed && x.ResourceID == resourceId);
-
-                    var result = query.ToList();
-
-                    return result;
+                    return ServiceProvider.Current.Data.Feed.GetReservationFeeds(sd, ed, resourceId);
                 }
 
-                public static IEnumerable<ReservationFeed> AllReservationInDateRange(string username, DateTime sd, DateTime ed, int resourceId = 0)
+                public static IEnumerable<IReservationFeed> AllReservationInDateRange(string username, DateTime sd, DateTime ed, int resourceId = 0)
                 {
-                    IQueryable<ReservationFeed> query;
-
-                    if (resourceId == 0)
-                        query = DA.Current.Query<ReservationFeed>().Where(x => (x.UserName == username || x.Invitees.Contains(username)) && x.BeginDateTime >= sd && x.EndDateTime < ed);
-                    else
-                        query = DA.Current.Query<ReservationFeed>().Where(x => (x.UserName == username || x.Invitees.Contains(username)) && x.BeginDateTime >= sd && x.EndDateTime < ed && x.ResourceID == resourceId);
-
-                    var result = query.ToList();
-
-                    return result;
+                    return ServiceProvider.Current.Data.Feed.GetReservationFeeds(username, sd, ed, resourceId);
                 }
 
                 public static int GetResourceID(string resourceId)
@@ -220,7 +200,7 @@ namespace LNF.Feeds
                             DataTable dt = InitCalendarTable();
                             int rid = GetResourceID(resourceId);
 
-                            IEnumerable<ReservationFeed> reservations;
+                            IEnumerable<IReservationFeed> reservations;
 
                             // if there is username we must also look for invitees
                             if (!string.IsNullOrEmpty(username) && username != "all")
@@ -241,7 +221,7 @@ namespace LNF.Feeds
                                 dr["LAST-MODIFIED"] = item.LastModifiedOn.ToUniversalTime().ToString("yyyyMMdd'T'HHmmss'Z'");
                                 dr["STATUS"] = (item.IsActive) ? "CONFIRMED" : "CANCELLED";
                                 if (!item.IsActive) dr["METHOD"] = "CANCEL";
-                                dr["SUMMARY"] = string.Format("{0} [{1}] | {2} ({3})", item.ResourceName, item.ResourceID, item.GetClientDisplayName(), item.Email);
+                                dr["SUMMARY"] = string.Format("{0} [{1}] | {2} ({3})", item.ResourceName, item.ResourceID, Clients.GetDisplayName(item.LName, item.FName), item.Email);
                                 dr["DESCRIPTION"] = string.Format(
                                     "Activity: {0}\\nStatus: {1}\\nScheduled Start: {2}\\nScheduled End: {3}\\nActual Start: {4}\\nActual End: {5}",
                                     item.ActivityName, GetReservationStatus(item), GetDateTime(item.BeginDateTime), GetDateTime(item.EndDateTime), GetDateTime(item.ActualBeginDateTime), GetDateTime(item.ActualEndDateTime)
@@ -253,7 +233,7 @@ namespace LNF.Feeds
                             throw new NotImplementedException("Feed format has not been implemented.");
                     }
                 }
-                private static string GetReservationStatus(ReservationFeed item)
+                private static string GetReservationStatus(IReservationFeed item)
                 {
                     string result = "unknown";
                     if (item.IsActive && item.IsStarted && item.ActualEndDateTime == DateTime.MinValue)

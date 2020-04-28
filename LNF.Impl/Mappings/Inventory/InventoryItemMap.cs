@@ -1,5 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Inventory;
+using LNF.Impl.Repository.Inventory;
 
 namespace LNF.Impl.Mappings.Inventory
 {
@@ -22,14 +22,14 @@ namespace LNF.Impl.Mappings.Inventory
             Map(x => x.CrossCharge);
             Map(x => x.StockQuantity);
             Map(x => x.MinStockQuantity);
+            Map(x => x.MaxStockQuantity);
             Map(x => x.StockOnOrder);
             Map(x => x.OrderDate);
             Map(x => x.EstimatedArrivalDate);
             Map(x => x.SearchKeyWords);
-            Map(x => x.ItemIsPopular);
-            Map(x => x.MaxStockQuantity);
-            Map(x => x.CheckOutCategoryID);
+            Map(x => x.IsChemicalInventory);
             Map(x => x.IsPopular);
+            Map(x => x.CheckOutCategoryID);
             Map(x => x.IsCheckOutItem);
             Map(x => x.InventoryTypeID);
             Map(x => x.InventoryTypeName);

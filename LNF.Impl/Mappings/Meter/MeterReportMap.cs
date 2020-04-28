@@ -1,5 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Meter;
+using LNF.Impl.Repository.Meter;
 
 namespace LNF.Impl.Mappings.Meter
 {

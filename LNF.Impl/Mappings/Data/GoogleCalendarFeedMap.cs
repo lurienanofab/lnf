@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class GoogleCalendarFeedMap : ClassMap<GoogleCalendarFeed>
+    internal class GoogleCalendarFeedMap : ClassMap<GoogleCalendarFeed>
     {
-        public GoogleCalendarFeedMap()
+        internal GoogleCalendarFeedMap()
         {
             Schema("sselData.dbo");
             Id(x => x.GoogleCalendarFeedID);

@@ -1,9 +1,11 @@
-﻿using LNF.Impl.Context;
-using LNF.Impl.DependencyInjection.Default;
-using LNF.Repository;
+﻿using LNF.DataAccess;
+using LNF.Impl;
+using LNF.Impl.DataAccess;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
 
 namespace LNF.Tests
@@ -11,14 +13,19 @@ namespace LNF.Tests
     [TestClass]
     public abstract class TestBase
     {
+        private DependencyResolver _resolver;
         private IDisposable _uow;
+
+        public ISessionManager SessionManager => _resolver.GetInstance<ISessionManager>();
+        public NHibernate.ISession Session => SessionManager.Session;
+        public IProvider Provider => _resolver.GetInstance<IProvider>();
 
         [TestInitialize]
         public void TestInitialize()
         {
-            var ioc = new IOC();
-            ServiceProvider.Configure(ioc.Resolver);
-            _uow = DA.StartUnitOfWork();
+            _resolver = new ThreadStaticResolver();
+            ServiceProvider.Setup(Provider);
+            _uow = StartUnitOfWork();
         }
 
         [TestCleanup]
@@ -71,6 +78,16 @@ namespace LNF.Tests
                 var item2 = list2.First(i2 => getter(item1, i2));
                 Assert.IsTrue(comparer.AreEqual(item1, item2));
             }
+        }
+
+        protected SqlConnection NewConnection()
+        {
+            return new SqlConnection(ConfigurationManager.ConnectionStrings["cnSselData"].ConnectionString);
+        }
+
+        public IUnitOfWork StartUnitOfWork()
+        {
+            return _resolver.GetInstance<IUnitOfWork>();
         }
     }
 

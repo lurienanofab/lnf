@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class ActiveLogMap : ClassMap<ActiveLog>
+    internal class ActiveLogMap : ClassMap<ActiveLog>
     {
-        public ActiveLogMap()
+        internal ActiveLogMap()
         {
             Schema("sselData.dbo");
             Id(x => x.LogID);

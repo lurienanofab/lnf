@@ -7,6 +7,7 @@ namespace LNF.Impl
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
+    [Obsolete("Use LNF.Impl.DataAccess.NHibernateMiddleware instead.")]
     public class ServiceMiddleware
     {
         private AppFunc _next;

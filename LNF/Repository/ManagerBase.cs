@@ -1,11 +1,14 @@
-﻿using System.Data;
+﻿using LNF.DataAccess;
+using System;
+using System.Data;
 
 namespace LNF.Repository
 {
+    [Obsolete("Use LNF.Impl.Repository instead.")]
     public abstract class ManagerBase : IManager
     {
         public IProvider Provider { get; }
-        public ISession Session => Provider.DataAccess.Session;
+        public ISession Session => throw new NotImplementedException();
         //public DataCommandBase Command(CommandType type = CommandType.StoredProcedure) => DA.Command(type);
         public IDataCommand Command(CommandType type = CommandType.StoredProcedure) => SessionDataCommand.Create(type);
 

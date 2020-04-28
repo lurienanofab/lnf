@@ -1,5 +1,4 @@
-﻿using LNF.Models.PhysicalAccess;
-using LNF.Scheduler;
+﻿using LNF.Scheduler;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,7 +13,7 @@ namespace LNF.PhysicalAccess
         
         public PhysicalAccessUtility(string kioskIp)
         {
-            IsOnKiosk = KioskUtility.IsOnKiosk(kioskIp);
+            IsOnKiosk = Kiosks.IsOnKiosk(kioskIp);
             CurrentlyInLab = ServiceProvider.Current.PhysicalAccess.GetCurrentlyInArea("all");
         }
 

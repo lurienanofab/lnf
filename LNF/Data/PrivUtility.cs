@@ -1,41 +1,43 @@
-﻿using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System;
 
 namespace LNF.Data
 {
     public static class PrivUtility
     {
-        public static Priv LabUser { get { return FindByClientPrivilege(ClientPrivilege.LabUser); } }
-        public static Priv Staff { get { return FindByClientPrivilege(ClientPrivilege.Staff); } }
-        public static Priv StoreUser { get { return FindByClientPrivilege(ClientPrivilege.StoreUser); } }
-        public static Priv Executive { get { return FindByClientPrivilege(ClientPrivilege.Executive); } }
-        public static Priv FinancialAdmin { get { return FindByClientPrivilege(ClientPrivilege.FinancialAdmin); } }
-        public static Priv Administrator { get { return FindByClientPrivilege(ClientPrivilege.Administrator); } }
-        public static Priv WebSiteAdmin { get { return FindByClientPrivilege(ClientPrivilege.WebSiteAdmin); } }
-        public static Priv RemoteUser { get { return FindByClientPrivilege(ClientPrivilege.RemoteUser); } }
-        public static Priv StoreManager { get { return FindByClientPrivilege(ClientPrivilege.StoreManager); } }
-        public static Priv PhysicalAccess { get { return FindByClientPrivilege(ClientPrivilege.PhysicalAccess); } }
-        public static Priv OnlineAccess { get { return FindByClientPrivilege(ClientPrivilege.OnlineAccess); } }
-        public static Priv Developer { get { return FindByClientPrivilege(ClientPrivilege.Developer); } }
+        private readonly static IEnumerable<IPriv> _privs;
 
-        public static Priv FindByClientPrivilege(ClientPrivilege priv)
+        public static IPriv LabUser { get { return FindByClientPrivilege(ClientPrivilege.LabUser); } }
+        public static IPriv Staff { get { return FindByClientPrivilege(ClientPrivilege.Staff); } }
+        public static IPriv StoreUser { get { return FindByClientPrivilege(ClientPrivilege.StoreUser); } }
+        public static IPriv Executive { get { return FindByClientPrivilege(ClientPrivilege.Executive); } }
+        public static IPriv FinancialAdmin { get { return FindByClientPrivilege(ClientPrivilege.FinancialAdmin); } }
+        public static IPriv Administrator { get { return FindByClientPrivilege(ClientPrivilege.Administrator); } }
+        public static IPriv WebSiteAdmin { get { return FindByClientPrivilege(ClientPrivilege.WebSiteAdmin); } }
+        public static IPriv RemoteUser { get { return FindByClientPrivilege(ClientPrivilege.RemoteUser); } }
+        public static IPriv StoreManager { get { return FindByClientPrivilege(ClientPrivilege.StoreManager); } }
+        public static IPriv PhysicalAccess { get { return FindByClientPrivilege(ClientPrivilege.PhysicalAccess); } }
+        public static IPriv OnlineAccess { get { return FindByClientPrivilege(ClientPrivilege.OnlineAccess); } }
+        public static IPriv Developer { get { return FindByClientPrivilege(ClientPrivilege.Developer); } }
+
+        static PrivUtility()
         {
-            return DA.Current.Single<Priv>(priv);
+            _privs = ServiceProvider.Current.Data.Client.GetPrivs();
         }
 
-        public static Priv FindByInt32(int value)
+        public static IPriv FindByClientPrivilege(ClientPrivilege priv)
+        {
+            return _privs.FirstOrDefault(x => x.PrivFlag == priv);
+        }
+
+        public static IPriv FindByInt32(int value)
         {
             return FindByClientPrivilege((ClientPrivilege)value);
         }
 
-        public static Priv FindByPrivType(string privType)
+        public static IPriv FindByPrivType(string privType)
         {
-            Priv p = DA.Current.Query<Priv>().FirstOrDefault(x => x.PrivType == privType);
-            return p;
+            return _privs.FirstOrDefault(x => x.PrivType == privType);
         }
 
         public static int CalculatePriv(IEnumerable<ClientPrivilege> privs)
@@ -49,16 +51,6 @@ namespace LNF.Data
         public static int CalculatePriv(ClientPrivilege privs)
         {
             return (int)privs;
-        }
-
-        public static ClientPrivilege CalculatePriv(IEnumerable<Priv> privs)
-        {
-            ClientPrivilege result = 0;
-            if (privs != null)
-            {
-                privs.Select(x => { result |= x.PrivFlag; return x; }).ToList();
-            }
-            return result;
         }
 
         public static ClientPrivilege CalculatePriv(IEnumerable<IPriv> privs)
@@ -76,7 +68,7 @@ namespace LNF.Data
             ClientPrivilege result = 0;
             if (privs != null)
             {
-                foreach (var p in DA.Current.Query<Priv>().Where(x => privs.Contains(x.PrivType)))
+                foreach (var p in _privs.Where(x => privs.Contains(x.PrivType)))
                     result |= p.PrivFlag;
             }
             return result;
@@ -105,7 +97,7 @@ namespace LNF.Data
 
         public static bool HasPriv(string privType, ClientPrivilege privs)
         {
-            Priv p = FindByPrivType(privType);
+            IPriv p = FindByPrivType(privType);
             return HasPriv(p.PrivFlag, privs);
         }
 
@@ -114,9 +106,9 @@ namespace LNF.Data
             return privs.ToString().Split(',').Select(x => x.Trim()).ToArray();
         }
 
-        public static IEnumerable<Priv> GetPrivs(ClientPrivilege privs)
+        public static IEnumerable<IPriv> GetPrivs(ClientPrivilege privs)
         {
-            foreach(var p in DA.Current.Query<Priv>().ToList())
+            foreach(var p in _privs)
             {
                 if ((privs & p.PrivFlag) > 0)
                     yield return p;

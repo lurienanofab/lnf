@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Scheduler;
+using LNF.Impl.Repository.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {
-    public class ProcessInfoLineMap : ClassMap<ProcessInfoLine>
+    internal class ProcessInfoLineMap : ClassMap<ProcessInfoLine>
     {
-        public ProcessInfoLineMap()
+        internal ProcessInfoLineMap()
         {
             Schema("sselScheduler.dbo");
             Id(x => x.ProcessInfoLineID);

@@ -1,4 +1,6 @@
-﻿namespace LNF.Repository
+﻿using LNF.DataAccess;
+
+namespace LNF.Repository
 {
     public interface IManager
     {

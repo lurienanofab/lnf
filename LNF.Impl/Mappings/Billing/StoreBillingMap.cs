@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Billing;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {
-    public class StoreBillingMap : ClassMap<StoreBilling>
+    internal class StoreBillingMap : ClassMap<StoreBilling>
     {
-        public StoreBillingMap()
+        internal StoreBillingMap()
         {
             Schema("sselData.dbo");
             Table("StoreBilling");

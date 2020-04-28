@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Data;
+﻿using System.Text;
 
 namespace LNF.Reporting
 {

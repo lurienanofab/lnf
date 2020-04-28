@@ -1,9 +1,5 @@
-﻿using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Billing;
-using LNF.Repository.Data;
+﻿using LNF.Data;
 using System;
-using System.Linq;
 
 namespace LNF.Billing
 {
@@ -18,34 +14,34 @@ namespace LNF.Billing
         public DateTime Now { get; }
         public IProvider Provider { get; }
 
-        public IAccount GetRechargeAccount(Org org, DateTime startDate, DateTime endDate)
+        public IAccount GetRechargeAccount(IOrg org, DateTime startDate, DateTime endDate)
         {
             IAccount result = null;
 
-            OrgRecharge or = DA.Current.Query<OrgRecharge>().FirstOrDefault(x => x.Org == org && x.EnableDate < endDate && (x.DisableDate == null || x.DisableDate.Value > startDate));
+            var or = Provider.Billing.OrgRecharge.GetOrgRecharge(org.OrgID, startDate, endDate);
 
             if (or == null)
             {
-                var ct = org.OrgType.ChargeType.CreateModel<IChargeType>();
-                result = Provider.Data.Org.GetAccount(ct); //no recharge account specified for this org so use the default from ChargeType
+                IChargeType ct = Provider.Data.Org.GetChargeType(org.ChargeTypeID);
+                result = Provider.Data.Account.GetAccount(ct.AccountID); //no recharge account specified for this org so use the default from ChargeType
             }
             else
             {
-                result = or.Account.CreateModel<IAccount>();
+                result = Provider.Data.Account.GetAccount(or.AccountID);
             }
 
             return result;
         }
 
-        public OrgRecharge Enable(Org org, Account acct)
+        public IOrgRecharge Enable(IOrg org, IAccount acct)
         {
             //first get the existing entity if there is one
-            OrgRecharge existing = DA.Current.Query<OrgRecharge>().FirstOrDefault(x => x.Org == org && x.DisableDate == null);
+            var existing = Provider.Billing.OrgRecharge.GetOrgRecharge(org.OrgID);
 
             if (existing != null)
             {
                 //we don't need to do anything if Org and Account are the same
-                if (existing.Account == acct)
+                if (existing.AccountID == acct.AccountID)
                     return existing;
 
                 //disable existing
@@ -53,23 +49,14 @@ namespace LNF.Billing
             }
 
             //add a new one
-            OrgRecharge result = new OrgRecharge()
-            {
-                Org = org,
-                Account = acct,
-                CreatedDate = Now,
-                EnableDate = Now,
-                DisableDate = null
-            };
-
-            DA.Current.Insert(result);
+            var result = Provider.Billing.OrgRecharge.AddOrgRecharge(org.OrgID, acct.AccountID, Now, Now);
 
             return result;
         }
 
-        public void Disable(OrgRecharge item)
+        public void Disable(int orgRechargeId)
         {
-            item.DisableDate = Now;
+            Provider.Billing.OrgRecharge.Disable(orgRechargeId, Now);
         }
     }
 }

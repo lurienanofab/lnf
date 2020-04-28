@@ -1,13 +1,13 @@
-﻿using LNF.Repository;
+﻿using LNF.DataAccess;
 using NHibernate.Context;
 
 namespace LNF.Impl.DataAccess
 {
     public class NHibernateDataAccess<T> : IDataAccessService where T : ICurrentSessionContext
     {   
-        public NHibernateDataAccess()
+        public NHibernateDataAccess(ISessionManager mgr)
         {
-            Session = new NHibernateSession(SessionManager<T>.Current);
+            Session = new NHibernateSession(mgr);
         }
 
         public IUnitOfWork StartUnitOfWork() => new NHibernateUnitOfWork(SessionManager<T>.Current);

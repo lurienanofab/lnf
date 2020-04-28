@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class OrgTypeMap : ClassMap<OrgType>
+    internal class OrgTypeMap : ClassMap<OrgType>
     {
-        public OrgTypeMap()
+        internal OrgTypeMap()
         {
             Schema("sselData.dbo");
             Id(x => x.OrgTypeID);

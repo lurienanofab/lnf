@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Data;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class FeedsLogMap :ClassMap<FeedsLog>
+    internal class FeedsLogMap : ClassMap<FeedsLog>
     {
-        public FeedsLogMap()
+        internal FeedsLogMap()
         {
             Schema("sselData.dbo");
             Id(x => x.FeedsLogID);

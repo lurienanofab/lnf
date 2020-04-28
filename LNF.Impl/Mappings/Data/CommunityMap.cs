@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Data;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class CommunityMap : ClassMap<Community>
+    internal class CommunityMap : ClassMap<Community>
     {
-        public CommunityMap()
+        internal CommunityMap()
         {
             Schema("sselData.dbo");
             Id(x => x.CommunityID);

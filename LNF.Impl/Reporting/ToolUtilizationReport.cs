@@ -1,7 +1,8 @@
 ﻿using LNF.CommonTools;
+using LNF.Impl.Repository;
+using LNF.Impl.Repository.Scheduler;
 using LNF.Reporting;
-using LNF.Repository;
-using LNF.Repository.Scheduler;
+using NHibernate;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,6 +16,13 @@ namespace LNF.Impl.Reporting
     {
         private IList<ActivityData> headers;
         private string[] procTechs;
+
+        protected ISession Session { get; }
+
+        public ToolUtilizationReport(ISession session)
+        {
+            Session = session;
+        }
 
         public override void WriteCriteria(StringBuilder sb)
         {
@@ -95,7 +103,7 @@ namespace LNF.Impl.Reporting
 
         public DataTable GetToolUtilizationData()
         {
-            return DA.Command(CommandType.Text)
+            return Session.Command(CommandType.Text)
                 .Param("StartPeriod", Criteria.Period)
                 .Param("EndPeriod", Criteria.Period.AddMonths(Criteria.GetValue("monthCount", 1)))
                 .Param("IncludeForgiven", Criteria.GetValue("includeForgiven", false))
@@ -117,9 +125,9 @@ namespace LNF.Impl.Reporting
 
         public IList<ResourceData> GetResources()
         {
-            IList<ProcessTech> allpt = DA.Current.Query<ProcessTech>().ToList();
-            IList<Resource> resources = DA.Current.Query<Resource>().Where(x => x.IsActive).ToList();
-            IList<Activity> activities = DA.Current.Query<Activity>().Where(x => x.IsActive).OrderBy(x => x.ActivityName).ToList();
+            IList<ProcessTech> allpt = Session.Query<ProcessTech>().ToList();
+            IList<Resource> resources = Session.Query<Resource>().Where(x => x.IsActive).ToList();
+            IList<Activity> activities = Session.Query<Activity>().Where(x => x.IsActive).OrderBy(x => x.ActivityName).ToList();
             IList<ResourceData> result = new List<ResourceData>();
 
             headers = activities

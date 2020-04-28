@@ -1,6 +1,5 @@
-﻿using LNF.Models;
-using LNF.Models.Data;
-using LNF.Models.PhysicalAccess;
+﻿using LNF.Data;
+using LNF.PhysicalAccess;
 using RestSharp;
 using System;
 using System.Collections.Generic;
@@ -29,6 +28,12 @@ namespace OnlineServices.Api.PhysicalAccess
         public IEnumerable<Area> GetAreas()
         {
             return Get<List<Area>>("webapi/physical-access/areas");
+        }
+
+        public IEnumerable<Area> GetAreas(int[] areaIds)
+        {
+            throw new NotImplementedException();
+            //return Post<List<Area>>("webapi/physical-access/areas", areaIds);
         }
 
         public IEnumerable<Badge> GetCurrentlyInArea(string alias)

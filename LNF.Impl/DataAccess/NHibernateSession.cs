@@ -1,4 +1,4 @@
-﻿using LNF.Repository;
+﻿using LNF.DataAccess;
 using NHibernate;
 using NHibernate.Criterion;
 using NHibernate.Linq;
@@ -11,7 +11,7 @@ using System.Linq.Expressions;
 
 namespace LNF.Impl.DataAccess
 {
-    public class NHibernateSession : Repository.ISession
+    public class NHibernateSession : LNF.DataAccess.ISession
     {
         private readonly ISessionManager _sessionManager;
 
@@ -49,7 +49,7 @@ namespace LNF.Impl.DataAccess
             return Session.Query<T>();
         }
 
-        public IQueryable<T> Cache<T>(Repository.CacheMode mode = Repository.CacheMode.Normal) where T : IDataItem
+        public IQueryable<T> Cache<T>(LNF.DataAccess.CacheMode mode = LNF.DataAccess.CacheMode.Normal) where T : IDataItem
         {
             NHibernate.CacheMode cm = (NHibernate.CacheMode)mode;
 
@@ -80,7 +80,7 @@ namespace LNF.Impl.DataAccess
             return Session.Merge(item);
         }
 
-        public UnitOfWorkAdapter GetAdapter()
+        public IUnitOfWorkAdapter GetAdapter()
         {
             return new NHibernateUnitOfWorkAdapter(Session);
         }
@@ -129,21 +129,7 @@ namespace LNF.Impl.DataAccess
             return Session.CreateCriteria<T>().SetCacheable(true);
         }
 
-        //http://stackoverflow.com/questions/5229510/nhibernate-get-concrete-type-of-referenced-abstract-entity#5333880
-        public object Unproxy(IDataItem proxy)
-        {
-            if (!NHibernateUtil.IsInitialized(proxy))
-            {
-                NHibernateUtil.Initialize(proxy);
-            }
-
-            if (proxy is NHibernate.Proxy.INHibernateProxy)
-            {
-                return Session.GetSessionImplementation().PersistenceContext.Unproxy(proxy);
-            }
-
-            return proxy;
-        }
+        public object Unproxy(IDataItem proxy) => NHibernateUtility.Unproxy(Session, proxy);
     }
 
     public static class NHibernateRepositoryUtil
@@ -601,10 +587,10 @@ namespace LNF.Impl.DataAccess
         public static Expression<Func<TInput, object>> ConvertExpression<TInput, TOutput>(Expression<Func<TInput, TOutput>> expression)
         {
             // Add the boxing operation, but get a weakly typed expression
-            System.Linq.Expressions.Expression converted = System.Linq.Expressions.Expression.Convert(expression.Body, typeof(object));
+            global::System.Linq.Expressions.Expression converted = global::System.Linq.Expressions.Expression.Convert(expression.Body, typeof(object));
 
             // Use Expression.Lambda to get back to strong typing
-            return System.Linq.Expressions.Expression.Lambda<Func<TInput, object>>(converted, expression.Parameters);
+            return global::System.Linq.Expressions.Expression.Lambda<Func<TInput, object>>(converted, expression.Parameters);
         }
     }
 }

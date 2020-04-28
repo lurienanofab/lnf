@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Store;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Store;
 
 namespace LNF.Impl.Mappings.Store
 {
-    public class ItemPriceHistoryMap : ClassMap<ItemPriceHistory>
+    internal class ItemPriceHistoryMap : ClassMap<ItemPriceHistory>
     {
-        public ItemPriceHistoryMap()
+        internal ItemPriceHistoryMap()
         {
             Schema("sselMAS.dbo");
             Table("v_ItemPriceHistory");

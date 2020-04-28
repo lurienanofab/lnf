@@ -1,9 +1,9 @@
-﻿using LNF.Models.Mail;
+﻿using LNF.Mail;
 using System.Collections.Generic;
 
 namespace OnlineServices.Api.Mail
 {
-    public class MassEmailManager : ApiClient, IMassEmailManager
+    public class MassEmailManager : ApiClient, IMassEmailRepository
     {
         public IEnumerable<MassEmailRecipient> GetRecipients(MassEmailRecipientArgs args)
         {
@@ -14,6 +14,12 @@ namespace OnlineServices.Api.Mail
         {
             //var files = new FileCollection("attachments", attachments);
             return Post<int>("webapi/mail/mass-email/send", args);
+        }
+
+
+        public int Send(IMailService svc, MassEmailSendArgs args)
+        {
+            return Send(args);
         }
 
         public IEnumerable<IInvalidEmail> GetInvalidEmails(bool? active = null)
@@ -41,6 +47,11 @@ namespace OnlineServices.Api.Mail
             //var url = $"webapi/mail/mass-email/invalid-email/{emailId}/active?value={value.ToString().ToLower()}";
             //return Put(url, parameters: null);
             return Put("webapi/mail/mass-email/invalid-email/{emailId}/active", UrlSegments(new { emailId }) & QueryStrings(new { value }));
+        }
+
+        public IRecipientCriteria GetCriteria(IMassEmail massEmail)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

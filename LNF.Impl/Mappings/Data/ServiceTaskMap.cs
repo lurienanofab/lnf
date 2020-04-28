@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class ServiceTaskMap : ClassMap<ServiceTask>
+    internal class ServiceTaskMap : ClassMap<ServiceTask>
     {
-        public ServiceTaskMap()
+        internal ServiceTaskMap()
         {
             Schema("sselData.dbo");
             Table("ServiceTask");

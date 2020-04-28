@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using IronPython.Hosting;
+﻿using IronPython.Hosting;
 using Microsoft.Scripting;
 using Microsoft.Scripting.Hosting;
-using LNF.Repository;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace LNF.Scripting
 {
@@ -15,34 +14,28 @@ namespace LNF.Scripting
     {
         public class Command
         {
-            private string _Name;
-            private string _Syntax;
-            private string[] _Arguments;
-            private string _Example;
-            private string _HelpSummary;
-            private string _HelpDetail;
-            private Delegate _Method;
-
-            public string Name { get { return _Name; } }
-            public string Syntax { get { return _Syntax; } }
-            public string[] Arguments { get { return _Arguments; } }
-            public string Example { get { return _Example; } }
-            public string HelpSummary { get { return _HelpSummary; } }
-            public string HelpDetail { get { return _HelpDetail; } }
-            public Delegate Method { get { return _Method; } }
+            public string Name { get; private set; }
+            public string Syntax { get; private set; }
+            public string[] Arguments { get; private set; }
+            public string Example { get; private set; }
+            public string HelpSummary { get; private set; }
+            public string HelpDetail { get; private set; }
+            public Delegate Method { get; private set; }
 
             private Command() { }
 
             public static Command Create(string name, string syntax, string[] args, string example, string helpSummary, string helpDetail, Delegate method)
             {
-                Command result = new Command();
-                result._Name = name;
-                result._Syntax = syntax;
-                result._Arguments = args;
-                result._Example = example;
-                result._HelpSummary = helpSummary;
-                result._HelpDetail = helpDetail;
-                result._Method = method;
+                Command result = new Command
+                {
+                    Name = name,
+                    Syntax = syntax,
+                    Arguments = args,
+                    Example = example,
+                    HelpSummary = helpSummary,
+                    HelpDetail = helpDetail,
+                    Method = method
+                };
                 return result;
             }
         }
@@ -59,7 +52,7 @@ namespace LNF.Scripting
 
         public class Result : ModelBase
         {
-            private IDictionary<string, object> items { get; set; }
+            protected IDictionary<string, object> Items { get; set; }
 
             public bool Success { get; set; }
             public string Message { get; set; }
@@ -67,24 +60,24 @@ namespace LNF.Scripting
 
             public Result Set(string key, object value)
             {
-                if (items == null)
-                    items = new Dictionary<string, object>();
+                if (Items == null)
+                    Items = new Dictionary<string, object>();
 
-                if (items.ContainsKey(key))
-                    items[key] = value;
+                if (Items.ContainsKey(key))
+                    Items[key] = value;
                 else
-                    items.Add(key, value);
+                    Items.Add(key, value);
 
                 return this;
             }
 
             public object Get(string key)
             {
-                if (items == null)
+                if (Items == null)
                     return null;
 
-                if (items.ContainsKey(key))
-                    return items[key];
+                if (Items.ContainsKey(key))
+                    return Items[key];
 
                 return null;
             }
@@ -93,16 +86,16 @@ namespace LNF.Scripting
             {
                 get
                 {
-                    if (items == null)
+                    if (Items == null)
                         return new string[] { };
 
-                    return items.Keys.ToArray();
+                    return Items.Keys.ToArray();
                 }
             }
 
             public Result()
             {
-                items = null;
+                Items = null;
 
                 Success = false;
                 Message = null;
@@ -117,7 +110,7 @@ namespace LNF.Scripting
 
         private ScriptEngine engine;
         private ScriptScope scope;
-        private HostState _State;
+        private readonly HostState _State;
 
         public HostState State { get { return _State; } }
 
@@ -135,9 +128,6 @@ namespace LNF.Scripting
 
         public Result Run(string script)
         {
-            if (DA.Current == null)
-                throw new Exception("DA.Current IS NULL!!!!");
-
             ScriptSource source = engine.CreateScriptSourceFromString(script, SourceCodeKind.AutoDetect);
             return ExecuteSource(source);
         }

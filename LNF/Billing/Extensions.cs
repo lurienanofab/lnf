@@ -1,125 +1,115 @@
 ﻿using LNF.Cache;
-using LNF.CommonTools;
-using LNF.Repository;
-using LNF.Repository.Billing;
-using LNF.Repository.Data;
+using LNF.Data;
 using System;
 using System.Data;
-using System.Linq;
 
 namespace LNF.Billing
 {
-    public static class CacheManagerExtensions
+    public static class CacheExtensions
     {
         [Obsolete("Use HttpContextBase instead.")]
-        public static void ItemType(this CacheManager cm, string value)
+        public static void ItemType(this ICache c, string value)
         {
-            cm.SetSessionValue("ItemType", value);
+            throw new NotImplementedException();
+            //c.SetSessionValue("ItemType", value);
         }
 
         [Obsolete("Use HttpContextBase instead.")]
-        public static string ItemType(this CacheManager cm)
+        public static string ItemType(this ICache c)
         {
-            return cm.GetSessionValue("ItemType", () => string.Empty);
+            throw new NotImplementedException();
+            //return c.GetSessionValue("ItemType", () => string.Empty);
         }
 
         [Obsolete("Use HttpContextBase instead.")]
-        public static void Exp(this CacheManager cm, string value)
+        public static void Exp(this ICache c, string value)
         {
-            cm.SetSessionValue("Exp", value);
+            throw new NotImplementedException();
+            //c.SetSessionValue("Exp", value);
         }
 
         [Obsolete("Use HttpContextBase instead.")]
-        public static string Exp(this CacheManager cm)
+        public static string Exp(this ICache c)
         {
-            return cm.GetSessionValue("Exp", () => string.Empty);
+            throw new NotImplementedException();
+            //return c.GetSessionValue("Exp", () => string.Empty);
         }
 
         [Obsolete("Use HttpContextBase instead.")]
-        public static void Updated(this CacheManager cm, bool value)
+        public static void Updated(this ICache c, bool value)
         {
-            cm.SetSessionValue("Updated", value);
+            throw new NotImplementedException();
+            //c.SetSessionValue("Updated", value);
         }
 
         [Obsolete("Use HttpContextBase instead.")]
-        public static bool Updated(this CacheManager cm)
+        public static bool Updated(this ICache c)
         {
-            return cm.GetSessionValue("Updated", () => false);
+            throw new NotImplementedException();
+            //return c.GetSessionValue("Updated", () => false);
         }
 
         [Obsolete("Use HttpContextBase instead.")]
-        public static void StartPeriod(this CacheManager cm, DateTime value)
+        public static void StartPeriod(this ICache c, DateTime value)
         {
-            cm.SetSessionValue("StartPeriod", value);
+            throw new NotImplementedException();
+            //c.SetSessionValue("StartPeriod", value);
         }
 
         [Obsolete("Use HttpContextBase instead.")]
-        public static DateTime StartPeriod(this CacheManager cm)
+        public static DateTime StartPeriod(this ICache c)
         {
-            return cm.GetSessionValue("StartPeriod", () => DateTime.Now.FirstOfMonth().AddMonths(-1));
+            throw new NotImplementedException();
+            //return c.GetSessionValue("StartPeriod", () => DateTime.Now.FirstOfMonth().AddMonths(-1));
         }
 
         [Obsolete("Use HttpContextBase instead.")]
-        public static void EndPeriod(this CacheManager cm, DateTime value)
+        public static void EndPeriod(this ICache c, DateTime value)
         {
-            cm.SetSessionValue("EndPeriod", value);
+            throw new NotImplementedException();
+            //c.SetSessionValue("EndPeriod", value);
         }
 
         [Obsolete("Use HttpContextBase instead.")]
-        public static DateTime EndPeriod(this CacheManager cm)
+        public static DateTime EndPeriod(this ICache c)
         {
-            return cm.GetSessionValue("EndPeriod", () => cm.StartPeriod().AddMonths(1));
+            throw new NotImplementedException();
+            //return c.GetSessionValue("EndPeriod", () => c.StartPeriod().AddMonths(1));
         }
 
         [Obsolete("Use HttpContextBase instead.")]
-        public static void InvoiceReport(this CacheManager cm, DataSet ds)
+        public static void InvoiceReport(this ICache c, DataSet ds)
         {
-            cm.SetSessionValue("InvoiceReport", ds);
+            throw new NotImplementedException();
+            //c.SetSessionValue("InvoiceReport", ds);
         }
 
         [Obsolete("Use HttpContextBase instead.")]
-        public static DataSet InvoiceReport(this CacheManager cm)
+        public static DataSet InvoiceReport(this ICache c)
         {
-            return cm.GetSessionValue<DataSet>("InvoiceReport", () => null);
+            throw new NotImplementedException();
+            //return c.GetSessionValue<DataSet>("InvoiceReport", () => null);
         }
     }
 
-    public static class AccountSubsidyExtensions
+    public static class MiscBillingChargeExtensions
     {
-        public static void ApplyToBilling(this AccountSubsidy item, DateTime period)
+        public static decimal GetTotalCost(this IMiscBillingCharge mbc)
         {
-            // get all the billing records with this account and override the subsidy discount
-
-            // xxxxx Tool xxxxx
-            var toolBilling = DA.Current.Query<ToolBilling>().Where(x => x.AccountID == item.AccountID && x.Period == period).ToArray();
-
-            foreach (var tb in toolBilling)
-                tb.SubsidyDiscount = tb.GetTotalCharge() * item.UserPaymentPercentage;
-
-            // xxxxx Room xxxxx
-            var roomBilling = DA.Current.Query<RoomBilling>().Where(x => x.AccountID == item.AccountID && x.Period == period).ToArray();
-
-            foreach (var rb in roomBilling)
-                rb.SubsidyDiscount = rb.GetTotalCharge() * item.UserPaymentPercentage;
-
-            // xxxxx Misc xxxxx
-            var miscBilling = DA.Current.Query<MiscBillingCharge>().Where(x => new[] { "Room", "Tool" }.Contains(x.SubType) && x.Account.AccountID == item.AccountID && x.Period == period).ToArray();
-
-            foreach (var mb in miscBilling)
-                mb.SubsidyDiscount = mb.GetTotalCost() * item.UserPaymentPercentage;
+            throw new NotImplementedException();
         }
     }
 
     public static class RoomBillingExtensions
     {
-        public static Account GetAccount(this RoomBillingBase item)
+        public static IAccount GetAccount(this IRoomBilling item)
         {
-            return DA.Current.Single<Account>(item.AccountID);
+            return ServiceProvider.Current.Data.Account.GetAccount(item.AccountID);
         }
 
-        public static Org GetOrg(this RoomBillingBase item)
+        public static IOrg GetOrg(this IRoomBilling item)
         {
-            return DA.Current.Single<Org>(item.OrgID);
+            return ServiceProvider.Current.Data.Org.GetOrg(item.OrgID);
         }
     }
 }

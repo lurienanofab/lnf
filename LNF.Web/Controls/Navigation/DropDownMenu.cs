@@ -1,4 +1,4 @@
-﻿using LNF.Models.Data;
+﻿using LNF.Data;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,8 +13,6 @@ namespace LNF.Web.Controls.Navigation
     [ToolboxData("<{0}:Menu runat=server></{0}:Menu>")]
     public class DropDownMenu : WebControl
     {
-        private List<DropDownMenuItem> _Items = new List<DropDownMenuItem>();
-
         public LNF.SiteMenu DataSource { get; set; }
 
         public bool UseJavascriptNavigation { get; set; }
@@ -22,6 +20,8 @@ namespace LNF.Web.Controls.Navigation
         public string Target { get; set; }
 
         public string LogoImageUrl { get; set; }
+
+        public bool IsSecureConnection { get; set; }
 
         protected override HtmlTextWriterTag TagKey
         {
@@ -31,16 +31,13 @@ namespace LNF.Web.Controls.Navigation
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
         [NotifyParentProperty(true)]
         [PersistenceMode(PersistenceMode.InnerProperty)]
-        public List<DropDownMenuItem> Items
-        {
-            get { return _Items; }
-        }
+        public List<DropDownMenuItem> Items { get; } = new List<DropDownMenuItem>();
 
         public override void DataBind()
         {
             //this only handles one-level menus, needs to be made recursive
 
-            _Items.Clear();
+            Items.Clear();
 
             var parents = DataSource.Where(x => x.MenuParentID == 0).OrderBy(x => x.SortOrder);
 
@@ -67,7 +64,7 @@ namespace LNF.Web.Controls.Navigation
                     p.Items.Add(c);
                 }
 
-                _Items.Add(p);
+                Items.Add(p);
             }
 
             base.DataBind();
@@ -101,14 +98,14 @@ namespace LNF.Web.Controls.Navigation
 
                 output.WriteLine("<td class=\"menu-cell\"><ul class=\"menu-root\">");
 
-                if (_Items.Count > 0)
+                if (Items.Count > 0)
                 {
-                    foreach (DropDownMenuItem i in _Items)
+                    foreach (DropDownMenuItem i in Items)
                     {
                         if (i.Visible)
                         {
                             i.UseJavascriptNavigation = UseJavascriptNavigation;
-                            i.Render(output, ServiceProvider.Current.Context.GetRequestIsSecureConnection());
+                            i.Render(output, IsSecureConnection);
                         }
                     }
                 }

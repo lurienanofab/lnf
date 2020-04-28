@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class DryBoxAssignmentMap : ClassMap<DryBoxAssignment>
+    internal class DryBoxAssignmentMap : ClassMap<DryBoxAssignment>
     {
-        public DryBoxAssignmentMap()
+        internal DryBoxAssignmentMap()
         {
             Schema("sselData.dbo");
             Id(x => x.DryBoxAssignmentID);

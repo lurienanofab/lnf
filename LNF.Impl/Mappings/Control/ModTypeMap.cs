@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Control;
+using LNF.Impl.Repository.Control;
 
 namespace LNF.Impl.Mappings.Control
 {
-    public class ModTypeMap: ClassMap<ModType>
+    internal class ModTypeMap: ClassMap<ModType>
     {
-        public ModTypeMap()
+        internal ModTypeMap()
         {
             Schema("sselControl.dbo");
             Id(x => x.ModTypeID);

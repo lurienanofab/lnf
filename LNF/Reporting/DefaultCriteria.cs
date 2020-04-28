@@ -1,5 +1,4 @@
-﻿using LNF.CommonTools;
-using LNF.Models.Data;
+﻿using LNF.Data;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -45,7 +44,7 @@ namespace LNF.Reporting
                 return defval;
             string raw = parameters[key];
             if (string.IsNullOrEmpty(raw)) return defval;
-            return Utility.ConvertTo(raw, defval);
+            return CommonTools.Utility.ConvertTo(raw, defval);
         }
 
         public IEnumerable<IClient> ActiveClients()

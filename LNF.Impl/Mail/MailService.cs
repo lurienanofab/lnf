@@ -1,18 +1,22 @@
-﻿using LNF.Models.Mail;
+﻿using LNF.Data;
+using LNF.Mail;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LNF.Impl.Mail
 {
     public class MailService : IMailService
     {
-        public IMassEmailManager MassEmail { get; }
-        public IAttachmentManager Attachment { get; }
+        public IMassEmailRepository MassEmail { get; }
+        public IAttachmentUtility Attachment { get; }
+        public IClientRepository Client { get; }
 
-        public MailService(IMassEmailManager massEmail, IAttachmentManager attachment)
+        public MailService(IMassEmailRepository massEmail, IAttachmentUtility attachment, IClientRepository client)
         {
             MassEmail = massEmail;
             Attachment = attachment;
+            Client = client;
         }
 
         public IMessage GetMessage(int messageId)
@@ -51,6 +55,13 @@ namespace LNF.Impl.Mail
                 MailRepo.SetMessageError(messageId, ex.Message);
                 throw ex;
             }
+        }
+
+        public IEnumerable<string> GetEmailListByPrivilege(ClientPrivilege privs)
+        {
+            var clients = Client.FindByPrivilege(privs);
+            IEnumerable<string> result = clients.Select(c => c.Email);
+            return result;
         }
     }
 }

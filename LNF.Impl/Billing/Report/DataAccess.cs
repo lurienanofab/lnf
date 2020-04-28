@@ -1,32 +1,32 @@
-﻿using LNF.Repository;
+﻿using LNF.Impl.Repository;
 using System.Data;
 
 namespace LNF.Impl.Billing.Report
 {
     public static class DataAccess
     {
-        public static DataSet ToolBillingSelect(object parameters) => FillDataSet("dbo.ToolBilling_Select", parameters);
+        public static DataSet ToolBillingSelect(NHibernate.ISession session, object parameters) => FillDataSet(session, "dbo.ToolBilling_Select", parameters);
 
-        public static DataSet RoomBillingSelect(object parameters) => FillDataSet("dbo.RoomApportionmentInDaysMonthly_Select", parameters);
+        public static DataSet RoomBillingSelect(NHibernate.ISession session, object parameters) => FillDataSet(session, "dbo.RoomApportionmentInDaysMonthly_Select", parameters);
 
-        public static DataSet StoreBillingSelect(object parameters) => FillDataSet("dbo.StoreBilling_Select", parameters);
+        public static DataSet StoreBillingSelect(NHibernate.ISession session, object parameters) => FillDataSet(session, "dbo.StoreBilling_Select", parameters);
 
-        public static DataTable ClientAccountSelect(object parameters) => FillDataTable("dbo.ClientAccount_Select", parameters);
+        public static DataTable ClientAccountSelect(NHibernate.ISession session, object parameters) => FillDataTable(session, "dbo.ClientAccount_Select", parameters);
 
-        public static DataTable AccountSelect(object parameters) => FillDataTable("dbo.Account_Select", parameters);
+        public static DataTable AccountSelect(NHibernate.ISession session, object parameters) => FillDataTable(session, "dbo.Account_Select", parameters);
 
-        public static DataTable MiscBillingChargeSelect(object parameters) => FillDataTable("dbo.MiscBillingCharge_Select", parameters);
+        public static DataTable MiscBillingChargeSelect(NHibernate.ISession session, object parameters) => FillDataTable(session, "dbo.MiscBillingCharge_Select", parameters);
 
-        private static DataSet FillDataSet(string proc, object parameters)
+        private static DataSet FillDataSet(NHibernate.ISession session, string proc, object parameters)
         {
-            return DA.Command()
+            return session.Command()
                 .Param(parameters)
                 .FillDataSet(proc);
         }
 
-        private static DataTable FillDataTable(string proc, object parameters)
+        private static DataTable FillDataTable(NHibernate.ISession session, string proc, object parameters)
         {
-            return DA.Command()
+            return session.Command()
                 .Param(parameters)
                 .FillDataTable(proc);
         }

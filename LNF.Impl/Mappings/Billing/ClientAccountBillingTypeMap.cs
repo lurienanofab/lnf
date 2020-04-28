@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Billing;
 
 namespace LNF.Impl.Mappings.Billing
 {
-    public class ClientAccountBillingTypeMap : ClassMap<LNF.Repository.Billing.ClientAccountBillingType>
+    internal class ClientAccountBillingTypeMap : ClassMap<ClientAccountBillingType>
     {
-        public ClientAccountBillingTypeMap()
+        internal ClientAccountBillingTypeMap()
         {
             Id(x => x.BillingTypeID);
         }

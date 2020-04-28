@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Inventory;
+using LNF.Impl.Repository.Inventory;
 
 namespace LNF.Impl.Mappings.Inventory
 {
-    public class InventoryLocationMap : ClassMap<InventoryLocation>
+    internal class InventoryLocationMap : ClassMap<InventoryLocation>
     {
-        public InventoryLocationMap()
+        internal InventoryLocationMap()
         {
             Schema("InventoryControl.dbo");
             Id(x => x.InventoryLocationID);

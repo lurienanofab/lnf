@@ -1,9 +1,4 @@
-﻿using LNF.Billing;
-using LNF.Data;
-using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Billing;
-using LNF.Repository.Data;
+﻿using LNF.Data;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,21 +48,19 @@ namespace LNF.Reporting
                 GetDetail(ref result);
         }
 
-        public IList<Client> GetClientsInPeriod()
+        public IEnumerable<IClient> GetClientsInPeriod()
         {
-            var logs = Provider.Data.ActiveLog.GetRange("Client", Criteria.Period, Criteria.Period.AddMonths(1));
-            int[] records = logs.Select(x => x.Record).ToArray();
-            IList<Client> result = DA.Current.Query<Client>().Where(x => records.Contains(x.ClientID)).ToList();
+            var result = Provider.Data.Client.GetActiveClients(Criteria.Period, Criteria.Period.AddMonths(1));
             return result;
         }
 
         public void GetClientList(ref GenericResult result)
         {
             ArrayList list = new ArrayList();
-            IEnumerable<Client> query = GetClientsInPeriod();
-            IEnumerable<ActiveLogItem<ClientOrg>> activeClientOrgs = new DateRange(Criteria.Period).Items<ClientOrg>(x => new ActiveLogKey("ClientOrg", x.ClientOrgID));
-            IEnumerable<Priv> privs = DA.Current.Query<Priv>();
-            foreach (Client c in query)
+            IEnumerable<IClient> query = GetClientsInPeriod();
+            IEnumerable<IClient> activeClientOrgs = Provider.Data.Client.GetActiveClientOrgs(Criteria.Period, Criteria.Period.AddMonths(1));
+            IEnumerable<IPriv> privs = Provider.Data.Client.GetPrivs();
+            foreach (var c in query)
             {
                 string[] item = new string[]
                 {
@@ -75,7 +68,7 @@ namespace LNF.Reporting
                     c.UserName,
                     c.DisplayName,
                     "<div class=\"list-subitem\">" + string.Join("</div><div class=\"list-subitem\">", c.Roles()) + "</div><div style=\"clear: both;\"></div>",
-                    "<div class=\"list-subitem\">" + string.Join("</div><div class=\"list-subitem\">", activeClientOrgs.Where(x=>x.Item.Client == c).Select(x=>x.Item.Org.OrgName)) + "</div><div style=\"clear: both;\"></div>"
+                    "<div class=\"list-subitem\">" + string.Join("</div><div class=\"list-subitem\">", activeClientOrgs.Where(x => x.ClientID == c.ClientID).Select(x => x.OrgName)) + "</div><div style=\"clear: both;\"></div>"
                 };
                 list.Add(item);
             }
@@ -84,14 +77,14 @@ namespace LNF.Reporting
 
         public void GetDetail(ref GenericResult result)
         {
-            Client c = DA.Current.Single<Client>(Criteria.ClientID);
+            IClient c = Provider.Data.Client.GetClient(Criteria.ClientID);
             if (c != null)
             {
                 var data = new
                 {
                     Error = "",
                     Client = GetDetailClientInfo(c),
-                    Orgs = GetDetailOrgInfo(Provider.Data.Client.ClientOrgs(c.ClientID).ToList())
+                    Orgs = GetDetailOrgInfo(Provider.Data.Client.GetClientOrgs(c.ClientID).ToList())
                 };
                 result.Data = data;
             }
@@ -119,9 +112,9 @@ namespace LNF.Reporting
                         Role = co.RoleName,
                         co.Phone,
                         co.Email,
-                        Managers = GetDetailManagerInfo(ClientManagerUtility.FindManagers(co.ClientOrgID)),
-                        BillingType = GetDetailBillingType(co),
-                        Accounts = GetDetailAccounts(Provider.Data.Account.FindClientAccounts(co.ClientOrgID))
+                        Managers = GetDetailManagerInfo(Provider.Data.Client.GetClientManagersByManager(co.ClientOrgID)),
+                        BillingType = GetDetailBillingTypeName(co),
+                        Accounts = GetDetailAccounts(Provider.Data.Client.GetClientAccounts(co))
                     };
                     list.Add(item);
                 }
@@ -129,23 +122,24 @@ namespace LNF.Reporting
             return list;
         }
 
-        public string[] GetDetailManagerInfo(IEnumerable<ClientManager> mgrs)
+        public string[] GetDetailManagerInfo(IEnumerable<IClientManager> mgrs)
         {
             List<string> list = new List<string>();
             foreach (var cm in mgrs)
             {
                 if (Provider.Data.ActiveLog.IsActive("ClientManager", cm.ClientManagerID, Criteria.Period, Criteria.Period.AddMonths(1)))
                 {
-                    list.Add(cm.ManagerOrg.Client.DisplayName);
+                    list.Add(cm.ManagerDisplayName);
                 }
             }
             return list.ToArray();
         }
 
-        public string GetDetailBillingType(IClient co)
+        public string GetDetailBillingTypeName(IClient co)
         {
-            ClientOrgBillingTypeLog ts = ClientOrgBillingTypeLogUtility.GetActive(Criteria.Period, Criteria.Period.AddMonths(1)).FirstOrDefault(x => x.ClientOrg == co);
-            return ts.BillingType.BillingTypeName;
+            var ts = ServiceProvider.Current.Billing.BillingType.GetActiveClientOrgBillingTypeLog(co.ClientOrgID, Criteria.Period, Criteria.Period.AddMonths(1));
+            var bt = ServiceProvider.Current.Billing.BillingType.GetBillingType(ts.BillingTypeID);
+            return bt.BillingTypeName;
         }
 
         public string[] GetDetailAccounts(IEnumerable<IClientAccount> caccts)
@@ -159,8 +153,10 @@ namespace LNF.Reporting
             return list.ToArray();
         }
 
-        public object GetDetailClientInfo(Client c)
+        public object GetDetailClientInfo(IClient c)
         {
+            var dem = Provider.Data.Client.GetClientDemographics(c.ClientID);
+
             var result = new
             {
                 c.FName,
@@ -169,12 +165,12 @@ namespace LNF.Reporting
                 c.UserName,
                 c.ClientID,
                 PrivList = c.Roles(),
-                Citizen = DA.Current.Single<DemCitizen>(c.DemCitizenID).DemCitizenValue,
-                Gender = DA.Current.Single<DemGender>(c.DemGenderID).DemGenderValue,
-                Race = DA.Current.Single<DemRace>(c.DemRaceID).DemRaceValue,
-                Ethnicity = DA.Current.Single<DemEthnic>(c.DemEthnicID).DemEthnicValue,
-                Disability = DA.Current.Single<DemDisability>(c.DemDisabilityID).DemDisabilityValue,
-                TechnicalField = DA.Current.Single<TechnicalField>(c.TechnicalFieldID).TechnicalFieldName,
+                Citizen = dem.DemCitizenValue,
+                Gender = dem.DemGenderValue,
+                Race = dem.DemRaceValue,
+                Ethnicity = dem.DemEthnicValue,
+                Disability = dem.DemDisabilityValue,
+                TechnicalField = c.TechnicalInterestName,
                 CommunityList = CommunityUtility.GetCommunityNames(c.Communities)
             };
             return result;

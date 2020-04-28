@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Ordering;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Ordering;
 
 namespace LNF.Impl.Mappings.Ordering
 {
-    public class PurchaseOrderDetailMap : ClassMap<PurchaseOrderDetail>
+    internal class PurchaseOrderDetailMap : ClassMap<PurchaseOrderDetail>
     {
-        public PurchaseOrderDetailMap()
+        internal PurchaseOrderDetailMap()
         {
             Schema("IOF.dbo");
             Id(x => x.PODID);

@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class MessengerRecipientMap : ClassMap<MessengerRecipient>
+    internal class MessengerRecipientMap : ClassMap<MessengerRecipient>
     {
-        public MessengerRecipientMap()
+        internal MessengerRecipientMap()
         {
             Id(x => x.RecipientID);
             References(x => x.Message);

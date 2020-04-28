@@ -1,4 +1,5 @@
-﻿using LNF.Models.Data;
+﻿using LNF.Authorization;
+using LNF.Data;
 using System.Text;
 using System.Web;
 using System.Web.UI;
@@ -7,52 +8,18 @@ namespace LNF.Web.Content
 {
     public abstract class LNFMasterPage : MasterPage
     {
-        //private DropDownMenu _Menu = new DropDownMenu();
-        private Authorization _Authorization = new Authorization();
+        public HttpContextBase ContextBase { get; }
+        public virtual bool ShowMenu => true;
+        public virtual bool AddScripts => true;
+        public virtual bool AddStyles => true;
+        public new LNFPage Page => (LNFPage)base.Page;
+        public PageAuthorization Authorization { get; }
+        public IClient CurrentUser => Page.CurrentUser;
 
         public LNFMasterPage()
         {
             ContextBase = new HttpContextWrapper(Context);
-        }
-
-        public HttpContextBase ContextBase { get; }
-
-        public virtual bool ShowMenu
-        {
-            get { return true; }
-        }
-
-        public virtual bool AddScripts
-        {
-            get { return true; }
-        }
-
-        public virtual bool AddStyles
-        {
-            get { return true; }
-        }
-
-        public new LNFPage Page
-        {
-            get { return (LNFPage)base.Page; }
-        }
-
-        public Authorization Authorization
-        {
-            get { return _Authorization; }
-        }
-
-        public IClient CurrentUser
-        {
-            get { return Page.CurrentUser; }
-        }
-
-        protected virtual void InitAuthorization()
-        {
-            if (_Authorization == null)
-            {
-                _Authorization = new Authorization();
-            }
+            Authorization = new PageAuthorization();
         }
 
         public void AddWindowOpenScript()

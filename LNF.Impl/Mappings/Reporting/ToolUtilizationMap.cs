@@ -1,5 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Reporting;
+using LNF.Impl.Repository.Reporting;
 
 namespace LNF.Impl.Mappings.Reporting
 {

@@ -1,106 +1,34 @@
-﻿using LNF.CommonTools;
-using LNF.Hooks;
-using LNF.Models;
-using LNF.Models.Authorization;
-using LNF.Models.Billing;
-using LNF.Models.Data;
-using LNF.Models.Mail;
-using LNF.Models.PhysicalAccess;
-using LNF.Models.Reporting;
-using LNF.Models.Scheduler;
-using LNF.Models.Worker;
-using LNF.Repository;
-using LNF.Scheduler;
+﻿using LNF.Cache;
 using System;
 using System.Configuration;
 
 namespace LNF
 {
-    public interface IProvider : Models.IProvider
+    public class ServiceProvider
     {
-        IContext Context { get; }
-        IAuthorizationService Authorization { get; }
-        IDataAccessService DataAccess { get; }
-        ILogService Log { get; }
-        IControlService Control { get; }
-        IEncryptionService Encryption { get; }
-        ISerializationService Serialization { get; }
-        IScriptingService Scripting { get; }
-        IModelFactory ModelFactory { get; }
-        ISchedulerRepository SchedulerRepository { get; }
-        IEmailManager EmailManager { get; }
-        IReadRoomDataManager ReadRoomDataManager { get; }
-        IReadToolDataManager ReadToolDataManager { get; }
-        IReadStoreDataManager ReadStoreDataManager { get; }
-        IReadMiscDataManager ReadMiscDataManager { get; }
-        IAdministrativeHelper AdministrativeHelper { get; }
-        void BuildUp(object target);
-        string[] Hooks { get; }
-
-        T Resolve<T>();
-    }
-
-    public class ServiceProvider : IProvider
-    {
-        private IDependencyResolver _resolver;
-
-        public IContext Context => Resolve<IContext>();
-        public IAuthorizationService Authorization => Resolve<IAuthorizationService>();
-        public IDataAccessService DataAccess => Resolve<IDataAccessService>();
-        public ILogService Log => Resolve<ILogService>();
-        public IControlService Control => Resolve<IControlService>();
-        public IEncryptionService Encryption => Resolve<IEncryptionService>();
-        public ISerializationService Serialization => Resolve<ISerializationService>();
-        public IScriptingService Scripting => Resolve<IScriptingService>();
-
-        public IDataService Data => Resolve<IDataService>();
-        public IBillingService Billing => Resolve<IBillingService>();
-        public IMailService Mail => Resolve<IMailService>();
-        public IPhysicalAccessService PhysicalAccess => Resolve<IPhysicalAccessService>();
-        public ISchedulerService Scheduler => Resolve<ISchedulerService>();
-        public IWorkerService Worker => Resolve<IWorkerService>();
-        public IReportingService Reporting => Resolve<IReportingService>();
-
-        public ISchedulerRepository SchedulerRepository => Resolve<ISchedulerRepository>();
-        public IReservationManager ReservationManager => Resolve<IReservationManager>();
-        public IEmailManager EmailManager => Resolve<IEmailManager>();
-
-        public IReadRoomDataManager ReadRoomDataManager => Resolve<IReadRoomDataManager>();
-        public IReadToolDataManager ReadToolDataManager => Resolve<IReadToolDataManager>();
-        public IReadStoreDataManager ReadStoreDataManager => Resolve<IReadStoreDataManager>();
-        public IReadMiscDataManager ReadMiscDataManager => Resolve<IReadMiscDataManager>();
-        public IAdministrativeHelper AdministrativeHelper => Resolve<IAdministrativeHelper>();
-
-        public IModelFactory ModelFactory => Resolve<IModelFactory>();
-
-        public ServiceProvider(IDependencyResolver resolver)
-        {
-            _resolver = resolver;
-        }
-
         public static IProvider Current { get; private set; }
 
-        public static void Configure(IDependencyResolver resolver)
+        public static void Setup(IProvider provider)
         {
-            Current = resolver.GetInstance<IProvider>();
+            var stack = new System.Diagnostics.StackTrace();
+
+            if (Current == null)
+            {
+                Current = provider;
+                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] ServiceProvider setup complete." + Environment.NewLine + stack.ToString());
+                CacheManager.Setup(new DefaultCache(provider));
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] ServiceProvider has already been setup. What are you trying to do?" + Environment.NewLine + stack.ToString());
+            }
         }
 
-        public T Resolve<T>() => _resolver.GetInstance<T>();
+        //public static new IProvider Current => DefaultServiceProvider.Current;
 
-        public void BuildUp(object target) => _resolver.BuildUp(target);
-
-        public bool IsProduction() => GetConfigurationSection().Production;
-
-        public string[] Hooks => HookManager.GetHookTypes();
-
-        public static ServiceProviderSection GetConfigurationSection()
-        {
-            if (!(ConfigurationManager.GetSection("lnf/provider") is ServiceProviderSection result))
-                throw new InvalidOperationException("The configuration section 'lnf/provider' is missing.");
-
-            return result;
-        }
+        //public static void Setup(IProvider provider) => DefaultServiceProvider.Setup(provider);
     }
+
 
     public abstract class ServiceElement : ConfigurationElement
     {
@@ -141,6 +69,7 @@ namespace LNF
         }
     }
 
+    [Obsolete("Use LNF.Impl.Configuration instead.")]
     public class ServiceProviderSection : ConfigurationSection
     {
         [ConfigurationProperty("production", IsRequired = true)]
@@ -276,4 +205,5 @@ namespace LNF
     }
 
     public class ControlServiceElement : WebServiceElement { }
+
 }

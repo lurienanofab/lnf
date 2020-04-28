@@ -1,5 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Mail;
+using LNF.Impl.Repository.Mail;
 
 namespace LNF.Impl.Mappings.Email
 {
@@ -9,7 +9,7 @@ namespace LNF.Impl.Mappings.Email
         {
             Schema("Email.dbo");
             Id(x => x.MassEmailID);
-            References(x => x.Client);
+            Map(x => x.ClientID);
             Map(x => x.EmailId).Unique();
             Map(x => x.EmailFolder);
             Map(x => x.CreatedOn).CustomSqlType("datetime2").CustomType("datetime2");

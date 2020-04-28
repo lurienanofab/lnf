@@ -1,9 +1,7 @@
-﻿using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 
@@ -11,21 +9,19 @@ namespace LNF.Data.ClientAccountMatrix
 {
     public class Matrix : IEnumerable<KeyValuePair<int, MatrixItem>>
     {
-        private IEnumerable<ClientAccountAssignment> source;
+        private IEnumerable<IClientAccountAssignment> source;
         private Dictionary<int, MatrixItem> _Items;
         private List<MatrixUserHeader> _Headers;
-        private StringBuilder _FilterHtml;
-        private StringBuilder _MatrixHtml;
+
         public int GroupSize { get; set; }
         public bool ReadOnly { get; set; }
 
         public Matrix(int managerOrgId, bool readOnly = false, int groupSize = 10)
         {
-            source = DA.Current.Query<ClientAccountAssignment>().Where(x => x.ManagerOrgID == managerOrgId).ToList()
-                //.Where(x => x.Display() && PrivUtility.HasPriv(x.EmployeePrivs, Matrix.PrivFilter))
+            source = ServiceProvider.Current.Data.Client.GetClientAccountAssignments(managerOrgId)
                 .Where(IncludeOnMatrix)
                 .OrderBy(x => x.AccountName)
-                .OrderBy(x => x.GetEmployeeDisplayName())
+                .OrderBy(x => GetEmployeeDisplayName(x))
                 .ToList();
 
             ReadOnly = readOnly;
@@ -35,13 +31,13 @@ namespace LNF.Data.ClientAccountMatrix
             RefreshMatrix();
         }
 
-        public bool IncludeOnMatrix(ClientAccountAssignment x)
+        public bool IncludeOnMatrix(IClientAccountAssignment x)
         {
-            bool res = x.Display() && PrivUtility.HasPriv(x.EmployeePrivs, PrivFilter);
+            bool res = Display(x) && PrivUtility.HasPriv(x.EmployeePrivs, PrivFilter);
             return res;
         }
 
-        public Matrix(IEnumerable<ClientAccountAssignment> dataSource, bool readOnly = false, int groupSize = 10)
+        public Matrix(IEnumerable<IClientAccountAssignment> dataSource, bool readOnly = false, int groupSize = 10)
         {
             source = dataSource;
             ReadOnly = readOnly;
@@ -56,7 +52,7 @@ namespace LNF.Data.ClientAccountMatrix
             get
             {
                 ClientPrivilege defval = ClientPrivilege.LabUser | ClientPrivilege.Staff | ClientPrivilege.StoreUser | ClientPrivilege.RemoteUser;
-                string value = ServiceProvider.Current.Context.GetAppSetting("ClientAccountMatrix.PrivFilter");
+                string value = ConfigurationManager.AppSettings["ClientAccountMatrix.PrivFilter"];
                 if (!string.IsNullOrEmpty(value))
                     return PrivUtility.CalculatePriv(value.Split(','));
                 return defval;
@@ -67,19 +63,19 @@ namespace LNF.Data.ClientAccountMatrix
         {
             _Headers = new List<MatrixUserHeader>();
 
-            _FilterHtml = new StringBuilder();
-            _FilterHtml.AppendLine("<select>");
+            FilterHtml = new StringBuilder();
+            FilterHtml.AppendLine("<select>");
 
             //Use the first item's account to get each user name. Each account
             //should have the same list of users becuase of the way the view works.
-            ClientAccountAssignment first = source.FirstOrDefault();
+            IClientAccountAssignment first = source.FirstOrDefault();
             if (first != null)
             {
                 int index = 0;
                 int groupNumber = 0;
                 string key = string.Empty;
-                List<ClientAccountAssignment> items = source.Where(x => x.AccountID == first.AccountID).ToList();
-                foreach (ClientAccountAssignment caa in items)
+                List<IClientAccountAssignment> items = source.Where(x => x.AccountID == first.AccountID).ToList();
+                foreach (IClientAccountAssignment caa in items)
                 {
                     if (index % GroupSize == 0)
                     {
@@ -87,14 +83,14 @@ namespace LNF.Data.ClientAccountMatrix
                         string lname1 = caa.EmployeeLastName;
                         string lname2 = items[Math.Min(index + (GroupSize - 1), items.Count - 1)].EmployeeLastName;
                         string text = string.Format("{0} - {1}", lname1, lname2);
-                        _FilterHtml.AppendFormat("<option value=\"{0}\">{1}</option>", key, text);
+                        FilterHtml.AppendFormat("<option value=\"{0}\">{1}</option>", key, text);
                         groupNumber++;
                     }
 
                     MatrixUserHeader uh = new MatrixUserHeader
                     {
                         ClientOrgID = caa.ClientOrgID,
-                        DisplayName = caa.GetEmployeeDisplayName(),
+                        DisplayName = GetEmployeeDisplayName(caa),
                         Key = key
                     };
 
@@ -104,14 +100,14 @@ namespace LNF.Data.ClientAccountMatrix
                 }
             }
 
-            _FilterHtml.AppendLine("</select>");
+            FilterHtml.AppendLine("</select>");
         }
 
         public void RefreshMatrix()
         {
             _Items = new Dictionary<int, MatrixItem>();
 
-            foreach (ClientAccountAssignment caa in source)
+            foreach (IClientAccountAssignment caa in source)
             {
                 int acctID = caa.AccountID;
                 MatrixItem item;
@@ -122,7 +118,7 @@ namespace LNF.Data.ClientAccountMatrix
                         AccountID = acctID,
                         Name = caa.AccountName,
                         Number = caa.AccountNumber,
-                        Project = caa.GetAccountProject(),
+                        Project = GetAccountProject(caa),
                         ShortCode = caa.ShortCode
                     }, ReadOnly);
 
@@ -135,11 +131,11 @@ namespace LNF.Data.ClientAccountMatrix
                 {
                     AccountID = acctID,
                     ClientOrgID = caa.ClientOrgID,
-                    DisplayName = caa.GetEmployeeDisplayName(),
+                    DisplayName = GetEmployeeDisplayName(caa),
                     Email = caa.EmployeeEmail
                 };
 
-                if (caa.IsAssigned())
+                if (IsAssigned(caa))
                 {
                     ua.ClientAccountID = caa.EmployeeClientAccountID;
                     ua.WarningMessage = caa.HasDryBox ? "Client has a drybox reserved with this account." : string.Empty;
@@ -152,19 +148,19 @@ namespace LNF.Data.ClientAccountMatrix
                 item[ua.ClientOrgID] = ua;
             }
 
-            _MatrixHtml = new StringBuilder();
+            MatrixHtml = new StringBuilder();
             string cssAttribute = " class=\"matrix\"";
             string startTag = string.Format("<table{0}>", cssAttribute);
-            _MatrixHtml.AppendLine(startTag);
+            MatrixHtml.AppendLine(startTag);
 
-            _MatrixHtml.AppendLine(HeaderRowHtml.ToString());
+            MatrixHtml.AppendLine(HeaderRowHtml.ToString());
 
             foreach (KeyValuePair<int, MatrixItem> kvp in _Items)
             {
-                _MatrixHtml.AppendLine(kvp.Value.MatrixItemHtml.ToString());
+                MatrixHtml.AppendLine(kvp.Value.MatrixItemHtml.ToString());
             }
 
-            _MatrixHtml.AppendLine("</table>");
+            MatrixHtml.AppendLine("</table>");
         }
 
         public MatrixItem this[int key]
@@ -187,15 +183,9 @@ namespace LNF.Data.ClientAccountMatrix
             return _Items.ContainsKey(key);
         }
 
-        public StringBuilder FilterHtml
-        {
-            get { return _FilterHtml; }
-        }
+        public StringBuilder FilterHtml { get; private set; }
 
-        public StringBuilder MatrixHtml
-        {
-            get { return _MatrixHtml; }
-        }
+        public StringBuilder MatrixHtml { get; private set; }
 
         public StringBuilder HeaderRowHtml
         {
@@ -215,6 +205,29 @@ namespace LNF.Data.ClientAccountMatrix
                 return sb;
             }
         }
+
+        private string GetEmployeeDisplayName(IClientAccountAssignment x) => Clients.GetDisplayName(x.EmployeeLastName, x.EmployeeFirstName);
+
+        private string GetManagerDisplayName(IClientAccountAssignment x) => Clients.GetDisplayName(x.ManagerLastName, x.ManagerFirstName);
+
+        private bool Display(IClientAccountAssignment x)
+        {
+            return x.ClientManagerActive
+                && x.ManagerClientActive
+                && x.ManagerClientOrgActive
+                && x.ManagerClientAccountActive
+                && x.EmployeeClientActive
+                && x.EmployeeClientOrgActive
+                && x.AccountActive
+                && x.Manager;
+        }
+
+        private bool IsAssigned(IClientAccountAssignment x)
+        {
+            return x.EmployeeClientAccountID > 0;
+        }
+
+        private string GetAccountProject(IClientAccountAssignment x) => Accounts.GetProject(x.AccountNumber);
 
         public IEnumerator<KeyValuePair<int, MatrixItem>> GetEnumerator()
         {

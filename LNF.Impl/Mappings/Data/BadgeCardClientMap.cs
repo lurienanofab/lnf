@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Data;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class BadgeCardClientMap : ClassMap<BadgeCardClient>
+    internal class BadgeCardClientMap : ClassMap<BadgeCardClient>
     {
-        public BadgeCardClientMap()
+        internal BadgeCardClientMap()
         {
             Schema("sselData.dbo");
             Table("v_BadgeCardClient");

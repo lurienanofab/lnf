@@ -1,16 +1,15 @@
-﻿using LNF.Models.Data;
-using LNF.Repository.Reporting;
+﻿using LNF.Data;
 
 namespace LNF.Reporting
 {
     public class ManagerUsageSummaryItem
     {
-        public static ManagerUsageSummaryItem Create(ClientManagerLog log, ManagerUsageCharge charge)
+        public static ManagerUsageSummaryItem Create(IClientManagerLog log, IManagerUsageCharge charge)
         {
             return new ManagerUsageSummaryItem(log, charge);
         }
 
-        private ManagerUsageSummaryItem(ClientManagerLog log, ManagerUsageCharge charge)
+        private ManagerUsageSummaryItem(IClientManagerLog log, IManagerUsageCharge charge)
         {
             AccountID = log.AccountID;
             ShortCode = log.ShortCode.Trim();

@@ -1,8 +1,6 @@
-﻿using LNF.Models.Billing;
-using LNF.Models.Billing.Process;
-using LNF.Repository.Data;
+﻿using LNF.Billing;
+using LNF.Billing.Process;
 using System;
-using System.Collections.Generic;
 
 namespace LNF.CommonTools
 {
@@ -12,41 +10,21 @@ namespace LNF.CommonTools
 
     public static class DataTableManager
     {
-        public static DataUpdateProcessResult Update(BillingCategory types)
+        private readonly static WriteData _wd;
+
+        static DataTableManager()
         {
-            DateTime now = DateTime.Now;
-            DateTime period = now.FirstOfMonth();
-
-            var holidays = Utility.GetHolidays(period, period.AddMonths(1));
-
-            WriteData wd = new WriteData();
-
-            var result = new DataUpdateProcessResult
-            {
-                Now = now,
-                Period = period,
-                IsFirstBusinessDay = Utility.IsFirstBusinessDay(now, holidays),
-                //First, update tables
-                UpdateTablesResult = wd.UpdateTables(types, UpdateDataType.DataClean | UpdateDataType.Data, period, 0)
-            };
-
-            //the daily update DOES produce correct data
-            //however, if a change was made since the update, it needs to be caught 
-            if (result.IsFirstBusinessDay)
-                result.FinalizeResult = Finalize(period.AddMonths(-1));
-
-            return result;
+            _wd = new WriteData(ServiceProvider.Current);
         }
 
-        public static DataFinalizeProcessResult Finalize(DateTime period)
+        public static UpdateTablesResult Update(BillingCategory types)
         {
-            return new DataFinalizeProcessResult
-            {
-                Period = period,
-                WriteToolDataProcessResult = new WriteToolDataProcess(period).Start(),
-                WriteRoomDataProcessResult = new WriteRoomDataProcess(period).Start(),
-                WriteStoreDataProcessResult = new WriteStoreDataProcess(period).Start()
-            };
+            return _wd.UpdateTables(types);
+        }
+
+        public static FinalizeResult Finalize(DateTime period)
+        {
+            return _wd.Finalize(period);
         }
     }
 }

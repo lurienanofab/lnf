@@ -1,8 +1,8 @@
-﻿using LNF.Models.Data;
-using LNF.Models.Scheduler;
-using LNF.Repository;
-using LNF.Repository.Data;
-using LNF.Repository.Scheduler;
+﻿using LNF.Data;
+using LNF.Impl;
+using LNF.Impl.Repository.Data;
+using LNF.Impl.Repository.Scheduler;
+using LNF.Scheduler;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
@@ -34,25 +34,25 @@ namespace LNF.Tests
         {
             IClient c;
 
-            var client = DA.Current.Single<Client>(1301);
+            var client = Session.Get<Client>(1301);
             c = client.CreateModel<IClient>();
             AssertClient(c);
 
-            var clientInfo = DA.Current.Single<ClientInfo>(1301);
+            var clientInfo = Session.Get<ClientInfo>(1301);
             c = clientInfo.CreateModel<IClient>();
             AssertClient(c);
             AssertObjectsAreSame(c, clientInfo);
 
-            var clientOrg = DA.Current.Single<ClientOrg>(1373);
+            var clientOrg = Session.Get<ClientOrg>(1373);
             c = clientOrg.CreateModel<IClient>();
             AssertClient(c);
 
-            var clientOrgInfo = DA.Current.Single<ClientOrgInfo>(1373);
+            var clientOrgInfo = Session.Get<ClientOrgInfo>(1373);
             c = clientOrgInfo.CreateModel<IClient>();
             AssertClient(c);
             AssertObjectsAreSame(c, clientOrgInfo);
 
-            var clients = DA.Current.Query<Client>().Where(x => (x.Privs & ClientPrivilege.Staff) > 0 && x.Active);
+            var clients = Session.Query<Client>().Where(x => (x.Privs & ClientPrivilege.Staff) > 0 && x.Active);
             var models = clients.CreateModels();
             Assert.AreEqual(clients.Count(), models.Count());
         }
@@ -62,16 +62,16 @@ namespace LNF.Tests
         {
             IClientAccount ca;
 
-            var clientAccount = DA.Current.Single<ClientAccount>(3202);
+            var clientAccount = Session.Get<ClientAccount>(3202);
             ca = clientAccount.CreateModel<IClientAccount>();
             AssertClientAccount(ca);
 
-            var clientAccountInfo = DA.Current.Single<ClientAccountInfo>(3202);
+            var clientAccountInfo = Session.Get<ClientAccountInfo>(3202);
             ca = clientAccountInfo.CreateModel<IClientAccount>();
             AssertClientAccount(ca);
             AssertObjectsAreSame(ca, clientAccountInfo);
 
-            var clientAccounts = DA.Current.Query<ClientAccount>().Where(x => x.Manager && x.Active);
+            var clientAccounts = Session.Query<ClientAccount>().Where(x => x.Manager && x.Active);
             var models = clientAccounts.CreateModels();
             Assert.AreEqual(clientAccounts.Count(), models.Count());
         }
@@ -81,16 +81,16 @@ namespace LNF.Tests
         {
             IOrg o;
 
-            var org = DA.Current.Single<Org>(17);
+            var org = Session.Get<Org>(17);
             o = org.CreateModel<IOrg>();
             AssertOrg(o);
 
-            var orgInfo = DA.Current.Single<OrgInfo>(17);
+            var orgInfo = Session.Get<OrgInfo>(17);
             o = orgInfo.CreateModel<IOrg>();
             AssertOrg(o);
             AssertObjectsAreSame(o, orgInfo);
 
-            var orgs = DA.Current.Query<Org>().Where(x => x.OrgType.OrgTypeName == "Non-UM University (US)" && x.Active);
+            var orgs = Session.Query<Org>().Where(x => x.OrgType.OrgTypeName == "Non-UM University (US)" && x.Active);
             var models = orgs.CreateModels();
             Assert.AreEqual(orgs.Count(), models.Count());
         }
@@ -100,16 +100,16 @@ namespace LNF.Tests
         {
             IAccount a;
 
-            var account = DA.Current.Single<Account>(67);
+            var account = Session.Get<Account>(67);
             a = account.CreateModel<IAccount>();
             AssertAccount(a);
 
-            var accountInfo = DA.Current.Single<AccountInfo>(67);
+            var accountInfo = Session.Get<AccountInfo>(67);
             a = accountInfo.CreateModel<IAccount>();
             AssertAccount(a);
             AssertObjectsAreSame(a, accountInfo);
 
-            var accounts = DA.Current.Query<Account>().Where(x => x.AccountType.AccountTypeName == "Regular" && x.Active);
+            var accounts = Session.Query<Account>().Where(x => x.AccountType.AccountTypeName == "Regular" && x.Active);
             var models = accounts.CreateModels();
             Assert.AreEqual(accounts.Count(), models.Count());
         }
@@ -117,7 +117,7 @@ namespace LNF.Tests
         //[TestMethod]
         public void CanGetGlobaCostModel()
         {
-            var globalCost = DA.Current.Single<GlobalCost>(8); // the only one
+            var globalCost = Session.Get<GlobalCost>(8); // the only one
             var gc = globalCost.CreateModel<IGlobalCost>();
             Assert.AreEqual(8, gc.GlobalID);
             Assert.AreEqual(3, gc.BusinessDay);
@@ -135,7 +135,7 @@ namespace LNF.Tests
             Room room;
             IRoom r;
 
-            room = DA.Current.Single<Room>(6); // Clean Room
+            room = Session.Get<Room>(6); // Clean Room
             r = room.CreateModel<IRoom>();
             Assert.AreEqual(6, r.RoomID);
             Assert.AreEqual(154, r.ParentID);
@@ -147,7 +147,7 @@ namespace LNF.Tests
             Assert.AreEqual(true, r.ApportionEntryFee);
             Assert.AreEqual(true, r.Active);
 
-            room = DA.Current.Single<Room>(25); // Wet Chemistry
+            room = Session.Get<Room>(25); // Wet Chemistry
             r = room.CreateModel<IRoom>();
             Assert.AreEqual(25, r.RoomID);
             Assert.AreEqual(154, r.ParentID);
@@ -159,7 +159,7 @@ namespace LNF.Tests
             Assert.AreEqual(true, r.ApportionEntryFee);
             Assert.AreEqual(true, r.Active);
 
-            room = DA.Current.Single<Room>(154); // LNF
+            room = Session.Get<Room>(154); // LNF
             r = room.CreateModel<IRoom>();
             Assert.AreEqual(154, r.RoomID);
             Assert.IsNull(r.ParentID);
@@ -175,7 +175,7 @@ namespace LNF.Tests
         //[TestMethod]
         public void CanGetBuildingModel()
         {
-            var bldg = DA.Current.Single<Building>(4); // the only one
+            var bldg = Session.Get<Building>(4); // the only one
             var b = bldg.CreateModel<IBuilding>();
             Assert.AreEqual(4, b.BuildingID);
             Assert.AreEqual("EECS", b.BuildingName);
@@ -186,26 +186,23 @@ namespace LNF.Tests
         //[TestMethod]
         public void CanGetLabModel()
         {
-            var lab = DA.Current.Single<Lab>(9); // Wet Chemistry
+            var lab = Session.Get<Lab>(9); // Wet Chemistry
             var l = lab.CreateModel<ILab>();
             Assert.AreEqual(9, l.LabID);
             Assert.AreEqual(4, l.BuildingID);
             Assert.AreEqual("Wet Chemistry", l.LabName);
             Assert.AreEqual("ROBIN", l.LabDisplayName);
             Assert.AreEqual("Room 1436 EECS", l.LabDescription);
-            Assert.AreEqual(25, l.RoomID);
             Assert.AreEqual(true, l.LabIsActive);
             Assert.AreEqual(true, l.BuildingIsActive);
             Assert.AreEqual("EECS", l.BuildingName);
             Assert.AreEqual("Electrical Engineering and Computer Science", l.BuildingDescription);
-            Assert.AreEqual("ROBIN", l.RoomDisplayName);
-            Assert.AreEqual("Wet Chemistry", l.RoomName);
         }
 
         //[TestMethod]
         public void CanGetProcessTechModel()
         {
-            var procTech = DA.Current.Single<ProcessTech>(28); // Annealing (Wet Chemistry)
+            var procTech = Session.Get<ProcessTech>(28); // Annealing (Wet Chemistry)
             var pt = procTech.CreateModel<IProcessTech>();
             Assert.AreEqual(28, pt.ProcessTechID);
             Assert.AreEqual(24, pt.ProcessTechGroupID);
@@ -218,9 +215,6 @@ namespace LNF.Tests
             Assert.AreEqual(9, pt.LabID);
             Assert.AreEqual(true, pt.LabIsActive);
             Assert.AreEqual("Wet Chemistry", pt.LabName);
-            Assert.AreEqual("ROBIN", pt.RoomDisplayName);
-            Assert.AreEqual(25, pt.RoomID);
-            Assert.AreEqual("Wet Chemistry", pt.RoomName);
             Assert.AreEqual("Electrical Engineering and Computer Science", pt.BuildingDescription);
             Assert.AreEqual(4, pt.BuildingID);
             Assert.AreEqual(true, pt.BuildingIsActive);
@@ -232,16 +226,16 @@ namespace LNF.Tests
         {
             IResource r;
 
-            var resource = DA.Current.Single<Resource>(10020);
+            var resource = Session.Get<Resource>(10020);
             r = resource.CreateModel<IResource>();
             AssertResource(r);
 
-            var resourceInfo = DA.Current.Single<ResourceInfo>(10020);
+            var resourceInfo = Session.Get<ResourceInfo>(10020);
             r = resourceInfo.CreateModel<IResource>();
             AssertResource(r);
             AssertObjectsAreSame(r, resourceInfo);
 
-            var resources = DA.Current.Query<Resource>().Where(x => x.ProcessTech.ProcessTechID == 6 && x.IsActive);
+            var resources = Session.Query<Resource>().Where(x => x.ProcessTech.ProcessTechID == 6 && x.IsActive);
             var models = resources.CreateModels();
             Assert.AreEqual(resources.Count(), models.Count());
         }
@@ -251,16 +245,16 @@ namespace LNF.Tests
         {
             IResourceClient rc;
 
-            var resourceClient = DA.Current.Single<ResourceClient>(22124);
+            var resourceClient = Session.Get<ResourceClient>(22124);
             rc = resourceClient.CreateModel<IResourceClient>();
             AssertResourceClient(rc);
 
-            var resourceClientInfo = DA.Current.Single<ResourceClientInfo>(22124);
+            var resourceClientInfo = Session.Get<ResourceClientInfo>(22124);
             rc = resourceClientInfo.CreateModel<IResourceClient>();
             AssertResourceClient(rc);
             AssertObjectsAreSame(rc, resourceClientInfo);
 
-            var resourceClients = DA.Current.Query<ResourceClient>().Where(x => x.AuthLevel == ClientAuthLevel.ToolEngineer);
+            var resourceClients = Session.Query<ResourceClient>().Where(x => x.AuthLevel == ClientAuthLevel.ToolEngineer);
             var models = resourceClients.CreateModels();
             Assert.AreEqual(resourceClients.Count(), models.Count());
         }
@@ -270,16 +264,16 @@ namespace LNF.Tests
         {
             IReservation rsv;
 
-            var reservation = DA.Current.Single<Reservation>(123456);
+            var reservation = Session.Get<Reservation>(123456);
             rsv = reservation.CreateModel<IReservation>();
             AssertReservation(rsv);
 
-            var reservationInfo = DA.Current.Single<ReservationInfo>(123456);
+            var reservationInfo = Session.Get<ReservationInfo>(123456);
             rsv = reservationInfo.CreateModel<IReservation>();
             AssertReservation(rsv);
             AssertObjectsAreSame(rsv, reservationInfo);
 
-            var reservations = DA.Current.Query<Reservation>().Where(x => x.Resource.ResourceID == 62040 && x.BeginDateTime < DateTime.Parse("2008-04-29") && x.EndDateTime > DateTime.Parse("2008-04-28"));
+            var reservations = Session.Query<Reservation>().Where(x => x.Resource.ResourceID == 62040 && x.BeginDateTime < DateTime.Parse("2008-04-29") && x.EndDateTime > DateTime.Parse("2008-04-28"));
             var models = reservations.CreateModels();
             var comparer = new ReservationComparer();
             AssertCollectionsAreSame(models, reservations, (x, y) => x.ReservationID == y.ReservationID, comparer);
@@ -423,9 +417,6 @@ namespace LNF.Tests
             Assert.AreEqual("Clean Room", r.LabName);
             Assert.AreEqual("Clean Room", r.LabDisplayName);
             Assert.AreEqual("Solid-State Lab", r.LabDescription);
-            Assert.AreEqual(6, r.RoomID);
-            Assert.AreEqual("Clean Room", r.RoomName);
-            Assert.AreEqual("Clean Room", r.RoomDisplayName);
             Assert.AreEqual(true, r.LabIsActive);
             Assert.AreEqual(4, r.BuildingID);
             Assert.AreEqual("EECS", r.BuildingName);
@@ -472,7 +463,7 @@ namespace LNF.Tests
             Assert.AreEqual(null, rsv.OTFSchedTime);
             Assert.AreEqual(true, rsv.AuthState);
             Assert.AreEqual(12, rsv.AuthDuration);
-            Assert.AreEqual((ResourceState)2, rsv.State);
+            Assert.AreEqual((ResourceState)1, rsv.State);
             Assert.AreEqual(true, rsv.IsSchedulable);
             Assert.AreEqual(true, rsv.ResourceIsActive);
             Assert.AreEqual("helpdesk.deposition@lnf.umich.edu", rsv.HelpdeskEmail);
@@ -491,8 +482,6 @@ namespace LNF.Tests
             Assert.AreEqual(424, rsv.AccountID);
             Assert.AreEqual("Quantum Dot Heterostructures for Slow Light Studie", rsv.AccountName);
             Assert.AreEqual("055991", rsv.ShortCode);
-            Assert.AreEqual("764-3305", rsv.Phone);
-            Assert.AreEqual("junyang@eecs.umich.edu", rsv.Email);
             Assert.AreEqual(6, rsv.ActivityID);
             Assert.AreEqual("Processing", rsv.ActivityName);
             Assert.AreEqual((ActivityAccountType)0, rsv.ActivityAccountType);
@@ -507,11 +496,7 @@ namespace LNF.Tests
             Assert.AreEqual(DateTime.Parse("2008-04-28 16:30:00.0000000"), rsv.ChargeBeginDateTime);
             Assert.AreEqual(DateTime.Parse("2008-04-28 16:45:00.0000000"), rsv.ChargeEndDateTime);
             Assert.AreEqual(-1, rsv.ClientIDBegin);
-            Assert.AreEqual(null, rsv.ClientBeginLName);
-            Assert.AreEqual(null, rsv.ClientBeginFName);
             Assert.AreEqual(-1, rsv.ClientIDEnd);
-            Assert.AreEqual(null, rsv.ClientEndLName);
-            Assert.AreEqual(null, rsv.ClientEndFName);
             Assert.AreEqual(DateTime.Parse("2008-04-28 11:52:49.9630000"), rsv.CreatedOn);
             Assert.AreEqual(DateTime.Parse("2008-04-28 11:52:49.9630000"), rsv.LastModifiedOn);
             Assert.AreEqual(120, rsv.Duration);

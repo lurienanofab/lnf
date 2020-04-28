@@ -1,5 +1,5 @@
-﻿using LNF.Models.Authorization;
-using LNF.Models.Authorization.Credentials;
+﻿using LNF.Authorization;
+using LNF.Authorization.Credentials;
 using RestSharp;
 
 namespace OnlineServices.Api.Authorization

@@ -1,13 +1,15 @@
-﻿namespace LNF.CommonTools
+﻿using LNF.Billing;
+
+namespace LNF.CommonTools
 {
     public static class ReadData
     {
-        public static IReadRoomDataManager Room => ServiceProvider.Current.ReadRoomDataManager;
+        public static IRoomDataRepository Room => ServiceProvider.Current.Billing.RoomData;
 
-        public static IReadToolDataManager Tool => ServiceProvider.Current.ReadToolDataManager;
+        public static IToolDataRepository Tool => ServiceProvider.Current.Billing.ToolData;
 
-        public static IReadStoreDataManager Store => ServiceProvider.Current.ReadStoreDataManager;
+        public static IStoreDataRepository Store => ServiceProvider.Current.Billing.StoreData;
 
-        public static IReadMiscDataManager Misc => ServiceProvider.Current.ReadMiscDataManager;
+        public static IMiscDataRepository Misc => ServiceProvider.Current.Billing.MiscData;
     }
 }

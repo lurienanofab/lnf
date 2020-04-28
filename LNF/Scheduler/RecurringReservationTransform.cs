@@ -1,8 +1,4 @@
-﻿using LNF.Models.Scheduler;
-using LNF.Repository;
-using LNF.Repository.Data;
-using LNF.Repository.Scheduler;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -96,8 +92,8 @@ namespace LNF.Scheduler
 
             if (!isOverlapped)
             {
-                var util = new ReservationUtility(DateTime.Now, reservations.Provider);
-                var rsv = util.Create(data);
+                var util = Reservations.Create(DateTime.Now);
+                var rsv = util.CreateReservation(data);
                 reservations.Add(rsv);
                 return true;
             }
@@ -113,7 +109,7 @@ namespace LNF.Scheduler
             IList<IReservationInvitee> result;
 
             if (prev != null)
-                result = ServiceProvider.Current.Scheduler.Reservation.GetReservationInvitees(prev.ReservationID).ToList();
+                result = ServiceProvider.Current.Scheduler.Reservation.GetInvitees(prev.ReservationID).ToList();
             else
                 result = new List<IReservationInvitee>();
 
@@ -139,44 +135,22 @@ namespace LNF.Scheduler
         {
             foreach (var item in processInfos)
             {
-                var rpi = new ReservationProcessInfo()
-                {
-                    Active = item.Active,
-                    ChargeMultiplier = item.ChargeMultiplier,
-                    ProcessInfoLine = DA.Current.Single<ProcessInfoLine>(item.ProcessInfoLineID),
-                    Reservation = DA.Current.Single<Reservation>(reservationId),
-                    RunNumber = item.RunNumber,
-                    Special = item.Special,
-                    Value = item.Value
-                };
-
-                DA.Current.Insert(rpi);
+                ServiceProvider.Current.Scheduler.ProcessInfo
+                    .AddReservationProcessInfo(reservationId, item.ProcessInfoLineID, item.Value, item.Special, item.RunNumber, item.ChargeMultiplier, item.Active);
             }
         }
 
         public static void CopyInvitees(int reservationId, IEnumerable<IReservationInvitee> invitees)
         {
-
             foreach (var item in invitees)
             {
-                var ri = new ReservationInvitee()
-                {
-                    Invitee = DA.Current.Single<Client>(item.InviteeID),
-                    Reservation = DA.Current.Single<Reservation>(reservationId)
-                };
-
-                DA.Current.Insert(ri);
+                ServiceProvider.Current.Scheduler.Reservation.AddInvitee(reservationId, item.InviteeID);
             }
         }
 
-        public static Reservation GetPreviousRecurrence(int recurrenceId, int notReservationId = 0)
+        public static IReservation GetPreviousRecurrence(int recurrenceId, int notReservationId = 0)
         {
-            var result = DA.Current.Query<Reservation>()
-                .Where(x => x.RecurrenceID == recurrenceId && x.ReservationID != notReservationId)
-                .OrderByDescending(x => x.BeginDateTime)
-                .FirstOrDefault();
-
-            return result;
+            return ServiceProvider.Current.Scheduler.Reservation.GetPreviousRecurrence(recurrenceId, notReservationId);
         }
 
         public static DateTime GetDate(DateTime period, int n, DayOfWeek dow)

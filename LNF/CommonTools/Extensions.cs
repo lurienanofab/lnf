@@ -1,6 +1,5 @@
 ﻿using LNF.CommonTools;
-using LNF.Models;
-using LNF.Repository;
+using LNF.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;

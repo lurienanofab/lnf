@@ -1,12 +1,12 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Scheduler;
+using LNF.Impl.Repository.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {
-    public class ClientSettingMap : ClassMap<ClientSetting>
+    internal class ClientSettingMap : ClassMap<ClientSetting>
     {
 
-        public ClientSettingMap()
+        internal ClientSettingMap()
         {
             Schema("sselScheduler.dbo");
             Table("ClientSetting");

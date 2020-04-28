@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Data;
 using NHibernate.Type;
-using LNF.Repository.Data;
-using FluentNHibernate.Mapping;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class NewsMap : ClassMap<News>
+    internal class NewsMap : ClassMap<News>
     {
-        public NewsMap()
+        internal NewsMap()
         {
             Schema("sselData.dbo");
             Id(x => x.NewsID);

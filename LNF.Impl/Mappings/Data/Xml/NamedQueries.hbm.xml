@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<hibernate-mapping assembly="LNF" namespace="LNF.Repository.Data" xmlns="urn:nhibernate-mapping-2.2">
+<hibernate-mapping assembly="LNF.Impl" namespace="LNF.Impl.Repository.Data" xmlns="urn:nhibernate-mapping-2.2">
     <sql-query name="SelectClientSessionInfo">
         <return class="ClientSessionInfo"/>
         <![CDATA[EXEC sselData.dbo.Client_CheckAuth @Action = 'GetSessionInfo', @UserName = :UserName]]>

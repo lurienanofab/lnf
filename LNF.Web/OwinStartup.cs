@@ -12,6 +12,7 @@ using System.Web.Routing;
 
 namespace LNF.Web
 {
+    [Obsolete]
     public abstract class OwinStartup
     {
         public virtual bool UseCookieAuthentication
@@ -27,16 +28,19 @@ namespace LNF.Web
             ConfigureRoutes(RouteTable.Routes);
         }
 
-        public abstract void ConfigureRoutes(RouteCollection routes);
+        public virtual void ConfigureRoutes(RouteCollection routes)
+        {
+            // do nothing unless overridden
+        }
 
-        public virtual  void ConfigureFilters(GlobalFilterCollection filters)
+        public virtual void ConfigureFilters(GlobalFilterCollection filters)
         {
             // do nothing unless overridden
         }
 
         public virtual void ConfigureDataContext(IAppBuilder app)
         {
-            app.UseDataAccess();
+            // do nothing unless overridden
         }
 
         public virtual void ConfigureAuth(IAppBuilder app)
@@ -52,12 +56,12 @@ namespace LNF.Web
                     CookiePath = "/",
                     ReturnUrlParameter = "ReturnUrl",
                     ExpireTimeSpan = TimeSpan.FromHours(8),
-                    LoginPath = new PathString(ServiceProvider.Current.Context.LoginUrl),
+                    LoginPath = new PathString(ServiceProvider.Current.LoginUrl()),
                     Provider = new CookieAuthenticationProvider()
                     {
                         OnApplyRedirect = context =>
                         {
-                            context.RedirectUri = ServiceProvider.Current.Context.LoginUrl + new QueryString(context.Options.ReturnUrlParameter, context.Request.Uri.PathAndQuery);
+                            context.RedirectUri = ServiceProvider.Current.LoginUrl() + new QueryString(context.Options.ReturnUrlParameter, context.Request.Uri.PathAndQuery);
                             context.Response.Redirect(context.RedirectUri);
                         }
                     }
@@ -66,6 +70,7 @@ namespace LNF.Web
         }
     }
 
+    [Obsolete]
     public class DataAccessMiddleware : OwinMiddleware
     {
         public DataAccessMiddleware(OwinMiddleware next) : base(next) { }
@@ -97,14 +102,12 @@ namespace LNF.Web
     }
 
 
+    [Obsolete]
     public static class DataAccessMiddlewareExtensions
     {
         public static void UseDataAccess(this IAppBuilder app)
         {
-            if (ServiceProvider.Current.DataAccess != null)
-            {
-                app.Use(typeof(DataAccessMiddleware));
-            }
+            app.Use(typeof(DataAccessMiddleware));
         }
     }
 }

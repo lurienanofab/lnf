@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class DemGenderMap : ClassMap<DemGender>
+    internal class DemGenderMap : ClassMap<DemGender>
     {
-        public DemGenderMap()
+        internal DemGenderMap()
         {
             Schema("sselData.dbo");
             Id(x => x.DemGenderID);

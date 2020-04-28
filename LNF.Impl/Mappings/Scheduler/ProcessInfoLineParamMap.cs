@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Scheduler;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {
-    public class ProcessInfoLineParamMap : ClassMap<ProcessInfoLineParam>
+    internal class ProcessInfoLineParamMap : ClassMap<ProcessInfoLineParam>
     {
-        public ProcessInfoLineParamMap()
+        internal ProcessInfoLineParamMap()
         {
             Schema("sselScheduler.dbo");
             Id(x => x.ProcessInfoLineParamID);

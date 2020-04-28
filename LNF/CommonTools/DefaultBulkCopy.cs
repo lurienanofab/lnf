@@ -1,5 +1,6 @@
-﻿using LNF.Repository;
+﻿using LNF.DataAccess;
 using System;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -15,19 +16,20 @@ namespace LNF.CommonTools
 
         public DefaultBulkCopy(string destinationTableName)
         {
-            var dba = SQLDBAccess.Create("cnSselData");
+            _conn = new SqlConnection(ConfigurationManager.ConnectionStrings["cnSselData"].ConnectionString);
 
-            _conn = dba.Connection as SqlConnection;
+            var dba = SQLDBAccess.Create(_conn);
 
-            if (_conn == null)
+            if (!(dba.Connection is SqlConnection))
                 throw new NotSupportedException("Only SqlConnection type is supported.");
+
+            if (!(dba.Transaction is SqlTransaction))
+                throw new NotSupportedException("Only SqlTransaction type is supported.");
 
             _trans = dba.Transaction as SqlTransaction;
 
-            if (_trans == null)
-                throw new NotSupportedException("Only SqlTransaction type is supported.");
-
-            SqlBulkCopyOptions options = SqlBulkCopyOptions.TableLock;
+            //SqlBulkCopyOptions options = SqlBulkCopyOptions.TableLock;
+            SqlBulkCopyOptions options = SqlBulkCopyOptions.Default;
 
             _bcp = new SqlBulkCopy(_conn, options, _trans)
             {

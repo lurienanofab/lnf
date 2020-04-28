@@ -1,6 +1,4 @@
-﻿using LNF.Repository;
-using LNF.Repository.Scheduler;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
@@ -14,16 +12,18 @@ namespace LNF.Scheduler.Data
         /// <summary>
         /// Returns all auth levels 
         /// </summary>
-        public static IEnumerable<AuthLevel> SelectAll()
+        public static IEnumerable<IAuthLevel> SelectAll()
         {
             // Replaces sselScheduler.dbo.procAuthLevelSelect @Action = 'SelectAll'
-            return DA.Current.Query<AuthLevel>().OrderBy(x => x.AuthLevelID).ToList();
+            return ServiceProvider.Current.Scheduler.Resource
+                .GetAuthLevels().OrderBy(x => x.AuthLevelID).ToList();
         }
 
-        public static IEnumerable<AuthLevel> SelectAuthorizable()
+        public static IEnumerable<IAuthLevel> SelectAuthorizable()
         {
             // Replaces sselScheduler.dbo.procAuthLevelSelect @Action = 'SelectAuthorizable'
-            return DA.Current.Query<AuthLevel>().Where(x => x.Authorizable == 1).OrderBy(x => x.AuthLevelID).ToList();
+            return ServiceProvider.Current.Scheduler.Resource
+                .GetAuthLevels().Where(X => X.Authorizable == 1).OrderBy(x => x.AuthLevelID).ToList();
         }
     }
 }

@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Scheduler;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {
-    public class GlobalActivityAuthMap : ClassMap<GlobalActivityAuth>
+    internal class GlobalActivityAuthMap : ClassMap<GlobalActivityAuth>
     {
-        public GlobalActivityAuthMap()
+        internal GlobalActivityAuthMap()
         {
             Schema("sselScheduler.dbo");
             Id(x => x.GlobalActivityAuthID);

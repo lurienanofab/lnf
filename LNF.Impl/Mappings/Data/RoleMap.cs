@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Data;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class RoleMap : ClassMap<Role>
+    internal class RoleMap : ClassMap<Role>
     {
-        public RoleMap()
+        internal RoleMap()
         {
             Schema("sselData.dbo");
             Id(x => x.RoleID);

@@ -1,13 +1,7 @@
-﻿using LNF.CommonTools;
+﻿using LNF.Billing;
+using LNF.CommonTools;
 using LNF.Data;
-using LNF.Models.Billing;
-using LNF.Models.Data;
-using LNF.Models.Reporting;
-using LNF.Models.Reporting.Individual;
-using LNF.Repository;
-using LNF.Repository.Billing;
-using LNF.Repository.Data;
-using LNF.Repository.Reporting;
+using LNF.Reporting.Individual;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,18 +17,19 @@ namespace LNF.Reporting
         {
             var result = new AggregateByOrg();
 
-            var miscUsage = DA.Current.Query<MiscBillingCharge>().Where(x => x.Client.ClientID == clientId && x.Period == period && x.Active);
+            var miscUsage = ServiceProvider.Current.Billing.Misc.GetMiscBillingCharges(period, clientId, active: true);
+            var roomUsage = ServiceProvider.Current.Billing.Room.GetRoomBilling(period, clientId);
+            var toolUsage = ServiceProvider.Current.Billing.Tool.GetToolBilling(period, clientId);
 
-            var roomUsage = DA.Current.Query<RoomBillingByOrg>().Where(x => x.ClientID == clientId && x.Period == period);
-            var toolUsage = DA.Current.Query<ToolBillingByOrg>().Where(x => x.ClientID == clientId && x.Period == period);
+            var accounts = ServiceProvider.Current.Data.Account.GetAccounts();
 
             result.RoomByOrg = roomUsage.Select(x => new RoomByOrgItem()
             {
                 OrgID = x.OrgID,
                 OrgName = x.OrgName,
                 RoomCost = x.TotalCharge,
-                MiscCarge = miscUsage.Where(z => z.SubType == "Room" && z.Account.Org.OrgID == x.OrgID).Sum(z => (decimal?)(Convert.ToDecimal(z.Quantity) * z.UnitCost)).GetValueOrDefault(0),
-                SubsidyDiscount = x.SubsidyDiscount + miscUsage.Where(z => z.SubType == "Room" && z.Account.Org.OrgID == x.OrgID).Sum(z => (decimal?)(z.SubsidyDiscount)).GetValueOrDefault(0),
+                MiscCarge = miscUsage.Where(m => m.SUBType == "Room" && accounts.First(a => a.AccountID == m.AccountID).OrgID == x.OrgID).Sum(z => (decimal?)(Convert.ToDecimal(z.Quantity) * z.UnitCost)).GetValueOrDefault(0),
+                SubsidyDiscount = x.SubsidyDiscount + miscUsage.Where(m => m.SUBType == "Room" && accounts.First(a => a.AccountID == m.AccountID).OrgID == x.OrgID).Sum(z => (decimal?)(z.SubsidyDiscount)).GetValueOrDefault(0),
             }).ToList();
 
             //result.RoomByOrg = new List<RoomByOrgItem>();
@@ -157,9 +152,9 @@ namespace LNF.Reporting
 
         public static IEnumerable<ManagerUsageSummaryItem> GetManagerUsageSummaryItems(int clientId, DateTime period, bool includeRemote)
         {
-            var logs = ClientManagerLog.SelectByManager(clientId, period, period.AddMonths(1)).ToList();
+            var logs = ServiceProvider.Current.Reporting.ClientManagerLog.SelectByManager(clientId, period, period.AddMonths(1));
 
-            var charges = ManagerUsageCharge.SelectByManager(clientId, period, includeRemote).ToList();
+            IEnumerable<IManagerUsageCharge> charges = ServiceProvider.Current.Reporting.ManagerUsageCharge.SelectByManager(clientId, period, includeRemote).ToList();
 
             var join = logs.LeftJoin(
                 inner: charges,
@@ -172,12 +167,12 @@ namespace LNF.Reporting
 
         public static string GetClientName(string lname, string fname)
         {
-            return Models.Data.ClientItem.GetDisplayName(lname, fname);
+            return Clients.GetDisplayName(lname, fname);
         }
 
         public static string GetClientSort(string lname, string fname)
         {
-            return Models.Data.ClientItem.GetDisplayName(lname, fname);
+            return Clients.GetDisplayName(lname, fname);
         }
 
         public static ManagerUsageSummaryAccount CreateManagerUsageSummaryAccount(ManagerUsageSummaryAccountItem item, IEnumerable<ManagerUsageSummaryItem> items)
@@ -194,7 +189,7 @@ namespace LNF.Reporting
                 Sort = sort,
                 UsageCharge = item.TotalCharge,
                 Subsidy = item.SubsidyDiscount,
-                Clients = items.Where(x => x.AccountID == accountId && (x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv))).Select(x => new Models.Reporting.ReportingClientItem()
+                Clients = items.Where(x => x.AccountID == accountId && (x.TotalCharge > 0 || x.SubsidyDiscount > 0 || x.Privs.HasPriv(_includeInmanagerUsageSummaryPriv))).Select(x => new ReportingClientItem()
                 {
                     ClientID = x.ClientID,
                     UserName = x.UserName,
@@ -242,7 +237,7 @@ namespace LNF.Reporting
         {
             bool showDisclaimer = false;
 
-            var gs = DA.Current.Query<GlobalSettings>().FirstOrDefault(x => x.SettingName == "ShowUserUsageSummaryDisclaimer");
+            var gs = ServiceProvider.Current.Data.GlobalSetting.GetGlobalSetting("ShowUserUsageSummaryDisclaimer");
 
             if (gs != null)
                 showDisclaimer = bool.Parse(gs.SettingValue);
@@ -284,7 +279,7 @@ namespace LNF.Reporting
                 x.SubsidyOrg
             });
 
-            return ServiceProvider.Current.Serialization.Json.SerializeObject(result);
+            return ServiceProvider.Current.Utility.Serialization.Json.SerializeObject(result);
         }
 
         public static XElement GetManagerUsageDetailXml(IEnumerable<ManagerUsageDetailItem> items)
@@ -308,14 +303,14 @@ namespace LNF.Reporting
             return xdoc;
         }
 
-        public static IEnumerable<ManagerUsageDetailItem> GetManagerUsageDetailItems(DateTime sd, DateTime ed, Client mgr, bool remote = false)
+        public static IEnumerable<ManagerUsageDetailItem> GetManagerUsageDetailItems(DateTime sd, DateTime ed, IClient mgr, bool remote = false)
         {
-            IQueryable<ManagerUsageCharge> charges;
+            IEnumerable<IManagerUsageCharge> charges;
 
             if (mgr == null)
-                charges = DA.Current.Query<ManagerUsageCharge>().Where(x => x.Period >= sd && x.Period < ed && (!x.IsRemote || remote));
+                charges = ServiceProvider.Current.Reporting.ManagerUsageCharge.GetManagerUsageCharges(sd, ed, remote);
             else
-                charges = DA.Current.Query<ManagerUsageCharge>().Where(x => x.Period >= sd && x.Period < ed && x.ManagerClientID == mgr.ClientID && (!x.IsRemote || remote));
+                charges = ServiceProvider.Current.Reporting.ManagerUsageCharge.GetManagerUsageCharges(mgr.ClientID, sd, ed, remote);
 
             List<ManagerUsageDetailItem> result = new List<ManagerUsageDetailItem>();
 
@@ -326,7 +321,7 @@ namespace LNF.Reporting
             return result;
         }
 
-        private static IEnumerable<ManagerUsageDetailItem> GetManagerUsageDetailItemsByCategory(IQueryable<ManagerUsageCharge> charges, BillingCategory billingCategory, bool aggregate)
+        private static IEnumerable<ManagerUsageDetailItem> GetManagerUsageDetailItemsByCategory(IEnumerable<IManagerUsageCharge> charges, BillingCategory billingCategory, bool aggregate)
         {
             IEnumerable<ManagerUsageDetailItem> result;
 
@@ -356,7 +351,7 @@ namespace LNF.Reporting
                         ResourceID = 0,
                         ResourceName = $"{Enum.GetName(typeof(BillingCategory), x.Key.BillingCategory)} Charge",
                         UserName = x.Key.ManagerUserName,
-                        DisplayName = Models.Data.ClientItem.GetDisplayName(x.Key.UserLName, x.Key.UserFName),
+                        DisplayName = Clients.GetDisplayName(x.Key.UserLName, x.Key.UserFName),
                         Account = GetAccountName(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
                         ChargeTypeID = x.Key.ChargeTypeID,
                         Sort = x.Key.BillingCategory + ":" + GetAccountSort(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
@@ -393,7 +388,7 @@ namespace LNF.Reporting
                         ResourceID = x.Key.ResourceID,
                         ResourceName = x.Key.ResourceName,
                         UserName = x.Key.ManagerUserName,
-                        DisplayName = Models.Data.ClientItem.GetDisplayName(x.Key.UserLName, x.Key.UserFName),
+                        DisplayName = Clients.GetDisplayName(x.Key.UserLName, x.Key.UserFName),
                         Account = GetAccountName(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),
                         ChargeTypeID = x.Key.ChargeTypeID,
                         Sort = x.Key.BillingCategory + ":" + GetAccountSort(x.Key.ShortCode, x.Key.AccountNumber, x.Key.AccountName, x.Key.OrgName),

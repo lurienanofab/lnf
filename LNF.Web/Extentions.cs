@@ -1,8 +1,4 @@
-﻿using LNF.Cache;
-using LNF.Data;
-using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
+﻿using LNF.Data;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -20,11 +16,11 @@ namespace LNF.Web
     {
         public static void LoadPrivs(this ListItemCollection items)
         {
-            var privs = DA.Current.Query<Priv>().ToList();
+            var privs = ServiceProvider.Current.Data.Client.GetPrivs().ToList();
 
             foreach (var p in privs)
             {
-                ListItem item = new ListItem
+                var item = new System.Web.UI.WebControls.ListItem
                 {
                     Text = p.PrivType,
                     Value = ((int)p.PrivFlag).ToString()
@@ -38,7 +34,7 @@ namespace LNF.Web
         {
             int result = 0;
 
-            foreach (ListItem chkPriv in items)
+            foreach (System.Web.UI.WebControls.ListItem chkPriv in items)
             {
                 if (chkPriv.Selected)
                     result += int.Parse(chkPriv.Value);
@@ -51,7 +47,7 @@ namespace LNF.Web
         {
             int result = 0;
 
-            foreach (ListItem chk in items)
+            foreach (System.Web.UI.WebControls.ListItem chk in items)
             {
                 if (chk.Selected)
                     result += int.Parse(chk.Value);
@@ -85,14 +81,16 @@ namespace LNF.Web
 
     public static class HttpContextBaseExtensions
     {
-        public static IClient CurrentUser(this HttpContextBase context)
+        public static IClient CurrentUser(this HttpContextBase context) => CurrentUser(context, ServiceProvider.Current);
+
+        public static IClient CurrentUser(this HttpContextBase context, IProvider provider)
         {
             if (context.Items["CurrentUser"] == null)
             {
-                context.Items["CurrentUser"] = ServiceProvider.Current.Data.Client.GetClient(context.User.Identity.Name);
+                context.Items["CurrentUser"] = provider.Data.Client.GetClient(context.User.Identity.Name);
             }
 
-            var result = (ClientItem)context.Items["CurrentUser"];
+            var result = (IClient)context.Items["CurrentUser"];
 
             return result;
         }
@@ -141,7 +139,7 @@ namespace LNF.Web
                             {
                                 var user = new GenericPrincipal(new GenericIdentity(model.UserName), model.Roles());
                                 context.User = user;
-                                context.Session["UserName"] = model.UserName;
+                                context.Session[SessionKeys.UserName] = model.UserName;
                             }
                         }
                     }
@@ -208,26 +206,34 @@ namespace LNF.Web
             return user.Identity.Name;
         }
 
-        public static void SetErrorID(this HttpContextBase context, string value)
+        public static void ClearErrorID(this HttpContextBase context)
         {
-            context.Session["ErrorID"] = value;
+            context.Session.Remove(SessionKeys.ErrorID);
         }
 
-        public static string GetErrorID(this HttpContextBase context)
+        public static void SetErrorID(this HttpContextBase context, Guid value)
         {
-            if (context.Session["ErrorID"] == null)
-                return null;
-            else
-                return Convert.ToString(context.Session["ErrorID"]);
+            context.Session[SessionKeys.ErrorID] = value;
+        }
+
+        public static Guid GetErrorID(this HttpContextBase context)
+        {
+            if (context.Session[SessionKeys.ErrorID] != null)
+            {
+                if (Guid.TryParse(Convert.ToString(context.Session[SessionKeys.ErrorID]), out Guid result))
+                    return result;
+            }
+
+            return Guid.Empty;
         }
 
         public static void RemoveCacheData(this HttpContextBase context)
         {
-            CacheManager.Current.RemoveValue(context.Cache().ToString("n"));
-            context.Session.Remove("Cache");
+            context.Cache.Remove(context.CacheID().ToString("n"));
+            context.Session.Remove(SessionKeys.Cache);
         }
 
-        public static Guid Cache(this HttpContextBase context)
+        public static Guid CacheID(this HttpContextBase context)
         {
             if (context.Session["Cache"] == null)
                 context.Session["Cache"] = Guid.NewGuid();
@@ -237,16 +243,14 @@ namespace LNF.Web
 
         public static void CacheData(this HttpContextBase context, DataSet ds)
         {
-            var key = context.Cache().ToString("n");
-            CacheManager.Current.SetValue(key, ds, DateTimeOffset.Now.AddMinutes(10));
+            var key = context.CacheID().ToString("n");
+            context.Cache.Insert(key, ds, null, DateTime.Now.AddMinutes(10), System.Web.Caching.Cache.NoSlidingExpiration);
         }
 
         public static DataSet CacheData(this HttpContextBase context)
         {
-            var key = context.Cache().ToString("n");
-
-            var obj = CacheManager.Current.GetValue(key);
-
+            var key = context.CacheID().ToString("n");
+            var obj = context.Cache[key];
             if (obj == null) return null;
             else return (DataSet)obj;
         }
@@ -256,7 +260,10 @@ namespace LNF.Web
         /// </summary>
         public static IEnumerable<IClient> GetCurrentUserClientOrgs(this HttpContextBase context)
         {
-            return CacheManager.Current.GetClientOrgs(context.CurrentUser().ClientID);
+            var obj = context.Cache["CurrentUserClientOrgs"];
+            if (obj == null) return null;
+            else return (IEnumerable<IClient>)obj;
+            //return context.Cache.GetClientOrgs(context.CurrentUser().ClientID);
         }
 
         /// <summary>
@@ -264,7 +271,10 @@ namespace LNF.Web
         /// </summary>
         public static IEnumerable<IClientAccount> GetCurrentUserClientAccounts(this HttpContextBase context)
         {
-            return CacheManager.Current.GetClientAccounts(context.CurrentUser().ClientID);
+            var obj = context.Cache["CurrentUserClientAccounts"];
+            if (obj == null) return null;
+            else return (IEnumerable<IClientAccount>)obj;
+            //return context.Cache.Current.GetClientAccounts(context.CurrentUser().ClientID);
         }
     }
 }

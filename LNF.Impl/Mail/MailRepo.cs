@@ -1,4 +1,5 @@
-﻿using LNF.Models.Mail;
+﻿using LNF.Impl.Repository.Mail;
+using LNF.Mail;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -143,9 +144,9 @@ namespace LNF.Impl.Mail
             }
         }
 
-        private static IEnumerable<MessageItem> CreateMessageItems(DataTable dt)
+        private static IEnumerable<IMessage> CreateMessageItems(DataTable dt)
         {
-            return dt.AsEnumerable().Select(x => new MessageItem
+            return dt.AsEnumerable().Select(x => new Message
             {
                 MessageID = x.Field<int>("MessageID"),
                 ClientID = x.Field<int>("ClientID"),

@@ -1,5 +1,4 @@
 ﻿using LNF.Data;
-using LNF.Models.Data;
 using System;
 using System.Linq;
 using System.Security.Principal;
@@ -21,7 +20,7 @@ namespace LNF.Web.Mvc
         /// </summary>
         /// <param name="requiredPrivilege">The privilege required for access.</param>
         /// <param name="allowedClientIDs">An array of ClientID integers that are allowed access.</param>
-        /// <param name="modelType">The model that will be passed to the view if access is denied. Defaults to LNF.Web.Mvc.AccessDeniedModel. The class must a have public contstructor that takes a single LNF.Models.Data.ClientItem parameter.</param>
+        /// <param name="modelType">The model that will be passed to the view if access is denied. Defaults to LNF.Web.Mvc.AccessDeniedModel. The class must a have public contstructor that takes a single LNF.Data.ClientItem parameter.</param>
         /// <param name="accessDeniedViewName">The name of the view to display for unauthorized requests. Defaults to "AccessDenied". If null the request will redirect to the login page.</param>
         public LNFAuthorizeAttribute(ClientPrivilege requiredPrivilege = 0, int[] allowedClientIDs = null, Type modelType = null, string accessDeniedViewName = "AccessDenied")
         {

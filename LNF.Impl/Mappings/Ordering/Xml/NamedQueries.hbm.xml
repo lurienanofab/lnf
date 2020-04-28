@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<hibernate-mapping assembly="LNF" namespace="LNF.Repository.Ordering" xmlns="urn:nhibernate-mapping-2.2">
+<hibernate-mapping assembly="LNF.Impl" namespace="LNF.Impl.Repository.Ordering" xmlns="urn:nhibernate-mapping-2.2">
   <sql-query name="StoreManagerReport">
     <return class="StoreManagerReportItem"/>
     <![CDATA[EXEC IOF.dbo.Report_StoreManager]]>

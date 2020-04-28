@@ -1,16 +1,16 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Control;
+using LNF.Impl.Repository.Control;
 
 namespace LNF.Impl.Mappings.Control
 {
-    public class BlockConfigMap:ClassMap<BlockConfig>
+    internal class BlockConfigMap:ClassMap<BlockConfig>
     {
-        public BlockConfigMap()
+        internal BlockConfigMap()
         {
             Schema("sselControl.dbo");
             Id(x => x.ConfigID);
-            References(x => x.Block, "BlockID");
-            References(x => x.ModType, "ModTypeID");
+            Map(x => x.BlockID);
+            Map(x => x.ModTypeID);
             Map(x => x.ModPosition);
         }
     }

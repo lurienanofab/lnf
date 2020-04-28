@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class ClientRemoteInfoMap : ClassMap<ClientRemoteInfo>
+    internal class ClientRemoteInfoMap : ClassMap<ClientRemoteInfo>
     {
-        public ClientRemoteInfoMap()
+        internal ClientRemoteInfoMap()
         {
             Schema("sselData.dbo");
             Table("v_ClientRemoteInfo");

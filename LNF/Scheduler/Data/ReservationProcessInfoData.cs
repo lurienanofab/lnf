@@ -1,5 +1,4 @@
-﻿using LNF.CommonTools;
-using LNF.Repository;
+﻿using System.Collections.Generic;
 using System.Data;
 
 namespace LNF.Scheduler.Data
@@ -9,40 +8,59 @@ namespace LNF.Scheduler.Data
     /// </summary>
     public static class ReservationProcessInfoData
     {
-        public static ExecuteReaderResult SelectAllDataReader(int reservationId)
-        {
-            return DA.Command()
-                .Param("ReservationID", reservationId)
-                .ExecuteReader("sselScheduler.dbo.procReservationProcessInfoSelect");
-        }
-
         public static DataTable SelectAllDataTable(int reservationId)
         {
-            return DA.Command()
-                .MapSchema()
-                .Param("ReservationID", reservationId)
-                .FillDataTable("sselScheduler.dbo.procReservationProcessInfoSelect");
+            var items = ServiceProvider.Current.Scheduler.ProcessInfo.GetReservationProcessInfos(reservationId);
+
+            var dt = new DataTable();
+            dt.Columns.Add("ReservationProcessInfoID", typeof(int));
+            dt.Columns.Add("Active", typeof(bool));
+            dt.Columns.Add("ChargeMultiplier", typeof(double));
+            dt.Columns.Add("Param", typeof(string));
+            dt.Columns.Add("ParameterName", typeof(string));
+            dt.Columns.Add("ProcessInfoID", typeof(int));
+            dt.Columns.Add("ProcessInfoLineID", typeof(int));
+            dt.Columns.Add("ProcessInfoLineParamID", typeof(int));
+            dt.Columns.Add("ProcessInfoName", typeof(string));
+            dt.Columns.Add("ReservationID", typeof(int));
+            dt.Columns.Add("RunNumber", typeof(int));
+            dt.Columns.Add("Special", typeof(bool));
+            dt.Columns.Add("Value", typeof(double));
+
+            foreach(var i in items)
+            {
+                var ndr = dt.NewRow();
+                ndr.SetField("ReservationProcessInfoID", i.ReservationProcessInfoID);
+                ndr.SetField("Active", i.Active);
+                ndr.SetField("ChargeMultiplier", i.ChargeMultiplier);
+                ndr.SetField("Param", i.Param);
+                ndr.SetField("ParameterName", i.ParameterName);
+                ndr.SetField("ProcessInfoID", i.ProcessInfoID);
+                ndr.SetField("ProcessInfoLineID", i.ProcessInfoLineID);
+                ndr.SetField("ProcessInfoLineParamID", i.ProcessInfoLineParamID);
+                ndr.SetField("ProcessInfoName", i.ProcessInfoName);
+                ndr.SetField("ReservationID", i.ReservationID);
+                ndr.SetField("RunNumber", i.RunNumber);
+                ndr.SetField("Special", i.Special);
+                ndr.SetField("Value", i.Value);
+                dt.Rows.Add(ndr);
+            }
+
+            return dt;
         }
 
-        public static void Update(DataTable dt, int reservationId)
+        public static void Update(int reservationId, IEnumerable<IReservationProcessInfo> insert, IEnumerable<IReservationProcessInfo> update, IEnumerable<IReservationProcessInfo> delete)
         {
-            DA.Command().Update(dt, x =>
-            {
-                x.Insert.SetCommandText("sselScheduler.dbo.procReservationProcessInfoInsert");
-                x.Insert.AddParameter("ReservationID", reservationId);
-                x.Insert.AddParameter("ProcessInfoLineID", SqlDbType.Int);
-                x.Insert.AddParameter("Value", SqlDbType.Float);
-                x.Insert.AddParameter("Special", SqlDbType.Bit);
+            foreach (var i in insert)
+                i.ReservationID = reservationId;
 
-                x.Update.SetCommandText("sselScheduler.dbo.procReservationProcessInfoUpdate");
-                x.Update.AddParameter("ReservationProcessInfoID", SqlDbType.Int);
-                x.Update.AddParameter("ProcessInfoLineID", SqlDbType.Int);
-                x.Update.AddParameter("Value", SqlDbType.Float);
-                x.Update.AddParameter("Special", SqlDbType.Bit);
+            foreach (var u in update)
+                u.ReservationID = reservationId;
 
-                x.Delete.SetCommandText("sselScheduler.dbo.procReservationProcessInfoDelete");
-                x.Delete.AddParameter("ReservationProcessInfoID", SqlDbType.Int);
-            });
+            foreach (var d in delete)
+                d.ReservationID = reservationId;
+
+            ServiceProvider.Current.Scheduler.ProcessInfo.Update(insert, update, delete);
         }
     }
 }

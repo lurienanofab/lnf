@@ -1,15 +1,20 @@
-﻿using LNF.Models.Billing.Reports.ServiceUnitBilling;
+﻿using LNF.Billing.Reports.ServiceUnitBilling;
 using System.Data;
 
 namespace LNF.Impl.Billing.Report
 {
     public class ToolJournalUnitGenerator : JournalUnitGenerator<ToolJU>
     {
-        private ToolJournalUnitGenerator(ToolJU report) : base(report) { }
+        private readonly NHibernate.ISession _session;
 
-        public static ToolJournalUnitGenerator Create(ToolJU report)
+        private ToolJournalUnitGenerator(NHibernate.ISession session, ToolJU report) : base(report)
         {
-            return new ToolJournalUnitGenerator(report);
+            _session = session;
+        }
+
+        public static ToolJournalUnitGenerator Create(NHibernate.ISession session, ToolJU report)
+        {
+            return new ToolJournalUnitGenerator(session, report);
         }
 
         protected override void GenerateDataTables()
@@ -21,7 +26,7 @@ namespace LNF.Impl.Billing.Report
             else
                 queryParameters = new { Action = "ForSUBReport", Report.StartPeriod, Report.EndPeriod, Report.ClientID };
 
-            var ds = DataAccess.ToolBillingSelect(queryParameters);
+            var ds = DataAccess.ToolBillingSelect(_session, queryParameters);
 
             DataTable dtBillingData = ds.Tables[0];
             ClientAccountData = ds.Tables[1];

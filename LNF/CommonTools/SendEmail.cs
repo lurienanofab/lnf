@@ -1,5 +1,5 @@
-﻿using LNF.Models.Data;
-using LNF.Models.Mail;
+﻿using LNF.Data;
+using LNF.Mail;
 using System;
 using System.Collections.Generic;
 using System.Net.Mail;

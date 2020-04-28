@@ -1,24 +1,23 @@
-﻿using LNF.Models.Data;
+﻿using LNF.Data;
 
 namespace LNF.Hooks
 {
     abstract public class BeforeLogInHook : Hook<BeforeLogInHookContext, BeforeLogInHookResult>
     {
+        public BeforeLogInHook(IProvider provider) : base(provider) { }
+
         abstract override protected void Execute();
     }
 
     public class BeforeLogInHookContext : HookContext
     {
-        private string _Username;
-        private string _Password;
+        public string Username { get; }
+        public string Password { get; }
 
-        public string Username { get { return _Username; } }
-        public string Password { get { return _Password; } }
-
-        public BeforeLogInHookContext(string username, string password)
+        public BeforeLogInHookContext(IProvider provider, string username, string password) : base(provider)
         {
-            _Username = username;
-            _Password = password;
+            Username = username;
+            Password = password;
         }
     }
 

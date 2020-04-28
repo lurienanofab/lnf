@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Scheduler;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {
-    public class RecurrencePatternMap : ClassMap<RecurrencePattern>
+    internal class RecurrencePatternMap : ClassMap<RecurrencePattern>
     {
-        public RecurrencePatternMap()
+        internal RecurrencePatternMap()
         {
             Schema("sselScheduler.dbo");
             Id(x => x.PatternID);

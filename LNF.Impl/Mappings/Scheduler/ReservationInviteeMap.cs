@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Scheduler;
+using LNF.Impl.Repository.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {
-    public class ReservationInviteeMap : ClassMap<ReservationInvitee>
+    internal class ReservationInviteeMap : ClassMap<ReservationInvitee>
     {
-        public ReservationInviteeMap()
+        internal ReservationInviteeMap()
         {
             Schema("sselScheduler.dbo");
             CompositeId()

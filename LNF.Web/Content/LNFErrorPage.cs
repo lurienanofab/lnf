@@ -1,9 +1,7 @@
-﻿using LNF.Cache;
-using LNF.CommonTools;
-using LNF.Models.Data;
-using LNF.Repository;
+﻿using LNF.CommonTools;
+using LNF.Data;
+using LNF.Logging;
 using System;
-using System.Data;
 using System.Web.UI.WebControls;
 
 namespace LNF.Web.Content
@@ -47,27 +45,22 @@ namespace LNF.Web.Content
 
         private void LogError(Exception ex)
         {
-            SetErrorID(null);
+            ClearErrorID();
             if (ex == null) return;
-            string errorId = string.Empty;
+            Guid errorId = Guid.Empty;
             string errorMsg = GetErrorMessage(ex);
             int clientId = GetClientID();
             string clientName = GetDisplayName();
             string filePath = Request.Url.ToString();
 
-            errorId = DA.Command()
-                .Param("Action", "Set")
-                .Param("ErrorMsg", !string.IsNullOrEmpty(errorMsg), errorMsg)
-                .Param("ClientID", clientId > 0, clientId)
-                .Param("ClientName", !string.IsNullOrEmpty(clientName), clientName)
-                .Param("FilePath", !string.IsNullOrEmpty(filePath), filePath)
-                .ExecuteScalar<string>("dbo.PassError_Select").Value;
 
-            var msgId = ((errorId == string.Empty) ? Guid.NewGuid() : new Guid(errorId));
+            errorId = ServiceProvider.Current.Log.SetPassError(errorMsg, clientId, clientName, filePath);
 
-            EventLogger.WriteToSystemLog(clientId, msgId, EventLogger.LogMessageTypes.Error, errorMsg);
+            var msgId = errorId == Guid.Empty ? Guid.NewGuid() : errorId;
 
-            if (errorId != string.Empty)
+            EventLogger.WriteToSystemLog(clientId, msgId, LogMessageTypes.Error, errorMsg);
+
+            if (errorId != Guid.Empty)
                 SetErrorID(errorId);
         }
 
@@ -84,7 +77,13 @@ namespace LNF.Web.Content
             return result;
         }
 
-        private void SetErrorID(string value)
+
+        private void ClearErrorID()
+        {
+            ContextBase.ClearErrorID();
+        }
+
+        private void SetErrorID(Guid value)
         {
             try
             {
@@ -93,7 +92,7 @@ namespace LNF.Web.Content
             catch { }
         }
 
-        private string GetErrorID()
+        private Guid GetErrorID()
         {
             try
             {
@@ -101,7 +100,7 @@ namespace LNF.Web.Content
             }
             catch
             {
-                return null;
+                return Guid.Empty;
             }
         }
 
@@ -153,16 +152,12 @@ namespace LNF.Web.Content
             {
                 Guid errorId = new Guid(GetErrorID().ToString());
 
-                var dt = DA.Command()
-                    .Param("Action", "Get")
-                    .Param("ErrorID", errorId)
-                    .FillDataTable("dbo.PassError_Select");
+                IPassError err = ServiceProvider.Current.Log.GetPassError(errorId);
 
-                if (dt.Rows.Count > 0)
+                if (err != null)
                 {
-                    DataRow dr = dt.Rows[0];
-                    errorMsg = dr["ErrorMsg"].ToString();
-                    errorTime = Convert.ToDateTime(dr["ErrorTime"]);
+                    errorMsg = err.ErrorMsg;
+                    errorTime = err.ErrorTime;
                 }
 
                 string temp = GetDisplayName();

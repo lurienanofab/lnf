@@ -1,4 +1,4 @@
-﻿using LNF.Repository;
+﻿using LNF.DataAccess;
 using NHibernate;
 using System;
 using System.Data;

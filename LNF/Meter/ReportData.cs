@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
-using System.Data;
-using LNF;
-using LNF.Repository;
-using LNF.Repository.Meter;
 
 namespace LNF.Meter
 {
@@ -14,11 +11,11 @@ namespace LNF.Meter
     {
         private ArrayList tableHeaders;
         private ArrayList dataHeaders;
-        private List<ReportData.Item> items;
+        private List<Item> items;
         private StringBuilder html;
         private StringBuilder export;
         private List<DateTime> range;
-        private IList<MeterReport> reports;
+        private IList<IMeterReport> reports;
         private double totalStart;
         private double totalEnd;
         private double totalUsage;
@@ -65,21 +62,21 @@ namespace LNF.Meter
             return this;
         }
 
-        public ReportData Reports(IList<MeterReport> reports)
+        public ReportData Reports(IEnumerable<IMeterReport> reports)
         {
-            this.reports = reports;
-            foreach (MeterReport r in reports)
+            this.reports = reports.ToList();
+            foreach (IMeterReport r in reports)
                 dataHeaders.Add(r.ReportName);
             return this;
         }
 
-        public ReportData ForEach(Func<MeterReport, DateTime, double> fn)
+        public ReportData ForEach(Func<IMeterReport, DateTime, double> fn)
         {
             totalStart = 0;
             totalEnd = 0;
             totalUsage = 0;
             totalCost = 0;
-            foreach (MeterReport report in reports)
+            foreach (IMeterReport report in reports)
             {
                 html.AppendLine("<tr>");
                 html.AppendLine(string.Format("<th style=\"text-align: right;\">{0}</th>", report.ReportName));
@@ -131,8 +128,10 @@ namespace LNF.Meter
                 };
             }
 
-            List<ArrayList> data = new List<ArrayList>();
-            data.Add(dataHeaders);
+            List<ArrayList> data = new List<ArrayList>
+            {
+                dataHeaders
+            };
             data.AddRange(items.Select(x => x.ToArrayList()));
 
             StringBuilder htmlResult = new StringBuilder();
@@ -185,8 +184,10 @@ namespace LNF.Meter
 
             public ArrayList ToArrayList()
             {
-                ArrayList result = new ArrayList();
-                result.Add(Key);
+                ArrayList result = new ArrayList
+                {
+                    Key
+                };
                 result.AddRange(Values.ToArray());
                 return result;
             }

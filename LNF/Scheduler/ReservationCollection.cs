@@ -1,6 +1,4 @@
-﻿using LNF.Models.Scheduler;
-using LNF.Repository.Scheduler;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -82,6 +80,12 @@ namespace LNF.Scheduler
             _items = Provider.Scheduler.Reservation.SelectByProcessTech(processTechId, sd, ed, true).ToList();
         }
 
+        public void SelectByLabLocation(int labLocationId, DateTime sd, DateTime ed)
+        {
+            AssertDatesAreValid(sd, ed);
+            _items = Provider.Scheduler.Reservation.SelectByLabLocation(labLocationId, sd, ed, true).ToList();
+        }
+
         public void SelectByClient(DateTime sd, DateTime ed)
         {
             AssertDatesAreValid(sd, ed);
@@ -106,10 +110,10 @@ namespace LNF.Scheduler
 
         private void AssertDatesAreValid(DateTime sd, DateTime ed)
         {
-            if (sd < Reservation.MinReservationBeginDate)
+            if (sd < Reservations.MinReservationBeginDate)
                 throw new ArgumentOutOfRangeException("sd");
 
-            if (ed > Reservation.MaxReservationEndDate)
+            if (ed > Reservations.MaxReservationEndDate)
                 throw new ArgumentOutOfRangeException("ed");
         }
     }

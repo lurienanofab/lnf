@@ -1,6 +1,4 @@
-﻿using LNF.Models;
-using LNF.Repository;
-using LNF.Repository.Data;
+﻿using LNF.Data;
 using System;
 using System.Data;
 using System.Text;
@@ -38,15 +36,13 @@ namespace LNF.Feeds
             return fileName + FileExtension;
         }
 
-        public string Render(string feedName)
+        public string Render(string feedName, string serverIp)
         {
             StringBuilder sb = new StringBuilder();
 
             switch (Format)
             {
                 case FeedFormats.Calendar:
-
-                    string serverIp = ServiceProvider.Current.Context.ServerVariables["LOCAL_ADDR"];
                     DateTime utc_build_time = DateTime.UtcNow;
 
                     sb.AppendLine("BEGIN:VCALENDAR");
@@ -118,17 +114,10 @@ namespace LNF.Feeds
             }
         }
 
-        public void WriteLogEntry(IContext context)
+        public IFeedsLog WriteLogEntry(string requestIp, string requestUrl, string userAgent)
         {
-            FeedsLog log = new FeedsLog
-            {
-                EntryDateTime = DateTime.Now,
-                RequestIP = GetIP(context),
-                RequestURL = context.GetRequestUrl().ToString(),
-                RequestUserAgent = context.GetRequestUserAgent() ?? "unknown"
-            };
-
-            DA.Current.Insert(log);
+            IFeedsLog log = ServiceProvider.Current.Data.Feed.AddFeedsLogEntry(requestIp, requestUrl, userAgent);
+            return log;
         }
 
         private string GetIP(IContext context)

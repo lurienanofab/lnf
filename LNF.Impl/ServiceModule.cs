@@ -1,7 +1,4 @@
-﻿using LNF.Impl.Context;
-using LNF.Impl.DataAccess;
-using LNF.Impl.DependencyInjection.Web;
-using LNF.Repository;
+﻿using LNF.Repository;
 using System;
 using System.Web;
 
@@ -13,8 +10,8 @@ namespace LNF.Impl
 
         public void Init(HttpApplication app)
         {
-            var ioc = new IOC();
-            ServiceProvider.Configure(ioc.Resolver);
+            var resolver = new WebResolver();
+            ServiceProvider.Setup(resolver.GetInstance<IProvider>());
             app.BeginRequest += Context_BeginRequest;
             app.EndRequest += Context_EndRequest;
         }

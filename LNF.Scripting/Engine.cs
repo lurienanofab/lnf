@@ -1,14 +1,12 @@
 ﻿using IronPython.Hosting;
 using IronPython.Runtime;
-using LNF.Repository;
-using LNF.Repository.Data;
+using LNF.Data;
 using Microsoft.Scripting;
 using Microsoft.Scripting.Hosting;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Mail;
 using System.Text;
 
@@ -31,10 +29,10 @@ namespace LNF.Scripting
         private ScriptScope scope;
 
         public IList<Include> Includes { get; set; }
-        public Parameters Parameters { get; } = Parameters.Empty;
+        public ScriptParameters Parameters { get; } = ScriptParameters.Empty;
         public Exception LastException { get; private set; }
 
-        public Result Result { get; private set; }
+        public ScriptResult Result { get; private set; }
 
         public Engine()
         {
@@ -46,13 +44,13 @@ namespace LNF.Scripting
             Inititialize(includes);
         }
 
-        public void Inititialize(IList<Include> includes, StringBuilder initScript = null, Parameters parameters = null)
+        public void Inititialize(IList<Include> includes, StringBuilder initScript = null, ScriptParameters parameters = null)
         {
             Includes = includes;
 
             Parameters.Merge(parameters);
 
-            Result = new Result();
+            Result = new ScriptResult();
             engine = Python.CreateEngine();
             scope = engine.Runtime.CreateScope();
 
@@ -127,7 +125,7 @@ namespace LNF.Scripting
             LastException = null;
 
             if (resetResult)
-                Result = new Result();
+                Result = new ScriptResult();
 
             Result.Exception = null;
 
@@ -178,7 +176,7 @@ namespace LNF.Scripting
 
         public void ExecuteFeed(string alias, IDictionary<object, object> parameters = null)
         {
-            DataFeed feed = DA.Current.Query<DataFeed>().FirstOrDefault(x => x.FeedAlias == alias);
+            IDataFeed feed = ServiceProvider.Current.Data.Feed.GetDataFeed(alias);
             if (feed != null)
                 ScriptingContext.Engine.Run(feed.FeedQuery, parameters, false);
         }

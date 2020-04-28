@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Text;
-using LNF.Repository.Data;
 
 namespace LNF.Data.ClientAccountMatrix
 {
@@ -12,11 +8,11 @@ namespace LNF.Data.ClientAccountMatrix
     {
         private StringBuilder _MatrixItemHtml;
         private List<MatrixUserAccount> _Users;
-        private MatrixAccount _Account;
         private int colIndex;
-        private bool readOnly;
+        private readonly bool readOnly;
 
-        public MatrixAccount Account { get { return _Account; } }
+        public MatrixAccount Account { get; }
+
         public StringBuilder MatrixItemHtml
         {
             get
@@ -29,7 +25,7 @@ namespace LNF.Data.ClientAccountMatrix
 
         public MatrixItem(MatrixAccount account, bool readOnly)
         {
-            _Account = account;
+            Account = account;
             _Users = new List<MatrixUserAccount>();
             _MatrixItemHtml = new StringBuilder();
             _MatrixItemHtml.AppendFormat("<tr data-account-id=\"{0}\">", Account.AccountID);

@@ -1,4 +1,5 @@
 ﻿using FluentNHibernate.Cfg;
+using LNF.DataAccess;
 using NHibernate;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,22 @@ namespace LNF.Impl.DataAccess
 {
     public static class NHibernateUtility
     {
+        //http://stackoverflow.com/questions/5229510/nhibernate-get-concrete-type-of-referenced-abstract-entity#5333880
+        public static object Unproxy(NHibernate.ISession session, IDataItem proxy)
+        {
+            if (!NHibernateUtil.IsInitialized(proxy))
+            {
+                NHibernateUtil.Initialize(proxy);
+            }
+
+            if (proxy is NHibernate.Proxy.INHibernateProxy)
+            {
+                return session.GetSessionImplementation().PersistenceContext.Unproxy(proxy);
+            }
+
+            return proxy;
+        }
+
         public static IQuery ApplyParameters(this IQuery query, QueryParameters queryParams)
         {
             if (queryParams != null)

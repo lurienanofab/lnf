@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class ActiveLogClientRemoteMap : ClassMap<ActiveLogClientRemote>
+    internal class ActiveLogClientRemoteMap : ClassMap<ActiveLogClientRemote>
     {
-        public ActiveLogClientRemoteMap()
+        internal ActiveLogClientRemoteMap()
         {
             Schema("sselData.dbo");
             Table("v_ActiveLogClientRemote");

@@ -1,11 +1,11 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Data;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class MenuMap : ClassMap<Menu>
+    internal class MenuMap : ClassMap<Menu>
     {
-        public MenuMap()
+        internal MenuMap()
         {
             Schema("sselData.dbo");
             Id(x => x.MenuID);

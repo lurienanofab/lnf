@@ -1,9 +1,8 @@
-﻿using System;
+﻿using LNF.CommonTools;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using LNF.CommonTools;
-using LNF.Repository;
 
 namespace LNF.Reporting
 {

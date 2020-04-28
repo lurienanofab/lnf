@@ -62,7 +62,7 @@ namespace LNF.Web.Controls.Tools
             request.AddParameter("secret", GetSecretKey());
             request.AddParameter("response", GetResponse());
             request.AddParameter("remoteip", GetRemoteIP());
-            var response = await client.ExecutePostTaskAsync<VerificationResponse>(request);
+            var response = await client.ExecutePostAsync<VerificationResponse>(request);
             return response.Data;
         }
     }

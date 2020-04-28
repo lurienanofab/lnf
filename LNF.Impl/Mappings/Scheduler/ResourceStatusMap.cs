@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Scheduler;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Scheduler;
 
 namespace LNF.Impl.Mappings.Scheduler
 {
-    public class ResourceStatusMap: ClassMap<ResourceStatus>
+    internal class ResourceStatusMap: ClassMap<ResourceStatus>
     {
-        public ResourceStatusMap()
+        internal ResourceStatusMap()
         {
             Schema("sselScheduler.dbo");
             Table("v_ResourceStatus");

@@ -1,6 +1,4 @@
-﻿using LNF.Impl.DataAccess;
-using LNF.Impl.DependencyInjection.Default;
-using LNF.Repository;
+﻿using LNF.Repository;
 using Moq;
 using System;
 using System.Collections;
@@ -21,7 +19,7 @@ namespace LNF.Impl.Testing
         public IDictionary ContextItems { get; }
         public SessionItemCollection SessionItems { get; }
         public NameValueCollection QueryString { get; }
-        public IOC IOC { get; }
+        public ThreadStaticResolver Resolver { get; }
         public HttpContextBase ContextBase { get; }
 
         public ContextManager(string ipaddr, string username, IDictionary contextItems = null, SessionItemCollection sessionItems = null, NameValueCollection queryString = null)
@@ -46,9 +44,9 @@ namespace LNF.Impl.Testing
 
             ContextBase = CreateHttpContext();
 
-            IOC = new IOC();
+            Resolver = new ThreadStaticResolver();
 
-            ServiceProvider.Configure(IOC.Resolver);
+            ServiceProvider.Setup(Resolver.GetInstance<IProvider>());
 
             Login(username);
 

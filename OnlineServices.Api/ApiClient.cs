@@ -1,4 +1,5 @@
-﻿using RestSharp;
+﻿using LNF;
+using RestSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -116,7 +117,7 @@ namespace OnlineServices.Api
         protected async Task<string> GetAsync(string path)
         {
             var req = CreateRestRequest(path, Method.GET);
-            var resp = await HttpClient.ExecuteTaskAsync(req);
+            var resp = await HttpClient.ExecuteAsync<string>(req);
             return Result(resp);
         }
 
@@ -124,14 +125,14 @@ namespace OnlineServices.Api
         {
             var req = CreateRestRequest(path, Method.GET);
             ApplyParameters(req, parameters);
-            var resp = await HttpClient.ExecuteTaskAsync(req);
+            var resp = await HttpClient.ExecuteAsync<string>(req);
             return Result(resp);
         }
 
         protected async Task<T> GetAsync<T>(string path)
         {
             var req = CreateRestRequest(path, Method.GET);
-            var resp = await HttpClient.ExecuteTaskAsync<T>(req);
+            var resp = await HttpClient.ExecuteAsync<T>(req);
             return Result(resp);
         }
 
@@ -139,7 +140,7 @@ namespace OnlineServices.Api
         {
             var req = CreateRestRequest(path, Method.GET);
             ApplyParameters(req, parameters);
-            var resp = await HttpClient.ExecuteTaskAsync<T>(req);
+            var resp = await HttpClient.ExecuteAsync<T>(req);
             return Result(resp);
         }
 
@@ -238,7 +239,7 @@ namespace OnlineServices.Api
         protected async Task<string> PostAsync(string path)
         {
             var req = CreateRestRequest(path, Method.POST);
-            var resp = await HttpClient.ExecuteTaskAsync(req);
+            var resp = await HttpClient.ExecuteAsync<string>(req);
             return Result(resp);
         }
 
@@ -246,7 +247,7 @@ namespace OnlineServices.Api
         {
             var req = CreateRestRequest(path, Method.POST);
             ApplyParameters(req, parameters);
-            var resp = await HttpClient.ExecuteTaskAsync(req);
+            var resp = await HttpClient.ExecuteAsync<string>(req);
             return Result(resp);
         }
 
@@ -254,7 +255,7 @@ namespace OnlineServices.Api
         {
             var req = CreateRestRequest(path, Method.POST);
             SetJsonContent(req, model);
-            var resp = await HttpClient.ExecuteTaskAsync(req);
+            var resp = await HttpClient.ExecuteAsync<string>(req);
             return Result(resp);
         }
 
@@ -263,14 +264,14 @@ namespace OnlineServices.Api
             var req = CreateRestRequest(path, Method.POST);
             SetJsonContent(req, model);
             ApplyParameters(req, parameters);
-            var resp = await HttpClient.ExecuteTaskAsync(req);
+            var resp = await HttpClient.ExecuteAsync<string>(req);
             return Result(resp);
         }
 
         protected async Task<T> PostAsync<T>(string path)
         {
             var req = CreateRestRequest(path, Method.POST);
-            var resp = await HttpClient.ExecuteTaskAsync<T>(req);
+            var resp = await HttpClient.ExecuteAsync<T>(req);
             return Result(resp);
         }
 
@@ -278,7 +279,7 @@ namespace OnlineServices.Api
         {
             var req = CreateRestRequest(path, Method.POST);
             ApplyParameters(req, parameters);
-            var resp = await HttpClient.ExecuteTaskAsync<T>(req);
+            var resp = await HttpClient.ExecuteAsync<T>(req);
             return Result(resp);
         }
 
@@ -286,7 +287,7 @@ namespace OnlineServices.Api
         {
             var req = CreateRestRequest(path, Method.POST);
             SetJsonContent(req, model);
-            var resp = await HttpClient.ExecuteTaskAsync<T>(req);
+            var resp = await HttpClient.ExecuteAsync<T>(req);
             return Result(resp);
         }
 
@@ -295,7 +296,7 @@ namespace OnlineServices.Api
             var req = CreateRestRequest(path, Method.POST);
             SetJsonContent(req, model);
             ApplyParameters(req, parameters);
-            var resp = await HttpClient.ExecuteTaskAsync<T>(req);
+            var resp = await HttpClient.ExecuteAsync<T>(req);
             return Result(resp);
         }
 
@@ -328,7 +329,7 @@ namespace OnlineServices.Api
         {
             var req = CreateRestRequest(path, Method.PUT);
             SetJsonContent(req, model);
-            var resp = await HttpClient.ExecuteTaskAsync<bool>(req);
+            var resp = await HttpClient.ExecuteAsync<bool>(req);
             return Result(resp);
         }
 
@@ -336,7 +337,7 @@ namespace OnlineServices.Api
         {
             var req = CreateRestRequest(path, Method.PUT);
             ApplyParameters(req, parameters);
-            var resp = await HttpClient.ExecuteTaskAsync<bool>(req);
+            var resp = await HttpClient.ExecuteAsync<bool>(req);
             return Result(resp);
         }
 
@@ -345,7 +346,7 @@ namespace OnlineServices.Api
             var req = CreateRestRequest(path, Method.PUT);
             SetJsonContent(req, model);
             ApplyParameters(req, parameters);
-            var resp = await HttpClient.ExecuteTaskAsync<bool>(req);
+            var resp = await HttpClient.ExecuteAsync<bool>(req);
             return Result(resp);
         }
 
@@ -367,7 +368,7 @@ namespace OnlineServices.Api
         protected async Task<int> DeleteAsync(string path)
         {
             var req = CreateRestRequest(path, Method.DELETE);
-            var resp = await HttpClient.ExecuteTaskAsync<int>(req);
+            var resp = await HttpClient.ExecuteAsync<int>(req);
             return Result(resp);
         }
 
@@ -375,7 +376,7 @@ namespace OnlineServices.Api
         {
             var req = CreateRestRequest(path, Method.DELETE);
             ApplyParameters(req, parameters);
-            var resp = await HttpClient.ExecuteTaskAsync<int>(req);
+            var resp = await HttpClient.ExecuteAsync<int>(req);
             return Result(resp);
         }
 
@@ -454,31 +455,29 @@ namespace OnlineServices.Api
             if (opts == null)
                 throw new ArgumentNullException("opts");
 
-            var result = new Parameter
-            {
-                Name = name,
-                Type = type
-            };
+            object val;
 
             if (value is DateTime)
             {
                 var d = Convert.ToDateTime(value);
                 if (d.TimeOfDay.TotalSeconds == 0)
-                    result.Value = d.ToString(opts.DateFormat);
+                    val = d.ToString(opts.DateFormat);
                 else
-                    result.Value = d.ToString(opts.DateTimeFormat);
+                    val = d.ToString(opts.DateTimeFormat);
             }
             else if (value is Enum)
             {
                 if (opts.UseLowerCaseForEnumValues)
-                    result.Value = value.ToString().ToLower();
+                    val = value.ToString().ToLower();
                 else
-                    result.Value = value.ToString();
+                    val = value.ToString();
             }
             else
             {
-                result.Value = value;
+                val = value;
             }
+
+            var result = new Parameter(name, val, type);
 
             return result;
         }

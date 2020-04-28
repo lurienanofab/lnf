@@ -1,11 +1,7 @@
-﻿using System;
+﻿using LNF.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using LNF.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
-using LNF.Repository.Control;
 
 namespace LNF.Control
 {
@@ -24,43 +20,44 @@ namespace LNF.Control
         public int? ActionID { get; set; }
         public int? BlockID { get; set; }
         public string BlockName { get; set; }
-        public string Description { get; set; }
         public string Status { get; set; }
 
-        public static IList<InstanceAuthorization> Create(Client client, string location, LocationType locationType, string actionName)
+        public static IList<InstanceAuthorization> Create(IClient client, string location, LocationType locationType, string actionName)
         {
             IList<InstanceAuthorization> result = new List<InstanceAuthorization>();
 
             if (actionName == "ByPass")
                 actionName = "AlarmByPass";
 
-            ControlAction action = DA.Current.Query<ControlAction>().FirstOrDefault(x => x.ActionName == actionName);
+            IControlAction action = ServiceProvider.Current.Control.GetControlAction(actionName); 
+
             if (action == null)
                 throw new Exception(string.Format("Unable to find action: {0}", actionName));
 
             string[] locs = { "1", location, ((int)locationType).ToString() };
 
-            IList<ControlAuthorization> query = DA.Current.Query<ControlAuthorization>().ToList();
-            ControlAuthorization[] auths = query
+            IList<IControlAuthorization> query = ServiceProvider.Current.Control.GetControlAuthorizations().ToList();
+
+            IControlAuthorization[] auths = query
                 .Where(x => (x.ClientID == -1 * client.ClientID || (x.ClientID & (int)client.Privs) > 0) && locs.Contains(x.Location) && x.ActionID == action.ActionID).ToArray();
 
-            foreach (ControlAuthorization ca in auths)
+            foreach (IControlAuthorization ca in auths)
             {
-                IList<ActionInstance> act = DA.Current.Query<ActionInstance>().Where(x => x.ActionName == actionName && ca.ActionInstanceID == x.Index).ToList();
+                IList<IActionInstance> act = ServiceProvider.Current.Control.GetActionInstances(actionName, ca.ActionInstanceID).ToList();
+
                 if (act.Count > 0)
                 {
-                    foreach (ActionInstance inst in act)
+                    foreach (IActionInstance inst in act)
                     {
-                        Point p = inst.GetPoint();
+                        IPoint p = inst.GetPoint();
                         result.Add(new InstanceAuthorization()
                         {
                             Index = ca.ActionInstanceID,
                             Name = inst.Name,
                             Point = inst.Point,
                             ActionID = inst.ActionID,
-                            BlockID = p.Block.BlockID,
-                            BlockName = p.Block.BlockName,
-                            Description = p.Block.Description,
+                            BlockID = p.BlockID,
+                            BlockName = p.BlockName,
                             Status = null
                         });
                     }
@@ -75,7 +72,6 @@ namespace LNF.Control
                         ActionID = null,
                         BlockID = null,
                         BlockName = null,
-                        Description = null,
                         Status = null
                     });
                 }
@@ -88,19 +84,20 @@ namespace LNF.Control
         {
             IList<InstanceAuthorization> result = new List<InstanceAuthorization>();
 
-            IList<ActionInstance> act = DA.Current.Query<ActionInstance>().Where(x => x.ActionName == actionName).ToList();
-            foreach(ActionInstance inst in act)
+            IList<IActionInstance> act = ServiceProvider.Current.Control.GetActionInstances(actionName).ToList();
+
+            foreach(IActionInstance inst in act)
             {
-                Point p = inst.GetPoint();
+                IPoint p = inst.GetPoint();
+
                 result.Add(new InstanceAuthorization()
                 {
                     Index = inst.Index,
                     Name = inst.Name,
                     Point = inst.Point,
                     ActionID = inst.ActionID,
-                    BlockID = p.Block.BlockID,
-                    BlockName = p.Block.BlockName,
-                    Description = p.Block.Description,
+                    BlockID = p.BlockID,
+                    BlockName = p.BlockName,
                     Status = null
                 });
             }

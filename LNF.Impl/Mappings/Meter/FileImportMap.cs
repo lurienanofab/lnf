@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Meter;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Meter;
 
 namespace LNF.Impl.Mappings.Meter
 {
-    public class FileImportMap : ClassMap<FileImport>
+    internal class FileImportMap : ClassMap<FileImport>
     {
-        public FileImportMap()
+        internal FileImportMap()
         {
             Schema("Meter.dbo");
             Id(x => x.FileImportID);

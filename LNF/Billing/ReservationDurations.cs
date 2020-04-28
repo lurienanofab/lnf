@@ -1,4 +1,5 @@
-﻿using LNF.Repository.Scheduler;
+﻿using LNF.Data;
+using LNF.Scheduler;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,29 +10,39 @@ namespace LNF.Billing
     public class ReservationDurations : IEnumerable<ReservationDurationItem>
     {
         private Dictionary<int, List<ReservationDurationItem>> _items;
-        private List<ReservationDateRange.Reservation> _anomalies;
-        private List<ReservationDateRange.Reservation> _reservations;
+        private List<ReservationDateRangeItem> _anomalies;
+        private List<ReservationDateRangeItem> _reservations;
+        private ReservationDateRange _range;
 
-        public IEnumerable<ReservationDateRange.Reservation> Anomalies { get { return _anomalies.AsEnumerable(); } }
-        public IEnumerable<ReservationDateRange.Reservation> Reservations { get { return _reservations.AsEnumerable(); } }
+        public IEnumerable<ReservationDateRangeItem> Anomalies { get { return _anomalies.AsEnumerable(); } }
+        public IEnumerable<ReservationDateRangeItem> Reservations { get { return _reservations.AsEnumerable(); } }
 
-        internal ReservationDurations(ReservationDateRange range)
+        public ReservationDurations(ReservationDateRange range)
         {
+            CreateItems(range);
+        }
+
+        public ReservationDurations(IEnumerable<IReservation> reservations, IEnumerable<ICost> costs, DateTime sd, DateTime ed)
+        {
+            var dateRange = DateRange.ExpandRange(reservations, sd, ed);
+            var items = ReservationDateRangeItem.GetReservationDateRangeItems(reservations, costs, dateRange);
+            var range = new ReservationDateRange(items, dateRange);
             CreateItems(range);
         }
 
         private void CreateItems(ReservationDateRange range)
         {
+            _range = range;
             _items = new Dictionary<int, List<ReservationDurationItem>>();
-            _reservations = new List<ReservationDateRange.Reservation>();
-            _anomalies = new List<ReservationDateRange.Reservation>();
+            _reservations = new List<ReservationDateRangeItem>();
+            _anomalies = new List<ReservationDateRangeItem>();
 
-            if (range.Reservations == null)
-                throw new NullReferenceException("Range.Reservations is null. This should be checked for and handled before this point.");
+            if (_range.Count == 0)
+                throw new NullReferenceException("range.Count is zero. This should be checked for and handled before this point.");
 
-            foreach (int resourceId in range.Reservations.Select(x => x.ResourceID).Distinct())
+            foreach (int resourceId in _range.Select(x => x.ResourceID).Distinct())
             {
-                range.Clear();
+                _range.Clear();
 
                 /**********
                     * each priority group must be mutually exclusive, i.e. no single reservation should
@@ -45,31 +56,31 @@ namespace LNF.Billing
                       priorty group is written over that and then the next until all groups have been written
                 ***********/
 
-                IEnumerable<ReservationDateRange.Reservation> query = range.Reservations.Where(x => x.ResourceID == resourceId);
+                var query = _range.Where(x => x.ResourceID == resourceId).ToList();
 
                 // These are normal reservations for which we can calculate ranges.
-                List<ReservationDateRange.Reservation> include = new List<ReservationDateRange.Reservation>();
+                List<ReservationDateRangeItem> include = new List<ReservationDateRangeItem>();
 
                 // These are reservations that we can't calculate ranges for, probably because they are still running.
-                List<ReservationDateRange.Reservation> exclude = new List<ReservationDateRange.Reservation>();
+                List<ReservationDateRangeItem> exclude = new List<ReservationDateRangeItem>();
 
                 // Priority 0 (lowest): unstarted, cancelled
-                include.AddRange(range.Apply(0, query.Where(x => !x.IsStarted && !x.IsActive).OrderBy(x => x.LastModifiedOn)));
+                include.AddRange(_range.Apply(0, query.Where(x => !x.IsStarted && !x.IsActive).OrderBy(x => x.LastModifiedOn).ToList()));
 
                 // Priority 1: unstarted, uncancelled
-                include.AddRange(range.Apply(1, query.Where(x => !x.IsStarted && x.IsActive).OrderBy(x => x.LastModifiedOn)));
+                include.AddRange(_range.Apply(1, query.Where(x => !x.IsStarted && x.IsActive).OrderBy(x => x.LastModifiedOn).ToList()));
 
                 // Priority 2: started normal, ended normal
-                include.AddRange(range.Apply(2, query.Where(x => x.IsStarted && x.ActualBeginDateTime.HasValue && x.ActualBeginDateTime.Value >= x.BeginDateTime && x.ActualEndDateTime.HasValue && x.ActualEndDateTime.Value <= x.EndDateTime).OrderBy(x => x.LastModifiedOn)));
+                include.AddRange(_range.Apply(2, query.Where(x => x.IsStarted && x.ActualBeginDateTime.HasValue && x.ActualBeginDateTime.Value >= x.BeginDateTime && x.ActualEndDateTime.HasValue && x.ActualEndDateTime.Value <= x.EndDateTime).OrderBy(x => x.LastModifiedOn).ToList()));
 
                 // Priority 3: started early, ended normal
-                include.AddRange(range.Apply(3, query.Where(x => x.IsStarted && x.ActualBeginDateTime.HasValue && x.ActualBeginDateTime.Value < x.BeginDateTime && x.ActualEndDateTime.HasValue && x.ActualEndDateTime.Value <= x.EndDateTime).OrderBy(x => x.ActualBeginDateTime)));
+                include.AddRange(_range.Apply(3, query.Where(x => x.IsStarted && x.ActualBeginDateTime.HasValue && x.ActualBeginDateTime.Value < x.BeginDateTime && x.ActualEndDateTime.HasValue && x.ActualEndDateTime.Value <= x.EndDateTime).OrderBy(x => x.ActualBeginDateTime).ToList()));
 
                 // Priority 4: started normal, ended late
-                include.AddRange(range.Apply(4, query.Where(x => x.IsStarted && x.ActualBeginDateTime.HasValue && x.ActualBeginDateTime.Value >= x.BeginDateTime && x.ActualEndDateTime.HasValue && x.ActualEndDateTime.Value > x.EndDateTime).OrderByDescending(x => x.ActualBeginDateTime)));
+                include.AddRange(_range.Apply(4, query.Where(x => x.IsStarted && x.ActualBeginDateTime.HasValue && x.ActualBeginDateTime.Value >= x.BeginDateTime && x.ActualEndDateTime.HasValue && x.ActualEndDateTime.Value > x.EndDateTime).OrderByDescending(x => x.ActualBeginDateTime).ToList()));
 
                 // Priority 5: started early, ended late
-                include.AddRange(range.Apply(5, query.Where(x => x.IsStarted && x.ActualBeginDateTime.HasValue && x.ActualBeginDateTime.Value < x.BeginDateTime && x.ActualEndDateTime.HasValue && x.ActualEndDateTime.Value > x.EndDateTime).OrderBy(x => x.LastModifiedOn)));
+                include.AddRange(_range.Apply(5, query.Where(x => x.IsStarted && x.ActualBeginDateTime.HasValue && x.ActualBeginDateTime.Value < x.BeginDateTime && x.ActualEndDateTime.HasValue && x.ActualEndDateTime.Value > x.EndDateTime).OrderBy(x => x.LastModifiedOn).ToList()));
 
                 // catch reservations that were not selected in one of the above groups (includes reservations that were started but have not ended yet)
                 exclude = query.Where(x => x.IsStarted && (!x.ActualBeginDateTime.HasValue || !x.ActualEndDateTime.HasValue)).ToList();
@@ -82,11 +93,11 @@ namespace LNF.Billing
                 int totalCount = query.Count();
 
                 if (count < totalCount)
-                    throw new InvalidOperationException(string.Format("ReservationDuration: Reservation count validation failed. Some reservations not selected. [ResourceID = {0}, StartDate = {1:yyyy-MM-dd HH:mm:ss}, EndDate = {2:yyyy-MM-dd HH:mm:ss}, count = {3}, totalCount = {4}]", resourceId, range.Range.StartDate, range.Range.EndDate, count, totalCount));
+                    throw new InvalidOperationException(string.Format("ReservationDuration: Reservation count validation failed. Some reservations not selected. [ResourceID = {0}, StartDate = {1:yyyy-MM-dd HH:mm:ss}, EndDate = {2:yyyy-MM-dd HH:mm:ss}, count = {3}, totalCount = {4}]", resourceId, _range.DateRange.StartDate, _range.DateRange.EndDate, count, totalCount));
                 else if (count > totalCount)
-                    throw new InvalidOperationException(string.Format("ReservationDuration: Reservation count validation falied. Some reservations selected more than once. [ResourceID = {0}, StartDate = {1:yyyy-MM-dd HH:mm:ss}, EndDate = {2:yyyy-MM-dd HH:mm:ss}, count = {3}, totalCount = {4}]", resourceId, range.Range.StartDate, range.Range.EndDate, count, totalCount));
+                    throw new InvalidOperationException(string.Format("ReservationDuration: Reservation count validation falied. Some reservations selected more than once. [ResourceID = {0}, StartDate = {1:yyyy-MM-dd HH:mm:ss}, EndDate = {2:yyyy-MM-dd HH:mm:ss}, count = {3}, totalCount = {4}]", resourceId, _range.DateRange.StartDate, _range.DateRange.EndDate, count, totalCount));
 
-                var items = include.OrderBy(x => x.ChargeBeginDateTime).ThenBy(x => x.ChargeEndDateTime).ThenBy(x => x.ReservationID).Select(x => new ReservationDurationItem(x, range.GetUtilizedDuration(x.ReservationID))).ToList();
+                var items = include.OrderBy(x => x.ChargeBeginDateTime).ThenBy(x => x.ChargeEndDateTime).ThenBy(x => x.ReservationID).Select(x => new ReservationDurationItem(x, _range.GetUtilizedDuration(x.ReservationID))).ToList();
                 _items.Add(resourceId, items);
             }
         }
@@ -103,6 +114,12 @@ namespace LNF.Billing
         }
 
         public int Count { get { return _items.Count(); } }
+
+
+        public DurationInfo GetDurationInfo(ReservationDateRangeItem item)
+        {
+            return _range.GetDurationInfo(item);
+        }
 
         public IEnumerator<ReservationDurationItem> GetEnumerator()
         {

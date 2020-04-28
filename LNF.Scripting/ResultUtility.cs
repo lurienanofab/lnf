@@ -1,18 +1,16 @@
-﻿using System;
+﻿using LNF.Data;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
 using System.IO;
+using System.Reflection;
+using System.Text;
 using System.Web.UI;
-using IronPython.Runtime;
 
 namespace LNF.Scripting
 {
     public static class ResultUtility
     {
-        public static string CreateTag(Result result, string tagName, IDictionary<object, object> attributes = null, string innerHtml = null)
+        public static string CreateTag(ScriptResult result, string tagName, IDictionary<object, object> attributes = null, string innerHtml = null)
         {
             StringBuilder sb = new StringBuilder();
             using (HtmlTextWriter writer = new HtmlTextWriter(new StringWriter(sb)))
@@ -29,14 +27,14 @@ namespace LNF.Scripting
             return sb.ToString();
         }
 
-        public static IEnumerable<dynamic> GetData(Result result, string key)
+        public static IEnumerable<dynamic> GetData(ScriptResult result, string key)
         {
             if (string.IsNullOrEmpty(key)) key = "default";
-            Data data = result.DataSet[key];
+            ScriptData data = result.DataSet[key];
             return data.Items;
         }
 
-        public static void SetData(Result result, object item, string key)
+        public static void SetData(ScriptResult result, object item, string key)
         {
             //item can be:
             //   1) a single normal object
@@ -44,22 +42,20 @@ namespace LNF.Scripting
             //   3) a single IDictionary object that contains key value pairs that are like property name/values
             //   4) a collection of IDictionary objects like #3
 
-            IEnumerable list = item as IEnumerable;
-            if (list == null)
+            if (!(item is IEnumerable list))
                 list = new object[] { item }; //item is #1, a single object so make a collection
 
             //list is now #2, #3, or #4
 
-            IDictionary itemDictionary = list as IDictionary;
-            if (itemDictionary != null)
+            if (list is IDictionary itemDictionary)
                 list = new IDictionary[] { itemDictionary }; //list is #3, a single IDictionary object so make a collection
 
             //list is now #2 or #4
 
             if (!result.DataSet.ContainsKey(key))
-                result.DataSet.Add(key, new Data());
+                result.DataSet.Add(key, new ScriptData());
 
-            Data data = result.DataSet[key];
+            ScriptData data = result.DataSet[key];
 
             foreach (object i in list)
             {
@@ -98,12 +94,12 @@ namespace LNF.Scripting
             }
         }
 
-        public static void SetHeader(Result result, string fieldName, string displayText, string type, string key)
+        public static void SetHeader(ScriptResult result, string fieldName, string displayText, string type, string key)
         {
             if (string.IsNullOrEmpty(displayText))
                 displayText = fieldName;
 
-            Header h = new Header() { FieldName = fieldName, DisplayText = displayText };
+            ScriptHeader h = new ScriptHeader() { FieldName = fieldName, DisplayText = displayText };
 
             switch (type)
             {
@@ -119,7 +115,7 @@ namespace LNF.Scripting
             }
 
             if (!result.DataSet.ContainsKey(key))
-                result.DataSet.Add(key, new Data());
+                result.DataSet.Add(key, new ScriptData());
 
             result.DataSet[key].AddHeader(h);
         }

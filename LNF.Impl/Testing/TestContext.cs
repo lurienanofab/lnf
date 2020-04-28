@@ -1,11 +1,11 @@
 ﻿using LNF.Impl.Context;
-using System;
+using LNF.Impl.DataAccess;
 using System.Web;
 
 namespace LNF.Impl.Testing
 {
     public class TestContext : WebContext
     {
-        public TestContext(HttpContextBase context) : base(new TestContextFactory(context)) { }
+        public TestContext(HttpContextBase context, ISessionManager mgr) : base(new TestContextFactory(context), mgr) { }
     }
 }

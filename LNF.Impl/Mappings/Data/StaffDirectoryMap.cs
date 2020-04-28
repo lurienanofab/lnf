@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LNF.Repository.Data;
-using FluentNHibernate.Mapping;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    public class StaffDirectoryMap : ClassMap<StaffDirectory>
+    internal class StaffDirectoryMap : ClassMap<StaffDirectory>
     {
-        public StaffDirectoryMap()
+        internal StaffDirectoryMap()
         {
             Schema("sselData.dbo");
             Id(x => x.StaffDirectoryID);

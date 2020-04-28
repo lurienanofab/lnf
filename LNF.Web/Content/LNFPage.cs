@@ -1,5 +1,4 @@
 ﻿using LNF.Data;
-using LNF.Models.Data;
 using System.IO;
 using System.Web;
 using System.Web.UI;
@@ -13,7 +12,7 @@ namespace LNF.Web.Content
             ContextBase = new HttpContextWrapper(Context);
         }
 
-        public IProvider Provider => ServiceProvider.Current;
+        [Inject] public IProvider Provider { get; set; }
 
         public HttpContextBase ContextBase { get; }
 
@@ -25,7 +24,25 @@ namespace LNF.Web.Content
 
         public new LNFPage Page => (LNFPage)base.Page;
 
-        public IClient CurrentUser => ContextBase.CurrentUser();
+        public IClient CurrentUser
+        {
+            get
+            {
+                IClient result;
+
+                if (Context.Items["CurrentUser"] == null)
+                {
+                    result = Provider.Data.Client.GetClient(Context.User.Identity.Name);
+                    Context.Items["CurrentUser"] = result;
+                }
+                else
+                {
+                    result = (IClient)Context.Items["CurrentUser"];
+                }
+
+                return result;
+            }
+        }
 
         public bool HasPriv(ClientPrivilege privs) => CurrentUser.HasPriv(privs);
 

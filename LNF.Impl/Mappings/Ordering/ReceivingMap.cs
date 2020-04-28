@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentNHibernate.Mapping;
-using LNF.Repository.Ordering;
+﻿using FluentNHibernate.Mapping;
+using LNF.Impl.Repository.Ordering;
 
 namespace LNF.Impl.Mappings.Ordering
 {
-    public class ReceivingMap : ClassMap<Receiving>
+    internal class ReceivingMap : ClassMap<Receiving>
     {
-        public ReceivingMap()
+        internal ReceivingMap()
         {
             Schema("IOF.dbo");
             Id(x => x.ReceivingID);

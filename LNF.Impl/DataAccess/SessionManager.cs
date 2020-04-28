@@ -1,14 +1,12 @@
 ﻿using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
 using FluentNHibernate.Conventions.Helpers;
+using LNF.Impl.DataAccess.ModelFactory;
 using NHibernate;
 using NHibernate.Context;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
-using System.IO;
-using System.Web;
 
 namespace LNF.Impl.DataAccess
 {
@@ -25,9 +23,9 @@ namespace LNF.Impl.DataAccess
 
     public class SessionManager<T> : ISessionManager where T : ICurrentSessionContext
     {
-        public static SessionManager<T> Current { get; }
+        public static ISessionManager Current { get; }
 
-        private readonly ServiceProviderSection _config;
+        //private readonly ServiceProviderSection _config;
         private readonly object _locker = new object();
         private readonly ISessionFactory _sessionFactory;
         private readonly Guid _factoryId;
@@ -42,32 +40,21 @@ namespace LNF.Impl.DataAccess
             if (x != null) throw new Exception();
 
             Current = new SessionManager<T>();
+
+            ModelFactoryProvider.Setup(new ValueInjecterModelFactory(Current));
         }
 
         private SessionManager()
         {
             lock (_locker)
             {
+                string logName = Configuration.Current.Log.Name;
+
                 var sw = Stopwatch.StartNew();
 
                 SessionLog.AddLogMessage("### New session factory created at {0:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
 
-                _config = ServiceProvider.GetConfigurationSection();
-
                 SessionLog.AddLogMessage("IsProduction: {0}", IsProduction());
-
-                if (_config == null)
-                    throw new InvalidOperationException("The configuration section 'lnf/settings' is missing.");
-
-                try
-                {
-                    var requestUrl = HttpContext.Current.Request.Url.ToString();
-                    SessionLog.AddLogMessage("RequestUri: {0}", requestUrl);
-                }
-                catch (Exception ex)
-                {
-                    SessionLog.AddLogMessage("RequestUri: {0}", ex.Message);
-                }
 
                 MsSqlConfiguration mssql = MsSqlConfiguration.MsSql2012.ConnectionString(cs => cs.FromConnectionStringWithKey("cnSselData"));
 
@@ -102,7 +89,7 @@ namespace LNF.Impl.DataAccess
                 SessionLog.AddLogMessage("FactoryID: {0}", _factoryId);
                 SessionLog.AddLogMessage("### New session factory completed at {0:yyyy-MM-dd HH:mm:ss} ({1:#0.0000} seconds)", DateTime.Now, sw.Elapsed.TotalMilliseconds / 1000.0);
 
-                SessionLog.WriteAll(_config.Log.Name, !IsProduction());
+                SessionLog.WriteAll(logName, !IsProduction());
             }
         }
 
@@ -150,11 +137,11 @@ namespace LNF.Impl.DataAccess
 
         public ISessionFactory GetSessionFactory() => _sessionFactory;
 
-        public bool ShowSql => _config.DataAccess.ShowSql;
+        public bool ShowSql => Configuration.Current.DataAccess.ShowSql;
 
-        public string UniversalPassword => _config.DataAccess.UniversalPassword;
+        public string UniversalPassword => Configuration.Current.DataAccess.UniversalPassword;
 
-        public bool IsProduction() => _config.Production;
+        public bool IsProduction() => Configuration.Current.Production;
 
         public void Dispose()
         {

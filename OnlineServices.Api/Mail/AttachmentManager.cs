@@ -1,10 +1,11 @@
-﻿using LNF.Models.Mail;
+﻿using LNF;
+using LNF.Mail;
 using System;
 using System.Collections.Generic;
 
 namespace OnlineServices.Api.Mail
 {
-    public class AttachmentManager : ApiClient, IAttachmentManager
+    public class AttachmentManager : ApiClient, IAttachmentUtility
     {
         public Guid Attach(IEnumerable<Attachment> attachments)
         {

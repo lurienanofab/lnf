@@ -61,7 +61,7 @@ namespace LNF.CommonTools
 
         public void ImportRoomData()
         {
-            using (var cmd = new SqlCommand("Billing.dbo.ImportRoomData") { CommandType = CommandType.StoredProcedure, CommandTimeout = 300 })
+            using (var cmd = new SqlCommand("Billing.dbo.ImportRoomData", _conn) { CommandType = CommandType.StoredProcedure, CommandTimeout = 300 })
             {
                 cmd.ExecuteNonQuery();
             }

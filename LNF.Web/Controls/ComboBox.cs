@@ -64,7 +64,7 @@ namespace LNF.Web.Controls
             txt.Style["z-Index"] = "2222";
             txt.Style["top"] = Style["top"];
             txt.Style["left"] = Style["left"];
-            txt.TextChanged += txt_TextChanged;
+            txt.TextChanged += TextBox_TextChanged;
 
             ddl.AutoPostBack = true;
             ddl.Width = Width;
@@ -72,7 +72,7 @@ namespace LNF.Web.Controls
             ddl.Style["z-Index"] = "-1111";
             ddl.Style["top"] = Style["top"];
             ddl.Style["left"] = Style["left"];
-            ddl.SelectedIndexChanged += ddl_SelectedIndexChanged;
+            ddl.SelectedIndexChanged += DropDownList_SelectedIndexChanged;
         }
 
         protected override void Render(HtmlTextWriter writer)
@@ -80,11 +80,11 @@ namespace LNF.Web.Controls
             base.Render(writer);
         }
 
-        private void txt_TextChanged(object sender, EventArgs e)
+        private void TextBox_TextChanged(object sender, EventArgs e)
         {
             if (txt.Text.Length > 0)
             {
-                ListItem item = ddl.Items.FindByText(txt.Text);
+                var item = ddl.Items.FindByText(txt.Text);
                 if (item == null)
                 {
                     ddl.ClearSelection();
@@ -98,7 +98,7 @@ namespace LNF.Web.Controls
             }
         }
 
-        private void ddl_SelectedIndexChanged(object sender, EventArgs e)
+        private void DropDownList_SelectedIndexChanged(object sender, EventArgs e)
         {
             txt.Text = ddl.SelectedItem.Text;
         }

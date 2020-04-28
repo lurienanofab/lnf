@@ -1,5 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Repository.Mail;
+using LNF.Impl.Repository.Mail;
 
 namespace LNF.Impl.Mappings.Email
 {
@@ -9,7 +9,7 @@ namespace LNF.Impl.Mappings.Email
         {
             Schema("Email.dbo");
             Id(x => x.RecipientID);
-            References(x => x.Message);
+            Map(x => x.MessageID);
             Map(x => x.ClientID);
             Map(x => x.AddressType);
             Map(x => x.AddressText);

@@ -1,8 +1,4 @@
-﻿using LNF.Models.Billing;
-using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Billing;
-using LNF.Repository.Data;
+﻿using LNF.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,14 +8,14 @@ namespace LNF.Billing
     public class MiscBillingByAccount
     {
         public DateTime Period { get; }
-        public Client Client { get; }
-        public Account Account { get; }
+        public IClient Client { get; }
+        public IAccount Account { get; }
         public IBillingType BillingType { get; }
         public BillingCategory BillingCategory { get; }
         public decimal TotalMisc { get; }
         public decimal TotalMiscSubsidyDiscount { get; }
 
-        private MiscBillingByAccount(DateTime period, Client client, Account acct, IBillingType bt, BillingCategory bc, decimal totalMisc, decimal totalSubsidy)
+        private MiscBillingByAccount(DateTime period, IClient client, IAccount acct, IBillingType bt, BillingCategory bc, decimal totalMisc, decimal totalSubsidy)
         {
             Period = period;
             Client = client;
@@ -30,7 +26,7 @@ namespace LNF.Billing
             TotalMiscSubsidyDiscount = totalSubsidy;
         }
 
-        public IEnumerable<MiscBillingByAccount> Create(IEnumerable<MiscBillingCharge> source, IEnumerable<Holiday> holidays, IBillingTypeManager mgr)
+        public IEnumerable<MiscBillingByAccount> Create(IEnumerable<IMiscBillingCharge> source, IEnumerable<IHoliday> holidays, IBillingTypeRepository mgr)
         {
             return source.GroupBy(x => new MiscBillingGroupByKeySelector(x))
                 .Select(x => CreateMiscBillingByAccount(x, holidays, mgr))
@@ -41,34 +37,37 @@ namespace LNF.Billing
                 .ToArray();
         }
 
-        private MiscBillingByAccount CreateMiscBillingByAccount(IGrouping<MiscBillingGroupByKeySelector, MiscBillingCharge> grp, IEnumerable<Holiday> holidays, IBillingTypeManager mgr)
+        private MiscBillingByAccount CreateMiscBillingByAccount(IGrouping<MiscBillingGroupByKeySelector, IMiscBillingCharge> grp, IEnumerable<IHoliday> holidays, IBillingTypeRepository mgr)
         {
             var period = grp.Key.Period;
-            var client = grp.Key.Client;
-            var account = grp.Key.Account;
+            var clientId = grp.Key.ClientID;
+            var accountId = grp.Key.AccountID;
 
-            IBillingType bt = mgr.GetBillingTypeByClientAndOrg(period, client.ClientID, account.Org.OrgID, holidays.CreateModels<IHoliday>());
+            IClient client = ServiceProvider.Current.Data.Client.GetClient(clientId);
+            IAccount acct = ServiceProvider.Current.Data.Account.GetAccount(accountId);
+            
+            IBillingType bt = mgr.GetBillingType(period, clientId, acct.OrgID, holidays);
             BillingCategory bc = (BillingCategory)Enum.Parse(typeof(BillingCategory), grp.Key.SubType, true);
             decimal totalMisc = grp.Sum(g => Convert.ToDecimal(g.Quantity) * g.UnitCost);
             decimal totalSubsidy = grp.Sum(g => g.SubsidyDiscount);
 
-            return new MiscBillingByAccount(period, client, account, bt, bc, totalMisc, totalSubsidy);
+            return new MiscBillingByAccount(period, client, acct, bt, bc, totalMisc, totalSubsidy);
         }
 
         private struct MiscBillingGroupByKeySelector
         {
-            public MiscBillingGroupByKeySelector(MiscBillingCharge mbc)
+            public MiscBillingGroupByKeySelector(IMiscBillingCharge mbc)
             {
-                SubType = mbc.SubType;
+                SubType = mbc.SUBType;
                 Period = mbc.Period;
-                Client = mbc.Client;
-                Account = mbc.Account;
+                ClientID = mbc.ClientID;
+                AccountID = mbc.AccountID;
             }
 
             public string SubType { get; }
             public DateTime Period { get; }
-            public Client Client { get; }
-            public Account Account { get; }
+            public int ClientID { get; }
+            public int AccountID { get; }
         }
     }
 }

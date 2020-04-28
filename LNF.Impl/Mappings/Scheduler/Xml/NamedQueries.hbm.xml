@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<hibernate-mapping assembly="LNF" namespace="LNF.Repository.Scheduler" xmlns="urn:nhibernate-mapping-2.2">
+<hibernate-mapping assembly="LNF.Impl" namespace="LNF.Impl.Repository.Scheduler" xmlns="urn:nhibernate-mapping-2.2">
   <sql-query name="CreateReservation">
     <return class="Reservation"/>
     <![CDATA[EXEC sselScheduler.dbo.procReservationInsert @Action='Insert', @Option='ReturnNewRecord', @ReservationID=0, @ResourceID=:ResourceID, @ClientID=:ClientID, @AccountID=:AccountID, @ActivityID=:ActivityID, @BeginDateTime=:BeginDateTime, @EndDateTime=:EndDateTime, @Duration=:Duration, @Notes=:Notes, @AutoEnd=:AutoEnd, @HasProcessInfo=:HasProcessInfo, @HasInvitees=:HasInvitees, @RecurrenceID=:RecurrenceID, @IsActive=:IsActive, @CreatedOn=:CreatedOn, @KeepAlive=:KeepAlive, @MaxReservedDuration=:MaxReservedDuration, @ModifiedByClientID=:ModifiedByClientID]]>
@@ -28,5 +28,9 @@
   <sql-query name="SelectResourceTree">
     <return class="ResourceTree"/>
     <![CDATA[EXEC sselScheduler.dbo.procResourceTreeSelect @ClientID=:ClientID]]>
+  </sql-query>
+  <sql-query name="SelectAvailableInvitees">
+    <return class="AvailableInvitee"/>
+    <![CDATA[EXEC sselScheduler.dbo.procReservationInviteeSelect @Action = 'SelectAvailInvitees', @ReservationID = :ReservationID, @ResourceID = :ResourceID, @ActivityID = :ActivityID, @ClientID = :ClientID]]>
   </sql-query>
 </hibernate-mapping>

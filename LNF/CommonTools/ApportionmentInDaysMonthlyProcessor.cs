@@ -1,6 +1,5 @@
-﻿using LNF.Models.Mail;
+﻿using LNF.Billing;
 using LNF.Repository;
-using LNF.Repository.Billing;
 using System;
 using System.Collections;
 using System.Configuration;
@@ -8,6 +7,7 @@ using System.Data;
 
 namespace LNF.CommonTools
 {
+    [Obsolete("What uses this?")]
     public class ApportionmentInDaysMonthlyProcessor
     {
         /// <summary>
@@ -161,9 +161,9 @@ namespace LNF.CommonTools
                             //We also keep monthly room charge, this could save us a lot of time later on, and we also guarantee data persistance in future 
                             if (roomId == 6) //Only Clean Room allows monthly charge
                             {
-                                if (billingTypeId == BillingType.Int_Ga || billingTypeId == BillingType.ExtAc_Ga)
+                                if (billingTypeId == BillingTypes.Int_Ga.BillingTypeID || billingTypeId == BillingTypes.ExtAc_Ga.BillingTypeID)
                                     totalMonthlyRoomCharge = 875;
-                                else if (billingTypeId == BillingType.Int_Si || billingTypeId == BillingType.ExtAc_Si)
+                                else if (billingTypeId == BillingTypes.Int_Si.BillingTypeID || billingTypeId == BillingTypes.ExtAc_Si.BillingTypeID)
                                     totalMonthlyRoomCharge = 1315;
                                 else
                                     totalMonthlyRoomCharge = 0;

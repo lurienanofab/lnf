@@ -55,17 +55,17 @@
     <Reference Include="MongoDB.Driver.Core, Version=2.8.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MongoDB.Driver.Core.2.8.1\lib\net452\MongoDB.Driver.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Moq, Version=4.10.0.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
-      <HintPath>..\packages\Moq.4.10.1\lib\net45\Moq.dll</HintPath>
+    <Reference Include="Moq, Version=4.13.0.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <HintPath>..\packages\Moq.4.13.1\lib\net45\Moq.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NHibernate, Version=5.2.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
-      <HintPath>..\packages\NHibernate.5.2.5\lib\net461\NHibernate.dll</HintPath>
+      <HintPath>..\packages\NHibernate.5.2.7\lib\net461\NHibernate.dll</HintPath>
     </Reference>
-    <Reference Include="Omu.ValueInjecter, Version=3.1.3.0, Culture=neutral, PublicKeyToken=5692a4ecdffbe736, processorArchitecture=MSIL">
-      <HintPath>..\packages\ValueInjecter.3.1.3\lib\net45\Omu.ValueInjecter.dll</HintPath>
+    <Reference Include="Omu.ValueInjecter, Version=3.2.0.0, Culture=neutral, PublicKeyToken=5692a4ecdffbe736, processorArchitecture=MSIL">
+      <HintPath>..\packages\ValueInjecter.3.2.0\lib\net45\Omu.ValueInjecter.dll</HintPath>
     </Reference>
     <Reference Include="Remotion.Linq, Version=2.2.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
       <HintPath>..\packages\Remotion.Linq.2.2.0\lib\net45\Remotion.Linq.dll</HintPath>
@@ -73,26 +73,26 @@
     <Reference Include="Remotion.Linq.EagerFetching, Version=2.2.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
       <HintPath>..\packages\Remotion.Linq.EagerFetching.2.2.0\lib\net45\Remotion.Linq.EagerFetching.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp, Version=106.6.9.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
-      <HintPath>..\packages\RestSharp.106.6.9\lib\net452\RestSharp.dll</HintPath>
+    <Reference Include="RestSharp, Version=106.0.0.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.106.10.1\lib\net452\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="StructureMap, Version=4.7.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\StructureMap.4.7.1\lib\net45\StructureMap.dll</HintPath>
+    <Reference Include="SimpleInjector, Version=4.9.2.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.4.9.2\lib\net45\SimpleInjector.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.4.5.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
+      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
     </Reference>
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Messaging" />
     <Reference Include="System.Runtime.Caching" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.7.1\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.2\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll</HintPath>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="System.Transactions" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -106,17 +106,65 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Billing\BillingDataProcessStep1.cs" />
+    <Compile Include="Billing\BillingDataProcessStep2.cs" />
+    <Compile Include="Billing\BillingDataProcessStep3.cs" />
+    <Compile Include="Billing\BillingDataProcessStep4Subsidy.cs" />
+    <Compile Include="Billing\BillingRepository.cs" />
+    <Compile Include="Billing\ExternalInvoiceManager.cs" />
+    <Compile Include="Billing\MiscDataRepository.cs" />
+    <Compile Include="Billing\OrgRechargeRepository.cs" />
+    <Compile Include="Billing\ProcessBase.cs" />
+    <Compile Include="Billing\ReaderBase.cs" />
+    <Compile Include="Billing\MiscDataReader.cs" />
+    <Compile Include="Billing\RoomBillingUtility.cs" />
+    <Compile Include="Billing\RoomDataCleanGenerator.cs" />
+    <Compile Include="Billing\RoomDataReader.cs" />
+    <Compile Include="Billing\StoreDataReader.cs" />
+    <Compile Include="Billing\StoreDataRepository.cs" />
+    <Compile Include="Billing\ToolBillingUtility.cs" />
+    <Compile Include="Billing\ToolDataReader.cs" />
+    <Compile Include="Billing\RoomDataRepository.cs" />
+    <Compile Include="Billing\ToolDataRepository.cs" />
+    <Compile Include="Billing\WriteRoomDataCleanProcess.cs" />
+    <Compile Include="Billing\WriteRoomDataProcess.cs" />
+    <Compile Include="Billing\WriteStoreDataCleanProcess.cs" />
+    <Compile Include="Billing\WriteStoreDataProcess.cs" />
+    <Compile Include="Billing\WriteToolDataCleanProcess.cs" />
+    <Compile Include="Billing\WriteToolDataProcess.cs" />
+    <Compile Include="DataAccess\ModelFactory\IModelFactory.cs" />
+    <Compile Include="Data\ClientEqualityComparer.cs" />
+    <Compile Include="Data\GlobalSettingRepository.cs" />
+    <Compile Include="Data\HelpRepository.cs" />
+    <Compile Include="Data\MenuRepository.cs" />
+    <Compile Include="DependencyResolver.cs" />
+    <Compile Include="ExceptionManager.cs" />
+    <Compile Include="Feedback\FeedbackService.cs" />
+    <Compile Include="Inventory\CategoryRepository.cs" />
+    <Compile Include="Inventory\InventoryItemRepository.cs" />
+    <Compile Include="Mail\Criteria\ByCommunity.cs" />
+    <Compile Include="Mail\Criteria\ByLab.cs" />
+    <Compile Include="Mail\Criteria\ByManager.cs" />
+    <Compile Include="Mail\Criteria\ByPrivilege.cs" />
+    <Compile Include="Mail\Criteria\ByTool.cs" />
+    <Compile Include="Mail\Criteria\CriteriaBase.cs" />
+    <Compile Include="Mail\GroupEmailManager.cs" />
+    <Compile Include="Mail\InvalidEmailManager.cs" />
+    <Compile Include="Mappings\Scheduler\AvailableInviteeMap.cs" />
+    <Compile Include="Mappings\Scheduler\LabLocationMap.cs" />
+    <Compile Include="Mappings\Scheduler\ResourceLabLocationMap.cs" />
+    <Compile Include="Mappings\Store\ItemMap.cs" />
     <Compile Include="Authorization\AuthorizationService.cs" />
-    <Compile Include="Billing\AccountSubsidyManager.cs" />
-    <Compile Include="Billing\ApportionmentManager.cs" />
-    <Compile Include="Billing\BillingTypeManager.cs" />
-    <Compile Include="Billing\MiscBillingManager.cs" />
-    <Compile Include="Billing\ProcessManager.cs" />
+    <Compile Include="Billing\SubsidyRepository.cs" />
+    <Compile Include="Billing\ApportionmentRepository.cs" />
+    <Compile Include="Billing\BillingTypeRepository.cs" />
+    <Compile Include="Billing\MiscBillingRepository.cs" />
+    <Compile Include="Billing\ProcessRepository.cs" />
     <Compile Include="Billing\Report\ReportAccount.cs" />
     <Compile Include="Billing\Report\DataAccess.cs" />
     <Compile Include="Billing\Report\JournalUnitGenerator.cs" />
     <Compile Include="Billing\Report\ReportGenerator.cs" />
-    <Compile Include="Billing\Report\ReportManager.cs" />
+    <Compile Include="Billing\Report\ReportRepository.cs" />
     <Compile Include="Billing\Report\ReportUtility.cs" />
     <Compile Include="Billing\Report\RoomJournalUnitGenerator.cs" />
     <Compile Include="Billing\Report\RoomServiceUnitBillingGenerator.cs" />
@@ -124,36 +172,305 @@
     <Compile Include="Billing\Report\StoreServiceUnitBillingGenerator.cs" />
     <Compile Include="Billing\Report\ToolJournalUnitGenerator.cs" />
     <Compile Include="Billing\Report\ToolServiceUnitBillingGenerator.cs" />
-    <Compile Include="Billing\RoomBillingManager.cs" />
-    <Compile Include="Billing\StoreBillingManager.cs" />
-    <Compile Include="Billing\ToolBillingManager.cs" />
+    <Compile Include="Billing\RoomBillingRepository.cs" />
+    <Compile Include="Billing\StoreBillingRepository.cs" />
+    <Compile Include="Billing\ToolBillingRepository.cs" />
+    <Compile Include="Cache\Cache.cs" />
+    <Compile Include="Cache\SessionKeys.cs" />
+    <Compile Include="Configuration.cs" />
+    <Compile Include="Context\ContextBase.cs" />
+    <Compile Include="Context\DefaultContext.cs" />
     <Compile Include="Context\IHttpContextFactory.cs" />
     <Compile Include="Context\WebContextFactory.cs" />
     <Compile Include="DataAccess\BitwiseExpression.cs" />
     <Compile Include="Control\Wago\WagoControlService.cs" />
-    <Compile Include="Conventions\BytesUserType.cs" />
-    <Compile Include="Conventions\EnumConvention.cs" />
-    <Compile Include="Conventions\XmlTypeConvention.cs" />
+    <Compile Include="Mappings\Store\PriceInfoMap.cs" />
+    <Compile Include="DataAccess\NHibernateMiddleware.cs" />
+    <Compile Include="ModelFactoryProvider.cs" />
+    <Compile Include="Ordering\ApproverRepository.cs" />
+    <Compile Include="Ordering\PurchaseOrderCategoryRepository.cs" />
+    <Compile Include="Ordering\PurchaseOrderItemRepository.cs" />
+    <Compile Include="Ordering\PurchaserRepository.cs" />
+    <Compile Include="Ordering\TrackingRepository.cs" />
+    <Compile Include="Ordering\VendorRepository.cs" />
+    <Compile Include="Provider.cs" />
+    <Compile Include="Reporting\AfterHoursRepository.cs" />
+    <Compile Include="Reporting\ClientEmailPreferenceRepository.cs" />
+    <Compile Include="Reporting\ClientManagerLogRepository.cs" />
+    <Compile Include="Repository\Billing\SessionExtensions.cs" />
+    <Compile Include="Repository\Conventions\BytesUserType.cs" />
+    <Compile Include="Repository\Conventions\EnumConvention.cs" />
+    <Compile Include="Repository\Conventions\XmlTypeConvention.cs" />
     <Compile Include="DataAccess\DateProjections.cs" />
-    <Compile Include="Data\AccountManager.cs" />
-    <Compile Include="Data\ClientManager.cs" />
-    <Compile Include="Data\Extensions.cs" />
-    <Compile Include="Data\FeedManager.cs" />
-    <Compile Include="Data\RoomManager.cs" />
-    <Compile Include="Data\ServiceLogManager.cs" />
-    <Compile Include="Data\UtilityManager.cs" />
-    <Compile Include="DependencyInjection\Default\IOC.cs" />
-    <Compile Include="DependencyInjection\StructureMapResolver.cs" />
-    <Compile Include="DependencyInjection\Web\IOC.cs" />
-    <Compile Include="Data\OrgManager.cs" />
-    <Compile Include="Data\ActiveLogManager.cs" />
-    <Compile Include="Data\CostManager.cs" />
-    <Compile Include="Data\DryBoxManager.cs" />
+    <Compile Include="Data\AccountRepository.cs" />
+    <Compile Include="Repository\Billing\AccountSubsidy.cs" />
+    <Compile Include="Repository\Billing\ApportionmentClient.cs" />
+    <Compile Include="Repository\Billing\ApportionmentDefault.cs" />
+    <Compile Include="Repository\Billing\BillingType.cs" />
+    <Compile Include="Repository\Billing\ClientAccountBillingType.cs" />
+    <Compile Include="Repository\Billing\ClientOrgBillingTypeLog.cs" />
+    <Compile Include="Repository\Billing\Extensions.cs" />
+    <Compile Include="Repository\Billing\IToolBilling.cs" />
+    <Compile Include="Repository\Billing\MiscBillingCharge.cs" />
+    <Compile Include="Repository\Billing\OrgRecharge.cs" />
+    <Compile Include="Repository\Billing\RegularException.cs" />
+    <Compile Include="Repository\Billing\RoomApportionment.cs" />
+    <Compile Include="Repository\Billing\RoomBilling.cs" />
+    <Compile Include="Repository\Billing\RoomBillingByAccount.cs" />
+    <Compile Include="Repository\Billing\RoomBillingByOrg.cs" />
+    <Compile Include="Repository\Billing\RoomBillingByRoomOrg.cs" />
+    <Compile Include="Repository\Billing\RoomBillingUserApportionData.cs" />
+    <Compile Include="Repository\Billing\RoomDataImport.cs" />
+    <Compile Include="Repository\Billing\RoomDataImportLog.cs" />
+    <Compile Include="Repository\Billing\RoomDataWithToolUsage.cs" />
+    <Compile Include="Repository\Billing\StoreBilling.cs" />
+    <Compile Include="Repository\Billing\StoreBillingByAccount.cs" />
+    <Compile Include="Repository\Billing\StoreBillingByItemOrg.cs" />
+    <Compile Include="Repository\Billing\StoreBillingByOrg.cs" />
+    <Compile Include="Repository\Billing\TieredSubsidyBilling.cs" />
+    <Compile Include="Repository\Billing\TieredSubsidyBillingDetail.cs" />
+    <Compile Include="Repository\Billing\ToolBilling.cs" />
+    <Compile Include="Repository\Billing\ToolBillingByAccount.cs" />
+    <Compile Include="Repository\Billing\ToolBillingByOrg.cs" />
+    <Compile Include="Repository\Billing\ToolBillingByToolOrg.cs" />
+    <Compile Include="Repository\Billing\ToolDataRaw.cs" />
+    <Compile Include="Repository\Control\ActionInstance.cs" />
+    <Compile Include="Repository\Control\Block.cs" />
+    <Compile Include="Repository\Control\BlockConfig.cs" />
+    <Compile Include="Repository\Control\ControlAction.cs" />
+    <Compile Include="Repository\Control\ControlAuthorization.cs" />
+    <Compile Include="Repository\Control\ModType.cs" />
+    <Compile Include="Repository\Control\Point.cs" />
+    <Compile Include="Repository\Control\PointInfo.cs" />
+    <Compile Include="Repository\Control\Property.cs" />
+    <Compile Include="Repository\Control\UnloadReservation.cs" />
+    <Compile Include="Repository\Data\Account.cs" />
+    <Compile Include="Repository\Data\AccountInfo.cs" />
+    <Compile Include="Repository\Data\AccountInfoBase.cs" />
+    <Compile Include="Repository\Data\AccountType.cs" />
+    <Compile Include="Repository\Data\ActiveDataItem.cs" />
+    <Compile Include="Repository\Data\ActiveLog.cs" />
+    <Compile Include="Repository\Data\ActiveLogAccount.cs" />
+    <Compile Include="Repository\Data\ActiveLogClient.cs" />
+    <Compile Include="Repository\Data\ActiveLogClientAccount.cs" />
+    <Compile Include="Repository\Data\ActiveLogClientOrg.cs" />
+    <Compile Include="Repository\Data\ActiveLogClientRemote.cs" />
+    <Compile Include="Repository\Data\ActiveLogItem.cs" />
+    <Compile Include="Repository\Data\ActiveLogOrg.cs" />
+    <Compile Include="Repository\Data\Address.cs" />
+    <Compile Include="Repository\Data\BadgeCardClient.cs" />
+    <Compile Include="Repository\Data\ChargeType.cs" />
+    <Compile Include="Repository\Data\Client.cs" />
+    <Compile Include="Repository\Data\ClientAccount.cs" />
+    <Compile Include="Repository\Data\ClientAccountAssignment.cs" />
+    <Compile Include="Repository\Data\ClientAccountInfo.cs" />
+    <Compile Include="Repository\Data\ClientAccountInfoBase.cs" />
+    <Compile Include="Repository\Data\ClientInfo.cs" />
+    <Compile Include="Repository\Data\ClientManager.cs" />
+    <Compile Include="Repository\Data\ClientOrg.cs" />
+    <Compile Include="Repository\Data\ClientOrgInfo.cs" />
+    <Compile Include="Repository\Data\ClientOrgInfoBase.cs" />
+    <Compile Include="Repository\Data\ClientPreference.cs" />
+    <Compile Include="Repository\Data\ClientRemote.cs" />
+    <Compile Include="Repository\Data\ClientRemoteInfo.cs" />
+    <Compile Include="Repository\Data\ClientSessionInfo.cs" />
+    <Compile Include="Repository\Data\Community.cs" />
+    <Compile Include="Repository\Data\Cost.cs" />
+    <Compile Include="Repository\Data\DataFeed.cs" />
+    <Compile Include="Repository\Data\DemCitizen.cs" />
+    <Compile Include="Repository\Data\DemDisability.cs" />
+    <Compile Include="Repository\Data\DemEthnic.cs" />
+    <Compile Include="Repository\Data\DemGender.cs" />
+    <Compile Include="Repository\Data\DemRace.cs" />
+    <Compile Include="Repository\Data\Department.cs" />
+    <Compile Include="Repository\Data\DryBox.cs" />
+    <Compile Include="Repository\Data\DryBoxAssignment.cs" />
+    <Compile Include="Repository\Data\DryBoxAssignmentLog.cs" />
+    <Compile Include="Repository\Data\DryBoxClient.cs" />
+    <Compile Include="Repository\Data\ErrorLog.cs" />
+    <Compile Include="Repository\Data\Extensions.cs" />
+    <Compile Include="Repository\Data\FeedsLog.cs" />
+    <Compile Include="Repository\Data\FundingSource.cs" />
+    <Compile Include="Repository\Data\GlobalCost.cs" />
+    <Compile Include="Repository\Data\GlobalSettings.cs" />
+    <Compile Include="Repository\Data\GoogleAuthorization.cs" />
+    <Compile Include="Repository\Data\GoogleCalendarFeed.cs" />
+    <Compile Include="Repository\Data\Holiday.cs" />
+    <Compile Include="Repository\Data\IActiveLogItem.cs" />
+    <Compile Include="Repository\Data\InvalidEmailList.cs" />
+    <Compile Include="Repository\Data\Menu.cs" />
+    <Compile Include="Repository\Data\MessengerMessage.cs" />
+    <Compile Include="Repository\Data\MessengerRecipient.cs" />
+    <Compile Include="Repository\Data\News.cs" />
+    <Compile Include="Repository\Data\OAuthClient.cs" />
+    <Compile Include="Repository\Data\OAuthClientAudience.cs" />
+    <Compile Include="Repository\Data\OAuthClientAuthorization.cs" />
+    <Compile Include="Repository\Data\Org.cs" />
+    <Compile Include="Repository\Data\OrgInfo.cs" />
+    <Compile Include="Repository\Data\OrgInfoBase.cs" />
+    <Compile Include="Repository\Data\OrgType.cs" />
+    <Compile Include="Repository\Data\PhysicalAccessArea.cs" />
+    <Compile Include="Repository\Data\Priv.cs" />
+    <Compile Include="Repository\Data\ReservationFeed.cs" />
+    <Compile Include="Repository\Data\Role.cs" />
+    <Compile Include="Repository\Data\Room.cs" />
+    <Compile Include="Repository\Billing\RoomData.cs" />
+    <Compile Include="Repository\Billing\RoomDataClean.cs" />
+    <Compile Include="Repository\Data\Script.cs" />
+    <Compile Include="Repository\Data\ServiceLog.cs" />
+    <Compile Include="Repository\Data\ServiceTask.cs" />
+    <Compile Include="Repository\Data\SessionExtensions.cs" />
+    <Compile Include="Repository\Data\SpecialTopic.cs" />
+    <Compile Include="Repository\Data\StaffDirectory.cs" />
+    <Compile Include="Repository\Billing\StoreData.cs" />
+    <Compile Include="Repository\Billing\StoreDataClean.cs" />
+    <Compile Include="Repository\Data\TechnicalField.cs" />
+    <Compile Include="Repository\Billing\ToolData.cs" />
+    <Compile Include="Repository\Billing\ToolDataClean.cs" />
+    <Compile Include="Repository\Feedback\EmailTemplate.cs" />
+    <Compile Include="Repository\Feedback\FeedbackIssue.cs" />
+    <Compile Include="Repository\Feedback\IssueStatus.cs" />
+    <Compile Include="Repository\Feedback\NegativeIssue.cs" />
+    <Compile Include="Repository\Feedback\PositiveIssue.cs" />
+    <Compile Include="Repository\Inventory\Category.cs" />
+    <Compile Include="Repository\Inventory\CheckOutCategory.cs" />
+    <Compile Include="Repository\Inventory\ChemicalLabelPrintLog.cs" />
+    <Compile Include="Repository\Inventory\ChemicalLocation.cs" />
+    <Compile Include="Repository\Inventory\InventoryLocation.cs" />
+    <Compile Include="Repository\Inventory\InventoryType.cs" />
+    <Compile Include="Repository\Inventory\InventoryItem.cs" />
+    <Compile Include="Repository\Inventory\ItemInventoryLocation.cs" />
+    <Compile Include="Repository\Inventory\ItemInventoryType.cs" />
+    <Compile Include="Repository\Inventory\ItemUpdate.cs" />
+    <Compile Include="Repository\Inventory\LabelLocation.cs" />
+    <Compile Include="Repository\Inventory\LabelQueue.cs" />
+    <Compile Include="Repository\Inventory\LabelRoom.cs" />
+    <Compile Include="Repository\Inventory\PrivateChemical.cs" />
+    <Compile Include="Repository\Inventory\ResourceInventoryLocation.cs" />
+    <Compile Include="Repository\Mail\MassEmail.cs" />
+    <Compile Include="Repository\Mail\Message.cs" />
+    <Compile Include="Repository\Mail\Recipient.cs" />
+    <Compile Include="Repository\Meter\FileImport.cs" />
+    <Compile Include="Repository\Meter\MeterData.cs" />
+    <Compile Include="Repository\Meter\MeterReport.cs" />
+    <Compile Include="Repository\Meter\MeterServiceLog.cs" />
+    <Compile Include="Repository\NHibernateDataCommand.cs" />
+    <Compile Include="Repository\Ordering\AdminSetting.cs" />
+    <Compile Include="Repository\Ordering\Approver.cs" />
+    <Compile Include="Repository\Ordering\ApproverInfo.cs" />
+    <Compile Include="Repository\Ordering\LedgerItem.cs" />
+    <Compile Include="Repository\Ordering\PurchaseOrder.cs" />
+    <Compile Include="Repository\Ordering\PurchaseOrderAccount.cs" />
+    <Compile Include="Repository\Ordering\PurchaseOrderCategory.cs" />
+    <Compile Include="Repository\Ordering\PurchaseOrderDetail.cs" />
+    <Compile Include="Repository\Ordering\PurchaseOrderInfo.cs" />
+    <Compile Include="Repository\Ordering\PurchaseOrderItem.cs" />
+    <Compile Include="Repository\Ordering\PurchaseOrderSearch.cs" />
+    <Compile Include="Repository\Ordering\Purchaser.cs" />
+    <Compile Include="Repository\Ordering\PurchaserSearch.cs" />
+    <Compile Include="Repository\Ordering\Receiving.cs" />
+    <Compile Include="Repository\Ordering\SessionExtensions.cs" />
+    <Compile Include="Repository\Ordering\ShippingMethod.cs" />
+    <Compile Include="Repository\Ordering\Status.cs" />
+    <Compile Include="Repository\Ordering\StoreManagerReportItem.cs" />
+    <Compile Include="Repository\Ordering\Tracking.cs" />
+    <Compile Include="Repository\Ordering\TrackingCheckpoint.cs" />
+    <Compile Include="Repository\Ordering\Vendor.cs" />
+    <Compile Include="Repository\Reporting\AfterHours.cs" />
+    <Compile Include="Repository\Reporting\ClientEmailPreference.cs" />
+    <Compile Include="Repository\Reporting\ClientManagerLog.cs" />
+    <Compile Include="Repository\Reporting\EmailPreference.cs" />
+    <Compile Include="Repository\Reporting\ManagerUsageCharge.cs" />
+    <Compile Include="Repository\Reporting\Report.cs" />
+    <Compile Include="Repository\Reporting\ReportCategory.cs" />
+    <Compile Include="Repository\Reporting\Template.cs" />
+    <Compile Include="Repository\Reporting\ToolUtilization.cs" />
+    <Compile Include="Repository\Reporting\UserUsageCharge.cs" />
+    <Compile Include="Repository\RepositoryBase.cs" />
+    <Compile Include="Repository\Scheduler\Activity.cs" />
+    <Compile Include="Repository\Scheduler\ActivityAuthType.cs" />
+    <Compile Include="Repository\Scheduler\AuthLevel.cs" />
+    <Compile Include="Repository\Scheduler\AutoEndLog.cs" />
+    <Compile Include="Repository\Scheduler\AvailableInvitee.cs" />
+    <Compile Include="Repository\Scheduler\Building.cs" />
+    <Compile Include="Repository\Scheduler\ClientSetting.cs" />
+    <Compile Include="Repository\Scheduler\GlobalActivityAuth.cs" />
+    <Compile Include="Repository\Scheduler\Kiosk.cs" />
+    <Compile Include="Repository\Scheduler\Lab.cs" />
+    <Compile Include="Repository\Scheduler\LabLocation.cs" />
+    <Compile Include="Repository\Scheduler\LogProperty.cs" />
+    <Compile Include="Repository\Scheduler\LogPropertyValue.cs" />
+    <Compile Include="Repository\Scheduler\OnTheFlyLog.cs" />
+    <Compile Include="Repository\Scheduler\OnTheFlyResource.cs" />
+    <Compile Include="Repository\Scheduler\ProcessInfo.cs" />
+    <Compile Include="Repository\Scheduler\ProcessInfoLine.cs" />
+    <Compile Include="Repository\Scheduler\ProcessInfoLineParam.cs" />
+    <Compile Include="Repository\Scheduler\ProcessTech.cs" />
+    <Compile Include="Repository\Scheduler\ProcessTechGroup.cs" />
+    <Compile Include="Repository\Scheduler\RecurrencePattern.cs" />
+    <Compile Include="Repository\Scheduler\Reservation.cs" />
+    <Compile Include="Repository\Scheduler\ReservationGroup.cs" />
+    <Compile Include="Repository\Scheduler\ReservationHistory.cs" />
+    <Compile Include="Repository\Scheduler\ReservationInfo.cs" />
+    <Compile Include="Repository\Scheduler\ReservationInvitee.cs" />
+    <Compile Include="Repository\Scheduler\ReservationInviteeInfo.cs" />
+    <Compile Include="Repository\Scheduler\ReservationLog.cs" />
+    <Compile Include="Repository\Scheduler\ReservationOnTheFly.cs" />
+    <Compile Include="Repository\Scheduler\ReservationProcessInfo.cs" />
+    <Compile Include="Repository\Scheduler\ReservationRecurrence.cs" />
+    <Compile Include="Repository\Scheduler\ReservationRecurrenceInfo.cs" />
+    <Compile Include="Repository\Scheduler\Resource.cs" />
+    <Compile Include="Repository\Scheduler\ResourceActivityAuth.cs" />
+    <Compile Include="Repository\Scheduler\ResourceClient.cs" />
+    <Compile Include="Repository\Scheduler\ResourceClientInfo.cs" />
+    <Compile Include="Repository\Scheduler\ResourceInfo.cs" />
+    <Compile Include="Repository\Scheduler\ResourceLabLocation.cs" />
+    <Compile Include="Repository\Scheduler\ResourceLogProperty.cs" />
+    <Compile Include="Repository\Scheduler\ResourceStatus.cs" />
+    <Compile Include="Repository\Scheduler\ResourceTree.cs" />
+    <Compile Include="Repository\Scheduler\SchedulerProperty.cs" />
+    <Compile Include="Repository\NHibernateExtensions.cs" />
+    <Compile Include="Repository\Scheduler\SessionExtensions.cs" />
+    <Compile Include="Repository\Store\Item.cs" />
+    <Compile Include="Repository\Store\ItemPriceHistory.cs" />
+    <Compile Include="Repository\Store\Package.cs" />
+    <Compile Include="Repository\Store\Price.cs" />
+    <Compile Include="Repository\Store\PriceInfo.cs" />
+    <Compile Include="Repository\Store\SessionExtensions.cs" />
+    <Compile Include="Repository\Store\StoreOrder.cs" />
+    <Compile Include="Repository\Store\StoreOrderDetail.cs" />
+    <Compile Include="Repository\Store\VendorPackage.cs" />
+    <Compile Include="Scheduler\ActivityRepository.cs" />
+    <Compile Include="Scheduler\KioskRepository.cs" />
+    <Compile Include="Scheduler\LabLocationRepository.cs" />
+    <Compile Include="Scheduler\SchedulerPropertyRepository.cs" />
+    <Compile Include="Scripting\DefaultScriptEngine.cs" />
+    <Compile Include="Store\StoreService.cs" />
+    <Compile Include="Utility\AutoEndUtility.cs" />
+    <Compile Include="Data\ClientRepository.cs" />
+    <Compile Include="Data\ActiveLogExtensions.cs" />
+    <Compile Include="Data\FeedRepository.cs" />
+    <Compile Include="Data\HolidayRepository.cs" />
+    <Compile Include="Data\NewsRepository.cs" />
+    <Compile Include="Data\RoomRepository.cs" />
+    <Compile Include="Data\ServiceLogRepository.cs" />
+    <Compile Include="Data\SiteMenuUtility.cs" />
+    <Compile Include="Data\OrgRepository.cs" />
+    <Compile Include="Data\ActiveLogRepository.cs" />
+    <Compile Include="Data\CostRepository.cs" />
+    <Compile Include="Data\DryBoxRepository.cs" />
+    <Compile Include="Logging\FileLoggingService.cs" />
+    <Compile Include="Logging\LoggingServiceBase.cs" />
+    <Compile Include="Logging\TextLoggingService.cs" />
+    <Compile Include="Logging\XmlLoggingService.cs" />
     <Compile Include="Mail\AttachmentManager.cs" />
     <Compile Include="Mail\MailService.cs" />
     <Compile Include="Mail\MailUtility.cs" />
     <Compile Include="Mail\MailRepo.cs" />
-    <Compile Include="Mail\MassEmailManager.cs" />
+    <Compile Include="Mail\MassEmailRepository.cs" />
+    <Compile Include="ModelFactoryExtensions.cs" />
+    <Compile Include="Ordering\PurchaseOrderRepository.cs" />
+    <Compile Include="Reporting\ManagerUsageChargeRepository.cs" />
     <Compile Include="Mappings\Billing\MiscBillingChargeMap.cs" />
     <Compile Include="Mappings\Billing\RoomDataImportLogMap.cs" />
     <Compile Include="Mappings\Data\InvalidEmailListMap.cs" />
@@ -161,24 +478,26 @@
     <Compile Include="Mappings\Scheduler\ReservationInviteeInfoMap.cs" />
     <Compile Include="Mappings\Scheduler\ReservationRecurrenceInfoMap.cs" />
     <Compile Include="Mappings\Scheduler\ResourceTreeMap.cs" />
-    <Compile Include="ModelFactory\BillingModelBuilder.cs" />
-    <Compile Include="ModelFactory\DataModelBuilder.cs" />
-    <Compile Include="ModelFactory\Injections\NullableUseDefaultInjection.cs" />
-    <Compile Include="ModelFactory\OrderingModelBuilder.cs" />
-    <Compile Include="ModelFactory\SchedulerModelBuilder.cs" />
+    <Compile Include="DataAccess\ModelFactory\BillingModelBuilder.cs" />
+    <Compile Include="DataAccess\ModelFactory\DataModelBuilder.cs" />
+    <Compile Include="DataAccess\ModelFactory\Injections\NullableUseDefaultInjection.cs" />
+    <Compile Include="DataAccess\ModelFactory\OrderingModelBuilder.cs" />
+    <Compile Include="DataAccess\ModelFactory\SchedulerModelBuilder.cs" />
     <Compile Include="PhysicalAccess\PhysicalAccessService.cs" />
     <Compile Include="PhysicalAccess\Repository.cs" />
     <Compile Include="PhysicalAccess\Utility.cs" />
-    <Compile Include="Reporting\ClientItemManager.cs" />
-    <Compile Include="Scheduler\ProcessInfoManager.cs" />
-    <Compile Include="Scheduler\ReservationManager.cs" />
-    <Compile Include="Scheduler\ResourceManager.cs" />
-    <Compile Include="Serialization\DynamicContractResolver.cs" />
-    <Compile Include="Encryption\EncryptionService.cs" />
+    <Compile Include="Reporting\ClientItemRepository.cs" />
+    <Compile Include="Scheduler\ClientSettingRepository.cs" />
+    <Compile Include="Scheduler\EmailRepository.cs" />
+    <Compile Include="Scheduler\ProcessInfoRepository.cs" />
+    <Compile Include="Scheduler\ReservationRepository.cs" />
+    <Compile Include="Scheduler\ResourceRepository.cs" />
+    <Compile Include="Utility\Serialization\DynamicContractResolver.cs" />
+    <Compile Include="Utility\EncryptionUtility.cs" />
     <Compile Include="Hooks\PostLoginCheckerHook.cs" />
     <Compile Include="Hooks\UniversalPasswordHook.cs" />
-    <Compile Include="Logging\ConsoleLogService.cs" />
-    <Compile Include="Logging\ServiceLogService.cs" />
+    <Compile Include="Logging\ConsoleLoggingService.cs" />
+    <Compile Include="Logging\LoggingService.cs" />
     <Compile Include="Mappings\Billing\AccountSubsidyMap.cs" />
     <Compile Include="Mappings\Billing\ApportionmentClientMap.cs" />
     <Compile Include="Mappings\Billing\ApportionmentDefaultMap.cs" />
@@ -280,24 +599,24 @@
     <Compile Include="Mappings\Data\PrivMap.cs" />
     <Compile Include="Mappings\Data\ReservationFeedMap.cs" />
     <Compile Include="Mappings\Data\RoleMap.cs" />
-    <Compile Include="Mappings\Data\RoomDataCleanMap.cs" />
-    <Compile Include="Mappings\Data\RoomDataMap.cs" />
+    <Compile Include="Mappings\Billing\RoomDataCleanMap.cs" />
+    <Compile Include="Mappings\Billing\RoomDataMap.cs" />
     <Compile Include="Mappings\Data\RoomMap.cs" />
     <Compile Include="Mappings\Data\ScriptMap.cs" />
     <Compile Include="Mappings\Data\ServiceLogMap.cs" />
     <Compile Include="Mappings\Data\ServiceTaskMap.cs" />
     <Compile Include="Mappings\Data\SpecialTopicMap.cs" />
     <Compile Include="Mappings\Data\StaffDirectoryMap.cs" />
-    <Compile Include="Mappings\Data\StoreDataCleanMap.cs" />
-    <Compile Include="Mappings\Data\StoreDataMap.cs" />
+    <Compile Include="Mappings\Billing\StoreDataCleanMap.cs" />
+    <Compile Include="Mappings\Billing\StoreDataMap.cs" />
     <Compile Include="Mappings\Data\TechnicalFieldMap.cs" />
-    <Compile Include="Mappings\Data\ToolDataCleanMap.cs" />
-    <Compile Include="Mappings\Data\ToolDataMap.cs" />
+    <Compile Include="Mappings\Billing\ToolDataCleanMap.cs" />
+    <Compile Include="Mappings\Billing\ToolDataMap.cs" />
     <Compile Include="Mappings\Email\MassEmailMap.cs" />
     <Compile Include="Mappings\Email\MessageMap.cs" />
     <Compile Include="Mappings\Email\RecipientMap.cs" />
     <Compile Include="Mappings\Feedback\EmailTemplateMap.cs" />
-    <Compile Include="Mappings\Feedback\FeedbackIssueClassMap.cs" />
+    <Compile Include="Mappings\Feedback\FeedbackIssueMap.cs" />
     <Compile Include="Mappings\Feedback\NegativeIssueMap.cs" />
     <Compile Include="Mappings\Feedback\PositiveIssueMap.cs" />
     <Compile Include="Mappings\Inventory\CategoryMap.cs" />
@@ -309,7 +628,6 @@
     <Compile Include="Mappings\Inventory\InventoryTypeMap.cs" />
     <Compile Include="Mappings\Inventory\ItemInventoryLocationMap.cs" />
     <Compile Include="Mappings\Inventory\ItemInventoryTypeMap.cs" />
-    <Compile Include="Mappings\Inventory\ItemMap.cs" />
     <Compile Include="Mappings\Inventory\ItemUpdateMap.cs" />
     <Compile Include="Mappings\Inventory\LabelLocationMap.cs" />
     <Compile Include="Mappings\Inventory\LabelQueueMap.cs" />
@@ -389,11 +707,11 @@
     <Compile Include="Mappings\Store\StoreOrderDetailMap.cs" />
     <Compile Include="Mappings\Store\StoreOrderMap.cs" />
     <Compile Include="Mappings\Store\VendorPackageMap.cs" />
-    <Compile Include="ModelFactory\Injections\ExtendedFlatLoopInjection.cs" />
-    <Compile Include="ModelFactory\Injections\NullableInjection.cs" />
-    <Compile Include="ModelFactory\ModelBuilder.cs" />
-    <Compile Include="ModelFactory\ValueInjecterModelFactory.cs" />
-    <Compile Include="Serialization\NHibernateContractResovler.cs" />
+    <Compile Include="DataAccess\ModelFactory\Injections\ExtendedFlatLoopInjection.cs" />
+    <Compile Include="DataAccess\ModelFactory\Injections\NullableInjection.cs" />
+    <Compile Include="DataAccess\ModelFactory\ModelBuilder.cs" />
+    <Compile Include="DataAccess\ModelFactory\ValueInjecterModelFactory.cs" />
+    <Compile Include="Utility\Serialization\NHibernateContractResovler.cs" />
     <Compile Include="DataAccess\NHibernateDataAccess.cs" />
     <Compile Include="DataAccess\NHibernateSession.cs" />
     <Compile Include="DataAccess\NHibernateUnitOfWork.cs" />
@@ -405,13 +723,12 @@
     <Compile Include="Reporting\ClientDatabaseReport.cs" />
     <Compile Include="Reporting\ToolUtilizationDetail.cs" />
     <Compile Include="Reporting\ToolUtilizationReport.cs" />
-    <Compile Include="Reporting\UserUsageSummary.cs" />
-    <Compile Include="DataAccess\SchedulerRepository.cs" />
-    <Compile Include="Serialization\JsonSerializer.cs" />
-    <Compile Include="Serialization\SerializationService.cs" />
-    <Compile Include="Serialization\SerializationUtility.cs" />
-    <Compile Include="Serialization\TimeSpanConverter.cs" />
-    <Compile Include="Serialization\XmlSerializer.cs" />
+    <Compile Include="Reporting\UserUsageSummaryReport.cs" />
+    <Compile Include="Utility\Serialization\JsonSerializer.cs" />
+    <Compile Include="Utility\Serialization\SerializationUtility.cs" />
+    <Compile Include="Utility\Serialization\NewtonsoftJsonHelper.cs" />
+    <Compile Include="Utility\Serialization\TimeSpanConverter.cs" />
+    <Compile Include="Utility\Serialization\XmlSerializer.cs" />
     <Compile Include="DataAccess\SessionLog.cs" />
     <Compile Include="DataAccess\SessionManager.cs" />
     <Compile Include="ServiceMiddleware.cs" />
@@ -426,20 +743,20 @@
     <None Include="app.config" />
     <None Include="OrgInfoBaseMapClassDiagram.cd" />
     <None Include="packages.config" />
+    <None Include="Repository\Design\Data.cd" />
+    <None Include="Repository\Design\OrgInfoBaseClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Mappings\Billing\Xml\NamedQueries.hbm.xml" />
     <EmbeddedResource Include="Mappings\Control\Xml\NamedQueries.hbm.xml" />
     <EmbeddedResource Include="Mappings\Data\Xml\NamedQueries.hbm.xml" />
     <EmbeddedResource Include="Mappings\Ordering\Xml\NamedQueries.hbm.xml" />
-    <EmbeddedResource Include="Mappings\Scheduler\Xml\NamedQueries.hbm.xml" />
+    <EmbeddedResource Include="Mappings\Scheduler\Xml\NamedQueries.hbm.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <Content Include="Reporting\_reports.js" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LNF.Models\LNF.Models.csproj">
-      <Project>{98c7f73d-ef9d-4a87-8b79-a1208085cfbd}</Project>
-      <Name>LNF.Models</Name>
-    </ProjectReference>
     <ProjectReference Include="..\LNF\LNF.csproj">
       <Project>{e3b73410-869b-4ba2-99ac-ad6708a27ade}</Project>
       <Name>LNF</Name>
