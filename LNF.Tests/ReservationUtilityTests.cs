@@ -10,13 +10,15 @@ namespace LNF.Tests
     [TestClass]
     public class ReservationUtilityTests
     {
+        private IProvider _provider;
         private DependencyResolver _resolver;
 
         [TestInitialize]
         public void Setup()
         {
             _resolver = new ThreadStaticResolver();
-            ServiceProvider.Setup(_resolver.GetInstance<IProvider>());
+            _provider = _resolver.GetInstance<IProvider>();
+            ServiceProvider.Setup(_provider);
         }
 
         [TestMethod]
@@ -26,7 +28,7 @@ namespace LNF.Tests
             {
                 var items = ServiceProvider.Current.Scheduler.Reservation.SelectPastUnstarted().Where(x => x.ReservationID == 964556).ToList(); //new ReservationItem { ReservationID = 952692 };
                 Assert.IsTrue(items.Count == 1);
-                Reservations.Create(DateTime.Now).HandleUnstartedReservations(items);
+                Reservations.Create(_provider, DateTime.Now).HandleUnstartedReservations(items);
             }
         }
 
@@ -48,7 +50,7 @@ namespace LNF.Tests
                 var reservationId = 966238;
                 var items = ServiceProvider.Current.Scheduler.Reservation.SelectAutoEnd().Where(x => x.ReservationID == reservationId).ToList();
                 Assert.IsTrue(items.Count == 1);
-                Reservations.Create(DateTime.Now).HandleAutoEndReservations(items);
+                Reservations.Create(_provider, DateTime.Now).HandleAutoEndReservations(items);
             }
         }
 
