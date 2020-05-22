@@ -11,6 +11,11 @@ namespace OnlineServices.Api.Scheduler
             throw new NotImplementedException();
         }
 
+        public IProcessInfo GetProcessInfo(int processInfoId)
+        {
+            throw new NotImplementedException();
+        }
+
         public IProcessInfoLine GetProcessInfoLine(int processInfoLineId)
         {
             throw new NotImplementedException();

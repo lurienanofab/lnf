@@ -1013,6 +1013,54 @@ namespace LNF.Impl.Data
             return result;
         }
 
+        public IMessengerMessage CreateMessage(int clientId, string subject, string body, int parentId, bool disableReply, bool exclusive, bool acknowledgeRequired, bool blockAccess, int accessCutoff)
+        {
+            MessengerMessage mm = new MessengerMessage
+            {
+                ClientID = clientId,
+                Subject = subject,
+                Body = body,
+                ParentID = parentId,
+                Created = DateTime.Now,
+                Status = "Draft",
+                DisableReply = disableReply,
+                Exclusive = exclusive,
+                AcknowledgeRequired = acknowledgeRequired,
+                BlockAccess = blockAccess,
+                AccessCutoff = accessCutoff
+            };
+
+            Session.Save(mm);
+
+            return mm;
+        }
+
+        public void SendMessage(int messageId, int[] recipients)
+        {
+            var message = Require<MessengerMessage>(messageId);
+            message.Sent = DateTime.Now;
+            message.Status = "Sent";
+            Session.Update(message);
+            foreach (int cid in recipients)
+            {
+                MessengerRecipient mr = new MessengerRecipient
+                {
+                    ClientID = cid,
+                    MessageID = message.MessageID,
+                    Folder = "Inbox",
+                    Received = DateTime.Now,
+                    Acknowledged = null,
+                    AccessCount = 0
+                };
+                Session.Save(mr);
+            }
+        }
+
+        public IEnumerable<IMessengerRecipient> GetMessages(int clientId, string folder)
+        {
+            return Session.Query<MessengerRecipient>().Where(x => x.ClientID == clientId && x.Folder == folder && x.Acknowledged == null).ToList();
+        }
+
         private Client NewClient(string username, string password, string lname, string fname, ClientPrivilege privs, bool active)
         {
             var result = new Client()

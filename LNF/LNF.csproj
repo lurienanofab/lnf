@@ -158,6 +158,8 @@
     <Compile Include="DataAccess\IUnitOfWork.cs" />
     <Compile Include="DataAccess\IUnitOfWorkAdapter.cs" />
     <Compile Include="Data\Clients.cs" />
+    <Compile Include="Data\IMessengerMessage.cs" />
+    <Compile Include="Data\IMessengerRecipient.cs" />
     <Compile Include="DynamicDictionary.cs" />
     <Compile Include="Feedback\Enums.cs" />
     <Compile Include="Feedback\IFeedbackIssue.cs" />

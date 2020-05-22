@@ -9,7 +9,7 @@ namespace LNF.Impl.Mappings.Data
         {
             Id(x => x.MessageID);
             Map(x => x.ParentID);
-            References(x => x.Client);
+            Map(x => x.ClientID);
             Map(x => x.Status);
             Map(x => x.Subject);
             Map(x => x.Body);

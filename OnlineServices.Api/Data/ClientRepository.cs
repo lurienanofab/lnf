@@ -354,5 +354,20 @@ namespace OnlineServices.Api.Data
         {
             throw new NotImplementedException();
         }
+
+        public IMessengerMessage CreateMessage(int clientId, string subject, string body, int parentId, bool disableReply, bool exclusive, bool acknowledgeRequired, bool blockAccess, int accessCutoff)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SendMessage(int messageId, int[] recipients)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IMessengerRecipient> GetMessages(int clientId, string folder)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

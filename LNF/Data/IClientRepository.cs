@@ -77,5 +77,8 @@ namespace LNF.Data
         IStaffDirectory GetStaffDirectory(string userName);
         IEnumerable<IAccount> GetActiveAccounts(int clientId);
         IEnumerable<IAccount> GetActiveAccounts(int clientId, DateTime sd, DateTime ed);
+        IMessengerMessage CreateMessage(int clientId, string subject, string body, int parentId, bool disableReply, bool exclusive, bool acknowledgeRequired, bool blockAccess, int accessCutoff);
+        void SendMessage(int messageId, int[] recipients);
+        IEnumerable<IMessengerRecipient> GetMessages(int clientId, string folder);
     }
 }

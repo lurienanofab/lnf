@@ -8,8 +8,8 @@ namespace LNF.Impl.Mappings.Data
         internal MessengerRecipientMap()
         {
             Id(x => x.RecipientID);
-            References(x => x.Message);
-            References(x => x.Client);
+            Map(x => x.MessageID);
+            Map(x => x.ClientID);
             Map(x => x.Folder);
             Map(x => x.Received);
             Map(x => x.Acknowledged);
