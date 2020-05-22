@@ -277,7 +277,7 @@ namespace LNF.Impl.Billing
                 .Where(x =>
                     x.ActualEndDateTime != null &&
                     ((x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd)))
-                .CreateModels<IReservation>();
+                .ToList();
 
             var result = DataRaw(sd, query);
 

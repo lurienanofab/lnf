@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using LNF.PhysicalAccess;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -67,6 +68,30 @@ namespace LNF.Impl.PhysicalAccess
             if (parameters != null)
                 foreach (var kvp in parameters)
                     cmd.Parameters.AddWithValue(kvp.Key, kvp.Value);
+        }
+
+        public IEnumerable<Badge> GetCurrentlyInArea(string alias)
+        {
+            string sql = "SELECT ID, BADGE_CLIENTID" +
+                ", BADGE_SSEL_UNAME, LNAME" +
+                ", FNAME, ISSUE_DATE" +
+                ", EXPIRE_DATE, EVENT_TIME" +
+                ", CARD_NO, EVENT_DESCRP" +
+                ", AREA_NAME, ALT_DESCRP " +
+                "FROM LNF.dbo.UsersInLab " +
+                "WHERE AREA_NAME = ISNULL(@AreaName, AREA_NAME) " +
+                "ORDER BY AREA_NAME, EVENT_TIME";
+
+            var area = Utility.GetAreaName(alias);
+
+            var dt = FillDataTable(sql, new Dictionary<string, object>
+            {
+                ["AreaName"] = Utility.DBNullIf(area, string.IsNullOrEmpty(area))
+            });
+
+            IList<Badge> result = Utility.CreateBadges(dt);
+
+            return result;
         }
     }
 }

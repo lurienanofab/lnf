@@ -14,9 +14,9 @@ namespace LNF.Web
 {
     public static class ListItemCollectionExtentions
     {
-        public static void LoadPrivs(this ListItemCollection items)
+        public static void LoadPrivs(this ListItemCollection items, IProvider provider)
         {
-            var privs = ServiceProvider.Current.Data.Client.GetPrivs().ToList();
+            var privs = provider.Data.Client.GetPrivs().ToList();
 
             foreach (var p in privs)
             {
@@ -81,8 +81,6 @@ namespace LNF.Web
 
     public static class HttpContextBaseExtensions
     {
-        public static IClient CurrentUser(this HttpContextBase context) => CurrentUser(context, ServiceProvider.Current);
-
         public static IClient CurrentUser(this HttpContextBase context, IProvider provider)
         {
             if (context.Items["CurrentUser"] == null)
@@ -114,27 +112,27 @@ namespace LNF.Web
         /// <summary>
         /// Ensures that the current session contains data for the authenticated user.
         /// </summary>
-        public static IClient CheckSession(this HttpContextBase context)
+        public static IClient CheckSession(this HttpContextBase context, IProvider provider)
         {
             IClient model = null;
 
             if (context.User.Identity.IsAuthenticated)
             {
-                model = context.CurrentUser();
+                model = context.CurrentUser(provider);
             }
             else
             {
                 // this provides a secret backdoor mechanism for logging in by providing the parameter
                 // cid in the querystring, no password required (!) - seems like a very bad idea - maybe
                 // this was a debugging thing that wasn't removed? added IsProduction check to be safe
-                if (!ServiceProvider.Current.IsProduction())
+                if (!provider.IsProduction())
                 {
                     var qs = context.Request.QueryString;
                     if (qs.AllKeys.Contains("cid"))
                     {
                         if (int.TryParse(qs["cid"], out int cid))
                         {
-                            model = ServiceProvider.Current.Data.Client.GetClient(cid);
+                            model = provider.Data.Client.GetClient(cid);
                             if (model != null)
                             {
                                 var user = new GenericPrincipal(new GenericIdentity(model.UserName), model.Roles());
@@ -146,10 +144,10 @@ namespace LNF.Web
                 }
             }
 
-            return context.CheckSession(model);
+            return context.CheckSession(provider, model);
         }
 
-        public static IClient CheckSession(this HttpContextBase context, IClient client)
+        public static IClient CheckSession(this HttpContextBase context, IProvider provider, IClient client)
         {
             // at this point the client object still might be null because unauthenticated requests are allowed in some cases
             // and we should now check the session UserName value (if client is null then default values will be used)
@@ -182,7 +180,7 @@ namespace LNF.Web
                 context.RemoveCacheData();
                 context.RemoveAllSessionValues();
 
-                result = ServiceProvider.Current.Data.Client.GetClient(username);
+                result = provider.Data.Client.GetClient(username);
 
                 context.Session[SessionKeys.CurrentUser] = result; //might be null, that's ok
                 context.Session[SessionKeys.Cache] = Guid.NewGuid().ToString("n");

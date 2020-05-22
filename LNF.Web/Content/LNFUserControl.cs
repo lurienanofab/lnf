@@ -1,20 +1,29 @@
-﻿using System.Web;
+﻿using LNF.Data;
+using System;
+using System.Web;
 using System.Web.UI;
 
 namespace LNF.Web.Content
 {
     public class LNFUserControl : UserControl
     {
-        public LNFUserControl()
-        {
-            ContextBase = new HttpContextWrapper(Context);
-        }
+        public IProvider Provider => LNFPage.Provider;
 
-        public HttpContextBase ContextBase { get; }
+        public HttpContextBase ContextBase => LNFPage.ContextBase;
 
-        public new LNFPage Page
+        public IClient CurrentUser => LNFPage.CurrentUser;
+
+        public LNFPage LNFPage
         {
-            get { return (LNFPage)base.Page; }
+            get
+            {
+                if (Page == null) return null;
+
+                if (typeof(LNFPage).IsAssignableFrom(Page.GetType()))
+                    return (LNFPage)Page;
+
+                throw new Exception($"Cannot convert {Page.GetType().Name} to LNFPage.");
+            }
         }
     }
 }

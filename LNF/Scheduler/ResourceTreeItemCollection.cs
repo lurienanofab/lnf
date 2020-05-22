@@ -7,23 +7,29 @@ using System.Linq;
 
 namespace LNF.Scheduler
 {
-    public class ResourceTreeItemCollection : IEnumerable<IResourceTree>
+    public abstract class TreeItemCollection
     {
-        private IEnumerable<IResourceTree> _items;
+        protected IEnumerable<IResourceTree> _resources;
 
-        public ResourceTreeItemCollection(IEnumerable<IResourceTree> items)
+        public TreeItemCollection(IEnumerable<IResourceTree> resources)
         {
-            _items = items;
+            //_resources = provider.Scheduler.Resource.GetResourceTree(client.ClientID);
+            _resources = resources;
         }
 
-        public int Count
+        public int Count => _resources.Count();
+
+        public IEnumerable<IResourceTree> Resources() => _resources.OrderBy(x => x.LabID).ToList();
+
+        public IResource GetResource(int resourceId)
         {
-            get { return _items.Count(); }
+            var result = GetResourceTree(resourceId);
+            return result;
         }
 
         public IEnumerable<IBuilding> Buildings()
         {
-            var distinct = _items.Select(x => new
+            var distinct = Resources().Select(x => new
             {
                 x.BuildingID,
                 x.BuildingName,
@@ -44,7 +50,7 @@ namespace LNF.Scheduler
 
         public IEnumerable<ILab> Labs()
         {
-            var distinct = _items.Select(x => new
+            var distinct = Resources().Select(x => new
             {
                 x.LabID,
                 x.LabName,
@@ -73,7 +79,7 @@ namespace LNF.Scheduler
 
         public IEnumerable<IProcessTech> ProcessTechs()
         {
-            var distinct = _items.Select(x => new
+            var distinct = Resources().Select(x => new
             {
                 x.ProcessTechID,
                 x.ProcessTechName,
@@ -111,21 +117,9 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public IEnumerable<IResourceTree> Resources()
+        public IResourceTree GetResourceTree(int resourceId)
         {
-            var result = _items.OrderBy(x => x.LabID).ToList();
-            return result;
-        }
-
-        public IResource GetResource(int resourceId)
-        {
-            var result = Find(resourceId);
-            return result;
-        }
-
-        public IResourceTree Find(int resourceId)
-        {
-            var result = _items.FirstOrDefault(x => x.ResourceID == resourceId);
+            var result = Resources().FirstOrDefault(x => x.ResourceID == resourceId);
             if (result == null)
                 throw new Exception($"Could not find a resource with ResourceID {resourceId}.");
             return result;
@@ -157,7 +151,7 @@ namespace LNF.Scheduler
 
         public IActivity GetCurrentActivity(int resourceId)
         {
-            var item = _items.FirstOrDefault(x => x.ResourceID == resourceId);
+            var item = Resources().FirstOrDefault(x => x.ResourceID == resourceId);
             if (item == null) return null;
             if (item.CurrentActivityID == 0) return null;
             var result = CacheManager.Current.GetActivity(item.CurrentActivityID);
@@ -166,21 +160,34 @@ namespace LNF.Scheduler
 
         public IClient GetCurrentClient(int resourceId)
         {
-            var item = _items.FirstOrDefault(x => x.ResourceID == resourceId);
+            var item = Resources().FirstOrDefault(x => x.ResourceID == resourceId);
             if (item == null) return null;
             if (item.CurrentClientID == 0) return null;
             var result = ServiceProvider.Current.Data.Client.GetClient(item.CurrentClientID);
             return result;
         }
+    }
 
-        public IEnumerator<IResourceTree> GetEnumerator()
+    public class LocationTreeItemCollection : TreeItemCollection
+    {
+        private readonly IEnumerable<ILabLocation> _labLocations;
+        private readonly IEnumerable<IResourceLabLocation> _resourceLabLocations;
+
+        public LocationTreeItemCollection(IEnumerable<IResourceTree> resources, IEnumerable<ILabLocation> labLocations, IEnumerable<IResourceLabLocation> resourceLabLocations) : base(resources)
         {
-            return _items.GetEnumerator();
+            _labLocations = labLocations ?? throw new ArgumentNullException("labLocations");
+            _resourceLabLocations = resourceLabLocations ?? throw new ArgumentNullException("resourceLabLocations");
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        public IEnumerable<ILabLocation> GetLabLocations() => _labLocations;
+
+        public IEnumerable<ILabLocation> GetLabLocations(int labId) => GetLabLocations().Where(x => x.LabID == labId);
+
+        public IEnumerable<IResourceLabLocation> GetResourceLabLocations() => _resourceLabLocations;
+    }
+
+    public class ResourceTreeItemCollection : TreeItemCollection
+    {
+        public ResourceTreeItemCollection(IEnumerable<IResourceTree> resources) : base(resources) { }
     }
 }

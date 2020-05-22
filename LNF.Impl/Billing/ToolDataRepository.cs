@@ -34,7 +34,7 @@ namespace LNF.Impl.Billing
         public IReservation GetReservation(IToolData item)
         {
             if (item.ReservationID.HasValue)
-                return Require<Reservation>(item.ReservationID.Value).CreateModel<IReservation>();
+                return Require<ReservationInfo>(item.ReservationID.Value);
             else
                 return null;
         }

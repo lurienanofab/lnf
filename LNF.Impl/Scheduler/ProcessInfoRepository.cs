@@ -53,9 +53,10 @@ namespace LNF.Impl.Scheduler
             };
         }
 
-        public IEnumerable<IProcessInfoLine> GetProcessInfoLines(int processInfoId)
+        public IEnumerable<IProcessInfoLine> GetProcessInfoLines(int resourceId)
         {
-            var query = Session.Query<ProcessInfo>().Where(x => x.ProcessInfoID == processInfoId);
+            var query = Session.Query<ProcessInfo>().Where(x => x.Resource.ResourceID == resourceId);
+            //var query = Session.Query<ProcessInfo>().Where(x => x.ProcessInfoID == processInfoId);
 
             var result = query.Join(Session.Query<ProcessInfoLine>(),
                 o => o.ProcessInfoID,
@@ -319,6 +320,28 @@ namespace LNF.Impl.Scheduler
                 var rpi = Require<ReservationProcessInfo>(item.ReservationProcessInfoID);
                 Session.Delete(rpi);
             }
+        }
+
+        public IProcessInfo GetProcessInfo(int processInfoId)
+        {
+            var pi = Require<ProcessInfo>(processInfoId);
+
+            var result = new ProcessInfoItem
+            {
+                AllowNone = pi.AllowNone,
+                Order = pi.Order,
+                ParamName = pi.ParamName,
+                ProcessInfoID = pi.ProcessInfoID,
+                ProcessInfoName = pi.ProcessInfoName,
+                RequireSelection = pi.RequireSelection,
+                RequireValue = pi.RequireValue,
+                ResourceID = pi.Resource.ResourceID,
+                ResourceName = pi.Resource.ResourceName,
+                Special = pi.Special,
+                ValueName = pi.ValueName
+            };
+
+            return result;
         }
     }
 }

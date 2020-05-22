@@ -14,6 +14,7 @@ namespace LNF.Web.Mvc
         public ClientPrivilege RequiredPrivilege { get; set; }
         public int[] AllowedClientIDs { get; set; }
         public string AccessDeniedViewName { get; }
+        public IProvider Provider { get; }
 
         /// <summary>
         /// Authorizes requests using LNF privileges and/or a list of LNF ClientIDs.
@@ -22,8 +23,10 @@ namespace LNF.Web.Mvc
         /// <param name="allowedClientIDs">An array of ClientID integers that are allowed access.</param>
         /// <param name="modelType">The model that will be passed to the view if access is denied. Defaults to LNF.Web.Mvc.AccessDeniedModel. The class must a have public contstructor that takes a single LNF.Data.ClientItem parameter.</param>
         /// <param name="accessDeniedViewName">The name of the view to display for unauthorized requests. Defaults to "AccessDenied". If null the request will redirect to the login page.</param>
-        public LNFAuthorizeAttribute(ClientPrivilege requiredPrivilege = 0, int[] allowedClientIDs = null, Type modelType = null, string accessDeniedViewName = "AccessDenied")
+        public LNFAuthorizeAttribute(IProvider provider, ClientPrivilege requiredPrivilege = 0, int[] allowedClientIDs = null, Type modelType = null, string accessDeniedViewName = "AccessDenied")
         {
+            Provider = provider;
+
             if (modelType != null && !modelType.IsSubclassOf(typeof(BaseModel)))
                 throw new ArgumentException("The type must inherit LNF.Web.Mvc.BaseModel.", "modelType");
 
@@ -46,7 +49,7 @@ namespace LNF.Web.Mvc
                     string username = splitter[0];
                     string password = splitter[1];
 
-                    var c = ServiceProvider.Current.Data.Client.Login(username, password);
+                    var c = Provider.Data.Client.Login(username, password);
                     if (c != null && c.ClientActive)
                         httpContext.User = new GenericPrincipal(new GenericIdentity(c.UserName, "Basic"), null);
                 }
@@ -57,7 +60,7 @@ namespace LNF.Web.Mvc
             if (RequiredPrivilege == 0)
                 result = true;
             else
-                result = PrivCheck(httpContext.CurrentUser());
+                result = PrivCheck(httpContext.CurrentUser(Provider));
 
             return result;
         }
@@ -89,7 +92,7 @@ namespace LNF.Web.Mvc
                 {
                     ViewResult view = new ViewResult() { View = result.View };
                     var model = (BaseModel)Activator.CreateInstance(ModelType);
-                    model.CurrentUser = filterContext.HttpContext.CurrentUser();
+                    model.CurrentUser = filterContext.HttpContext.CurrentUser(Provider);
                     view.ViewData = new ViewDataDictionary(model);
                     view.ViewBag.ReturnUrl = filterContext.RequestContext.HttpContext.Request.RawUrl;
                     filterContext.Result = view;

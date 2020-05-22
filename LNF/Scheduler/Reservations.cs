@@ -12,16 +12,17 @@ namespace LNF.Scheduler
         public static readonly DateTime MinReservationBeginDate = new DateTime(1900, 1, 1);
         public static readonly DateTime MaxReservationEndDate = new DateTime(3000, 1, 1);
 
-        public static Reservations Create(DateTime now) => new Reservations(now);
+        public static Reservations Create(IProvider provider, DateTime now) => new Reservations(provider, now);
 
-        private Reservations(DateTime now)
+        private Reservations(IProvider provider, DateTime now)
         {
+            Provider = provider;
             Now = now;
         }
 
+        public IProvider Provider { get; }
         public DateTime Now { get; }
-        public IProvider Provider => ServiceProvider.Current;
-
+        
         public static readonly ReservationState[] TruthTable = new[]
         {
             ReservationState.Other, ReservationState.Other, ReservationState.Other, ReservationState.Other,
@@ -95,9 +96,9 @@ namespace LNF.Scheduler
             // If Resource authorization type is rolling and the reserver is a regular user for the resource then reset reserver's expiration date
             int authLevel = 0, resourceClientId = 0;
 
-            var resourceClients = ServiceProvider.Current.Scheduler.Resource.GetResourceClients(item.ResourceID, client.ClientID);
+            var resourceClients = Provider.Scheduler.Resource.GetResourceClients(item.ResourceID, clientId: client.ClientID);
 
-            if(resourceClients.Any())
+            if (resourceClients.Any())
             {
                 var rc = resourceClients.First();
                 authLevel = Convert.ToInt32(rc.AuthLevel);
@@ -107,7 +108,7 @@ namespace LNF.Scheduler
             if (item.AuthState && (authLevel == (int)ClientAuthLevel.AuthorizedUser))
             {
                 DateTime expiration = Now.AddMonths(item.AuthDuration);
-                ServiceProvider.Current.Scheduler.Resource.UpdateExpiration(resourceClientId, expiration);
+                Provider.Scheduler.Resource.UpdateExpiration(resourceClientId, expiration);
             }
 
             // Turn Interlock On
@@ -499,7 +500,7 @@ namespace LNF.Scheduler
                         throw new Exception($"Not eligible for auto-end: Reservation.AutoEnd = {rsv.AutoEnd}, Resource.AutoEnd = {rsv.ResourceAutoEnd}");
 
                     End(rsv, actualEndDateTime, -1, -1);
-                    ServiceProvider.Current.Scheduler.Reservation.AddAutoEndLog(rsv, "autoend");
+                    Provider.Scheduler.Reservation.AddAutoEndLog(rsv, "autoend");
                     result.Data.Add($"Ended auto-end reservation {rsv.ReservationID} for resource {rsv.ResourceID}");
                 }
                 catch (Exception ex)
@@ -532,7 +533,7 @@ namespace LNF.Scheduler
 
                 //Reset resource state
                 Resources.UpdateState(rsv.ResourceID, ResourceState.Online, string.Empty);
-                ServiceProvider.Current.Scheduler.Reservation.AddAutoEndLog(rsv, "repair");
+                Provider.Scheduler.Reservation.AddAutoEndLog(rsv, "repair");
                 result.Data.Add($"Set ResourceID {rsv.ResourceID} online");
             }
 
@@ -589,7 +590,7 @@ namespace LNF.Scheduler
                 if (endReservation)
                 {
                     Provider.Scheduler.Reservation.EndPastUnstarted(rsv.ReservationID, newEndDateTime, -1);
-                    ServiceProvider.Current.Scheduler.Reservation.AddAutoEndLog(rsv, "unstarted");
+                    Provider.Scheduler.Reservation.AddAutoEndLog(rsv, "unstarted");
                     result.Data.Add($"Unstarted reservation {rsv.ReservationID} was ended, KeepAlive = {rsv.KeepAlive}, Reservation.AutoEnd = {rsv.AutoEnd}, Resource.AutoEnd = {rsv.ResourceAutoEnd}, ed = '{ed}'");
 
                     DateTime? nextBeginDateTime = OpenResSlot(rsv.ResourceID, TimeSpan.FromMinutes(rsv.ReservFence), TimeSpan.FromMinutes(rsv.MinReservTime), oldEndDateTime);
@@ -715,7 +716,7 @@ namespace LNF.Scheduler
         /// <summary>
         /// Compose the tooltip text for the specified reservation
         /// </summary>
-        public static string GetReservationToolTip(IReservation item, ReservationState state)
+        public string GetReservationToolTip(IReservation item, ReservationState state)
         {
             // Display Reservation info
             string toolTip = string.Empty;
@@ -760,7 +761,7 @@ namespace LNF.Scheduler
             }
 
             // Reservation Process Info
-            var processInfos = ServiceProvider.Current.Scheduler.ProcessInfo.GetReservationProcessInfos(item.ReservationID);
+            var processInfos = Provider.Scheduler.ProcessInfo.GetReservationProcessInfos(item.ReservationID);
 
             if (processInfos.Count() > 0)
             {
@@ -772,7 +773,7 @@ namespace LNF.Scheduler
             }
 
             // Reservation Invitees
-            var invitees = ServiceProvider.Current.Scheduler.Reservation.GetInvitees(item.ReservationID);
+            var invitees = Provider.Scheduler.Reservation.GetInvitees(item.ReservationID);
 
             if (invitees.Count() > 0)
             {

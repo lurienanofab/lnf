@@ -37,6 +37,11 @@ namespace LNF.Scheduler
             );
         }
 
+        public static string CleanResourceName(string resourceName)
+        {
+            return resourceName.TrimStart('_').Trim();
+        }
+
         /// <summary>
         /// Sets the start and end time slot boundaries
         /// </summary>

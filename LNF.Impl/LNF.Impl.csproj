@@ -152,6 +152,7 @@
     <Compile Include="Mail\InvalidEmailManager.cs" />
     <Compile Include="Mappings\Scheduler\AvailableInviteeMap.cs" />
     <Compile Include="Mappings\Scheduler\LabLocationMap.cs" />
+    <Compile Include="Mappings\Scheduler\ReservationInfoBaseMap.cs" />
     <Compile Include="Mappings\Scheduler\ResourceLabLocationMap.cs" />
     <Compile Include="Mappings\Store\ItemMap.cs" />
     <Compile Include="Authorization\AuthorizationService.cs" />
@@ -388,13 +389,11 @@
     <Compile Include="Repository\Reporting\UserUsageCharge.cs" />
     <Compile Include="Repository\RepositoryBase.cs" />
     <Compile Include="Repository\Scheduler\Activity.cs" />
-    <Compile Include="Repository\Scheduler\ActivityAuthType.cs" />
     <Compile Include="Repository\Scheduler\AuthLevel.cs" />
     <Compile Include="Repository\Scheduler\AutoEndLog.cs" />
     <Compile Include="Repository\Scheduler\AvailableInvitee.cs" />
     <Compile Include="Repository\Scheduler\Building.cs" />
     <Compile Include="Repository\Scheduler\ClientSetting.cs" />
-    <Compile Include="Repository\Scheduler\GlobalActivityAuth.cs" />
     <Compile Include="Repository\Scheduler\Kiosk.cs" />
     <Compile Include="Repository\Scheduler\Lab.cs" />
     <Compile Include="Repository\Scheduler\LabLocation.cs" />
@@ -412,6 +411,7 @@
     <Compile Include="Repository\Scheduler\ReservationGroup.cs" />
     <Compile Include="Repository\Scheduler\ReservationHistory.cs" />
     <Compile Include="Repository\Scheduler\ReservationInfo.cs" />
+    <Compile Include="Repository\Scheduler\ReservationInfoBase.cs" />
     <Compile Include="Repository\Scheduler\ReservationInvitee.cs" />
     <Compile Include="Repository\Scheduler\ReservationInviteeInfo.cs" />
     <Compile Include="Repository\Scheduler\ReservationLog.cs" />
@@ -665,13 +665,11 @@
     <Compile Include="Mappings\Reporting\TemplateMap.cs" />
     <Compile Include="Mappings\Reporting\ToolUtilizationMap.cs" />
     <Compile Include="Mappings\Reporting\UserUsageChargeMap.cs" />
-    <Compile Include="Mappings\Scheduler\ActivityAuthTypeMap.cs" />
     <Compile Include="Mappings\Scheduler\ActivityMap.cs" />
     <Compile Include="Mappings\Scheduler\AuthLevelMap.cs" />
     <Compile Include="Mappings\Scheduler\AutoEndLogMap.cs" />
     <Compile Include="Mappings\Scheduler\BuildingMap.cs" />
     <Compile Include="Mappings\Scheduler\ClientSettingMap.cs" />
-    <Compile Include="Mappings\Scheduler\GlobalActivityAuthMap.cs" />
     <Compile Include="Mappings\Scheduler\KioskMap.cs" />
     <Compile Include="Mappings\Scheduler\LabMap.cs" />
     <Compile Include="Mappings\Scheduler\LogPropertyMap.cs" />

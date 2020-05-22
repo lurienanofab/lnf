@@ -26,11 +26,12 @@ namespace LNF.Impl.Billing
             var dtExtract = Extract();
             _result.RowsExtracted = dtExtract.Rows.Count;
 
-            if (_result.RowsExtracted > 0)
-            {
-                var dtTransform = Transform(dtExtract);
+            var dtTransform = Transform(dtExtract);
+
+            if (dtTransform.Rows.Count > 0)
                 _result.RowsLoaded = Load(dtTransform);
-            }
+            else
+                _result.RowsLoaded = 0;
 
             return _result;
         }

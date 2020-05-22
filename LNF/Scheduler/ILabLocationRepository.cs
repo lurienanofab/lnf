@@ -10,6 +10,7 @@ namespace LNF.Scheduler
         IEnumerable<ILabLocation> GetLabLocations(int labId);
         IResourceLabLocation GetResourceLabLocation(int resourceLabLocationId);
         IResourceLabLocation GetResourceLabLocationByResource(int resourceId);
+        IEnumerable<IResourceLabLocation> GetResourceLabLocations();
         IEnumerable<IResourceLabLocation> GetResourceLabLocations(int labLocationId);
         IEnumerable<IResource> GetResources(int labLocationId);
     }

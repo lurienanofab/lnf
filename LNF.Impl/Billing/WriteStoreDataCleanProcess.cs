@@ -54,7 +54,6 @@ namespace LNF.Impl.Billing
                 AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID);
                 var result = cmd.ExecuteNonQuery();
                 return result;
-
             }
         }
 

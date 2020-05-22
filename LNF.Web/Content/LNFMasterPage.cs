@@ -1,5 +1,6 @@
 ﻿using LNF.Authorization;
 using LNF.Data;
+using System;
 using System.Text;
 using System.Web;
 using System.Web.UI;
@@ -12,9 +13,21 @@ namespace LNF.Web.Content
         public virtual bool ShowMenu => true;
         public virtual bool AddScripts => true;
         public virtual bool AddStyles => true;
-        public new LNFPage Page => (LNFPage)base.Page;
         public PageAuthorization Authorization { get; }
-        public IClient CurrentUser => Page.CurrentUser;
+        public IClient CurrentUser => LNFPage.CurrentUser;
+
+        public LNFPage LNFPage
+        {
+            get
+            {
+                if (Page == null) return null;
+
+                if (typeof(LNFPage).IsAssignableFrom(Page.GetType()))
+                    return (LNFPage)Page;
+
+                throw new Exception($"Cannot convert {Page.GetType().Name} to LNFPage.");
+            }
+        }
 
         public LNFMasterPage()
         {

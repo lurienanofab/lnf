@@ -50,6 +50,11 @@ namespace LNF.Impl.Scheduler
             return Session.Query<ResourceLabLocation>().FirstOrDefault(x => x.ResourceID == resourceId);
         }
 
+        public IEnumerable<IResourceLabLocation> GetResourceLabLocations()
+        {
+            return Session.Query<ResourceLabLocation>().ToList();
+        }
+
         public IEnumerable<IResourceLabLocation> GetResourceLabLocations(int labLocationId)
         {
             return Session.Query<ResourceLabLocation>().Where(x => x.LabLocationID == labLocationId).ToList();

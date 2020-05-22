@@ -16,9 +16,9 @@ namespace LNF.Web.Mvc
 {
     public static class HtmlHelperExtensions
     {
-        public static IClient CurrentUser(this HtmlHelper helper)
+        public static IClient CurrentUser(this HtmlHelper helper, IProvider provider)
         {
-            return helper.ViewContext.HttpContext.CurrentUser();
+            return helper.ViewContext.HttpContext.CurrentUser(provider);
         }
 
         public static IHtmlString SiteMenu(this HtmlHelper helper, ClientItem client, string target = null)
@@ -29,7 +29,7 @@ namespace LNF.Web.Mvc
             return new HtmlString(Convert.ToString(helper.ViewContext.HttpContext.Session["SiteMenu"]));
         }
 
-        public static IHtmlString BootstrapMenu(this HtmlHelper helper, IEnumerable<DropDownMenuItem> items, string logoUrl = "", object htmlAttributes = null)
+        public static IHtmlString BootstrapMenu(this HtmlHelper helper, IProvider provider, IEnumerable<DropDownMenuItem> items, string logoUrl = "", object htmlAttributes = null)
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("<nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\">");
@@ -67,7 +67,7 @@ namespace LNF.Web.Mvc
             }
             sb.AppendLine("</ul>");
 
-            var currentUser = helper.CurrentUser();
+            var currentUser = helper.CurrentUser(provider);
 
             //right items
             sb.AppendLine("<ul class=\"nav navbar-nav navbar-right\">");
@@ -77,13 +77,13 @@ namespace LNF.Web.Mvc
                 sb.AppendLine(string.Format("<a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">{0} {1} <span class=\"caret\"></span></a>", currentUser.FName, currentUser.LName));
                 sb.AppendLine("<ul class=\"dropdown-menu\" role=\"menu\">");
                 sb.AppendLine(string.Format("<li><a href=\"{0}\">Preferences</a></li>", VirtualPathUtility.ToAbsolute("~/preferences")));
-                sb.AppendLine(string.Format("<li><a href=\"{0}\">Sign Out</a></li>", ServiceProvider.Current.LoginUrl()));
+                sb.AppendLine(string.Format("<li><a href=\"{0}\">Sign Out</a></li>", provider.LoginUrl()));
                 sb.AppendLine("</ul>");
                 sb.AppendLine("</li>");
             }
             else
             {
-                sb.AppendLine(string.Format("<li><a href=\"{0}\">Sign In</a></li>", ServiceProvider.Current.LoginUrl()));
+                sb.AppendLine(string.Format("<li><a href=\"{0}\">Sign In</a></li>", provider.LoginUrl()));
             }
             sb.AppendLine("</ul>");
 
@@ -107,9 +107,9 @@ namespace LNF.Web.Mvc
                 .GetHtml(columnSet);
         }
 
-        public static IHtmlString PageMenuLink(this HtmlHelper helper, string linkText, string actionName, string controllerName, string currentPage, ClientPrivilege requiredPriv = 0)
+        public static IHtmlString PageMenuLink(this HtmlHelper helper, IProvider provider, string linkText, string actionName, string controllerName, string currentPage, ClientPrivilege requiredPriv = 0)
         {
-            if (requiredPriv == 0 || helper.CurrentUser().HasPriv(requiredPriv))
+            if (requiredPriv == 0 || helper.CurrentUser(provider).HasPriv(requiredPriv))
                 return helper.ActionLink(linkText, actionName, controllerName, null, new { @class = "nav-menu-item" + ((currentPage == controllerName) ? " nav-selected" : string.Empty) });
             else
                 return new HtmlString(string.Empty);

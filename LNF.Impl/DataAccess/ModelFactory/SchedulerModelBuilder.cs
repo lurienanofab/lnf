@@ -1,5 +1,6 @@
 ﻿using LNF.Impl.Repository.Scheduler;
 using LNF.Scheduler;
+using Omu.ValueInjecter;
 using System.Linq;
 
 namespace LNF.Impl.DataAccess.ModelFactory
@@ -59,24 +60,17 @@ namespace LNF.Impl.DataAccess.ModelFactory
 
         private IReservationInvitee MapReservationInvitee(ReservationInvitee source)
         {
-            var result = new ReservationInviteeInfo
-            {
-                ReservationID = source.Reservation.ReservationID,
-                InviteeID = source.Invitee.ClientID,
-                BeginDateTime = source.Reservation.BeginDateTime,
-                EndDateTime = source.Reservation.EndDateTime,
-                ActualBeginDateTime = source.Reservation.ActualBeginDateTime,
-                ActualEndDateTime = source.Reservation.ActualEndDateTime,
-                IsStarted = source.Reservation.IsStarted,
-                IsActive = source.Reservation.IsActive,
-                ResourceID = source.Reservation.Resource.ResourceID,
-                ResourceName = source.Reservation.Resource.ResourceName,
-                LName = source.Invitee.LName,
-                FName = source.Invitee.FName,
-                Privs = source.Invitee.Privs,
-                Active = source.Invitee.Active,
-                Removed = false
-            };
+            var reservationInfo = Session.Get<ReservationInfo>(source.Reservation.ReservationID);
+
+            var result = new ReservationInviteeInfo();
+            result.InjectFrom(reservationInfo);
+
+            result.InviteeID = source.Invitee.ClientID;
+            result.InviteeLName = source.Invitee.LName;
+            result.InviteeLName = source.Invitee.FName;
+            result.InviteePrivs = source.Invitee.Privs;
+            result.InviteeActive = source.Invitee.Active;
+            result.Removed = false;
 
             return result;
         }

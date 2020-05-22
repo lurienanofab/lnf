@@ -8,8 +8,9 @@ namespace LNF.Web.Controls.Navigation
 {
     public class SiteMenu : WebControl
     {
+        [Inject] public IProvider Provider { get; set; }
         public HttpContextBase ContextBase { get; }
-        public IClient CurrentUser => ContextBase.CurrentUser();
+        public IClient CurrentUser => ContextBase.CurrentUser(Provider);
 
         public SiteMenu()
         {

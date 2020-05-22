@@ -1,4 +1,5 @@
 ﻿using LNF.Data;
+using System;
 using System.IO;
 using System.Web;
 using System.Web.UI;
@@ -20,9 +21,18 @@ namespace LNF.Web.Content
 
         public string FileName => Path.GetFileName(Request.PhysicalPath);
 
-        public new LNFMasterPage Master => (LNFMasterPage)base.Master;
+        public LNFMasterPage LNFMaster
+        {
+            get
+            {
+                if (Master == null) return null;
 
-        public new LNFPage Page => (LNFPage)base.Page;
+                if (typeof(LNFMasterPage).IsAssignableFrom(Master.GetType()))
+                    return (LNFMasterPage)Master;
+
+                throw new Exception($"Cannot convert {Master.GetType().Name} to LNFMasterPage.");
+            }
+        }
 
         public IClient CurrentUser
         {

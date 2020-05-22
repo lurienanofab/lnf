@@ -8,7 +8,7 @@ namespace LNF.Scheduler.Data
     /// <summary>
     /// A class for handling ResourceClient data using the System.Data namespace.
     /// </summary>
-    [Obsolete("What uses this?")]
+    [Obsolete("What uses this? Preferences.aspx.vb")]
     public static class ResourceClientData
     {
         /// <summary>

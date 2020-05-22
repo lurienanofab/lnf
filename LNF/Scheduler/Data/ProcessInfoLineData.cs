@@ -19,9 +19,9 @@ namespace LNF.Scheduler.Data
             return dt;
         }
 
-        public static DataTable SelectByProcessInfo(int processInfoId)
+        public static DataTable SelectByProcessInfo(int resourceId)
         {
-            var items = ServiceProvider.Current.Scheduler.ProcessInfo.GetProcessInfoLines(processInfoId);
+            var items = ServiceProvider.Current.Scheduler.ProcessInfo.GetProcessInfoLines(resourceId);
             var dt = CreateDataTable();
             FillDataTable(dt, items);
             return dt;

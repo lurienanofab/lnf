@@ -13,6 +13,9 @@ namespace LNF.Scheduler
 
     public static class RecurringReservationTransform
     {
+        // Fix this dependency
+        public static IProvider Provider => ServiceProvider.Current;
+
         /// <summary>
         /// Returns true if a new reservation is created.
         /// </summary>
@@ -92,7 +95,7 @@ namespace LNF.Scheduler
 
             if (!isOverlapped)
             {
-                var util = Reservations.Create(DateTime.Now);
+                var util = Reservations.Create(Provider, DateTime.Now);
                 var rsv = util.CreateReservation(data);
                 reservations.Add(rsv);
                 return true;
@@ -109,7 +112,7 @@ namespace LNF.Scheduler
             IList<IReservationInvitee> result;
 
             if (prev != null)
-                result = ServiceProvider.Current.Scheduler.Reservation.GetInvitees(prev.ReservationID).ToList();
+                result = Provider.Scheduler.Reservation.GetInvitees(prev.ReservationID).ToList();
             else
                 result = new List<IReservationInvitee>();
 
@@ -124,7 +127,7 @@ namespace LNF.Scheduler
             IList<IReservationProcessInfo> result;
 
             if (prev != null)
-                result = ServiceProvider.Current.Scheduler.ProcessInfo.GetReservationProcessInfos(prev.ReservationID).ToList();
+                result = Provider.Scheduler.ProcessInfo.GetReservationProcessInfos(prev.ReservationID).ToList();
             else
                 result = new List<IReservationProcessInfo>();
 
@@ -135,7 +138,7 @@ namespace LNF.Scheduler
         {
             foreach (var item in processInfos)
             {
-                ServiceProvider.Current.Scheduler.ProcessInfo
+                Provider.Scheduler.ProcessInfo
                     .AddReservationProcessInfo(reservationId, item.ProcessInfoLineID, item.Value, item.Special, item.RunNumber, item.ChargeMultiplier, item.Active);
             }
         }
@@ -144,13 +147,13 @@ namespace LNF.Scheduler
         {
             foreach (var item in invitees)
             {
-                ServiceProvider.Current.Scheduler.Reservation.AddInvitee(reservationId, item.InviteeID);
+                Provider.Scheduler.Reservation.AddInvitee(reservationId, item.InviteeID);
             }
         }
 
         public static IReservation GetPreviousRecurrence(int recurrenceId, int notReservationId = 0)
         {
-            return ServiceProvider.Current.Scheduler.Reservation.GetPreviousRecurrence(recurrenceId, notReservationId);
+            return Provider.Scheduler.Reservation.GetPreviousRecurrence(recurrenceId, notReservationId);
         }
 
         public static DateTime GetDate(DateTime period, int n, DayOfWeek dow)

@@ -11,10 +11,10 @@ namespace LNF.PhysicalAccess
         public bool IsOnKiosk { get; }
         public IEnumerable<Badge> CurrentlyInLab { get; }
         
-        public PhysicalAccessUtility(string kioskIp)
+        public PhysicalAccessUtility(IEnumerable<Badge> inlab, string kioskIp)
         {
             IsOnKiosk = Kiosks.IsOnKiosk(kioskIp);
-            CurrentlyInLab = ServiceProvider.Current.PhysicalAccess.GetCurrentlyInArea("all");
+            CurrentlyInLab = inlab;
         }
 
         /// <summary>

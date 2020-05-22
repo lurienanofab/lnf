@@ -218,26 +218,7 @@ namespace LNF.Impl.PhysicalAccess
 
         public IEnumerable<Badge> GetCurrentlyInArea(string alias)
         {
-            string sql = "SELECT ID, BADGE_CLIENTID" +
-                ", BADGE_SSEL_UNAME, LNAME" +
-                ", FNAME, ISSUE_DATE" +
-                ", EXPIRE_DATE, EVENT_TIME" +
-                ", CARD_NO, EVENT_DESCRP" +
-                ", AREA_NAME, ALT_DESCRP " +
-                "FROM LNF.dbo.UsersInLab " +
-                "WHERE AREA_NAME = ISNULL(@AreaName, AREA_NAME) " +
-                "ORDER BY AREA_NAME, EVENT_TIME";
-
-            var area = Utility.GetAreaName(alias);
-
-            var dt = Repository.Prowatch.FillDataTable(sql, new Dictionary<string, object>
-            {
-                ["AreaName"] = Utility.DBNullIf(area, string.IsNullOrEmpty(area))
-            });
-
-            IList<Badge> result = Utility.CreateBadges(dt);
-
-            return result;
+            return Repository.Prowatch.GetCurrentlyInArea(alias);
         }
 
         public IEnumerable<Event> GetEvents(DateTime sd, DateTime ed, int clientId = 0, int roomId = 0)

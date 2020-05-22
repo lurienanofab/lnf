@@ -68,35 +68,35 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual string GetAccountOrder() => AccountOrder ?? DefaultAccountOrder;
         public virtual bool IsValid() => ClientID != 0;
 
-        public virtual ResourceTreeItemCollection GetResourceTree()
+        public virtual ResourceTreeItemCollection GetResourceTree(IProvider provider)
         {
             if (_resourceTree == null)
             {
-                var items = ServiceProvider.Current.Scheduler.Resource.GetResourceTree(ClientID);
-                _resourceTree = new ResourceTreeItemCollection(items);
+                var resources = provider.Scheduler.Resource.GetResourceTree(ClientID);
+                _resourceTree = new ResourceTreeItemCollection(resources);
             }
 
             return _resourceTree;
         }
 
-        public virtual IBuilding GetBuildingOrDeafult()
+        public virtual IBuilding GetBuildingOrDeafult(IProvider provider)
         {
             int buildingId = BuildingID.GetValueOrDefault(DefaultBuildingID);
 
             if (buildingId == -1)
-                return GetResourceTree().GetBuilding(DefaultBuildingID);
+                return GetResourceTree(provider).GetBuilding(DefaultBuildingID);
             else
-                return GetResourceTree().GetBuilding(buildingId);
+                return GetResourceTree(provider).GetBuilding(buildingId);
         }
 
-        public virtual ILab GetLabOrDefault()
+        public virtual ILab GetLabOrDefault(IProvider provider)
         {
             int labId = LabID.GetValueOrDefault(DefaultLabID);
 
             if (labId == -1)
-                return GetResourceTree().GetLab(DefaultLabID);
+                return GetResourceTree(provider).GetLab(DefaultLabID);
             else
-                return GetResourceTree().GetLab(labId);
+                return GetResourceTree(provider).GetLab(labId);
         }
 
         private int GetInt32OrDefault(int? v, int defval)
