@@ -10,6 +10,9 @@ namespace LNF
 
         public static void Setup(IProvider provider)
         {
+            if (provider == null)
+                throw new ArgumentNullException("provider");
+
             var stack = new System.Diagnostics.StackTrace();
 
             if (Current == null)

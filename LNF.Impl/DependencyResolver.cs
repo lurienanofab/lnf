@@ -274,7 +274,10 @@ namespace LNF.Impl
 
     public class InjectPropertySelectionBehavior : IPropertySelectionBehavior
     {
-        public bool SelectProperty(Type implementationType, PropertyInfo prop) =>
-            prop.GetCustomAttributes(typeof(InjectAttribute)).Any();
+        public bool SelectProperty(Type implementationType, PropertyInfo prop)
+        {
+            var result = prop.GetCustomAttributes(typeof(InjectAttribute)).Any();
+            return result;
+        }
     }
 }

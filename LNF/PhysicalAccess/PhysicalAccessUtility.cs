@@ -1,12 +1,24 @@
 ﻿using LNF.Scheduler;
+using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 
 namespace LNF.PhysicalAccess
 {
     public class PhysicalAccessUtility
     {
-        private readonly int[] _alwaysInLabs = { 4 };
+        private int[] GetAlwaysInLabs()
+        {
+            string setting = ConfigurationManager.AppSettings["AlwaysInLabs"];
+
+            if (string.IsNullOrEmpty(setting))
+                throw new Exception("Missing required appSetting: AlwaysInLabs");
+
+            int[] result = setting.Split(',').Select(int.Parse).ToArray();
+
+            return result;
+        }
 
         public bool IsOnKiosk { get; }
         public IEnumerable<Badge> CurrentlyInLab { get; }
@@ -51,7 +63,7 @@ namespace LNF.PhysicalAccess
             // [2016-06-22 jg] all of these tool are in the same lab and there are no other tools in this lab, so it is better to just use
             //       the LabID. However, it is still terrible to hard code this, should be in the database or web.config at least.
 
-            if (_alwaysInLabs.Contains(labId))
+            if (GetAlwaysInLabs().Contains(labId))
                 return true;
 
             if (ClientInLab(clientId))

@@ -11,15 +11,24 @@ namespace LNF.Scheduler
         Monthly = 2
     }
 
-    public static class RecurringReservationTransform
+    public class RecurringReservationTransform
     {
-        // Fix this dependency
-        public static IProvider Provider => ServiceProvider.Current;
+        public IProvider Provider { get; }
+
+        private RecurringReservationTransform(IProvider provider)
+        {
+            Provider = provider;
+        }
+
+        public static RecurringReservationTransform Create(IProvider provider)
+        {
+            return new RecurringReservationTransform(provider);
+        }
 
         /// <summary>
         /// Returns true if a new reservation is created.
         /// </summary>
-        public static bool AddRegularFromRecurring(ReservationCollection reservations, IReservationRecurrence rr, DateTime d)
+        public bool AddRegularFromRecurring(ReservationCollection reservations, IReservationRecurrence rr, DateTime d)
         {
             // reservations should contain canceled reservations
 
@@ -47,7 +56,7 @@ namespace LNF.Scheduler
             return false;
         }
 
-        private static ReservationData GetReservationData(IReservationRecurrence rr, DateTime d)
+        private ReservationData GetReservationData(IReservationRecurrence rr, DateTime d)
         {
             var processInfos = GetProcessInfos(rr.RecurrenceID);
             var invitees = GetInvitees(rr.RecurrenceID);
@@ -69,7 +78,7 @@ namespace LNF.Scheduler
             };
         }
 
-        private static bool AddNewRecurringReservation(ReservationCollection reservations, ReservationData data)
+        private bool AddNewRecurringReservation(ReservationCollection reservations, ReservationData data)
         {
             // [2013-05-16 jg] We need find any existing, unended and uncancelled reservations in the
             // same time slot. This can happen if there are overlapping recurring reservation patterns.
@@ -104,7 +113,7 @@ namespace LNF.Scheduler
             return false;
         }
 
-        public static IEnumerable<IReservationInvitee> GetInvitees(int recurrenceId)
+        public IEnumerable<IReservationInvitee> GetInvitees(int recurrenceId)
         {
             // get any invitees for the most recent recurrence reservation
             var prev = GetPreviousRecurrence(recurrenceId);
@@ -119,7 +128,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public static IEnumerable<IReservationProcessInfo> GetProcessInfos(int recurrenceId)
+        public IEnumerable<IReservationProcessInfo> GetProcessInfos(int recurrenceId)
         {
             // get any process infos for the most recent recurrence reservation
             var prev = GetPreviousRecurrence(recurrenceId);
@@ -134,7 +143,7 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public static void CopyProcessInfo(int reservationId, IEnumerable<IReservationProcessInfo> processInfos)
+        public void CopyProcessInfo(int reservationId, IEnumerable<IReservationProcessInfo> processInfos)
         {
             foreach (var item in processInfos)
             {
@@ -143,7 +152,7 @@ namespace LNF.Scheduler
             }
         }
 
-        public static void CopyInvitees(int reservationId, IEnumerable<IReservationInvitee> invitees)
+        public void CopyInvitees(int reservationId, IEnumerable<IReservationInvitee> invitees)
         {
             foreach (var item in invitees)
             {
@@ -151,12 +160,12 @@ namespace LNF.Scheduler
             }
         }
 
-        public static IReservation GetPreviousRecurrence(int recurrenceId, int notReservationId = 0)
+        public IReservation GetPreviousRecurrence(int recurrenceId, int notReservationId = 0)
         {
             return Provider.Scheduler.Reservation.GetPreviousRecurrence(recurrenceId, notReservationId);
         }
 
-        public static DateTime GetDate(DateTime period, int n, DayOfWeek dow)
+        public DateTime GetDate(DateTime period, int n, DayOfWeek dow)
         {
             var edate = period.AddMonths(1);
             var days = (int)(edate - period).TotalDays;

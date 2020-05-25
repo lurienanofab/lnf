@@ -16,7 +16,7 @@ namespace LNF.Impl.Util
                 string result = ConfigurationManager.AppSettings["SecretKey"];
 
                 if (string.IsNullOrEmpty(result))
-                    throw new InvalidOperationException("Missing required appSetting: SecretKey");
+                    throw new Exception("Missing required appSetting: SecretKey");
 
                 return result;
             }

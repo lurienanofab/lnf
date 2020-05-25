@@ -796,7 +796,7 @@ namespace LNF.CommonTools
             var result = GetAppSetting(key);
 
             if (string.IsNullOrEmpty(result))
-                throw new Exception($"Missing required AppSetting: {key}");
+                throw new Exception($"Missing required appSetting: {key}");
 
             return result;
         }
@@ -843,13 +843,30 @@ namespace LNF.CommonTools
         public static Type[] GetAssignableFromType<T>(IEnumerable<Assembly> assemblies)
         {
             var result = (from domainAssembly in assemblies
-                    // alternative: from domainAssembly in domainAssembly.GetExportedTypes()
-                    from assemblyType in domainAssembly.GetExportedTypes()
-                    where typeof(T).IsAssignableFrom(assemblyType)
-                    where assemblyType.IsSubclassOf(typeof(T)) && !assemblyType.IsAbstract
-                    select assemblyType).ToArray();
+                          from assemblyType in domainAssembly.GetExportedTypes()
+                          where typeof(T).IsAssignableFrom(assemblyType)
+                          where assemblyType.IsSubclassOf(typeof(T)) && !assemblyType.IsAbstract
+                          select assemblyType).ToArray();
 
             return result;
+        }
+
+        public static Type[] GetAssignableFromType(IEnumerable<Type> types, IEnumerable<Assembly> assemblies)
+        {
+            var result = new List<Type>();
+
+            foreach (var t in types)
+            {
+                var assignable = (from domainAssembly in assemblies
+                                 from assemblyType in domainAssembly.GetExportedTypes()
+                                 where t.IsAssignableFrom(assemblyType)
+                                 where assemblyType.IsSubclassOf(t) && !assemblyType.IsAbstract
+                                 select assemblyType).ToArray();
+
+                result.AddRange(assignable);
+            }
+
+            return result.ToArray();
         }
     }
 }

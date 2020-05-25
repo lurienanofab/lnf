@@ -1531,8 +1531,7 @@ namespace LNF.Impl.Scheduler
 
             var items = query.CreateModels<IReservationWithInvitees>();
 
-            // Fix this dependency
-            var util = Reservations.Create(ServiceProvider.Current, DateTime.Now);
+            var util = ReservationStateUtility.Create(DateTime.Now);
 
             var inlab = PhysicalAccess.Repository.Prowatch.GetCurrentlyInArea("all");
             var access = new PhysicalAccessUtility(inlab, kioskIp);
