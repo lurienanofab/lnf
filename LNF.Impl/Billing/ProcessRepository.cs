@@ -40,7 +40,10 @@ namespace LNF.Impl.Billing
                     result.WriteRoomDataCleanProcessResult = new WriteRoomDataCleanProcess(conn, command.StartDate, command.EndDate, command.ClientID).Start();
 
                 if ((command.BillingCategory & BillingCategory.Store) > 0)
-                    result.WriteStoreDataCleanProcessResult = new WriteStoreDataCleanProcess(conn, command.StartDate, command.EndDate, command.ClientID).Start();
+                {
+                    using (var uow = NewUnitOfWork())
+                        result.WriteStoreDataCleanProcessResult = new WriteStoreDataCleanProcess(conn, command.StartDate, command.EndDate, command.ClientID).Start();
+                }
 
                 conn.Close();
 

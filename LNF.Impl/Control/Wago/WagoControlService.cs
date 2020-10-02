@@ -203,7 +203,8 @@ namespace LNF.Impl.Control.Wago
 
         public IActionInstance GetActionInstance(ActionType action, int actionId)
         {
-            var result = Session.Query<ActionInstance>().FirstOrDefault(x => x.ActionName == Enum.GetName(typeof(ActionType), action) && x.ActionID == actionId);
+            string a = Enum.GetName(typeof(ActionType), action);
+            var result = Session.Query<ActionInstance>().FirstOrDefault(x => x.ActionName == a && x.ActionID == actionId);
             return result;
         }
 
@@ -231,6 +232,11 @@ namespace LNF.Impl.Control.Wago
             request.AddUrlSegment("blockId", point.Block.BlockID);
             request.AddUrlSegment("pointId", point.PointID);
             return GetSuccessfulResult<PointResponse>(request);
+        }
+
+        public IBlock GetBlock(int blockId)
+        {
+            return Require<IBlock>(blockId);
         }
 
         public IEnumerable<IBlock> GetBlocks()

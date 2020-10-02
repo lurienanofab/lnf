@@ -65,7 +65,7 @@ namespace LNF.Scheduler
         /// <summary>
         /// Updates reservation and billing data.
         /// </summary>
-        SaveReservationHistoryResult SaveReservationHistory(IReservation rsv, int accountId, double forgivenPct, string notes, bool emailClient);
+        SaveReservationHistoryResult SaveReservationHistory(IReservation rsv, int accountId, double? forgivenPct, string notes, bool emailClient);
 
         /// <summary>
         /// Use with extreme caution! Will permanently delete a reservation from the database, along with any related invitee, process info, and history records.
@@ -103,7 +103,7 @@ namespace LNF.Scheduler
         /// <summary>
         /// Deletes an existing ReservationInvitee record.
         /// </summary>
-        void DeleteInvitee(int reservationId, int inviteeId);
+        bool DeleteInvitee(int reservationId, int inviteeId);
 
         bool InviteeExists(int reservationId, int inviteeId);
 
@@ -111,7 +111,7 @@ namespace LNF.Scheduler
 
         IReservationInvitee GetInvitee(int reservationId, int inviteeId);
 
-        IEnumerable<IAvailableInvitee> GetAvailableInvitees(int reservationId, int resourceId, int activityId, int clientId);
+        IEnumerable<AvailableInvitee> GetAvailableInvitees(int reservationId, int resourceId, int activityId, int clientId);
 
         /// <summary>
         /// Returns the ReservationIDs in the given array to which the given client was invited.
@@ -122,5 +122,6 @@ namespace LNF.Scheduler
         IEnumerable<IReservation> SelectRecentReservations(int resourceId, int? take = null);
         IReservationGroup UpdateReservationGroup(int groupId, DateTime beginDateTime, DateTime endDateTime);
         IAutoEndLog AddAutoEndLog(IReservation rsv, string action);
+        int InsertReservationRecurrence(int resourceId, int clientId, int accountId, int activityId, int patternId, int param1, int? param2, DateTime beginDateTime, double duration, DateTime? endDate, bool autoEnd, bool keepAlive, string notes);
     }
 }

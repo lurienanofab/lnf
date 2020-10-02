@@ -21,10 +21,10 @@ namespace LNF.Data
         /// </summary>
         public string Reason { get; private set; }
 
-        private AccessCheck(IPhysicalAccessService physicalAccess, IClient cost, IGlobalCost globalCost, bool hasActiveAccounts)
+        private AccessCheck(IPhysicalAccessService physicalAccess, IClient client, IGlobalCost globalCost, bool hasActiveAccounts)
         {
             PhysicalAccess = physicalAccess;
-            Client = cost;
+            Client = client;
             GlobalCost = globalCost;
             HasActiveAccounts = hasActiveAccounts;
         }

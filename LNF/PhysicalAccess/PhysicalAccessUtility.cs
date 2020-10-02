@@ -8,18 +8,6 @@ namespace LNF.PhysicalAccess
 {
     public class PhysicalAccessUtility
     {
-        private int[] GetAlwaysInLabs()
-        {
-            string setting = ConfigurationManager.AppSettings["AlwaysInLabs"];
-
-            if (string.IsNullOrEmpty(setting))
-                throw new Exception("Missing required appSetting: AlwaysInLabs");
-
-            int[] result = setting.Split(',').Select(int.Parse).ToArray();
-
-            return result;
-        }
-
         public bool IsOnKiosk { get; }
         public IEnumerable<Badge> CurrentlyInLab { get; }
         
@@ -70,6 +58,18 @@ namespace LNF.PhysicalAccess
                 return true;
 
             return false;
+        }
+
+        private int[] GetAlwaysInLabs()
+        {
+            string setting = ConfigurationManager.AppSettings["AlwaysInLabs"];
+
+            if (string.IsNullOrEmpty(setting))
+                throw new Exception("Missing required appSetting: AlwaysInLabs");
+
+            int[] result = setting.Split(',').Select(int.Parse).ToArray();
+
+            return result;
         }
     }
 }

@@ -402,7 +402,7 @@ namespace LNF.CommonTools
         /// <remarks></remarks>
         private DataSet GetRequiredDataFromDB(DateTime period)
         {
-            return DA.Command()
+            return DefaultDataCommand.Create()
                 .Param("Period", period)
                 .FillDataSet("dbo.RoomApportionmentInDaysMonthly_Populate");
         }
@@ -414,7 +414,7 @@ namespace LNF.CommonTools
         /// <remarks></remarks>
         private DataTable GetApportionmentTableSchema()
         {
-            return DA.Command()
+            return DefaultDataCommand.Create()
                 .Param(new { Action = "ForApportion", Period = DateTime.Now, ClientID = -1, RoomID = -1 })
                 .FillDataTable("dbo.RoomApportionmentInDaysMonthly_Select");
         }
@@ -422,7 +422,7 @@ namespace LNF.CommonTools
         private void SaveNewApportionDatatoDB(DataTable dtIn)
         {
             //Insert prepration - it's necessary because we may have to add new account that is a remote account
-            int count = DA.Command().Update(dtIn, x =>
+            int count = DefaultDataCommand.Create().Update(dtIn, x =>
             {
                 x.Insert.SetCommandText("dbo.RoomApportionmentInDaysMonthly_Insert");
                 x.Insert.AddParameter("Period", SqlDbType.DateTime);

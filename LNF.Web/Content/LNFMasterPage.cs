@@ -15,6 +15,7 @@ namespace LNF.Web.Content
         public virtual bool AddStyles => true;
         public PageAuthorization Authorization { get; }
         public IClient CurrentUser => LNFPage.CurrentUser;
+        public IProvider Provider => LNFPage.Provider;
 
         public LNFPage LNFPage
         {

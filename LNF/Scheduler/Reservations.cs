@@ -35,7 +35,7 @@ namespace LNF.Scheduler
 
             if (item.IsStarted) return;
 
-            var args = ReservationStateArgs.Create(item, client);
+            var args = ReservationStateArgs.Create(item, client, Now);
             ReservationState state = ReservationStateUtility.Create(Now).GetReservationState(args);
 
             if (state != ReservationState.StartOnly && state != ReservationState.StartOrDelete)
@@ -133,7 +133,7 @@ namespace LNF.Scheduler
                 Provider.Scheduler.Email.EmailOnOpenSlot(rsv, currentEndDateTime, nextBeginDateTime.Value, EmailNotify.OnOpening, endedByClientId.GetValueOrDefault(-1));
         }
 
-        public IReservation Modify(IReservation rsv, ReservationData data)
+        public IReservation ModifyReservation(IReservation rsv, ReservationData data)
         {
             IReservation result;
             bool insert = false;
@@ -150,7 +150,7 @@ namespace LNF.Scheduler
                     var args = GetInsertReservationArgs(data, rsv.ReservationID);
                     Provider.Scheduler.Reservation.CancelReservation(rsv.ReservationID, args.ModifiedByClientID);
                     result = Provider.Scheduler.Reservation.InsertForModification(args);
-                    Provider.Scheduler.Reservation.AppendNotes(rsv.ReservationID, $"Cancelled for modification. New ReservationID: {rsv.ReservationID}");
+                    Provider.Scheduler.Reservation.AppendNotes(rsv.ReservationID, $"Cancelled for modification. New ReservationID: {result.ReservationID}");
                     insert = true;
                 }
                 else
@@ -210,8 +210,10 @@ namespace LNF.Scheduler
             Provider.Scheduler.Reservation.CancelReservation(rsv.ReservationID, modifiedByClientId);
 
             // Send email to reserver and invitees
+            var invitees = ReservationInvitees.Create(Provider).SelectInvitees(rsv.ReservationID);
+
             Provider.Scheduler.Email.EmailOnUserDelete(rsv, modifiedByClientId.GetValueOrDefault());
-            Provider.Scheduler.Email.EmailOnUninvited(rsv, Provider.Scheduler.Reservation.GetInvitees(rsv.ReservationID), modifiedByClientId.GetValueOrDefault());
+            Provider.Scheduler.Email.EmailOnUninvited(rsv, invitees, modifiedByClientId.GetValueOrDefault());
 
             // Send email notifications to all clients want to be notified of open reservation slots
             Provider.Scheduler.Email.EmailOnOpenSlot(rsv, rsv.BeginDateTime, rsv.EndDateTime, EmailNotify.Always, modifiedByClientId.GetValueOrDefault());
@@ -404,11 +406,11 @@ namespace LNF.Scheduler
             return items.Where(x => x.BeginDateTime < ed && x.EndDateTime > sd).ToList();
         }
 
-        public static ReservationInProgress GetRepairReservationInProgress(IResourceTree res)
+        public static RepairInProgress GetRepairInProgress(IResourceTree res)
         {
             if (res.CurrentReservationID > 0 && !res.CurrentActivityEditable)
             {
-                return new ReservationInProgress()
+                return new RepairInProgress()
                 {
                     ReservationID = res.CurrentReservationID,
                     ClientID = res.CurrentClientID,
@@ -497,8 +499,10 @@ namespace LNF.Scheduler
                 int clientId = item.ClientID;
                 int accountId = item.AccountID;
 
-                string phone = "?phone?";
-                string email = "?email?";
+                var c = Provider.Data.Client.GetClient(item.ClientID);
+
+                string phone = c.Phone;
+                string email = c.Email;
 
                 if (!string.IsNullOrEmpty(phone))
                     toolTip += string.Format("<div><b>Phone: {0}</b></div>", phone);
@@ -542,7 +546,7 @@ namespace LNF.Scheduler
                 toolTip += "<hr><div><b>Invitees:</b></div>";
                 foreach (var i in invitees)
                 {
-                    toolTip += string.Format("<div>{0}</div>", i.DisplayName);
+                    toolTip += string.Format("<div>{0}</div>", i.InviteeDisplayName);
                 }
             }
 
@@ -551,11 +555,15 @@ namespace LNF.Scheduler
             return toolTip;
         }
 
-        public void UpdateReservationInvitees(IEnumerable<IReservationInvitee> invitees)
+        public void UpdateReservationInvitees(IEnumerable<Invitee> invitees)
         {
             if (invitees == null) return;
 
             var removed = invitees.Where(x => x.Removed).ToArray();
+
+            // Need to handle situations where an invitee is added and removed before the the reservation is updated.
+            // In this case the invitee is not in the database so there is nothing to remove. At this point we don't
+            // know that so we might call DeleteInvitee on invitees that don't exist.
 
             if (removed.Length > 0)
             {
@@ -572,7 +580,7 @@ namespace LNF.Scheduler
             }
         }
 
-        public void InsertReservationInvitees(int reservationId, IEnumerable<IReservationInvitee> invitees)
+        public void InsertReservationInvitees(int reservationId, IEnumerable<Invitee> invitees)
         {
             if (invitees == null) return;
 
@@ -658,12 +666,12 @@ namespace LNF.Scheduler
                 return false;
         }
 
-        public bool HandlePracticeReservation(IReservation rsv, IEnumerable<IReservationInvitee> invitees, int modifiedByClientId)
+        public bool HandlePracticeReservation(IReservation rsv, IEnumerable<Invitee> invitees, int modifiedByClientId)
         {
             // 2009-09-16 Practice reservation : we must also check if tool engineers want to receive the notify email
             if (IsPracticeActivity(rsv.ActivityID))
             {
-                IReservationInvitee invitee = null;
+                Invitee invitee = null;
 
                 if (invitees != null)
                     invitee = invitees.FirstOrDefault();
@@ -677,261 +685,6 @@ namespace LNF.Scheduler
             }
             else
                 return false;
-        }
-    }
-
-    public class ReservationStateUtility
-    {
-        public static readonly ReservationState[] TruthTable = new[]
-        {
-            ReservationState.Other, ReservationState.Other, ReservationState.Other, ReservationState.Other,
-            ReservationState.Other, ReservationState.Other, ReservationState.Other, ReservationState.Other,
-            ReservationState.Invited, ReservationState.Invited, ReservationState.Invited, ReservationState.Invited,
-            ReservationState.Invited, ReservationState.NotInLab, ReservationState.Invited, ReservationState.NotInLab,
-            ReservationState.Undefined, ReservationState.UnAuthToStart, ReservationState.Editable, ReservationState.Editable,
-            ReservationState.Undefined, ReservationState.NotInLab, ReservationState.Editable, ReservationState.Editable,
-            ReservationState.Undefined, ReservationState.Undefined, ReservationState.Undefined, ReservationState.Undefined,
-            ReservationState.Undefined, ReservationState.Undefined, ReservationState.Undefined, ReservationState.Undefined,
-            ReservationState.Other, ReservationState.Other, ReservationState.Other, ReservationState.Other,
-            ReservationState.Other, ReservationState.Other, ReservationState.Other, ReservationState.Other,
-            ReservationState.Invited, ReservationState.Invited, ReservationState.Invited, ReservationState.Invited,
-            ReservationState.Invited, ReservationState.StartOnly, ReservationState.Invited, ReservationState.StartOnly,
-            ReservationState.Undefined, ReservationState.UnAuthToStart, ReservationState.Editable, ReservationState.Editable,
-            ReservationState.Undefined, ReservationState.StartOnly, ReservationState.Editable, ReservationState.StartOrDelete,
-            ReservationState.Undefined, ReservationState.Undefined, ReservationState.Undefined, ReservationState.Undefined,
-            ReservationState.Undefined, ReservationState.Undefined, ReservationState.Undefined, ReservationState.Undefined
-        };
-
-        public static readonly ReservationState[] TruthTableTE = new[]
-        {
-            ReservationState.Undefined, ReservationState.StartOnly, ReservationState.Editable, ReservationState.StartOrDelete
-        };
-
-        public DateTime Now { get; }
-
-        private ReservationStateUtility(DateTime now)
-        {
-            Now = now;
-        }
-
-        public static ReservationStateUtility Create(DateTime now)
-        {
-            return new ReservationStateUtility(now);
-        }
-
-        #region Truth Tables
-        // This is the truth table for non tool engineer 
-        // note that having both R and I true is meaningless
-        // L - IsInLab
-        // R - IsReserver
-        // I - IsInvited
-        // A - IsAuth
-        // M - Before MCT
-        // S - In Start Per
-
-        // L  R  I  A  M  S  
-        // 0  0  0  0  0  0  ReservationState.Other
-        // 0  0  0  0  0  1  ReservationState.Other
-        // 0  0  0  0  1  0  ReservationState.Other
-        // 0  0  0  0  1  1  ReservationState.Other
-        // 0  0  0  1  0  0  ReservationState.Other
-        // 0  0  0  1  0  1  ReservationState.Other
-        // 0  0  0  1  1  0  ReservationState.Other
-        // 0  0  0  1  1  1  ReservationState.Other
-        // 0  0  1  0  0  0  ReservationState.Invited
-        // 0  0  1  0  0  1  ReservationState.Invited
-        // 0  0  1  0  1  0  ReservationState.Invited
-        // 0  0  1  0  1  1  ReservationState.Invited
-        // 0  0  1  1  0  0  ReservationState.Invited
-        // 0  0  1  1  0  1  ReservationState.NotInLab
-        // 0  0  1  1  1  0  ReservationState.Invited
-        // 0  0  1  1  1  1  ReservationState.NotInLab
-        // 0  1  0  0  0  0  ReservationState.Undefined
-        // 0  1  0  0  0  1  ReservationState.UnAuthToStart
-        // 0  1  0  0  1  0  ReservationState.Editable
-        // 0  1  0  0  1  1  ReservationState.Editable
-        // 0  1  0  1  0  0  ReservationState.Undefined
-        // 0  1  0  1  0  1  ReservationState.NotInLab
-        // 0  1  0  1  1  0  ReservationState.Editable
-        // 0  1  0  1  1  1  ReservationState.Editable
-        // 0  1  1  0  0  0  ReservationState.Undefined
-        // 0  1  1  0  0  1  ReservationState.Undefined
-        // 0  1  1  0  1  0  ReservationState.Undefined
-        // 0  1  1  0  1  1  ReservationState.Undefined
-        // 0  1  1  1  0  0  ReservationState.Undefined
-        // 0  1  1  1  0  1  ReservationState.Undefined
-        // 0  1  1  1  1  0  ReservationState.Undefined
-        // 0  1  1  1  1  1  ReservationState.Undefined
-        // 1  0  0  0  0  0  ReservationState.Other
-        // 1  0  0  0  0  1  ReservationState.Other
-        // 1  0  0  0  1  0  ReservationState.Other
-        // 1  0  0  0  1  1  ReservationState.Other
-        // 1  0  0  1  0  0  ReservationState.Other
-        // 1  0  0  1  0  1  ReservationState.Other
-        // 1  0  0  1  1  0  ReservationState.Other
-        // 1  0  0  1  1  1  ReservationState.Other
-        // 1  0  1  0  0  0  ReservationState.Invited
-        // 1  0  1  0  0  1  ReservationState.Invited
-        // 1  0  1  0  1  0  ReservationState.Invited
-        // 1  0  1  0  1  1  ReservationState.Invited
-        // 1  0  1  1  0  0  ReservationState.Invited
-        // 1  0  1  1  0  1  ReservationState.StartOnly
-        // 1  0  1  1  1  0  ReservationState.Invited
-        // 1  0  1  1  1  1  ReservationState.StartOnly
-        // 1  1  0  0  0  0  ReservationState.Undefined
-        // 1  1  0  0  0  1  ReservationState.UnAuthToStart
-        // 1  1  0  0  1  0  ReservationState.Editable
-        // 1  1  0  0  1  1  ReservationState.Editable
-        // 1  1  0  1  0  0  ReservationState.Undefined
-        // 1  1  0  1  0  1  ReservationState.StartOnly
-        // 1  1  0  1  1  0  ReservationState.Editable
-        // 1  1  0  1  1  1  ReservationState.StartOrDelete
-        // 1  1  1  0  0  0  ReservationState.Undefined
-        // 1  1  1  0  0  1  ReservationState.Undefined
-        // 1  1  1  0  1  0  ReservationState.Undefined
-        // 1  1  1  0  1  1  ReservationState.Undefined
-        // 1  1  1  1  0  0  ReservationState.Undefined
-        // 1  1  1  1  0  1  ReservationState.Undefined
-        // 1  1  1  1  1  0  ReservationState.Undefined
-        // 1  1  1  1  1  1  ReservationState.Undefined
-        // L  R  I  A  M  S 
-
-        // The truth table for tool engineers is simply this
-        // for TE, MCT=0, so both M and S cannot both be false
-        // L  R  I  A  M  S  
-        // x  x  x  x  0  0  ReservationState.Undefined
-        // x  x  x  x  0  1  ReservationState.StartOnly
-        // x  x  x  x  1  0  ReservationState.Editable
-        // x  x  x  x  1  1  ReservationState.StartOrDelete
-
-        // Note that the four cases in which the res can be started are modified by IsInLab. 
-        // if this is false, the state changes as shown above 
-        #endregion
-
-        public ReservationState GetReservationState(ReservationStateArgs args)
-        {
-            // Repair Reservations, returns immediately
-            if (args.IsRepair) return ReservationState.Repair;
-
-            if (args.ActualBeginDateTime == null && args.ActualEndDateTime == null)
-            {
-                // reservations that have not yet been started
-                if (args.EndDateTime <= Now) // should never occur - if in the past, the actuals should exist
-                {
-                    if (args.IsReserver)
-                        return ReservationState.PastSelf;
-                    else
-                        return ReservationState.PastOther;
-                }
-
-                // redefine min cancel time (MCT) for tool engineers - can edit up until scheduled start time
-                return GetUnstartedReservationState(args);
-            }
-            else if (args.ActualBeginDateTime != null && args.ActualEndDateTime == null)
-            {
-                // reservations that have been started
-                if (args.IsReserver || args.IsToolEngineer)
-                    return ReservationState.Endable;
-                else if (args.IsInvited)
-                {
-                    if (args.UserAuth != ClientAuthLevel.UnauthorizedUser && args.UserAuth != ClientAuthLevel.RemoteUser)
-                        //2008-06-26 Sandrine requested that invitee should be able to end the reservation
-                        return ReservationState.Endable;
-                    else
-                        return ReservationState.Invited;
-                }
-                else
-                    return ReservationState.ActiveNotEndable;
-            }
-            else if (args.ActualBeginDateTime != null && args.ActualEndDateTime != null)
-            {
-                // at this point actualEndDateTime must not be null, and
-                // we don't care if actualBeginDateTime is null or not
-
-                // reservations in the past OR it's Facility Down Time reservation
-                if (args.IsFacilityDownTime)
-                {
-                    // Facility Down Time, it must be editable if it's not started yet
-                    if (args.ActualEndDateTime.HasValue && args.ActualEndDateTime.Value < Now && args.IsToolEngineer)
-                        return ReservationState.PastSelf; // FDT reservation that has already ended
-                    else if (args.BeginDateTime > Now && args.IsToolEngineer)
-                        return ReservationState.Editable; // FDT reservation that has not started yet
-                    else if (args.EndDateTime > Now && args.IsToolEngineer)
-                        return ReservationState.Endable; //it's endable only if it's not ended yet
-                    else
-                        return ReservationState.Other;
-                }
-
-                if (args.IsReserver)
-                    return ReservationState.PastSelf;
-                else
-                    return ReservationState.PastOther;
-            }
-            else //if (actualBeginDateTime == null && actualEndDateTime != null)
-            {
-                // a reservation cannot have ended if it never began
-                throw new InvalidOperationException("ActualBeginDateTime cannot be null if ActualEndDateTime is not null.");
-            }
-        }
-
-        public ReservationState GetUnstartedReservationState(ReservationStateArgs args)
-        {
-            var isStartable = IsStartable(args.BeginDateTime, args.MinReservTime);
-
-            var actual = (args.IsToolEngineer)
-                 ? new { IsInLab = false, IsReserver = false, IsInvited = false, IsAuthorized = false, IsBeforeMinCancelTime = Now <= args.BeginDateTime, IsStartable = isStartable }
-                 : new { args.IsInLab, args.IsReserver, args.IsInvited, args.IsAuthorized, args.IsBeforeMinCancelTime, IsStartable = isStartable };
-
-            var subStateValue = GetSubStateVal(actual.IsInLab, actual.IsReserver, actual.IsInvited, actual.IsAuthorized, actual.IsBeforeMinCancelTime, actual.IsStartable);
-
-            var result = (args.IsToolEngineer)
-                ? TruthTableTE[subStateValue]
-                : TruthTable[subStateValue];
-
-            if (result == ReservationState.Undefined)
-            {
-                var errmsg = "Unstarted reservation state is undefined."
-                    + "  IsToolEngineer: {1}, IsInLab: {2}, IsReserver: {3}, IsInvited: {4}, IsAuthorized: {5}, IsBeforeMinCancelTime: {6}, IsStartable: {7}, SubStateValue: {8}";
-
-                throw new Exception(string.Format(errmsg,
-                    args.IsToolEngineer ? "Yes" : "No",
-                    actual.IsInLab ? "Yes" : "No",
-                    actual.IsReserver ? "Yes" : "No",
-                    actual.IsInvited ? "Yes" : "No",
-                    actual.IsAuthorized ? "Yes" : "No",
-                    actual.IsBeforeMinCancelTime ? "Yes" : "No",
-                    actual.IsStartable ? "Yes" : "No",
-                    subStateValue));
-            }
-
-            return result;
-        }
-
-        public int GetSubStateVal(bool isInLab, bool isReserver, bool isInvited, bool isAuthorized, bool isBeforeMinCancelTime, bool isStartable)
-        {
-            return (isInLab ? 32 : 0)
-                + (isReserver ? 16 : 0)
-                + (isInvited ? 8 : 0)
-                + (isAuthorized ? 4 : 0)
-                + (isBeforeMinCancelTime ? 2 : 0)
-                + (isStartable ? 1 : 0);
-        }
-
-        public bool IsStartable(DateTime beginDateTime, int minReservTime)
-        {
-            return (Now > beginDateTime.AddMinutes(-1 * minReservTime));
-        }
-
-        public bool IsStartable(ReservationState state)
-        {
-            switch (state)
-            {
-                case ReservationState.StartOrDelete:
-                case ReservationState.StartOnly:
-                    return true;
-                default:
-                    return false;
-            }
         }
     }
 }

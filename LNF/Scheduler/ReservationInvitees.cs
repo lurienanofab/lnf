@@ -2,22 +2,41 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 
 namespace LNF.Scheduler
 {
-    public static class ReservationInvitees
+    public class ReservationInvitees
     {
-        public static IEnumerable<IReservationInvitee> SelectInvitees(int reservationId)
+        public IProvider Provider { get; }
+
+        public ReservationInvitees(IProvider provider)
         {
-            return ServiceProvider.Current.Scheduler.Reservation.GetInvitees(reservationId);
+            Provider = provider;
+        }
+
+        public static ReservationInvitees Create(IProvider provider)
+        {
+            return new ReservationInvitees(provider);
+        }
+
+        public List<Invitee> SelectInvitees(int reservationId)
+        {
+            return Provider.Scheduler.Reservation.GetInvitees(reservationId).Select(x => new Invitee
+            {
+                ReservationID = x.ReservationID,
+                InviteeID = x.InviteeID,
+                LName = x.InviteeLName,
+                FName = x.InviteeFName,
+            }).ToList();
         }
 
         /// <summary>
         /// Returns all available clients
         /// </summary>
-        public static IEnumerable<IAvailableInvitee> SelectAvailable(int reservationId, int resourceId, int activityId, int clientId)
+        public List<AvailableInvitee> SelectAvailable(int reservationId, int resourceId, int activityId, int clientId)
         {
-            return ServiceProvider.Current.Scheduler.Reservation.GetAvailableInvitees(reservationId, resourceId, activityId, clientId);
+            return Provider.Scheduler.Reservation.GetAvailableInvitees(reservationId, resourceId, activityId, clientId).ToList();
         }
 
         /// <summary>
@@ -26,21 +45,21 @@ namespace LNF.Scheduler
         /// <param name="reservationId">The reservation to which invitees will be added or deleted.</param>
         /// <param name="add">The list of InviteeID values for invitees to add (note: ReservationInvitee.InviteeID and Client.ClientID are the same).</param>
         /// <param name="delete">The list of InviteeID values for invitees to delete (note: ReservationInvitee.InviteeID and Client.ClientID are the same).</param>
-        public static void Update(int reservationId, IEnumerable<int> add, IEnumerable<int> delete)
+        public void Update(int reservationId, IEnumerable<int> add, IEnumerable<int> delete)
         {
             foreach (var inviteeId in add)
-                ServiceProvider.Current.Scheduler.Reservation.AddInvitee(reservationId, inviteeId);
+                Provider.Scheduler.Reservation.AddInvitee(reservationId, inviteeId);
             
             foreach(var inviteeId in delete)
-                ServiceProvider.Current.Scheduler.Reservation.DeleteInvitee(reservationId, inviteeId);
+                Provider.Scheduler.Reservation.DeleteInvitee(reservationId, inviteeId);
         }
 
         /// <summary>
         /// Returns true if the client is an invitee for the specified reservation
         /// </summary>
-        public static bool IsInvited(int reservationId, int inviteeId)
+        public bool IsInvited(int reservationId, int inviteeId)
         {
-            return ServiceProvider.Current.Scheduler.Reservation.InviteeExists(reservationId, inviteeId);
+            return Provider.Scheduler.Reservation.InviteeExists(reservationId, inviteeId);
         }
 
         public static DataTable ToDataTable(IEnumerable<IReservationInvitee> invitees)
@@ -99,6 +118,5 @@ namespace LNF.Scheduler
             else
                 throw new Exception("ReservationID and InviteeID columns are required.");
         }
-
     }
 }

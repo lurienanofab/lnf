@@ -4,6 +4,8 @@ using LNF.Impl;
 using LNF.Impl.DataAccess;
 using LNF.Impl.Repository.Data;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SimpleInjector;
+using SimpleInjector.Lifestyles;
 using System;
 using System.Linq;
 
@@ -12,16 +14,20 @@ namespace LNF.Tests
     [TestClass]
     public class IocTests
     {
-        private DependencyResolver _resolver;
+        private Container _container;
 
         [TestMethod]
         public void CanGetClient()
         {
-            _resolver = new ThreadStaticResolver();
+            _container = new Container();
+            _container.Options.DefaultScopedLifestyle = new ThreadScopedLifestyle();
 
-            using (_resolver.GetInstance<IUnitOfWork>())
+            var cfg = new ThreadStaticContainerConfiguration(_container);
+            cfg.Configure();
+
+            using (_container.GetInstance<IUnitOfWork>())
             {
-                var session = _resolver.GetInstance<ISessionManager>().Session;
+                var session = _container.GetInstance<ISessionManager>().Session;
                 var client = session.Get<Client>(1301);
                 Assert.AreEqual("jgett", client.UserName);
 
@@ -29,17 +35,17 @@ namespace LNF.Tests
                 Assert.AreEqual("jgett", co.Client.UserName);
             }
 
-            ServiceProvider.Setup(_resolver.GetInstance<IProvider>());
+            ServiceProvider.Setup(_container.GetInstance<IProvider>());
 
-            using (_resolver.GetInstance<IUnitOfWork>())
+            using (_container.GetInstance<IUnitOfWork>())
             {
                 var client = ServiceProvider.Current.Data.Client.GetClient(1301);
                 Assert.AreEqual("jgett", client.UserName);
             }
 
-            using (_resolver.GetInstance<IUnitOfWork>())
+            using (_container.GetInstance<IUnitOfWork>())
             {
-                var session = _resolver.GetInstance<ISessionManager>().Session;
+                var session = _container.GetInstance<ISessionManager>().Session;
 
                 var client = session.Get<Client>(1301);
                 Assert.AreEqual("jgett", client.UserName);
@@ -48,9 +54,9 @@ namespace LNF.Tests
                 Assert.AreEqual("jgett", co.Client.UserName);
             }
 
-            using (_resolver.GetInstance<IUnitOfWork>())
+            using (_container.GetInstance<IUnitOfWork>())
             {
-                var session = _resolver.GetInstance<ISessionManager>().Session;
+                var session = _container.GetInstance<ISessionManager>().Session;
 
                 var client = session.Get<Client>(1301);
                 Assert.AreEqual("jgett", client.UserName);
@@ -63,11 +69,15 @@ namespace LNF.Tests
         [TestMethod]
         public void CanSelectToolBilling()
         {
-            _resolver = new ThreadStaticResolver();
+            var container = new Container();
+            container.Options.DefaultScopedLifestyle = new ThreadScopedLifestyle();
 
-            using (_resolver.GetInstance<IUnitOfWork>())
+            var cfg = new ThreadStaticContainerConfiguration(container);
+            cfg.Configure();
+
+            using (container.GetInstance<IUnitOfWork>())
             {
-                var repo = _resolver.GetInstance<IToolBillingRepository>();
+                var repo = container.GetInstance<IToolBillingRepository>();
                 var results = repo.SelectToolBilling(DateTime.Parse("2017-02-01"));
                 Assert.IsTrue(results.Count() > 0);
             }

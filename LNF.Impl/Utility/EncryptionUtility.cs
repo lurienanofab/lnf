@@ -13,49 +13,69 @@ namespace LNF.Impl.Util
         {
             get
             {
-                string result = ConfigurationManager.AppSettings["SecretKey"];
+                throw new NotImplementedException();
+                //string result = ConfigurationManager.AppSettings["SecretKey"];
 
-                if (string.IsNullOrEmpty(result))
-                    throw new Exception("Missing required appSetting: SecretKey");
+                //if (string.IsNullOrEmpty(result))
+                //    throw new Exception("Missing required appSetting: SecretKey");
 
-                return result;
+                //return result;
             }
         }
 
+        //public string EncryptText(string text)
+        //{
+        //    byte[] byKey = { };
+        //    byKey = Encoding.UTF8.GetBytes(SecretKey.Substring(0, 8));
+
+        //    byte[] IV = { 0x56, 0x18, 0x9C, 0xFD, 0x38, 0xB5, 0xAA, 0x61 };
+        //    DESCryptoServiceProvider des = new DESCryptoServiceProvider();
+        //    MemoryStream ms = new MemoryStream();
+        //    CryptoStream cs = new CryptoStream(ms, des.CreateEncryptor(byKey, IV), CryptoStreamMode.Write);
+
+        //    byte[] inputByteArray = Encoding.UTF8.GetBytes(text);
+        //    cs.Write(inputByteArray, 0, inputByteArray.Length);
+        //    cs.FlushFinalBlock();
+
+        //    return Convert.ToBase64String(ms.ToArray());
+        //}
+
         public string EncryptText(string text)
         {
-            byte[] byKey = { };
-            byKey = Encoding.UTF8.GetBytes(SecretKey.Substring(0, 8));
+            // Create a SHA256   
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                // ComputeHash - returns byte array  
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(text));
 
-            byte[] IV = { 0x56, 0x18, 0x9C, 0xFD, 0x38, 0xB5, 0xAA, 0x61 };
-            DESCryptoServiceProvider des = new DESCryptoServiceProvider();
-            MemoryStream ms = new MemoryStream();
-            CryptoStream cs = new CryptoStream(ms, des.CreateEncryptor(byKey, IV), CryptoStreamMode.Write);
-
-            byte[] inputByteArray = Encoding.UTF8.GetBytes(text);
-            cs.Write(inputByteArray, 0, inputByteArray.Length);
-            cs.FlushFinalBlock();
-
-            return Convert.ToBase64String(ms.ToArray());
+                // Convert byte array to a string   
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    builder.Append(bytes[i].ToString("x2"));
+                }
+                return builder.ToString();
+            }
         }
 
         public string DecryptText(string text)
         {
-            byte[] byKey = { };
-            byte[] inputByteArray = new byte[text.Length];
-            inputByteArray = Convert.FromBase64String(text);
+            throw new NotImplementedException();
+            //byte[] byKey = { };
+            //byte[] inputByteArray = new byte[text.Length];
+            //inputByteArray = Convert.FromBase64String(text);
 
-            byKey = Encoding.UTF8.GetBytes(SecretKey.Substring(0, 8));
+            //byKey = Encoding.UTF8.GetBytes(SecretKey.Substring(0, 8));
 
-            byte[] IV = { 0x56, 0x18, 0x9C, 0xFD, 0x38, 0xB5, 0xAA, 0x61 };
-            DESCryptoServiceProvider des = new DESCryptoServiceProvider();
-            MemoryStream ms = new MemoryStream();
-            CryptoStream cs = new CryptoStream(ms, des.CreateDecryptor(byKey, IV), CryptoStreamMode.Write);
+            //byte[] IV = { 0x56, 0x18, 0x9C, 0xFD, 0x38, 0xB5, 0xAA, 0x61 };
+            //DESCryptoServiceProvider des = new DESCryptoServiceProvider();
+            //MemoryStream ms = new MemoryStream();
+            //CryptoStream cs = new CryptoStream(ms, des.CreateDecryptor(byKey, IV), CryptoStreamMode.Write);
 
-            cs.Write(inputByteArray, 0, inputByteArray.Length);
-            cs.FlushFinalBlock();
+            //cs.Write(inputByteArray, 0, inputByteArray.Length);
+            //cs.FlushFinalBlock();
 
-            return Encoding.UTF8.GetString(ms.ToArray());
+            //return Encoding.UTF8.GetString(ms.ToArray());
         }
 
         public string Hash(string input)

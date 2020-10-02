@@ -13,6 +13,8 @@ namespace LNF.Impl.Scheduler
 
         public IEnumerable<IProcessInfo> GetProcessInfos(int resourceId)
         {
+            //'DA.Current.Query(Of ProcessInfo)().Where(Function(x) x.Resource.ResourceID = Resource.ResourceID).ToList()
+
             var result = Session.Query<ProcessInfo>()
                 .Where(x => x.Resource.ResourceID == resourceId)
                 .Select(x => new ProcessInfoItem

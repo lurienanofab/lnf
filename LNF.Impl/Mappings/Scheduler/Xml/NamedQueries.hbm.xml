@@ -29,8 +29,4 @@
     <return class="ResourceTree"/>
     <![CDATA[EXEC sselScheduler.dbo.procResourceTreeSelect @ClientID=:ClientID]]>
   </sql-query>
-  <sql-query name="SelectAvailableInvitees">
-    <return class="AvailableInvitee"/>
-    <![CDATA[EXEC sselScheduler.dbo.procReservationInviteeSelect @Action = 'SelectAvailInvitees', @ReservationID = :ReservationID, @ResourceID = :ResourceID, @ActivityID = :ActivityID, @ClientID = :ClientID]]>
-  </sql-query>
 </hibernate-mapping>

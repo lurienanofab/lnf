@@ -95,5 +95,10 @@ namespace OnlineServices.Api.Control
         {
             throw new NotImplementedException();
         }
+
+        public IBlock GetBlock(int blockId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

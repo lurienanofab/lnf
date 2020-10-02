@@ -6,6 +6,10 @@ namespace LNF.Web
     public static class SessionKeys
     {
         public static readonly string CurrentUser = "CurrentUser";
+        public static readonly string ClientID = "ClientID";
+        public static readonly string UserName = "UserName";
+        public static readonly string DisplayName = "DisplayName";
+        public static readonly string Email = "Email";
 
         public static readonly string Cache = "Cache";
         public static readonly string ErrorID = "ErrorID";
@@ -20,7 +24,6 @@ namespace LNF.Web
         public static readonly string ReservationInvitees = "ReservationInvitees";
         public static readonly string AvailableInvitees = "AvailableInvitees";
         public static readonly string RemovedInvitees = "RemovedInvitees";
-        public static readonly string UserName = "UserName";
 
         public static string[] AllKeys()
         {

@@ -22,7 +22,7 @@ namespace OnlineServices.Api.Scheduler
             throw new NotImplementedException();
         }
 
-        public void EmailOnInvited(IReservation rsv, IEnumerable<IReservationInvitee> invitees, int clientId, ReservationModificationType modificationType = ReservationModificationType.Created)
+        public void EmailOnInvited(IReservation rsv, IEnumerable<Invitee> invitees, int clientId, ReservationModificationType modificationType = ReservationModificationType.Created)
         {
             throw new NotImplementedException();
         }
@@ -52,7 +52,7 @@ namespace OnlineServices.Api.Scheduler
             throw new NotImplementedException();
         }
 
-        public void EmailOnUninvited(IReservation rsv, IEnumerable<IReservationInvitee> invitees, int clientId)
+        public void EmailOnUninvited(IReservation rsv, IEnumerable<Invitee> invitees, int clientId)
         {
             throw new NotImplementedException();
         }

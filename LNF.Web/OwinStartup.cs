@@ -1,4 +1,5 @@
-﻿using LNF.Repository;
+﻿using LNF.DataAccess;
+using LNF.Repository;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
@@ -70,7 +71,6 @@ namespace LNF.Web
         }
     }
 
-    [Obsolete]
     public class DataAccessMiddleware : OwinMiddleware
     {
         public DataAccessMiddleware(OwinMiddleware next) : base(next) { }
@@ -91,7 +91,7 @@ namespace LNF.Web
 
             if (!IsStaticContent(uri))
             {
-                uow = DA.StartUnitOfWork();
+                uow = WebApp.Current.GetInstance<IDataAccessService>().StartUnitOfWork();
             }
 
             await Next.Invoke(context);
@@ -102,7 +102,6 @@ namespace LNF.Web
     }
 
 
-    [Obsolete]
     public static class DataAccessMiddlewareExtensions
     {
         public static void UseDataAccess(this IAppBuilder app)

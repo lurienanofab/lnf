@@ -14,6 +14,7 @@ namespace LNF.Data
         public int Communities { get; set; }
         public bool IsChecked { get; set; }
         public bool IsSafetyTest { get; set; }
+        public bool RequirePasswordReset { get; set; }
         public bool ClientActive { get; set; }
         public int DemCitizenID { get; set; }
         public string DemCitizenName { get; set; }

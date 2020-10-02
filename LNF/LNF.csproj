@@ -158,8 +158,10 @@
     <Compile Include="DataAccess\IUnitOfWork.cs" />
     <Compile Include="DataAccess\IUnitOfWorkAdapter.cs" />
     <Compile Include="Data\Clients.cs" />
+    <Compile Include="Data\IClientOrg.cs" />
     <Compile Include="Data\IMessengerMessage.cs" />
     <Compile Include="Data\IMessengerRecipient.cs" />
+    <Compile Include="Data\IPasswordResetRequest.cs" />
     <Compile Include="DynamicDictionary.cs" />
     <Compile Include="Feedback\Enums.cs" />
     <Compile Include="Feedback\IFeedbackIssue.cs" />
@@ -518,6 +520,7 @@
     <Compile Include="Scheduler\ActivityItem.cs" />
     <Compile Include="Scheduler\AuthLevelItem.cs" />
     <Compile Include="Scheduler\AutoEndLogItem.cs" />
+    <Compile Include="Scheduler\AvailableInvitee.cs" />
     <Compile Include="Scheduler\AvailableResourceClientItem.cs" />
     <Compile Include="Scheduler\BuildingItem.cs" />
     <Compile Include="Scheduler\CacheManagerExtensions.cs" />
@@ -536,7 +539,6 @@
     <Compile Include="Scheduler\IAuthLevel.cs" />
     <Compile Include="Scheduler\IAuthorized.cs" />
     <Compile Include="Scheduler\IAutoEndLog.cs" />
-    <Compile Include="Scheduler\IAvailableInvitee.cs" />
     <Compile Include="Scheduler\IBuilding.cs" />
     <Compile Include="Scheduler\IClientSetting.cs" />
     <Compile Include="Scheduler\IClientSettingRepository.cs" />
@@ -547,6 +549,7 @@
     <Compile Include="Scheduler\ILabLocation.cs" />
     <Compile Include="Scheduler\ILabLocationRepository.cs" />
     <Compile Include="Scheduler\InsertReservationArgs.cs" />
+    <Compile Include="Scheduler\Invitee.cs" />
     <Compile Include="Scheduler\IOnTheFlyResource.cs" />
     <Compile Include="Scheduler\IProcessInfo.cs" />
     <Compile Include="Scheduler\IProcessInfoLine.cs" />
@@ -591,7 +594,7 @@
     <Compile Include="Scheduler\ReservationHistoryFilterItem.cs" />
     <Compile Include="Scheduler\ReservationHistoryItem.cs" />
     <Compile Include="Scheduler\ReservationHistoryUpdate.cs" />
-    <Compile Include="Scheduler\ReservationInProgress.cs" />
+    <Compile Include="Scheduler\RepairInProgress.cs" />
     <Compile Include="Scheduler\ReservationInvitees.cs" />
     <Compile Include="Scheduler\ReservationItem.cs" />
     <Compile Include="Scheduler\ReservationProcessInfoItem.cs" />
@@ -599,6 +602,7 @@
     <Compile Include="Scheduler\ReservationStateArgs.cs" />
     <Compile Include="Scheduler\Reservations.cs" />
     <Compile Include="Scheduler\ReservationStateItem.cs" />
+    <Compile Include="Scheduler\ReservationStateUtility.cs" />
     <Compile Include="Scheduler\ReservationTime.cs" />
     <Compile Include="Scheduler\ResourceActivityAuthItem.cs" />
     <Compile Include="Scheduler\ResourceClients.cs" />

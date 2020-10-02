@@ -16,7 +16,9 @@ namespace LNF.Repository
         /// Gets an ISession instance that uses the current data access context.
         /// </summary>
         [Obsolete("Move to LNF.Impl")]
-        public static ISession Current => ServiceProvider.Current.DataAccess.Session;
+        public static ISession Current => GetSession(ServiceProvider.Current);
+
+        public static ISession GetSession(IProvider provider) => provider.DataAccess.Session;
 
         /// <summary>
         /// Initiates a new current session. All subsequent data access actions (DA.Current) will be in one transaction which is committed when this instance is disposed.

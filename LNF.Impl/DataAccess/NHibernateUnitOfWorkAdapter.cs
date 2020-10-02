@@ -1,4 +1,5 @@
 ﻿using LNF.Repository;
+using NHibernate;
 using System.Data;
 using System.Data.Common;
 
@@ -6,9 +7,9 @@ namespace LNF.Impl.DataAccess
 {
     public class NHibernateUnitOfWorkAdapter : UnitOfWorkAdapter
     {
-        private NHibernate.ISession session;
+        private ISession session;
 
-        internal NHibernateUnitOfWorkAdapter(NHibernate.ISession session)
+        internal NHibernateUnitOfWorkAdapter(ISession session)
         {
             this.session = session;
             SelectCommand = GetCommand();
@@ -21,7 +22,8 @@ namespace LNF.Impl.DataAccess
         {
             var result = session.Connection.CreateCommand();
             result.CommandType = CommandType.StoredProcedure;
-            session.Transaction.Enlist(result);
+            var tx = session.GetCurrentTransaction();
+            if (tx != null) tx.Enlist(result);
             return result;
         }
     }

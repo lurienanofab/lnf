@@ -30,7 +30,7 @@ namespace LNF.Scheduler
         /// </summary>
         public bool AddRegularFromRecurring(ReservationCollection reservations, IReservationRecurrence rr, DateTime d)
         {
-            // reservations should contain canceled reservations
+            // reservations should contain cancelled reservations
 
             // first, find out the pattern type
             if (rr.PatternID == (int)PatternType.Weekly)
@@ -113,27 +113,27 @@ namespace LNF.Scheduler
             return false;
         }
 
-        public IEnumerable<IReservationInvitee> GetInvitees(int recurrenceId)
+        public List<Invitee> GetInvitees(int recurrenceId)
         {
             // get any invitees for the most recent recurrence reservation
             var prev = GetPreviousRecurrence(recurrenceId);
 
-            IList<IReservationInvitee> result;
+            List<Invitee> result;
 
             if (prev != null)
-                result = Provider.Scheduler.Reservation.GetInvitees(prev.ReservationID).ToList();
+                result = ReservationInvitees.Create(Provider).SelectInvitees(prev.ReservationID);
             else
-                result = new List<IReservationInvitee>();
+                result = new List<Invitee>();
 
             return result;
         }
 
-        public IEnumerable<IReservationProcessInfo> GetProcessInfos(int recurrenceId)
+        public List<IReservationProcessInfo> GetProcessInfos(int recurrenceId)
         {
             // get any process infos for the most recent recurrence reservation
             var prev = GetPreviousRecurrence(recurrenceId);
 
-            IList<IReservationProcessInfo> result;
+            List<IReservationProcessInfo> result;
 
             if (prev != null)
                 result = Provider.Scheduler.ProcessInfo.GetReservationProcessInfos(prev.ReservationID).ToList();

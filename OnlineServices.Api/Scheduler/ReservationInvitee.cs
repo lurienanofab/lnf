@@ -18,6 +18,15 @@ namespace OnlineServices.Api.Scheduler
         public bool IsStarted { get; set; }
         public string LName { get; set; }
         public ClientPrivilege Privs { get; set; }
+        public int ClientOrgID { get; set; }
+        public int ClientAddressID { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public bool IsManager { get; set; }
+        public bool IsFinManager { get; set; }
+        public DateTime? SubsidyStartDate { get; set; }
+        public DateTime? NewFacultyStartDate { get; set; }
+        public bool ClientOrgActive { get; set; }
         public bool Removed { get; set; }
         public int ReservationID { get; set; }
         public int ResourceID { get; set; }
@@ -25,6 +34,7 @@ namespace OnlineServices.Api.Scheduler
         public bool InviteeActive { get; set; }
         public string InviteeLName { get; set; }
         public string InviteeFName { get; set; }
+        public string InviteeDisplayName => Clients.GetDisplayName(InviteeLName, InviteeFName);
         public ClientPrivilege InviteePrivs { get; set; }
         public string MName { get; set; }
         public int AccountID { get; set; }

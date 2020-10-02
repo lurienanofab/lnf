@@ -153,18 +153,21 @@ namespace LNF.Impl.Billing
             {
                 appData = new RoomBillingUserApportionData()
                 {
-                    Account = Session.Get<Account>(rb.AccountID),
-                    ChargeDays = 0,
-                    Client = Session.Get<Client>(rb.ClientID),
+                    Client = Require<Client>(rb.ClientID),
+                    Account = Require<Account>(rb.AccountID),
+                    Room = Require<Room>(rb.RoomID),
                     Period = period,
-                    Room = Session.Get<Room>(rb.RoomID),
+                    ChargeDays = 0,
                     Entries = 0
                 };
 
                 Session.Save(appData);
             }
-
-            appData.Entries = entries;
+            else
+            {
+                appData.Entries = entries;
+                Session.Update(appData);
+            }
         }
 
         public decimal GetDefaultApportionmentPercentage(int clientId, int roomId, int accountId)

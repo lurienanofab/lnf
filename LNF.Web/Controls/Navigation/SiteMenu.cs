@@ -1,5 +1,4 @@
-﻿using LNF.Data;
-using System;
+﻿using System;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -8,9 +7,9 @@ namespace LNF.Web.Controls.Navigation
 {
     public class SiteMenu : WebControl
     {
-        [Inject] public IProvider Provider { get; set; }
         public HttpContextBase ContextBase { get; }
-        public IClient CurrentUser => ContextBase.CurrentUser(Provider);
+        public int CurrentUserClientID { get; set; }
+        public bool UseHttps { get; set; }
 
         public SiteMenu()
         {
@@ -30,7 +29,7 @@ namespace LNF.Web.Controls.Navigation
         {
             if (Context.Session["SiteMenu"] == null)
             {
-                Context.Session["SiteMenu"] = WebUtility.GetSiteMenu(CurrentUser.ClientID, Target);
+                Context.Session["SiteMenu"] = WebUtility.GetSiteMenu(CurrentUserClientID, Target, UseHttps);
             }
 
             return new HtmlString(Convert.ToString(Context.Session["SiteMenu"]));

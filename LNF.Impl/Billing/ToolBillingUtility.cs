@@ -8,6 +8,13 @@ namespace LNF.Impl.Billing
 {
     public static class ToolBillingUtility
     {
+        public static Dictionary<DateTime, decimal> BookingFeePercentages = new Dictionary<DateTime, decimal>
+        {
+            [DateTime.Parse("1900-01-01")] = 0.0M,
+            [DateTime.Parse("2011-04-01")] = 0.1M,
+            [DateTime.Parse("2020-05-01")] = 0.0M
+        };
+
         /// <summary>
         /// This is the date we started charging users with original reservation time instead of usage time
         /// </summary>
@@ -67,24 +74,35 @@ namespace LNF.Impl.Billing
             }
         }
 
+        private static decimal GetBookingFeePercentage(DateTime period)
+        {
+            decimal result = 0;
+
+            foreach(var kvp in BookingFeePercentages)
+            {
+                if (period >= kvp.Key)
+                    result = kvp.Value;
+            }
+
+            return result;
+        }
+
         public static void CalculateBookingFee(IToolBilling item)
         {
-            decimal bookingFeePercentage = 0.1M;
-
             //before April 2011 there was no booking fee concept
             if (item.Period < April2011)
-                item.BookingFee = 0;
+                item.BookingFee = GetBookingFeePercentage(item.Period);
 
             //as of April 2011 and before June 2013
             else if (item.Period >= April2011 && item.Period < June2013)
             {
                 if (item.IsCancelledBeforeAllowedTime)
-                    item.BookingFee = item.ResourceRate * (item.MaxReservedDuration / 60) * bookingFeePercentage * item.ChargeMultiplier;
+                    item.BookingFee = item.ResourceRate * (item.MaxReservedDuration / 60) * GetBookingFeePercentage(item.Period) * item.ChargeMultiplier;
                 else
                 {
                     //if user made smaller reservation and used it, we still charge those old booking fee
                     if (item.MaxReservedDuration > item.ChargeDuration)
-                        item.BookingFee = item.ResourceRate * ((item.MaxReservedDuration - item.ChargeDuration) / 60) * bookingFeePercentage * item.ChargeMultiplier;
+                        item.BookingFee = item.ResourceRate * ((item.MaxReservedDuration - item.ChargeDuration) / 60) * GetBookingFeePercentage(item.Period) * item.ChargeMultiplier;
                     else
                         item.BookingFee = 0;
                 }
@@ -131,7 +149,8 @@ namespace LNF.Impl.Billing
                     //      reservation that was canceled for modification by definition).
                 }
 
-                item.BookingFee = amount * bookingFeePercentage * item.ChargeMultiplier;
+                // As of May 2020 the percentage is zero because booking fees are being waived due to COVID-19.
+                item.BookingFee = amount * GetBookingFeePercentage(item.Period) * item.ChargeMultiplier;
             }
         }
 

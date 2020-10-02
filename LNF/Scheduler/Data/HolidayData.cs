@@ -34,10 +34,5 @@ namespace LNF.Scheduler.Data
 
             return dt;
         }
-
-        public static bool IsHoliday(DateTime now)
-        {
-            return ServiceProvider.Current.Data.Holiday.IsHoliday(now);
-        }
     }
 }

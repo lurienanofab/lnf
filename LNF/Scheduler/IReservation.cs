@@ -4,13 +4,9 @@ using System.Collections.Generic;
 
 namespace LNF.Scheduler
 {
-    public interface IReservation : IResource, IPrivileged
+    public interface IReservation : IResource, IPrivileged, IClientOrg
     {
         int ReservationID { get; set; }
-        string LName { get; set; }
-        string MName { get; set; }
-        string FName { get; set; }
-        string DisplayName { get; }
         int AccountID { get; set; }
         string AccountName { get; set; }
         string ShortCode { get; set; }
@@ -22,6 +18,9 @@ namespace LNF.Scheduler
         bool Editable { get; set; }
         bool IsRepair { get; }
         bool IsFacilityDownTime { get; set; }
+        string LName { get; set; }
+        string FName { get; set; }
+        string DisplayName { get; }
         DateTime BeginDateTime { get; set; }
         DateTime EndDateTime { get; set; }
         DateTime? ActualBeginDateTime { get; set; }

@@ -24,6 +24,7 @@ namespace LNF.Impl.Mappings.Data
             Map(x => x.Active);
             Map(x => x.IsChecked, "isChecked");
             Map(x => x.IsSafetyTest, "isSafetyTest");
+            Map(x => x.RequirePasswordReset);
         }
     }
 }

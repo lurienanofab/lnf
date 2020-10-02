@@ -12,11 +12,14 @@ namespace LNF.Data
         IEnumerable<IClient> FindByCommunity(int flag, bool? active = true);
         IClient FindByDisplayName(string displayName);
         IEnumerable<IClient> FindByManager(int managerClientId, bool? active = true);
+        IPasswordResetRequest GetPasswordResetRequest(string code);
         IEnumerable<IClient> FindByPeriod(IClient client, DateTime period, bool displayAllUsersToStaff = false);
         IEnumerable<IClient> FindByPrivilege(ClientPrivilege priv, bool? active = true);
+        bool GetRequirePasswordReset(int clientId);
         IEnumerable<IClient> FindByTools(int[] resourceIds, bool? active = true);
         int GetActiveAccountCount(int clientId);
         IClientPreference GetClientPreference(int clientId, string appName);
+        IEnumerable<IClient> GetClients();
         IEnumerable<IClient> GetClients(int limit, int skip = 0);
         IEnumerable<IClient> GetClients(int[] ids);
         IEnumerable<IClient> GetActiveClients();
@@ -40,12 +43,16 @@ namespace LNF.Data
         IClientDemographics GetClientDemographics(int clientId);
         bool UpdateClientDemographics(IClientDemographics value);
         IEnumerable<IClientAccount> GetClientAccounts();
+        IPasswordResetRequest AddPasswordResetRequest(int clientId);
         IEnumerable<IClientAccount> GetClientAccounts(int clientId);
         IEnumerable<IClientAccount> GetClientAccounts(IClient client);
         IEnumerable<IClientAccount> GetClientAccounts(int clientId, int[] accountIds);
         IEnumerable<IClientAccount> GetActiveClientAccounts();
         IEnumerable<IClientAccount> GetActiveClientAccounts(int clientId);
+        IEnumerable<IClientAccount> GetActiveClientAccounts(int[] clientIds);
         IEnumerable<IClientAccount> GetActiveClientAccounts(int clientId, DateTime sd, DateTime ed);
+        IEnumerable<IClientAccount> GetActiveClientAccounts(string username);
+        IEnumerable<IClientAccount> GetActiveClientAccounts(string username, DateTime sd, DateTime ed);
         IEnumerable<IClientAccountAssignment> GetClientAccountAssignments(int managerOrgId);
         string AccountEmail(int clientId, int accountId);
         string AccountPhone(int clientId, int accountId);
@@ -70,6 +77,7 @@ namespace LNF.Data
         void InsertClientRemote(IClientRemote model, DateTime period);
         void DeleteClientRemote(int clientRemoteId, DateTime period);
         IEnumerable<IClientRemote> GetActiveClientRemotes(DateTime sd, DateTime ed);
+        void SetRequirePasswordReset(int clientId, bool value);
         IEnumerable<IPriv> GetPrivs();
         IEnumerable<ICommunity> GetCommunities();
         IEnumerable<IClientManager> GetClientManagersByManager(int managerOrgId);
@@ -80,5 +88,6 @@ namespace LNF.Data
         IMessengerMessage CreateMessage(int clientId, string subject, string body, int parentId, bool disableReply, bool exclusive, bool acknowledgeRequired, bool blockAccess, int accessCutoff);
         void SendMessage(int messageId, int[] recipients);
         IEnumerable<IMessengerRecipient> GetMessages(int clientId, string folder);
+        void CompletePasswordReset(int clientId, string code);
     }
 }

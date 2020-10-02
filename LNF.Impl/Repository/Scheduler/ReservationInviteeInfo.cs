@@ -8,9 +8,9 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual int InviteeID { get; set; }
         public virtual string InviteeLName { get; set; }
         public virtual string InviteeFName { get; set; }
+        public virtual string InviteeDisplayName => Clients.GetDisplayName(InviteeLName, InviteeFName);
         public virtual ClientPrivilege InviteePrivs { get; set; }
         public virtual bool InviteeActive { get; set; }
-        public virtual bool Removed { get; set; }
 
 
         public override bool Equals(object obj)

@@ -186,7 +186,7 @@ namespace OnlineServices.Api.Scheduler
             throw new NotImplementedException();
         }
 
-        public SaveReservationHistoryResult SaveReservationHistory(IReservation item, int accountId, double forgivenPct, string notes, bool emailClient)
+        public SaveReservationHistoryResult SaveReservationHistory(IReservation item, int accountId, double? forgivenPct, string notes, bool emailClient)
         {
             throw new NotImplementedException();
         }
@@ -447,7 +447,7 @@ namespace OnlineServices.Api.Scheduler
             throw new NotImplementedException();
         }
 
-        public void DeleteInvitee(int reservationId, int inviteeId)
+        public bool DeleteInvitee(int reservationId, int inviteeId)
         {
             throw new NotImplementedException();
         }
@@ -522,7 +522,7 @@ namespace OnlineServices.Api.Scheduler
             throw new NotImplementedException();
         }
 
-        public IEnumerable<IAvailableInvitee> GetAvailableInvitees(int reservationId, int resourceId, int activityId, int clientId)
+        public IEnumerable<AvailableInvitee> GetAvailableInvitees(int reservationId, int resourceId, int activityId, int clientId)
         {
             throw new NotImplementedException();
         }
@@ -538,6 +538,11 @@ namespace OnlineServices.Api.Scheduler
         }
 
         public IAutoEndLog AddAutoEndLog(IReservation rsv, string action)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int InsertReservationRecurrence(int resourceId, int clientId, int accountId, int activityId, int patternId, int param1, int? param2, DateTime beginDateTime, double duration, DateTime? endDate, bool autoEnd, bool keepAlive, string notes)
         {
             throw new NotImplementedException();
         }

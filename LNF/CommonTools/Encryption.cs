@@ -6,6 +6,7 @@ using System.Text;
 
 namespace LNF.CommonTools
 {
+    // This is the old encryption method keeping until all old passwords are changed.
     public class Encryption
     {
         private static string SecretKey

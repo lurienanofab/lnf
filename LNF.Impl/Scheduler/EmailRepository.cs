@@ -193,7 +193,7 @@ namespace LNF.Impl.Scheduler
         }
 
         //Send email to invitees when they are invited to a reservation
-        public void EmailOnInvited(IReservation rsv, IEnumerable<IReservationInvitee> invitees, int clientId, ReservationModificationType modificationType = ReservationModificationType.Created)
+        public void EmailOnInvited(IReservation rsv, IEnumerable<Invitee> invitees, int clientId, ReservationModificationType modificationType = ReservationModificationType.Created)
         {
             if (invitees == null) return;
 
@@ -239,7 +239,7 @@ namespace LNF.Impl.Scheduler
         }
 
         //Send email to invitees when they are uninvited to a reservation
-        public void EmailOnUninvited(IReservation rsv, IEnumerable<IReservationInvitee> invitees, int clientId)
+        public void EmailOnUninvited(IReservation rsv, IEnumerable<Invitee> invitees, int clientId)
         {
             if (invitees == null) return;
 

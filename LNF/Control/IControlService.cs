@@ -15,6 +15,7 @@ namespace LNF.Control
         IEnumerable<IActionInstance> GetActionInstances(string actionName, int index);
         IActionInstance GetActionInstance(ActionType action, int actionId);
         IActionInstance GetActionInstance(ActionType action, IPoint point);
+        IBlock GetBlock(int blockId);
         IEnumerable<IBlock> GetBlocks();
         IPoint GetPoint(int pointId);
         IControlAction GetControlAction(string actionName);

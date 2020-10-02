@@ -1,6 +1,6 @@
-﻿using LNF.Impl.DataAccess;
+﻿using LNF.DataAccess;
+using LNF.Impl.DataAccess;
 using LNF.Impl.Repository.Data;
-using NHibernate;
 using System.Data;
 using System.Linq;
 
@@ -9,11 +9,16 @@ namespace LNF.Impl.Repository
     public abstract class RepositoryBase
     {
         private ISessionManager _mgr;
-        public ISession Session => _mgr.Session;
+        public NHibernate.ISession Session => _mgr.Session;
 
         public RepositoryBase(ISessionManager mgr)
         {
             _mgr = mgr;
+        }
+
+        protected IUnitOfWork NewUnitOfWork()
+        {
+            return new NHibernateUnitOfWork(_mgr);
         }
 
         protected IQueryable<ActiveLog> ActiveLogQuery(string tableName)

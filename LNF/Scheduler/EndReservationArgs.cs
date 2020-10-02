@@ -9,7 +9,7 @@ namespace LNF.Scheduler
         public EndReservationArgs(int reservationId, DateTime actualEndDateTime, int endedByClientId)
         {
             ReservationID = reservationId;
-            ActualEndDateTime = ActualEndDateTime;
+            ActualEndDateTime = actualEndDateTime;
             EndedByClientID = endedByClientId;
         }
 

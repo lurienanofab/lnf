@@ -84,6 +84,11 @@ namespace LNF.Impl.Repository.Data
         public virtual bool? IsSafetyTest { get; set; }
 
         /// <summary>
+        /// Indicates if a Client must reset their password on next login
+        /// </summary>
+        public virtual bool RequirePasswordReset { get; set; }
+
+        /// <summary>
         /// Indicates if a Client is currently active
         /// </summary>
         public override bool Active { get; set; }

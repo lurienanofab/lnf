@@ -19,7 +19,7 @@ namespace LNF.Impl.Data
 
         public IEnumerable<IClient> GetClientOrgs(int orgId)
         {
-            return Session.Query<ClientOrgInfo>().Where(x => x.OrgID == orgId).CreateModels<IClient>();
+            return Session.Query<ClientOrgInfo>().Where(x => x.OrgID == orgId).ToList();
         }
 
         public IEnumerable<IDepartment> GetDepartments(int orgId)

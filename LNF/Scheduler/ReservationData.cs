@@ -11,13 +11,13 @@ namespace LNF.Scheduler
         public ReservationData(IEnumerable<IReservationProcessInfo> processInfos)
             : this(processInfos, null) { }
 
-        public ReservationData(IEnumerable<IReservationInvitee> invitees)
+        public ReservationData(IEnumerable<Invitee> invitees)
             : this(null, invitees) { }
 
-        public ReservationData(IEnumerable<IReservationProcessInfo> processInfos, IEnumerable<IReservationInvitee> invitees)
+        public ReservationData(IEnumerable<IReservationProcessInfo> processInfos, IEnumerable<Invitee> invitees)
         {
             ProcessInfos = processInfos == null ? new List<IReservationProcessInfo>() : processInfos.ToList();
-            Invitees = invitees == null ? new List<IReservationInvitee>() : invitees.ToList();
+            Invitees = invitees == null ? new List<Invitee>() : invitees.ToList();
         }
 
         public int ClientID { get; set; }
@@ -30,7 +30,7 @@ namespace LNF.Scheduler
         public bool KeepAlive { get; set; }
         public ReservationDuration Duration { get; set; }
         public IList<IReservationProcessInfo> ProcessInfos { get; }
-        public IList<IReservationInvitee> Invitees { get; }
+        public IList<Invitee> Invitees { get; }
 
         /// <summary>
         /// Creates an instance of InsertReservationArgs with the current ReservationData object. Nothing is done to the database.

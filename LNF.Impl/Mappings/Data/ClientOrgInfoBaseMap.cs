@@ -17,6 +17,7 @@ namespace LNF.Impl.Mappings.Data
             Map(x => x.Communities);
             Map(x => x.IsChecked);
             Map(x => x.IsSafetyTest);
+            Map(x => x.RequirePasswordReset);
             Map(x => x.ClientActive);
             Map(x => x.DemCitizenID);
             Map(x => x.DemCitizenName);

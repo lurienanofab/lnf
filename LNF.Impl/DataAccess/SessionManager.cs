@@ -1,12 +1,14 @@
 ﻿using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
 using FluentNHibernate.Conventions.Helpers;
+using LNF.DataAccess;
 using LNF.Impl.DataAccess.ModelFactory;
 using NHibernate;
 using NHibernate.Context;
 using System;
 using System.Configuration;
 using System.Diagnostics;
+using System.IO;
 
 namespace LNF.Impl.DataAccess
 {
@@ -14,11 +16,62 @@ namespace LNF.Impl.DataAccess
     {
         void OpenSession();
         void CloseSession();
-        ISession Session { get; }
+        NHibernate.ISession Session { get; }
         ISessionFactory GetSessionFactory();
         bool ShowSql { get; }
         string UniversalPassword { get; }
         bool IsProduction();
+    }
+
+    public class ThreadStaticSession : SessionBase
+    {
+        public static SessionBase Current { get; }
+
+        static ThreadStaticSession()
+        {
+            Current = new ThreadStaticSession();
+        }
+
+        private ThreadStaticSession() { }
+
+        public override ISessionManager SessionManager => SessionManager<ThreadStaticSessionContext>.Current;
+        protected override IDataAccessService NewDataAccessService() => new NHibernateDataAccess<ThreadStaticSessionContext>(SessionManager);
+    }
+
+    public class WebSession : SessionBase
+    {
+        public static SessionBase Current { get; }
+
+        static WebSession()
+        {
+            Current = new WebSession();
+        }
+
+        private WebSession() { }
+
+        public override ISessionManager SessionManager => SessionManager<WebSessionContext>.Current;
+        protected override IDataAccessService NewDataAccessService() => new NHibernateDataAccess<WebSessionContext>(SessionManager);
+    }
+
+    public abstract class SessionBase
+    {
+        private IDataAccessService _service;
+
+        public abstract ISessionManager SessionManager { get; }
+
+        public IDataAccessService GetDataAccessService()
+        {
+            if (_service == null)
+                _service = NewDataAccessService(); //new NHibernateDataAccess<WebSessionContext>(SessionManager);
+            return _service;
+        }
+
+        protected abstract IDataAccessService NewDataAccessService();
+
+        public LNF.DataAccess.ISession GetSession() => GetDataAccessService().Session;
+        public NHibernate.ISession GetNHibernateSession() => SessionManager.Session;
+
+        public IUnitOfWork StartUnitOfWork() => new NHibernateUnitOfWork(SessionManager);
     }
 
     public class SessionManager<T> : ISessionManager where T : ICurrentSessionContext
@@ -32,19 +85,34 @@ namespace LNF.Impl.DataAccess
 
         static SessionManager()
         {
-            // this forces the dlls to be copied.
-            // see https://stackoverflow.com/questions/15816769/dependent-dll-is-not-getting-copied-to-the-build-output-folder-in-visual-studio
-            Remotion.Linq.QueryModel q = null;
-            if (q != null) throw new Exception();
-            Remotion.Linq.EagerFetching.FetchManyRequest x = null;
-            if (x != null) throw new Exception();
+            try
+            {
+                // this forces the dlls to be copied.
+                // see https://stackoverflow.com/questions/15816769/dependent-dll-is-not-getting-copied-to-the-build-output-folder-in-visual-studio
+                Remotion.Linq.QueryModel q = null;
+                if (q != null) throw new Exception("q is not null");
+                Remotion.Linq.EagerFetching.FetchManyRequest x = null;
+                if (x != null) throw new Exception("x is not null");
 
-            Current = new SessionManager<T>();
+                Current = new SessionManager<T>();
 
-            ModelFactoryProvider.Setup(new ValueInjecterModelFactory(Current));
+                ModelFactoryProvider.Setup(new ValueInjecterModelFactory(Current));
+            }
+            catch (Exception ex)
+            {
+                var path = Path.Combine(ConfigurationManager.AppSettings["SecurePath"], "logs", "SesisonManagerError.log");
+
+                using (var writer = File.AppendText(path))
+                {
+                    writer.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}]");
+                    writer.WriteLine(ex.ToString());
+                }
+
+                throw ex;
+            }
         }
 
-        private SessionManager()
+        protected SessionManager()
         {
             lock (_locker)
             {
@@ -113,7 +181,7 @@ namespace LNF.Impl.DataAccess
         {
             if (!CurrentSessionContext.HasBind(_sessionFactory))
             {
-                ISession session = _sessionFactory.OpenSession();
+                NHibernate.ISession session = _sessionFactory.OpenSession();
                 CurrentSessionContext.Bind(session);
 
                 if (!IsProduction())
@@ -127,13 +195,13 @@ namespace LNF.Impl.DataAccess
         {
             if (CurrentSessionContext.HasBind(_sessionFactory))
             {
-                ISession session = CurrentSessionContext.Unbind(_sessionFactory);
+                NHibernate.ISession session = CurrentSessionContext.Unbind(_sessionFactory);
                 session.Close();
                 session.Dispose();
             }
         }
 
-        public ISession Session => _sessionFactory.GetCurrentSession();
+        public NHibernate.ISession Session => _sessionFactory.GetCurrentSession();
 
         public ISessionFactory GetSessionFactory() => _sessionFactory;
 

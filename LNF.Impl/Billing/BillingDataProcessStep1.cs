@@ -191,9 +191,9 @@ namespace LNF.Impl.Billing
                                 DataRow[] drsClientRemote = dtClientRemote.Select($"ClientID = {cid} AND AccountID = {aid}");
 
                                 if (drsClientRemote.Length > 0)
-                                    ndr["BillingTypeID"] = BillingTypes.Remote;
+                                    ndr["BillingTypeID"] = BillingTypes.Remote.BillingTypeID;
                                 else
-                                    ndr["BillingTypeID"] = BillingTypes.RegularException;
+                                    ndr["BillingTypeID"] = BillingTypes.RegularException.BillingTypeID;
 
                                 dtAccount.Rows.Add(ndr);
 

@@ -2,7 +2,7 @@
 
 namespace LNF.Scheduler
 {
-    public class ReservationInProgress
+    public class RepairInProgress
     {
         public int ReservationID { get; set; }
         public int ResourceID { get; set; }

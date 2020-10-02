@@ -130,6 +130,11 @@ namespace LNF
 
     public class DataAccessServiceElement : ServiceElement
     {
+        public override bool IsReadOnly()
+        {
+            return false;
+        }
+
         [ConfigurationProperty("showSql", IsRequired = false, DefaultValue = false)]
         public bool ShowSql
         {

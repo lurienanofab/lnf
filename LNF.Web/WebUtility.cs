@@ -228,7 +228,7 @@ namespace LNF.Web
         /// <summary>
         /// Gets the site menu html for a particular user from a web service.
         /// </summary>
-        public static IHtmlString GetSiteMenu(int clientId, string target)
+        public static IHtmlString GetSiteMenu(int clientId, string target, bool https)
         {
             // Why get the html from an ajax service?
             //  Because then there is one place where the menu is generated and can be used in different projects
@@ -247,6 +247,7 @@ namespace LNF.Web
 
             var request = new RestRequest("webapi/data/ajax/menu");
             request.AddParameter("clientId", clientId);
+            request.AddParameter("https", https);
 
             if (!string.IsNullOrEmpty(target))
                 request.AddParameter("target", target);

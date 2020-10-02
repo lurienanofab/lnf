@@ -24,8 +24,8 @@ namespace LNF.Impl.Mappings.Data
             Map(x => x.Communities);
             Map(x => x.TechnicalInterestID);
             Map(x => x.Active);
-            Map(x => x.isChecked);
-            Map(x => x.isSafetyTest);
+            Map(x => x.IsChecked, "isChecked");
+            Map(x => x.IsSafetyTest, "isSafetyTest");
             Map(x => x.OrgID);
             Map(x => x.Email);
             Map(x => x.Phone);

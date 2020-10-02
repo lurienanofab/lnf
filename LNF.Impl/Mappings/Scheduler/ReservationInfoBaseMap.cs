@@ -53,6 +53,15 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.MName);
             Map(x => x.FName);
             Map(x => x.Privs);
+            Map(x => x.ClientOrgID);
+            Map(x => x.ClientAddressID);
+            Map(x => x.Phone);
+            Map(x => x.Email);
+            Map(x => x.IsManager);
+            Map(x => x.IsFinManager);
+            Map(x => x.SubsidyStartDate);
+            Map(x => x.NewFacultyStartDate);
+            Map(x => x.ClientOrgActive);
             Map(x => x.AccountID);
             Map(x => x.AccountName);
             Map(x => x.ShortCode);

@@ -51,9 +51,16 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual ClientPrivilege Privs { get; set; }
 
         // ***** ClientOrg ************************************************************************
+        public virtual int ClientOrgID { get; set; }
+        public virtual int ClientAddressID { get; set; }
         public virtual string Phone { get; set; }
         public virtual string Email { get; set; }
-
+        public virtual bool IsManager { get; set; }
+        public virtual bool IsFinManager { get; set; }
+        public virtual DateTime? SubsidyStartDate { get; set; }
+        public virtual DateTime? NewFacultyStartDate { get; set; }
+        public virtual bool ClientOrgActive { get; set; }
+        
         // ***** Account **************************************************************************
         public virtual int AccountID { get; set; }
         public virtual string AccountName { get; set; }

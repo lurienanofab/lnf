@@ -14,6 +14,15 @@ namespace LNF.Scheduler
         public string FName { get; set; }
         public string DisplayName => Clients.GetDisplayName(LName, FName);
         public ClientPrivilege Privs { get; set; }
+        public int ClientOrgID { get; set; }
+        public int ClientAddressID { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public bool IsManager { get; set; }
+        public bool IsFinManager { get; set; }
+        public DateTime? SubsidyStartDate { get; set; }
+        public DateTime? NewFacultyStartDate { get; set; }
+        public bool ClientOrgActive { get; set; }
         public int AccountID { get; set; }
         public string AccountName { get; set; }
         public string ShortCode { get; set; }

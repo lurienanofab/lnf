@@ -2,13 +2,17 @@
 using LNF.Data;
 using LNF.Scheduler;
 using System;
+using System.CodeDom;
+using System.CodeDom.Compiler;
 using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -858,10 +862,10 @@ namespace LNF.CommonTools
             foreach (var t in types)
             {
                 var assignable = (from domainAssembly in assemblies
-                                 from assemblyType in domainAssembly.GetExportedTypes()
-                                 where t.IsAssignableFrom(assemblyType)
-                                 where assemblyType.IsSubclassOf(t) && !assemblyType.IsAbstract
-                                 select assemblyType).ToArray();
+                                  from assemblyType in domainAssembly.GetExportedTypes()
+                                  where t.IsAssignableFrom(assemblyType)
+                                  where assemblyType.IsSubclassOf(t) && !assemblyType.IsAbstract
+                                  select assemblyType).ToArray();
 
                 result.AddRange(assignable);
             }

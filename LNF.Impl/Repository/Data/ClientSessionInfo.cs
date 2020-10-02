@@ -20,8 +20,8 @@ namespace LNF.Impl.Repository.Data
         public virtual int Communities { get; set; }
         public virtual int TechnicalInterestID { get; set; }
         public virtual bool Active { get; set; }
-        public virtual bool? isChecked { get; set; }
-        public virtual bool? isSafetyTest { get; set; }
+        public virtual bool? IsChecked { get; set; }
+        public virtual bool? IsSafetyTest { get; set; }
         public virtual int OrgID { get; set; }
         public virtual string Email { get; set; }
         public virtual string Phone { get; set; }

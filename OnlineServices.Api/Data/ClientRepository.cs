@@ -369,5 +369,50 @@ namespace OnlineServices.Api.Data
         {
             throw new NotImplementedException();
         }
+
+        public IEnumerable<IClient> GetClients()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool GetRequirePasswordReset(int clientId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IPasswordResetRequest GetPasswordResetRequest(string code)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IPasswordResetRequest AddPasswordResetRequest(int clientId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CompletePasswordReset(int clientId, string code)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetRequirePasswordReset(int clientId, bool value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IClientAccount> GetActiveClientAccounts(int[] clientIds)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IClientAccount> GetActiveClientAccounts(string username)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IClientAccount> GetActiveClientAccounts(string username, DateTime sd, DateTime ed)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

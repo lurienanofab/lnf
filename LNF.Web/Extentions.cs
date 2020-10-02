@@ -16,11 +16,14 @@ namespace LNF.Web
     {
         public static void LoadPrivs(this ListItemCollection items, IProvider provider)
         {
+            if (provider == null)
+                throw new ArgumentNullException("provider");
+
             var privs = provider.Data.Client.GetPrivs().ToList();
 
             foreach (var p in privs)
             {
-                var item = new System.Web.UI.WebControls.ListItem
+                var item = new ListItem
                 {
                     Text = p.PrivType,
                     Value = ((int)p.PrivFlag).ToString()
@@ -32,9 +35,12 @@ namespace LNF.Web
 
         public static ClientPrivilege CalculatePriv(this ListItemCollection items)
         {
+            if (items == null)
+                throw new ArgumentNullException("items");
+
             int result = 0;
 
-            foreach (System.Web.UI.WebControls.ListItem chkPriv in items)
+            foreach (ListItem chkPriv in items)
             {
                 if (chkPriv.Selected)
                     result += int.Parse(chkPriv.Value);
@@ -45,9 +51,12 @@ namespace LNF.Web
 
         public static int CalculateCommunities(this ListItemCollection items)
         {
+            if (items == null)
+                throw new ArgumentNullException("items");
+
             int result = 0;
 
-            foreach (System.Web.UI.WebControls.ListItem chk in items)
+            foreach (ListItem chk in items)
             {
                 if (chk.Selected)
                     result += int.Parse(chk.Value);
@@ -61,6 +70,9 @@ namespace LNF.Web
     {
         public static string GetDocumentContents(this HttpRequest request)
         {
+            if (request == null)
+                throw new ArgumentNullException("request");
+
             string documentContents;
             using (Stream receiveStream = request.InputStream)
             {
@@ -74,6 +86,9 @@ namespace LNF.Web
 
         public static T GetDocumentContents<T>(this HttpRequest request)
         {
+            if (request == null)
+                throw new ArgumentNullException("request");
+
             var json = request.GetDocumentContents();
             return JsonConvert.DeserializeObject<T>(json);
         }
@@ -83,6 +98,12 @@ namespace LNF.Web
     {
         public static IClient CurrentUser(this HttpContextBase context, IProvider provider)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
+            if (provider == null)
+                throw new ArgumentNullException("provider");
+
             if (context.Items["CurrentUser"] == null)
             {
                 context.Items["CurrentUser"] = provider.Data.Client.GetClient(context.User.Identity.Name);
@@ -93,8 +114,23 @@ namespace LNF.Web
             return result;
         }
 
+        public static string CurrentDisplayName(this HttpContextBase context)
+        {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
+            if (context.Items["CurrentUser"] == null)
+                return "unknown";
+
+            IClient client = (IClient)context.Items["CurrentUser"];
+            return client.DisplayName;
+        }
+
         public static string CurrentIP(this HttpContextBase context)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
             string ipAddress = context.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
 
             if (!string.IsNullOrEmpty(ipAddress))
@@ -114,6 +150,12 @@ namespace LNF.Web
         /// </summary>
         public static IClient CheckSession(this HttpContextBase context, IProvider provider)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
+            if (provider == null)
+                throw new ArgumentNullException("provider");
+
             IClient model = null;
 
             if (context.User.Identity.IsAuthenticated)
@@ -149,6 +191,12 @@ namespace LNF.Web
 
         public static IClient CheckSession(this HttpContextBase context, IProvider provider, IClient client)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
+            if (provider == null)
+                throw new ArgumentNullException("provider");
+
             // at this point the client object still might be null because unauthenticated requests are allowed in some cases
             // and we should now check the session UserName value (if client is null then default values will be used)
             IClient result;
@@ -186,19 +234,42 @@ namespace LNF.Web
                 context.Session[SessionKeys.Cache] = Guid.NewGuid().ToString("n");
             }
 
+            if (result != null)
+            {
+                CheckSessionVar(context, SessionKeys.ClientID, result.ClientID);
+                CheckSessionVar(context, SessionKeys.UserName, result.UserName);
+                CheckSessionVar(context, SessionKeys.DisplayName, result.DisplayName);
+                CheckSessionVar(context, SessionKeys.Email, result.Email);
+            }
+
             // now we either have an authenticated user with matching session variables
             // or no authentication was required and the session variables have default values
             return result;
         }
 
+        private static void CheckSessionVar(HttpContextBase context, string key, object val)
+        {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
+            if (context.Session[key] == null || context.Session[SessionKeys.DisplayName] != val)
+                context.Session[SessionKeys.DisplayName] = val;
+        }
+
         public static void RemoveAllSessionValues(this HttpContextBase context)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
             foreach (string key in SessionKeys.AllKeys())
                 context.Session.Remove(key);
         }
 
         public static string GetCurrentUserName(this HttpContextBase context)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
             var user = context.User;
             if (user == null || user.Identity == null) return null;
             return user.Identity.Name;
@@ -206,16 +277,25 @@ namespace LNF.Web
 
         public static void ClearErrorID(this HttpContextBase context)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
             context.Session.Remove(SessionKeys.ErrorID);
         }
 
         public static void SetErrorID(this HttpContextBase context, Guid value)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
             context.Session[SessionKeys.ErrorID] = value;
         }
 
         public static Guid GetErrorID(this HttpContextBase context)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
             if (context.Session[SessionKeys.ErrorID] != null)
             {
                 if (Guid.TryParse(Convert.ToString(context.Session[SessionKeys.ErrorID]), out Guid result))
@@ -227,12 +307,18 @@ namespace LNF.Web
 
         public static void RemoveCacheData(this HttpContextBase context)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
             context.Cache.Remove(context.CacheID().ToString("n"));
             context.Session.Remove(SessionKeys.Cache);
         }
 
         public static Guid CacheID(this HttpContextBase context)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
             if (context.Session["Cache"] == null)
                 context.Session["Cache"] = Guid.NewGuid();
 
@@ -241,12 +327,18 @@ namespace LNF.Web
 
         public static void CacheData(this HttpContextBase context, DataSet ds)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
             var key = context.CacheID().ToString("n");
             context.Cache.Insert(key, ds, null, DateTime.Now.AddMinutes(10), System.Web.Caching.Cache.NoSlidingExpiration);
         }
 
         public static DataSet CacheData(this HttpContextBase context)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
             var key = context.CacheID().ToString("n");
             var obj = context.Cache[key];
             if (obj == null) return null;
@@ -258,6 +350,9 @@ namespace LNF.Web
         /// </summary>
         public static IEnumerable<IClient> GetCurrentUserClientOrgs(this HttpContextBase context)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
             var obj = context.Cache["CurrentUserClientOrgs"];
             if (obj == null) return null;
             else return (IEnumerable<IClient>)obj;
@@ -269,6 +364,9 @@ namespace LNF.Web
         /// </summary>
         public static IEnumerable<IClientAccount> GetCurrentUserClientAccounts(this HttpContextBase context)
         {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
             var obj = context.Cache["CurrentUserClientAccounts"];
             if (obj == null) return null;
             else return (IEnumerable<IClientAccount>)obj;

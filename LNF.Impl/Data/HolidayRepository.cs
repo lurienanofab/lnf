@@ -29,10 +29,14 @@ namespace LNF.Impl.Data
 
         public bool IsHoliday(DateTime now)
         {
-            return Session
-                .CreateSQLQuery("EXEC dbo.Holiday_Select @Action = 'IsHoliday', @sDate = :sdate")
-                .SetParameter("sdate", now)
-                .UniqueResult<bool>();
+            var dt = Session.Command()
+                .Param("Action", "IsHoliday")
+                .Param("sDate", now)
+                .FillDataTable("sselData.dbo.Holiday_Select");
+
+            var result = dt.Rows.Count > 0;
+
+            return result;
         }
     }
 }

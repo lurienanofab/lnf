@@ -70,7 +70,6 @@ namespace LNF.Impl.DataAccess.ModelFactory
             result.InviteeLName = source.Invitee.FName;
             result.InviteePrivs = source.Invitee.Privs;
             result.InviteeActive = source.Invitee.Active;
-            result.Removed = false;
 
             return result;
         }

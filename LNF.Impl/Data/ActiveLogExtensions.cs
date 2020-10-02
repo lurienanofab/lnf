@@ -14,6 +14,7 @@ namespace LNF.Impl.Data
         internal static IEnumerable<T> FindActive<T>(this IQueryable<T> query, Expression<Func<T, int>> record, DateTime sd, DateTime ed, IQueryable<ActiveLog> alogs) where T : IDataItem
         {
             var list = query.ToList().AsQueryable();
+
             var join1 = list.Join(alogs, record, i => i.Record, (o, i) => new { Item = o, ActiveLog = i })
                 .Where(x => x.ActiveLog.EnableDate < ed && (x.ActiveLog.DisableDate == null || x.ActiveLog.DisableDate.Value > sd))
                 .ToList();
@@ -22,9 +23,11 @@ namespace LNF.Impl.Data
                     join1.GroupBy(x => x.ActiveLog.Record).Select(g => new { Record = g.Key, LogID = g.Max(n => n.ActiveLog.LogID) }),
                     o => o.ActiveLog.LogID,
                     i => i.LogID,
-                    (o, i) => o.Item);
+                    (o, i) => o.Item).ToList();
 
-            return join1.Select(x => x.Item);
+            var result = join1.Select(x => x.Item).ToList();
+
+            return result;
         }
 
         internal static void Disable(this NHibernate.ISession session, IActiveDataItem item)

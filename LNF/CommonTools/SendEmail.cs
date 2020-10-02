@@ -42,7 +42,12 @@ namespace LNF.CommonTools
             SendSystemEmail(caller, subject, body, DeveloperEmails, false);
         }
 
-        public static void SendErrorEmail(Exception ex, IClient client, string app, string ip, Uri url)
+        public static void SendErrorEmail(Exception ex, string msg, IClient client, string app, string ip, Uri url)
+        {
+            SendErrorEmail(new[] { ex }, msg, client, app, ip, url);
+        }
+
+        public static void SendErrorEmail(IEnumerable<Exception> exceptions, string msg, IClient client, string app, string ip, Uri url)
         {
             var now = DateTime.Now;
             var body = new StringBuilder();
@@ -51,14 +56,25 @@ namespace LNF.CommonTools
             body.AppendLine($"Current IP: {ip}");
             body.AppendLine($"Current url: {url}");
             body.AppendLine($"Current user: {GetClientName(client)}");
-            body.AppendLine($"Message: {ex.Message}");
-            body.AppendLine("StackTrace:");
-            body.Append(ex.StackTrace);
+
+            foreach(var ex in exceptions)
+            {
+                body.AppendLine("--------------------------------------------------");
+                body.AppendLine($"Message: {ex.Message}");
+                body.AppendLine("StackTrace:");
+                body.AppendLine(ex.StackTrace);
+            }
+
+            if (!string.IsNullOrEmpty(msg))
+            {
+                body.AppendLine("--------------------------------------------------");
+                body.AppendLine(msg);
+            }
 
             SendDeveloperEmail("LNF.CommonTools.SendEmail.SendErrorEmail", $"ERROR in {app} application at {now:yyyy-MM-dd HH:mm:ss}", body.ToString());
         }
 
-        public static string GetClientName(IClient client) => client == null ? "unknown" : $"{client.DisplayName} [{client.ClientID}]";
+        public static string GetClientName(IClient client) => client == null ? "unknown" : $"{client.DisplayName} [{client.UserName}] [{client.ClientID}]";
 
         public static string SystemEmail => Utility.GetGlobalSetting("SystemEmail");
 

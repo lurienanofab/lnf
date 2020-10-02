@@ -2,6 +2,8 @@
 using LNF.Impl;
 using LNF.Impl.DataAccess;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SimpleInjector;
+using SimpleInjector.Lifestyles;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -13,17 +15,22 @@ namespace LNF.Tests
     [TestClass]
     public abstract class TestBase
     {
-        private DependencyResolver _resolver;
+        private Container _container;
         private IDisposable _uow;
 
-        public ISessionManager SessionManager => _resolver.GetInstance<ISessionManager>();
+        public ISessionManager SessionManager => _container.GetInstance<ISessionManager>();
         public NHibernate.ISession Session => SessionManager.Session;
-        public IProvider Provider => _resolver.GetInstance<IProvider>();
+        public IProvider Provider => _container.GetInstance<IProvider>();
 
         [TestInitialize]
         public void TestInitialize()
         {
-            _resolver = new ThreadStaticResolver();
+            _container = new Container();
+            _container.Options.DefaultScopedLifestyle = new ThreadScopedLifestyle();
+
+            var cfg = new ThreadStaticContainerConfiguration(_container);
+            cfg.Configure();
+
             ServiceProvider.Setup(Provider);
             _uow = StartUnitOfWork();
         }
@@ -87,7 +94,7 @@ namespace LNF.Tests
 
         public IUnitOfWork StartUnitOfWork()
         {
-            return _resolver.GetInstance<IUnitOfWork>();
+            return _container.GetInstance<IUnitOfWork>();
         }
     }
 

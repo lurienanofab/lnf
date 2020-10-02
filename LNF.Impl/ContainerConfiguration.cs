@@ -45,31 +45,24 @@ using NHibernate.Context;
 using SimpleInjector;
 using SimpleInjector.Advanced;
 using SimpleInjector.Diagnostics;
+using SimpleInjector.Integration.Web;
 using System;
 using System.Linq;
 using System.Reflection;
 
 namespace LNF.Impl
 {
-    public abstract class DependencyResolver
+    public abstract class ContainerConfiguration
     {
-        protected readonly Container _container;
+        private Container _container;
 
-        protected virtual ScopedLifestyle GetDefaultScopedLifestyle() => null;
-
-        protected virtual bool EnablePropertyInjection => false;
-
-        public DependencyResolver()
+        public ContainerConfiguration(Container container)
         {
-            _container = new Container();
+            _container = container ?? throw new ArgumentNullException("container");
+        }
 
-            var defaultScopedLifestyle = GetDefaultScopedLifestyle();
-            if (defaultScopedLifestyle != null)
-              _container.Options.DefaultScopedLifestyle = defaultScopedLifestyle;
-
-            if (EnablePropertyInjection)
-                _container.Options.PropertySelectionBehavior = new InjectPropertySelectionBehavior();
-
+        public virtual void Configure()
+        {
             // Context API
             RegisterContext();
 
@@ -189,13 +182,6 @@ namespace LNF.Impl
             RegisterSingleton<ICache, DefaultCache>();
         }
 
-        public Container GetContainer() => _container;
-
-        public virtual TService GetInstance<TService>() where TService : class
-        {
-            return _container.GetInstance<TService>();
-        }
-
         protected virtual void Register<TService, TImplementation>()
             where TService : class
             where TImplementation : class, TService
@@ -232,15 +218,6 @@ namespace LNF.Impl
             _container.Register(concreteType, implementationType, Lifestyle.Singleton);
         }
 
-        protected virtual IScriptEngine GetScriptingService()
-        {
-            // At this point IScriptingService is implemented in LNF.Scripting. Any
-            // project that needs it should implement a new version of this class and
-            // override this method.
-            IScriptEngine result = null;
-            return result;
-        }
-
         protected abstract void RegisterContext();
 
         protected abstract void RegisterSessionManager();
@@ -255,15 +232,19 @@ namespace LNF.Impl
         }
     }
 
-    public class WebResolver : DependencyResolver
+    public class WebContainerConfiguration : ContainerConfiguration
     {
+        public WebContainerConfiguration(Container container) : base(container) { }
+
         protected override void RegisterContext() => RegisterSingleton<IContext, WebContext>();
         protected override void RegisterSessionManager() => RegisterSingleton(() => SessionManager<WebSessionContext>.Current);
         protected override void RegisterDataAccessService() => RegisterSingleton<IDataAccessService, NHibernateDataAccess<WebSessionContext>>();
     }
 
-    public class ThreadStaticResolver : DependencyResolver
+    public class ThreadStaticContainerConfiguration : ContainerConfiguration
     {
+        public ThreadStaticContainerConfiguration(Container container) : base(container) { }
+
         protected override void RegisterContext() => RegisterSingleton<IContext, DefaultContext>();
         protected override void RegisterSessionManager() => RegisterSingleton(() => SessionManager<ThreadStaticSessionContext>.Current);
         protected override void RegisterDataAccessService() => RegisterSingleton<IDataAccessService, NHibernateDataAccess<ThreadStaticSessionContext>>();

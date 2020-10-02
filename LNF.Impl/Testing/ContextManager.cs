@@ -1,5 +1,6 @@
 ﻿using LNF.Repository;
 using Moq;
+using SimpleInjector;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,7 +20,7 @@ namespace LNF.Impl.Testing
         public IDictionary ContextItems { get; }
         public SessionItemCollection SessionItems { get; }
         public NameValueCollection QueryString { get; }
-        public ThreadStaticResolver Resolver { get; }
+        public ThreadStaticContainerConfiguration ContainerConfiguration { get; }
         public HttpContextBase ContextBase { get; }
 
         public ContextManager(string ipaddr, string username, IDictionary contextItems = null, SessionItemCollection sessionItems = null, NameValueCollection queryString = null)
@@ -44,9 +45,11 @@ namespace LNF.Impl.Testing
 
             ContextBase = CreateHttpContext();
 
-            Resolver = new ThreadStaticResolver();
+            var container = new Container();
+            ContainerConfiguration = new ThreadStaticContainerConfiguration(container);
+            ContainerConfiguration.Configure();
 
-            ServiceProvider.Setup(Resolver.GetInstance<IProvider>());
+            ServiceProvider.Setup(container.GetInstance<IProvider>());
 
             Login(username);
 

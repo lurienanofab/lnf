@@ -31,7 +31,7 @@ namespace LNF.Impl.Reporting
 
         public IEnumerable<IReportingClient> SelectActiveManagers(DateTime period)
         {
-            var managers = Session.Query<ClientAccountInfo>().Where(x => x.Manager).FindActive(x => x.ClientAccountID, period, period.AddMonths(1), ActiveLogQuery("ClientAccount"));
+            var managers = Session.Query<ClientAccountInfo>().Where(x => x.Manager).FindActive(x => x.ClientAccountID, period, period.AddMonths(1), ActiveLogQuery("ClientAccount")).ToList();
 
             var items = CreateClientItems(managers.Where(x => x.EmailRank == 1).AsQueryable());
 

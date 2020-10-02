@@ -17,7 +17,7 @@ namespace LNF.Impl.Repository.Meter
         {
             var query = session.Query<MeterData>().Where(x => x.FileIndex == fileIndex);
             var result = query.Count();
-            session.Delete(query);
+            session.DeleteMany(query);
             return result;
         }
     }

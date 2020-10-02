@@ -2,7 +2,7 @@
 
 namespace LNF.Data
 {
-    public interface IClient : IPrivileged, IOrg
+    public interface IClient : IPrivileged, IClientOrg, IOrg
     {
         string FName { get; set; }
         string MName { get; set; }
@@ -11,6 +11,7 @@ namespace LNF.Data
         int Communities { get; set; }
         bool IsChecked { get; set; }
         bool IsSafetyTest { get; set; }
+        bool RequirePasswordReset { get; set; }
         bool ClientActive { get; set; }
         int DemCitizenID { get; set; }
         string DemCitizenName { get; set; }
@@ -33,15 +34,6 @@ namespace LNF.Data
         /// </summary>
         string TechnicalInterestName { get; set; }
 
-        int ClientOrgID { get; set; }
-        string Phone { get; set; }
-        string Email { get; set; }
-        bool IsManager { get; set; }
-        bool IsFinManager { get; set; }
-        DateTime? SubsidyStartDate { get; set; }
-        DateTime? NewFacultyStartDate { get; set; }
-        int ClientAddressID { get; set; }
-        bool ClientOrgActive { get; set; }
         int DepartmentID { get; set; }
         string DepartmentName { get; set; }
         int RoleID { get; set; }
