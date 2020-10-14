@@ -3,11 +3,14 @@ using LNF.Impl.DataAccess;
 using LNF.Impl.Repository.Data;
 using System.Data;
 using System.Linq;
+using System.Runtime.Caching;
 
 namespace LNF.Impl.Repository
 {
     public abstract class RepositoryBase
     {
+        protected static MemoryCache Cache { get; } = new MemoryCache("RepositoryCache");
+
         private ISessionManager _mgr;
         public NHibernate.ISession Session => _mgr.Session;
 

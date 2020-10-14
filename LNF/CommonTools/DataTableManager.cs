@@ -8,21 +8,28 @@ namespace LNF.CommonTools
     //to this on the fourth business day
     //also, check that res.isactive=0 has null for act times, etc
 
-    public static class DataTableManager
+    public class DataTableManager
     {
-        private readonly static WriteData _wd;
-
-        static DataTableManager()
+        private DataTableManager(IProvider provider)
         {
-            _wd = new WriteData(ServiceProvider.Current);
+            _provider = provider;
+            _wd = new WriteData(provider);
         }
 
-        public static UpdateTablesResult Update(BillingCategory types)
+        public static DataTableManager Create(IProvider provider)
+        {
+            return new DataTableManager(provider);
+        }
+
+        private readonly IProvider _provider;
+        private readonly WriteData _wd;
+
+        public UpdateTablesResult Update(BillingCategory types)
         {
             return _wd.UpdateTables(types);
         }
 
-        public static FinalizeResult Finalize(DateTime period)
+        public FinalizeResult Finalize(DateTime period)
         {
             return _wd.Finalize(period);
         }

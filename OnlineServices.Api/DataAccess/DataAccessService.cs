@@ -1,5 +1,6 @@
 ﻿using LNF.DataAccess;
 using System;
+using System.Data.Common;
 
 namespace OnlineServices.Api.DataAccess
 {
@@ -17,6 +18,11 @@ namespace OnlineServices.Api.DataAccess
         }
 
         public IUnitOfWork StartUnitOfWork()
+        {
+            throw new NotImplementedException();
+        }
+
+        public DbConnection CreateConnection(string connstr)
         {
             throw new NotImplementedException();
         }

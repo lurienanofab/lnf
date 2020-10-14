@@ -64,11 +64,11 @@ namespace LNF.Impl.Billing
                 else
                     result = item.AccountDays * item.RoomRate + item.EntryCharge;
             }
-            else if (item.BillingTypeID == BillingTypes.Other.BillingTypeID)
+            else if (item.BillingTypeID == BillingTypes.Other)
             {
                 result = 0;
             }
-            else if (item.BillingTypeID == BillingTypes.Grower_Observer.BillingTypeID)
+            else if (item.BillingTypeID == BillingTypes.Grower_Observer)
             {
                 result = item.TotalCharge;
             }

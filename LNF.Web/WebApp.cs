@@ -1,4 +1,5 @@
-﻿using LNF.Impl;
+﻿using LNF.DataAccess;
+using LNF.Impl;
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
 using SimpleInjector;
 using SimpleInjector.Diagnostics;
@@ -23,6 +24,7 @@ namespace LNF.Web
         }
 
         private Container _container;
+        private bool _dataAccessRegistered = false;
 
         private WebApp()
         {
@@ -72,6 +74,7 @@ namespace LNF.Web
         public void Configure()
         {
             var cfg = new WebContainerConfiguration(_container);
+            cfg.SkipDataAccessRegistration = _dataAccessRegistered;
             cfg.Configure();
         }
 
@@ -84,6 +87,12 @@ namespace LNF.Web
         public T GetInstance<T>() where T : class
         {
             return _container.GetInstance<T>();
+        }
+
+        public void RegisterDataAccess<TImplementation>() where TImplementation : class, IDataAccessService
+        {
+            _container.RegisterSingleton<IDataAccessService, TImplementation>();
+            _dataAccessRegistered = true;
         }
 
         public void Register<TService, TImplementation>()

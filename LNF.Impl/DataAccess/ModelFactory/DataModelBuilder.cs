@@ -82,7 +82,6 @@ namespace LNF.Impl.DataAccess.ModelFactory
             Map<Priv, PrivItem, IPriv>();
             Map<Community, CommunityItem, ICommunity>();
             Map<News, INews>(MapNews);
-            Map<Cost, CostItem, ICost>();
             Map<Holiday, HolidayItem, IHoliday>();
             Map<InvalidEmailList, InvalidEmailItem, IInvalidEmail>();
             Map<StaffDirectory, IStaffDirectory>(MapStaffDirectory);

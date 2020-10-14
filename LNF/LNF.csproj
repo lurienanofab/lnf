@@ -306,7 +306,6 @@
     <Compile Include="Data\ClientManagerItem.cs" />
     <Compile Include="Data\ClientRemoteItem.cs" />
     <Compile Include="Data\CommunityItem.cs" />
-    <Compile Include="Data\CostItem.cs" />
     <Compile Include="Data\DataFeedItem.cs" />
     <Compile Include="Data\DataFeedResult.cs" />
     <Compile Include="Data\DataService.cs" />
@@ -517,7 +516,6 @@
     <Compile Include="Repository\UnitOfWorkAdapter.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Scheduler\ActivityItem.cs" />
     <Compile Include="Scheduler\AuthLevelItem.cs" />
     <Compile Include="Scheduler\AutoEndLogItem.cs" />
     <Compile Include="Scheduler\AvailableInvitee.cs" />
@@ -559,6 +557,8 @@
     <Compile Include="Scheduler\IReservationGroup.cs" />
     <Compile Include="Scheduler\IReservationHistory.cs" />
     <Compile Include="Scheduler\IReservationInvitee.cs" />
+    <Compile Include="Scheduler\IReservationInviteeItem.cs" />
+    <Compile Include="Scheduler\IReservationItem.cs" />
     <Compile Include="Scheduler\IReservationProcessInfo.cs" />
     <Compile Include="Scheduler\IReservationRecurrence.cs" />
     <Compile Include="Scheduler\IReservationRepository.cs" />
@@ -576,8 +576,6 @@
     <Compile Include="Scheduler\KioskItem.cs" />
     <Compile Include="Scheduler\LabItem.cs" />
     <Compile Include="Scheduler\OnTheFlyResourceItem.cs" />
-    <Compile Include="Scheduler\ProcessInfoItem.cs" />
-    <Compile Include="Scheduler\ProcessInfoLineItem.cs" />
     <Compile Include="Scheduler\ProcessTechGroupItem.cs" />
     <Compile Include="Scheduler\ProcessTechItem.cs" />
     <Compile Include="Scheduler\ReservationClient.cs" />
@@ -597,14 +595,12 @@
     <Compile Include="Scheduler\RepairInProgress.cs" />
     <Compile Include="Scheduler\ReservationInvitees.cs" />
     <Compile Include="Scheduler\ReservationItem.cs" />
-    <Compile Include="Scheduler\ReservationProcessInfoItem.cs" />
     <Compile Include="Scheduler\ReservationRecurrenceItem.cs" />
     <Compile Include="Scheduler\ReservationStateArgs.cs" />
     <Compile Include="Scheduler\Reservations.cs" />
     <Compile Include="Scheduler\ReservationStateItem.cs" />
     <Compile Include="Scheduler\ReservationStateUtility.cs" />
     <Compile Include="Scheduler\ReservationTime.cs" />
-    <Compile Include="Scheduler\ResourceActivityAuthItem.cs" />
     <Compile Include="Scheduler\ResourceClients.cs" />
     <Compile Include="Scheduler\OnTheFlyUtility.cs" />
     <Compile Include="Data\AddressItem.cs" />

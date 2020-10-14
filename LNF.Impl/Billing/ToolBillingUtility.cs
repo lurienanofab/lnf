@@ -337,7 +337,7 @@ namespace LNF.Impl.Billing
                         result = item.UncancelledPenaltyFee + item.ReservationFee2;
                 }
             }
-            else if (item.BillingTypeID == BillingTypes.Other.BillingTypeID)
+            else if (item.BillingTypeID == BillingTypes.Other)
             {
                 //based on sselIndReports.AppCode.BLL.ToolBillingBL.GetToolBillingDataByClientID20110701 the Other billing type is not set to zero any longer
                 result = item.GetTotalCharge();

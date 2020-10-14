@@ -1,5 +1,6 @@
 ﻿using LNF.Billing;
 using System;
+using System.Collections.Generic;
 
 namespace OnlineServices.Api.Billing
 {
@@ -21,6 +22,11 @@ namespace OnlineServices.Api.Billing
         }
 
         public IOrgRecharge GetOrgRecharge(int orgId, DateTime sd, DateTime ed)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IOrgRecharge> GetActiveOrgRecharges()
         {
             throw new NotImplementedException();
         }

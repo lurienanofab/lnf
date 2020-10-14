@@ -68,9 +68,9 @@ namespace LNF.Impl.Repository.Billing
                 if (cr != null)
                     record = cr.ClientRemoteID;
                 if (record == 0)
-                    result = BillingTypes.RegularException;
+                    result = BillingTypes.Instance.RegularException;
                 else
-                    result = BillingTypes.Remote;
+                    result = BillingTypes.Instance.Remote;
             }
             else
             {
@@ -85,7 +85,7 @@ namespace LNF.Impl.Repository.Billing
                 if (cobtlog != null)
                     result = session.Require<BillingType>(cobtlog.BillingTypeID);
                 if (result == null)
-                    result = BillingTypes.Regular;
+                    result = BillingTypes.Instance.Regular;
             }
 
             return result;

@@ -1,5 +1,7 @@
 ﻿using LNF.DataAccess;
 using NHibernate.Context;
+using System.Data.Common;
+using System.Data.SqlClient;
 
 namespace LNF.Impl.DataAccess
 {
@@ -13,6 +15,11 @@ namespace LNF.Impl.DataAccess
         public IUnitOfWork StartUnitOfWork() => new NHibernateUnitOfWork(SessionManager<T>.Current);
 
         public ISession Session { get; }
+
+        public virtual DbConnection CreateConnection(string connstr)
+        {
+            return new SqlConnection(connstr);
+        }
 
         public bool ShowSql => SessionManager<T>.Current.ShowSql;
 

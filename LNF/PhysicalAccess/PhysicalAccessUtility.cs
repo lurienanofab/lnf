@@ -8,12 +8,19 @@ namespace LNF.PhysicalAccess
 {
     public class PhysicalAccessUtility
     {
+        /// <summary>
+        /// Checks if on a kiosk based on ip, or if override is true (set in web.config).
+        /// </summary>
         public bool IsOnKiosk { get; }
+
         public IEnumerable<Badge> CurrentlyInLab { get; }
-        
-        public PhysicalAccessUtility(IEnumerable<Badge> inlab, string kioskIp)
+
+        public PhysicalAccessUtility(IEnumerable<Badge> inlab, string kioskIp, IKioskRepository repo)
+            : this(inlab, Kiosks.Create(repo).IsOnKiosk(kioskIp)) { }
+
+        public PhysicalAccessUtility(IEnumerable<Badge> inlab, bool isOnKiosk)
         {
-            IsOnKiosk = Kiosks.IsOnKiosk(kioskIp);
+            IsOnKiosk = isOnKiosk;
             CurrentlyInLab = inlab;
         }
 

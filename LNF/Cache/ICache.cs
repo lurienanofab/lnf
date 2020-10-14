@@ -17,9 +17,6 @@ namespace LNF.Cache
         bool ShowCanceledForModification { get; }
         bool UseStartReservationPage { get; }
         bool WagoEnabled { get; }
-        IEnumerable<IClient> Clients();
-        IClient GetClient(int clientId);
-        IClient GetClient(string username);
         bool IsProduction();
 
         //void AbandonSession();

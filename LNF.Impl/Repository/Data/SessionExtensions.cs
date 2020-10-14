@@ -8,6 +8,14 @@ namespace LNF.Impl.Repository.Data
 {
     public static class SessionExtensions
     {
+        public static IEnumerable<CurrentCost> FindCurrentCosts(this ISession session, string[] tables, int recordId = 0, int chargeTypeId = 0)
+        {
+            return session.Query<CurrentCost>().Where(x =>
+                tables.Contains(x.TableNameOrDescription)
+                && (chargeTypeId == 0 || x.ChargeTypeID == chargeTypeId)
+                && (recordId == 0 || x.RecordID == recordId || x.RecordID == null || x.RecordID == 0)).ToList();
+        }
+
         public static IEnumerable<Cost> FindCosts(this ISession session, string[] tables, DateTime? cutoff = null, int recordId = 0, int chargeTypeId = 0)
         {
             var query = session.Query<Cost>().Where(x =>

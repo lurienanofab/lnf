@@ -36,15 +36,6 @@ namespace LNF.Impl.DataAccess.ModelFactory
             return result;
         }
 
-        private IProcessInfoLine MapProcessInfoLine(ProcessInfoLine source)
-        {
-            var result = MapFrom<ProcessInfoLineItem>(source);
-            result.ProcessInfoLineParamID = source.ProcessInfoLineParam.ProcessInfoLineParamID;
-            result.ResourceID = source.ProcessInfoLineParam.Resource.ResourceID;
-            result.ResourceName = source.ProcessInfoLineParam.Resource.ResourceName;
-            return result;
-        }
-
         private IReservationWithInvitees MapReservationWithInvitees(Reservation source)
         {
             var info = Session.Get<ReservationInfo>(source.ReservationID);
@@ -104,12 +95,8 @@ namespace LNF.Impl.DataAccess.ModelFactory
             Map<Reservation, IReservationWithInvitees>(MapReservationWithInvitees);
             Map<ReservationInfo, IReservationWithInvitees>(MapReservationWithInvitees);
             Map<ReservationInvitee, IReservationInvitee>(MapReservationInvitee);
-            Map<ProcessInfo, ProcessInfoItem, IProcessInfo>();
-            Map<ProcessInfoLine, IProcessInfoLine>(MapProcessInfoLine);
-            Map<ReservationProcessInfo, ReservationProcessInfoItem, IReservationProcessInfo>();
             Map<ReservationRecurrenceInfo, ReservationRecurrenceItem, IReservationRecurrence>();
             Map<ReservationRecurrence, ReservationRecurrenceInfo, ReservationRecurrenceItem, IReservationRecurrence>(x => x.RecurrenceID);
-            Map<Activity, ActivityItem, IActivity>();
         }
     }
 }

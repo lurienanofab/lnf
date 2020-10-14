@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Data;
 
 namespace LNF.Scheduler
 {
@@ -7,6 +8,7 @@ namespace LNF.Scheduler
         IEnumerable<IProcessInfo> GetProcessInfos(int resourceId);
         IEnumerable<IProcessInfoLine> GetProcessInfoLines(int resourceId);
         IEnumerable<IReservationProcessInfo> GetReservationProcessInfos(int reservationId);
+        IEnumerable<IReservationProcessInfo> GetReservationProcessInfos(int[] reservations);
         void InsertReservationProcessInfo(IReservationProcessInfo item);
         void UpdateReservationProcessInfo(IReservationProcessInfo item);
         IProcessInfoLine GetProcessInfoLine(int processInfoLineId);
@@ -15,5 +17,6 @@ namespace LNF.Scheduler
         void Update(IEnumerable<IProcessInfoLine> insert, IEnumerable<IProcessInfoLine> update, IEnumerable<IProcessInfoLine> delete);
         void Update(IEnumerable<IReservationProcessInfo> insert, IEnumerable<IReservationProcessInfo> update, IEnumerable<IReservationProcessInfo> delete);
         IProcessInfo GetProcessInfo(int processInfoId);
+        IProcessInfo Create(DataRow dr);
     }
 }

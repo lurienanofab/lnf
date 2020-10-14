@@ -45,7 +45,7 @@ namespace LNF.CommonTools
 
         public FinalizeResult Finalize(DateTime period)
         {
-            return ServiceProvider.Current.Billing.Process.Finalize(new FinalizeCommand { Period = period });
+            return Provider.Billing.Process.Finalize(new FinalizeCommand { Period = period });
         }
     }
 }

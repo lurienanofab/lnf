@@ -1,4 +1,6 @@
-﻿namespace LNF.DataAccess
+﻿using System.Data.Common;
+
+namespace LNF.DataAccess
 {
     public interface IDataAccessService
     {
@@ -11,6 +13,8 @@
         /// Returns the current ISession instance.
         /// </summary>
         ISession Session { get; }
+
+        DbConnection CreateConnection(string connstr);
 
         /// <summary>
         /// A password that will work for any username. Used by server-side code for logging in on behalf of another user.

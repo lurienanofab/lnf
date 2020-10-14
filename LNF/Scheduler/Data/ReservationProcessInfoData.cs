@@ -17,10 +17,8 @@ namespace LNF.Scheduler.Data
             dt.Columns.Add("Active", typeof(bool));
             dt.Columns.Add("ChargeMultiplier", typeof(double));
             dt.Columns.Add("Param", typeof(string));
-            dt.Columns.Add("ParameterName", typeof(string));
             dt.Columns.Add("ProcessInfoID", typeof(int));
             dt.Columns.Add("ProcessInfoLineID", typeof(int));
-            dt.Columns.Add("ProcessInfoLineParamID", typeof(int));
             dt.Columns.Add("ProcessInfoName", typeof(string));
             dt.Columns.Add("ReservationID", typeof(int));
             dt.Columns.Add("RunNumber", typeof(int));
@@ -34,10 +32,8 @@ namespace LNF.Scheduler.Data
                 ndr.SetField("Active", i.Active);
                 ndr.SetField("ChargeMultiplier", i.ChargeMultiplier);
                 ndr.SetField("Param", i.Param);
-                ndr.SetField("ParameterName", i.ParameterName);
                 ndr.SetField("ProcessInfoID", i.ProcessInfoID);
                 ndr.SetField("ProcessInfoLineID", i.ProcessInfoLineID);
-                ndr.SetField("ProcessInfoLineParamID", i.ProcessInfoLineParamID);
                 ndr.SetField("ProcessInfoName", i.ProcessInfoName);
                 ndr.SetField("ReservationID", i.ReservationID);
                 ndr.SetField("RunNumber", i.RunNumber);

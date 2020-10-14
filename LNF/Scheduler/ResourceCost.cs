@@ -33,7 +33,7 @@ namespace LNF.Scheduler
             if (cost.ChargeTypeID != overtime.ChargeTypeID)
                 throw new ArgumentException($"ChargeTypeID mismatch: cost.ChargeTypeID = {cost.ChargeTypeID}, overtime.ChargeTypeID = {overtime.ChargeTypeID}");
 
-            ResourceID = cost.RecordID;
+            ResourceID = cost.RecordID.GetValueOrDefault();
             ChargeTypeID = cost.ChargeTypeID;
             AcctPer = cost.AcctPer;
             AddVal = cost.AddVal;

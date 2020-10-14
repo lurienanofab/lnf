@@ -6,9 +6,19 @@ using System.Runtime.Caching;
 
 namespace LNF.Scheduler
 {
-    public static class Kiosks
+    public class Kiosks
     {
-        private readonly static MemoryCache _cache = new MemoryCache("KioskCache");
+        public IKioskRepository Repository { get; }
+
+        private Kiosks(IKioskRepository repo)
+        {
+            Repository = repo;    
+        }
+
+        public static Kiosks Create(IKioskRepository repo)
+        {
+            return new Kiosks(repo);
+        }
 
         public static bool OverrideIsOnKiosk
         {
@@ -22,7 +32,7 @@ namespace LNF.Scheduler
         /// <summary>
         /// Checks if the kiosk ip begins with the ResourceIPPrefix (e.g. 192.168.1), or is a defined kiosk IP. Does not check if user is in the lab.
         /// </summary>
-        public static bool IsKiosk(string kioskIp)
+        public bool IsKiosk(string kioskIp)
         {
             // Check for local server
             if (kioskIp == "127.0.0.1")
@@ -33,6 +43,10 @@ namespace LNF.Scheduler
             if (kioskIp.StartsWith(Properties.Current.ResourceIPPrefix))
                 return true;
 
+            // check ips in web.config
+            if (GetKiosksFromAppSettings().Contains(kioskIp))
+                return true;
+
             // check ips in the database
             if (GetKiosks().Any(x => x.KioskIP == kioskIp))
                 return true;
@@ -41,35 +55,23 @@ namespace LNF.Scheduler
         }
 
         /// <summary>
-        /// Checks if on a kiosk based on ip, or if override is true (set in web.config).
+        /// Checks if on a kiosk based on ip (set in database), or if override is true (set in appSettings), or if ip is a defined kiosk (set in appSettings).
         /// </summary>
-        public static bool IsOnKiosk(string kioskIp)
+        public bool IsOnKiosk(string kioskIp)
         {
             if (OverrideIsOnKiosk) return true;
             if (IsKiosk(kioskIp)) return true;
             return false;
         }
 
-        public static IEnumerable<IKiosk> GetKiosks()
+        public IEnumerable<IKiosk> GetKiosks() => Repository.GetKiosks();
+
+        public static string[] GetKiosksFromAppSettings()
         {
-            IEnumerable<IKiosk> kiosks;
-
-            if (!_cache.Contains("Kiosks"))
-            {
-                kiosks = ServiceProvider.Current.Scheduler.Kiosk.GetKiosks();
-                _cache.Add("Kiosks", kiosks, new CacheItemPolicy() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(60) });
-            }
-            else
-            {
-                kiosks = (IEnumerable<IKiosk>)_cache["Kiosks"];
-            }
-
-            return kiosks;
-        }
-
-        public static void ClearCache()
-        {
-            _cache.Remove("Kiosks");
+            var setting = ConfigurationManager.AppSettings["Kiosks"];
+            if (string.IsNullOrEmpty(setting)) return new string[0];
+            string[] result = setting.Split(',');
+            return result;
         }
 
         public static string KioskRedirectUrl(string ip)

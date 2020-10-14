@@ -103,14 +103,40 @@ namespace LNF.Impl.Scheduler
 
         public IEnumerable<IResourceActivityAuth> GetResourceActivityAuths(int resourceId)
         {
-            return Session.Query<ResourceActivityAuth>()
-                .Where(x => x.Resource.ResourceID == resourceId)
-                .CreateModels<IResourceActivityAuth>();
+            return Session.Query<ResourceActivityAuth>().Where(x => x.ResourceID == resourceId).ToList();
+        }
+
+        public IResourceActivityAuth GetResourceActivityAuth(int resourceId, int activityId)
+        {
+            return Session.Query<ResourceActivityAuth>().FirstOrDefault(x => x.ResourceID == resourceId && x.ActivityID == activityId);
+        }
+
+        public IResourceActivityAuth AddResourceActivityAuth(int resourceId, int activityId, ClientAuthLevel userAuth, ClientAuthLevel inviteeAuth, ClientAuthLevel startEndAuth, ClientAuthLevel noReservFenceAuth, ClientAuthLevel noMaxSchedAuth)
+        {
+            var rauth = new ResourceActivityAuth
+            {
+                ResourceID = resourceId,
+                ActivityID = activityId,
+                UserAuth = userAuth,
+                InviteeAuth = inviteeAuth,
+                StartEndAuth = startEndAuth,
+                NoReservFenceAuth = noReservFenceAuth,
+                NoMaxSchedAuth = noMaxSchedAuth
+            };
+
+            Session.Save(rauth);
+
+            return rauth;
         }
 
         public IEnumerable<IResourceClient> GetResourceClients(int resourceId = 0, int clientId = 0, ClientAuthLevel authLevel = 0)
         {
             return Session.SelectResourceClients(resourceId, clientId, authLevel).ToList();
+        }
+
+        public IEnumerable<IResourceClient> GetResourceClients(int[] resources)
+        {
+            return Session.Query<ResourceClientInfo>().Where(x => resources.Contains(x.ResourceID)).ToList();
         }
 
         public IEnumerable<IResourceClient> GetActiveResourceClients(int resourceId = 0, int clientId = 0, ClientAuthLevel authLevel = 0)
@@ -183,6 +209,12 @@ namespace LNF.Impl.Scheduler
         public IEnumerable<IResourceCost> GetResourceCosts(int resourceId, DateTime? cutoff = null)
         {
             var costs = Cost.FindToolCosts(resourceId, cutoff);
+            return ResourceCost.CreateResourceCosts(costs);
+        }
+
+        public IEnumerable<IResourceCost> GetCurrentResourceCosts(int resourceId)
+        {
+            var costs = Cost.FindCurrentToolCosts(resourceId);
             return ResourceCost.CreateResourceCosts(costs);
         }
 
@@ -439,24 +471,12 @@ namespace LNF.Impl.Scheduler
 
         public IEnumerable<IProcessInfoLine> GetProcessInfoLines(int resourceId)
         {
-            var query = Session.Query<ProcessInfo>().Where(x => x.Resource.ResourceID == resourceId);
+            var query = Session.Query<ProcessInfo>().Where(x => x.ResourceID == resourceId);
 
             var result = query.Join(Session.Query<ProcessInfoLine>(),
                 o => o.ProcessInfoID,
                 i => i.ProcessInfoID,
-                (o, i) => new ProcessInfoLineItem
-                {
-                    ProcessInfoLineID = i.ProcessInfoLineID,
-                    ProcessInfoID = o.ProcessInfoID,
-                    Param = i.Param,
-                    MinValue = i.MinValue,
-                    MaxValue = i.MaxValue,
-                    ProcessInfoLineParamID = i.ProcessInfoLineParam.ProcessInfoLineParamID,
-                    ResourceID = o.Resource.ResourceID,
-                    ResourceName = o.Resource.ResourceName,
-                    ParameterName = i.ProcessInfoLineParam.ParameterName,
-                    ParameterType = i.ProcessInfoLineParam.ParameterType
-                }).ToList();
+                (o, i) => i).ToList();
 
             return result;
         }

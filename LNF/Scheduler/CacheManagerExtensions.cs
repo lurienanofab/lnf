@@ -1,4 +1,5 @@
 ﻿using LNF.Cache;
+using LNF.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,7 +35,7 @@ namespace LNF.Scheduler
             //    AND IsFacilityDownTime = 0--This keeps the Facility Down Time activity out of the select when making reservations. Staff should use the link at the top of the page instead.
             //ORDER BY ListOrder
 
-            var result = c.Activities().Where(x => x.IsActive && (x.UserAuth & (int)authLevel) > 0 && x.Editable && !x.IsFacilityDownTime).OrderBy(x => x.ListOrder).ToList();
+            var result = c.Activities().Where(x => x.IsActive && (x.UserAuth & authLevel) > 0 && x.Editable && !x.IsFacilityDownTime).OrderBy(x => x.ListOrder).ToList();
 
             return result;
         }
@@ -73,9 +74,8 @@ namespace LNF.Scheduler
             return a.ClientID == clientId || a.ClientID == -1;
         }
 
-        public static ClientAuthLevel GetAuthLevel(this ICache c, int resourceId, int clientId)
+        public static ClientAuthLevel GetAuthLevel(this ICache c, int resourceId, IClient client)
         {
-            var client = c.GetClient(clientId);
             var resourceClients = c.ResourceClients(resourceId);
             return Reservations.GetAuthLevel(resourceClients, client);
         }
@@ -87,16 +87,11 @@ namespace LNF.Scheduler
         public static IEnumerable<IProcessInfoLine> ProcessInfoLines(this ICache c, int resourceId, int processInfoId) => c.GetValue($"ProcessInfoLines#{processInfoId}", p => p.Scheduler.ProcessInfo.GetProcessInfoLines(resourceId).Where(x => x.ProcessInfoID == processInfoId), DateTimeOffset.Now.AddMinutes(5));
 
         /// <summary>
-        /// Gets ResourceCosts for all ChargeTypes and Resources. Cached for 24 hours.
-        /// </summary>
-        public static IEnumerable<IResourceCost> ResourceCosts(this ICache c) => c.GetValue("ResourceCosts", p => p.Scheduler.Resource.GetResourceCosts(), DateTimeOffset.Now.AddHours(24));
-
-        /// <summary>
-        /// Gets a ResourceCost for each ChargeType for the given ResourceID.
+        /// Gets a ResourceCost for each ChargeType for the given ResourceID. Cached for 24 hours.
         /// </summary>
         public static IEnumerable<IResourceCost> ResourceCosts(this ICache c, int resourceId)
         {
-            return c.ResourceCosts().Where(x => x.ResourceID == resourceId);
+            return c.GetValue($"ResourceCosts#{resourceId}", p => p.Scheduler.Resource.GetCurrentResourceCosts(resourceId), DateTimeOffset.Now.AddHours(24));
         }
 
         /// <summary>

@@ -94,6 +94,7 @@
     <Compile Include="DataAccess\DataAccessService.cs" />
     <Compile Include="Data\Account.cs" />
     <Compile Include="Data\ActiveLogRepository.cs" />
+    <Compile Include="Data\Cost.cs" />
     <Compile Include="Data\GlobalSettingRepository.cs" />
     <Compile Include="Data\HelpRepository.cs" />
     <Compile Include="Data\HolidayRepository.cs" />

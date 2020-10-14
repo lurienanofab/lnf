@@ -22,8 +22,9 @@ namespace LNF.Impl.Scheduler
         protected IClientRepository Client { get; }
         protected IProcessRepository Process { get; }
         protected IEmailRepository Email { get; }
+        protected IKioskRepository Kiosk { get; }
 
-        public ReservationRepository(ISessionManager mgr, IClientRepository client, IProcessRepository process, IEmailRepository email) : base(mgr)
+        public ReservationRepository(ISessionManager mgr, IClientRepository client, IProcessRepository process, IEmailRepository email, IKioskRepository kiosk) : base(mgr)
         {
             Client = client;
             Process = process;
@@ -149,7 +150,7 @@ namespace LNF.Impl.Scheduler
             //DELETE FROM dbo.ReservationProcessInfo
             //WHERE ReservationID = @ReservationID
 
-            Session.DeleteMany(Session.Query<ReservationProcessInfo>().Where(x => x.Reservation.ReservationID == r.ReservationID));
+            Session.DeleteMany(Session.Query<ReservationProcessInfo>().Where(x => x.ReservationID == r.ReservationID));
 
             //-- Delete Reservation Invitees
             //DELETE FROM dbo.ReservationInvitee
@@ -604,25 +605,7 @@ namespace LNF.Impl.Scheduler
 
         public IEnumerable<IReservation> SelectByDateRange(DateTime sd, DateTime ed, bool includeDeleted)
         {
-            IEnumerable<IReservation> result;
-
-            if (includeDeleted)
-            {
-                result = Session.Query<ReservationInfo>().Where(x =>
-                    ((x.BeginDateTime < ed && x.EndDateTime > sd) ||
-                    (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd))
-                ).ToList();
-            }
-            else
-            {
-                result = Session.Query<ReservationInfo>().Where(x =>
-                    ((x.BeginDateTime < ed && x.EndDateTime > sd) ||
-                    (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd))
-                    && x.IsActive
-                ).ToList();
-            }
-
-            return result;
+            return ByDateRangeQuery<ReservationInfo>(sd, ed, includeDeleted);
         }
 
         public IEnumerable<IReservation> SelectByGroup(int groupId)
@@ -641,43 +624,17 @@ namespace LNF.Impl.Scheduler
 
         public IEnumerable<IReservation> SelectByProcessTech(int processTechId, DateTime sd, DateTime ed, bool includeDeleted)
         {
-            if (includeDeleted)
-                return Session.Query<ReservationInfo>().Where(x => x.ProcessTechID == processTechId && x.BeginDateTime < ed && x.EndDateTime > sd).ToList();
-            else
-                return Session.Query<ReservationInfo>().Where(x => x.ProcessTechID == processTechId && x.BeginDateTime < ed && x.EndDateTime > sd && x.IsActive).ToList();
+            return ByProcessTechQuery<ReservationInfo>(processTechId, sd, ed, includeDeleted);
         }
 
         public IEnumerable<IReservation> SelectByLabLocation(int labLocationId, DateTime sd, DateTime ed, bool includeDeleted)
         {
-            ReservationInfo reservation = null;
-            ResourceLabLocation location = null;
-
-            var query = Session.QueryOver(() => reservation)
-                .JoinEntityAlias(() => location, () => reservation.ResourceID == location.ResourceID)
-                .Where(() => location.LabLocationID == labLocationId && reservation.BeginDateTime < ed && reservation.EndDateTime > sd);
-
-            if (!includeDeleted)
-                query = query.And(() => reservation.IsActive);
-
-            var result = query.List();
-
-            return result;
+            return ByLabLocationQuery<ReservationInfo>(labLocationId, sd, ed, includeDeleted);
         }
 
         public IEnumerable<IReservation> SelectByResource(int resourceId, DateTime sd, DateTime ed, bool includeDeleted)
         {
-            IQueryable<ReservationInfo> query;
-
-            if (includeDeleted)
-                query = Session.Query<ReservationInfo>().Where(x => x.ResourceID == resourceId &&
-                    ((x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd)));
-            else
-                query = Session.Query<ReservationInfo>().Where(x => x.IsActive && x.ResourceID == resourceId &&
-                    ((x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd)));
-
-            IEnumerable<IReservation> result = query.ToList();
-
-            return result;
+            return ByResourceQuery<ReservationInfo>(resourceId, sd, ed, includeDeleted);
         }
 
         public IEnumerable<IReservation> SelectEndableReservations(int resourceId)
@@ -1574,7 +1531,8 @@ namespace LNF.Impl.Scheduler
             var util = ReservationStateUtility.Create(now);
 
             var inlab = PhysicalAccess.Repository.Prowatch.GetCurrentlyInArea("all");
-            var access = new PhysicalAccessUtility(inlab, kioskIp);
+            var onKiosk = Kiosks.Create(Kiosk).IsOnKiosk(kioskIp);
+            var access = new PhysicalAccessUtility(inlab, onKiosk);
 
             return items.Select(x =>
             {
@@ -1642,7 +1600,7 @@ namespace LNF.Impl.Scheduler
             var ri = FindReservationInvitee(reservationId, inviteeId);
 
             if (ri != null)
-            { 
+            {
                 Session.Delete(ri);
                 return true;
             }
@@ -1657,9 +1615,19 @@ namespace LNF.Impl.Scheduler
             return Session.Query<ReservationInviteeInfo>().Any(x => x.InviteeID == inviteeId && x.ReservationID == reservationId);
         }
 
+        public IEnumerable<IReservationInviteeItem> GetInviteeItems(int reservationId)
+        {
+            return Session.Query<ReservationInviteeItem>().Where(x => x.ReservationID == reservationId).ToList();
+        }
+
         public IEnumerable<IReservationInvitee> GetInvitees(int reservationId)
         {
             return Session.Query<ReservationInviteeInfo>().Where(x => x.ReservationID == reservationId).ToList();
+        }
+
+        public IEnumerable<IReservationInvitee> GetInvitees(int[] reservations)
+        {
+            return Session.Query<ReservationInviteeInfo>().Where(x => reservations.Contains(x.ReservationID)).ToList();
         }
 
         public IReservationInvitee GetInvitee(int reservationId, int inviteeId)
@@ -1685,6 +1653,34 @@ namespace LNF.Impl.Scheduler
             }).ToList();
 
             return result;
+        }
+
+        public IEnumerable<IReservationInviteeItem> SelectInviteesByResource(int resourceId, DateTime sd, DateTime ed, bool includeDeleted)
+        {
+            return ByResourceQuery<ReservationInviteeItem>(resourceId, sd, ed, includeDeleted);
+        }
+
+        public IEnumerable<IReservationInviteeItem> SelectInviteesByProcessTech(int processTechId, DateTime sd, DateTime ed, bool includeDeleted)
+        {
+            return ByProcessTechQuery<ReservationInviteeItem>(processTechId, sd, ed, includeDeleted);
+        }
+
+        public IEnumerable<IReservationInviteeItem> SelectInviteesByLabLocation(int labLocationId, DateTime sd, DateTime ed, bool includeDeleted)
+        {
+            return ByLabLocationQuery<ReservationInviteeItem>(labLocationId, sd, ed, includeDeleted);
+        }
+
+        public IEnumerable<IReservationInviteeItem> SelectInviteesByClient(int clientId, DateTime sd, DateTime ed, bool includeDeleted)
+        {
+            if (includeDeleted)
+                return Session.Query<ReservationInviteeItem>().Where(x => x.ClientID == clientId && x.BeginDateTime < ed && x.EndDateTime > sd).ToList();
+            else
+                return Session.Query<ReservationInviteeItem>().Where(x => x.ClientID == clientId && x.BeginDateTime < ed && x.EndDateTime > sd && x.IsActive).ToList();
+        }
+
+        public IEnumerable<IReservationInviteeItem> SelectInviteesByDateRange(DateTime sd, DateTime ed, bool includeDeleted)
+        {
+            return ByDateRangeQuery<ReservationInviteeItem>(sd, ed, includeDeleted);
         }
 
         public int[] FilterInvitedReservations(int[] reservationIds, int clientId)
@@ -1973,6 +1969,70 @@ namespace LNF.Impl.Scheduler
             var i = Session.Get<Client>(inviteeId);
             var key = new ReservationInvitee { Reservation = r, Invitee = i };
             var result = Session.Get<ReservationInvitee>(key);
+            return result;
+        }
+
+        private IEnumerable<T> ByResourceQuery<T>(int resourceId, DateTime sd, DateTime ed, bool includeDeleted) where T : IReservationItem
+        {
+            IQueryable<T> query;
+
+            if (includeDeleted)
+                query = Session.Query<T>().Where(x => x.ResourceID == resourceId &&
+                    ((x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd)));
+            else
+                query = Session.Query<T>().Where(x => x.IsActive && x.ResourceID == resourceId &&
+                    ((x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd)));
+
+            IEnumerable<T> result = query.ToList();
+
+            return result;
+        }
+
+        private IEnumerable<T> ByProcessTechQuery<T>(int processTechId, DateTime sd, DateTime ed, bool includeDeleted) where T : IReservationItem
+        {
+            if (includeDeleted)
+                return Session.Query<T>().Where(x => x.ProcessTechID == processTechId && x.BeginDateTime < ed && x.EndDateTime > sd).ToList();
+            else
+                return Session.Query<T>().Where(x => x.ProcessTechID == processTechId && x.BeginDateTime < ed && x.EndDateTime > sd && x.IsActive).ToList();
+        }
+
+        private IEnumerable<T> ByLabLocationQuery<T>(int labLocationId, DateTime sd, DateTime ed, bool includeDeleted) where T : class, IReservationItem
+        {
+            T reservation = null;
+            ResourceLabLocation location = null;
+
+            var query = Session.QueryOver(() => reservation)
+                .JoinEntityAlias(() => location, () => reservation.ResourceID == location.ResourceID)
+                .Where(() => location.LabLocationID == labLocationId && reservation.BeginDateTime < ed && reservation.EndDateTime > sd);
+
+            if (!includeDeleted)
+                query = query.And(() => reservation.IsActive);
+
+            var result = query.List();
+
+            return result;
+        }
+
+        private IEnumerable<T> ByDateRangeQuery<T>(DateTime sd, DateTime ed, bool includeDeleted) where T : IReservationItem
+        {
+            IEnumerable<T> result;
+
+            if (includeDeleted)
+            {
+                result = Session.Query<T>().Where(x =>
+                    ((x.BeginDateTime < ed && x.EndDateTime > sd) ||
+                    (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd))
+                ).ToList();
+            }
+            else
+            {
+                result = Session.Query<T>().Where(x =>
+                    ((x.BeginDateTime < ed && x.EndDateTime > sd) ||
+                    (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd))
+                    && x.IsActive
+                ).ToList();
+            }
+
             return result;
         }
 

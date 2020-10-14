@@ -6,70 +6,70 @@ namespace LNF.Scheduler
     {
         public static readonly ReservationState[] TruthTable = new[]
         {
-            ReservationState.Other, //0
-            ReservationState.Other, //1
-            ReservationState.Other, //2
-            ReservationState.Other, //3
-            ReservationState.Other, //4
-            ReservationState.Other, //5
-            ReservationState.Other, //6
-            ReservationState.Other, //7
-            ReservationState.Invited, //8
-            ReservationState.Invited, //9
-            ReservationState.Invited, //10
-            ReservationState.Invited, //11
-            ReservationState.Invited, //12
-            ReservationState.NotInLab, //13
-            ReservationState.Invited, //14
-            ReservationState.Editable, //15
-            ReservationState.Undefined,
-            ReservationState.UnAuthToStart,
-            ReservationState.Editable,
-            ReservationState.Editable,
-            ReservationState.Undefined,
-            ReservationState.NotInLab,
-            ReservationState.Editable,
-            ReservationState.Editable,
-            ReservationState.Undefined,
-            ReservationState.Undefined,
-            ReservationState.Undefined,
-            ReservationState.Undefined,
-            ReservationState.Undefined,
-            ReservationState.Undefined,
-            ReservationState.Undefined,
-            ReservationState.Undefined,
-            ReservationState.Other,
-            ReservationState.Other,
-            ReservationState.Other,
-            ReservationState.Other,
-            ReservationState.Other,
-            ReservationState.Other,
-            ReservationState.Other,
-            ReservationState.Other,
-            ReservationState.Invited,
-            ReservationState.Invited,
-            ReservationState.Invited,
-            ReservationState.Invited,
-            ReservationState.Invited,
-            ReservationState.StartOnly,
-            ReservationState.Invited,
-            ReservationState.StartOnly,
-            ReservationState.Undefined,
-            ReservationState.UnAuthToStart,
-            ReservationState.Editable,
-            ReservationState.Editable,
-            ReservationState.Undefined,
-            ReservationState.StartOnly,
-            ReservationState.Editable,
-            ReservationState.StartOrDelete,
-            ReservationState.Undefined,
-            ReservationState.Undefined,
-            ReservationState.Undefined,
-            ReservationState.Undefined,
-            ReservationState.Undefined,
-            ReservationState.Undefined,
-            ReservationState.Undefined,
-            ReservationState.Undefined
+            ReservationState.Other,         //[00]
+            ReservationState.Other,         //[01]
+            ReservationState.Other,         //[02]
+            ReservationState.Other,         //[03]
+            ReservationState.Other,         //[04]
+            ReservationState.Other,         //[05]
+            ReservationState.Other,         //[06]
+            ReservationState.Other,         //[07]
+            ReservationState.Invited,       //[08]
+            ReservationState.Invited,       //[09]
+            ReservationState.Invited,       //[10]
+            ReservationState.Invited,       //[11]
+            ReservationState.Invited,       //[12]
+            ReservationState.NotInLab,      //[13]
+            ReservationState.Invited,       //[14]
+            ReservationState.NotInLab,      //[15]
+            ReservationState.Undefined,     //[16]
+            ReservationState.UnAuthToStart, //[17]
+            ReservationState.Editable,      //[18]
+            ReservationState.Editable,      //[19]
+            ReservationState.Undefined,     //[20]
+            ReservationState.NotInLab,      //[21]
+            ReservationState.Editable,      //[22]
+            ReservationState.Editable,      //[23]
+            ReservationState.Undefined,     //[24]
+            ReservationState.Undefined,     //[25]
+            ReservationState.Undefined,     //[26]
+            ReservationState.Undefined,     //[27]
+            ReservationState.Undefined,     //[28]
+            ReservationState.Undefined,     //[29]
+            ReservationState.Undefined,     //[30]
+            ReservationState.Undefined,     //[31]
+            ReservationState.Other,         //[32]
+            ReservationState.Other,         //[33]
+            ReservationState.Other,         //[34]
+            ReservationState.Other,         //[35]
+            ReservationState.Other,         //[36]
+            ReservationState.Other,         //[37]
+            ReservationState.Other,         //[38]
+            ReservationState.Other,         //[39]
+            ReservationState.Invited,       //[40]
+            ReservationState.Invited,       //[41]
+            ReservationState.Invited,       //[42]
+            ReservationState.Invited,       //[43]
+            ReservationState.Invited,       //[44]
+            ReservationState.StartOnly,     //[45]
+            ReservationState.Invited,       //[46]
+            ReservationState.StartOrDelete, //[47] [2020-10-08 jg] changed from StartOnly to StartOrDelete so invitee can cancel reservation
+            ReservationState.Undefined,     //[48]
+            ReservationState.UnAuthToStart, //[49]
+            ReservationState.Editable,      //[50]
+            ReservationState.Editable,      //[51]
+            ReservationState.Undefined,     //[52]
+            ReservationState.StartOnly,     //[53]
+            ReservationState.Editable,      //[54]
+            ReservationState.StartOrDelete, //[55]
+            ReservationState.Undefined,     //[56]
+            ReservationState.Undefined,     //[57]
+            ReservationState.Undefined,     //[58]
+            ReservationState.Undefined,     //[59]
+            ReservationState.Undefined,     //[60]
+            ReservationState.Undefined,     //[61]
+            ReservationState.Undefined,     //[62]
+            ReservationState.Undefined      //[63]
         };
 
         public static readonly ReservationState[] TruthTableTE = new[]
@@ -103,70 +103,70 @@ namespace LNF.Scheduler
         // S - In Start Per
 
         // L  R  I  A  M  S  
-        // 0  0  0  0  0  0  ReservationState.Other
-        // 0  0  0  0  0  1  ReservationState.Other
-        // 0  0  0  0  1  0  ReservationState.Other
-        // 0  0  0  0  1  1  ReservationState.Other
-        // 0  0  0  1  0  0  ReservationState.Other
-        // 0  0  0  1  0  1  ReservationState.Other
-        // 0  0  0  1  1  0  ReservationState.Other
-        // 0  0  0  1  1  1  ReservationState.Other
-        // 0  0  1  0  0  0  ReservationState.Invited
-        // 0  0  1  0  0  1  ReservationState.Invited
-        // 0  0  1  0  1  0  ReservationState.Invited
-        // 0  0  1  0  1  1  ReservationState.Invited
-        // 0  0  1  1  0  0  ReservationState.Invited
-        // 0  0  1  1  0  1  ReservationState.NotInLab (not inlab, not reserver, is invited, is authorized, not before mct, is startable)
-        // 0  0  1  1  1  0  ReservationState.Invited
-        // 0  0  1  1  1  1  ReservationState.Editable (not inlab, not reserver, is invited, is authorized, is before mct, is startable) [2020-09-30 jg] Changed from NotInLab to Editable so invitee can cancel outside of lab if before MCT (same as reserver)
-        // 0  1  0  0  0  0  ReservationState.Undefined
-        // 0  1  0  0  0  1  ReservationState.UnAuthToStart
-        // 0  1  0  0  1  0  ReservationState.Editable
-        // 0  1  0  0  1  1  ReservationState.Editable
-        // 0  1  0  1  0  0  ReservationState.Undefined
-        // 0  1  0  1  0  1  ReservationState.NotInLab (not inlab, is reserver, not invited, is authorized, not before mct, is startable)
-        // 0  1  0  1  1  0  ReservationState.Editable
-        // 0  1  0  1  1  1  ReservationState.Editable (not inlab, is reserver, not invited, is authorized, is before mct, is startable)
-        // 0  1  1  0  0  0  ReservationState.Undefined
-        // 0  1  1  0  0  1  ReservationState.Undefined
-        // 0  1  1  0  1  0  ReservationState.Undefined
-        // 0  1  1  0  1  1  ReservationState.Undefined
-        // 0  1  1  1  0  0  ReservationState.Undefined
-        // 0  1  1  1  0  1  ReservationState.Undefined
-        // 0  1  1  1  1  0  ReservationState.Undefined
-        // 0  1  1  1  1  1  ReservationState.Undefined
-        // 1  0  0  0  0  0  ReservationState.Other
-        // 1  0  0  0  0  1  ReservationState.Other
-        // 1  0  0  0  1  0  ReservationState.Other
-        // 1  0  0  0  1  1  ReservationState.Other
-        // 1  0  0  1  0  0  ReservationState.Other
-        // 1  0  0  1  0  1  ReservationState.Other
-        // 1  0  0  1  1  0  ReservationState.Other
-        // 1  0  0  1  1  1  ReservationState.Other
-        // 1  0  1  0  0  0  ReservationState.Invited
-        // 1  0  1  0  0  1  ReservationState.Invited
-        // 1  0  1  0  1  0  ReservationState.Invited
-        // 1  0  1  0  1  1  ReservationState.Invited
-        // 1  0  1  1  0  0  ReservationState.Invited
-        // 1  0  1  1  0  1  ReservationState.StartOnly
-        // 1  0  1  1  1  0  ReservationState.Invited
-        // 1  0  1  1  1  1  ReservationState.StartOnly
-        // 1  1  0  0  0  0  ReservationState.Undefined
-        // 1  1  0  0  0  1  ReservationState.UnAuthToStart
-        // 1  1  0  0  1  0  ReservationState.Editable
-        // 1  1  0  0  1  1  ReservationState.Editable
-        // 1  1  0  1  0  0  ReservationState.Undefined
-        // 1  1  0  1  0  1  ReservationState.StartOnly
-        // 1  1  0  1  1  0  ReservationState.Editable
-        // 1  1  0  1  1  1  ReservationState.StartOrDelete
-        // 1  1  1  0  0  0  ReservationState.Undefined
-        // 1  1  1  0  0  1  ReservationState.Undefined
-        // 1  1  1  0  1  0  ReservationState.Undefined
-        // 1  1  1  0  1  1  ReservationState.Undefined
-        // 1  1  1  1  0  0  ReservationState.Undefined
-        // 1  1  1  1  0  1  ReservationState.Undefined
-        // 1  1  1  1  1  0  ReservationState.Undefined
-        // 1  1  1  1  1  1  ReservationState.Undefined
+        // 0  0  0  0  0  0  ReservationState.Other         [00]
+        // 0  0  0  0  0  1  ReservationState.Other         [01]
+        // 0  0  0  0  1  0  ReservationState.Other         [02]
+        // 0  0  0  0  1  1  ReservationState.Other         [03]
+        // 0  0  0  1  0  0  ReservationState.Other         [04]
+        // 0  0  0  1  0  1  ReservationState.Other         [05]
+        // 0  0  0  1  1  0  ReservationState.Other         [06]
+        // 0  0  0  1  1  1  ReservationState.Other         [07]
+        // 0  0  1  0  0  0  ReservationState.Invited       [08]
+        // 0  0  1  0  0  1  ReservationState.Invited       [09]
+        // 0  0  1  0  1  0  ReservationState.Invited       [10]
+        // 0  0  1  0  1  1  ReservationState.Invited       [11]
+        // 0  0  1  1  0  0  ReservationState.Invited       [12]
+        // 0  0  1  1  0  1  ReservationState.NotInLab      [13]
+        // 0  0  1  1  1  0  ReservationState.Invited       [14]
+        // 0  0  1  1  1  1  ReservationState.NotInLab      [15]
+        // 0  1  0  0  0  0  ReservationState.Undefined     [16]
+        // 0  1  0  0  0  1  ReservationState.UnAuthToStart [17]
+        // 0  1  0  0  1  0  ReservationState.Editable      [18]
+        // 0  1  0  0  1  1  ReservationState.Editable      [19]
+        // 0  1  0  1  0  0  ReservationState.Undefined     [20]
+        // 0  1  0  1  0  1  ReservationState.NotInLab      [21]
+        // 0  1  0  1  1  0  ReservationState.Editable      [22]
+        // 0  1  0  1  1  1  ReservationState.Editable      [23]
+        // 0  1  1  0  0  0  ReservationState.Undefined     [24]
+        // 0  1  1  0  0  1  ReservationState.Undefined     [25]
+        // 0  1  1  0  1  0  ReservationState.Undefined     [26]
+        // 0  1  1  0  1  1  ReservationState.Undefined     [27]
+        // 0  1  1  1  0  0  ReservationState.Undefined     [28]
+        // 0  1  1  1  0  1  ReservationState.Undefined     [29]
+        // 0  1  1  1  1  0  ReservationState.Undefined     [30]
+        // 0  1  1  1  1  1  ReservationState.Undefined     [31]
+        // 1  0  0  0  0  0  ReservationState.Other         [32]
+        // 1  0  0  0  0  1  ReservationState.Other         [33]
+        // 1  0  0  0  1  0  ReservationState.Other         [34]
+        // 1  0  0  0  1  1  ReservationState.Other         [35]
+        // 1  0  0  1  0  0  ReservationState.Other         [36]
+        // 1  0  0  1  0  1  ReservationState.Other         [37]
+        // 1  0  0  1  1  0  ReservationState.Other         [38]
+        // 1  0  0  1  1  1  ReservationState.Other         [39]
+        // 1  0  1  0  0  0  ReservationState.Invited       [40]
+        // 1  0  1  0  0  1  ReservationState.Invited       [41]
+        // 1  0  1  0  1  0  ReservationState.Invited       [42]
+        // 1  0  1  0  1  1  ReservationState.Invited       [43]
+        // 1  0  1  1  0  0  ReservationState.Invited       [44]
+        // 1  0  1  1  0  1  ReservationState.StartOnly     [45]
+        // 1  0  1  1  1  0  ReservationState.Invited       [46]
+        // 1  0  1  1  1  1  ReservationState.StartOrDelete [47] [2020-10-08 jg] changed from StartOnly to StartOrDelete so invitee can cancel reservation
+        // 1  1  0  0  0  0  ReservationState.Undefined     [48]
+        // 1  1  0  0  0  1  ReservationState.UnAuthToStart [49]
+        // 1  1  0  0  1  0  ReservationState.Editable      [50]
+        // 1  1  0  0  1  1  ReservationState.Editable      [51]
+        // 1  1  0  1  0  0  ReservationState.Undefined     [52]
+        // 1  1  0  1  0  1  ReservationState.StartOnly     [53]
+        // 1  1  0  1  1  0  ReservationState.Editable      [54]
+        // 1  1  0  1  1  1  ReservationState.StartOrDelete [55]
+        // 1  1  1  0  0  0  ReservationState.Undefined     [56]
+        // 1  1  1  0  0  1  ReservationState.Undefined     [57]
+        // 1  1  1  0  1  0  ReservationState.Undefined     [58]
+        // 1  1  1  0  1  1  ReservationState.Undefined     [59]
+        // 1  1  1  1  0  0  ReservationState.Undefined     [60]
+        // 1  1  1  1  0  1  ReservationState.Undefined     [61]
+        // 1  1  1  1  1  0  ReservationState.Undefined     [62]
+        // 1  1  1  1  1  1  ReservationState.Undefined     [63]
         // L  R  I  A  M  S 
 
         // The truth table for tool engineers is simply this

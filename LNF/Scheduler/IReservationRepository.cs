@@ -107,11 +107,25 @@ namespace LNF.Scheduler
 
         bool InviteeExists(int reservationId, int inviteeId);
 
+        IEnumerable<IReservationInviteeItem> GetInviteeItems(int reservationId);
+
         IEnumerable<IReservationInvitee> GetInvitees(int reservationId);
+
+        IEnumerable<IReservationInvitee> GetInvitees(int[] reservations);
 
         IReservationInvitee GetInvitee(int reservationId, int inviteeId);
 
         IEnumerable<AvailableInvitee> GetAvailableInvitees(int reservationId, int resourceId, int activityId, int clientId);
+
+        IEnumerable<IReservationInviteeItem> SelectInviteesByResource(int resourceId, DateTime sd, DateTime ed, bool includeDeleted);
+
+        IEnumerable<IReservationInviteeItem> SelectInviteesByProcessTech(int processTechId, DateTime sd, DateTime ed, bool includeDeleted);
+
+        IEnumerable<IReservationInviteeItem> SelectInviteesByLabLocation(int labLocationId, DateTime sd, DateTime ed, bool includeDeleted);
+
+        IEnumerable<IReservationInviteeItem> SelectInviteesByClient(int clientId, DateTime sd, DateTime ed, bool includeDeleted);
+
+        IEnumerable<IReservationInviteeItem> SelectInviteesByDateRange(DateTime sd, DateTime ed, bool includeDeleted);
 
         /// <summary>
         /// Returns the ReservationIDs in the given array to which the given client was invited.

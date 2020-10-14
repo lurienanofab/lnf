@@ -4,6 +4,7 @@ using LNF.Impl.Repository;
 using LNF.Impl.Repository.Billing;
 using LNF.Impl.Repository.Data;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace LNF.Impl.Billing
@@ -36,6 +37,11 @@ namespace LNF.Impl.Billing
             Session.Save(result);
 
             return result.CreateModel<IOrgRecharge>();
+        }
+
+        public IEnumerable<IOrgRecharge> GetActiveOrgRecharges()
+        {
+            return Session.Query<OrgRecharge>().Where(x => x.DisableDate == null).CreateModels<IOrgRecharge>();
         }
 
         public void Disable(int orgRechargeId, DateTime disableDate)

@@ -180,7 +180,7 @@ namespace LNF.Impl.Billing
                 .Param("EndPeriod", EndDate)
                 .Param("IsInternal", false)
                 .Param("AccountID", AccountID > 0, AccountID)
-                .Param("BillingTypeID", !ShowRemote, BillingTypes.Remote.BillingTypeID)
+                .Param("BillingTypeID", !ShowRemote, BillingTypes.Remote)
                 .FillDataSet("dbo.ToolBilling_Select");
 
             // It will return a dataset with two tables inside
@@ -218,7 +218,7 @@ namespace LNF.Impl.Billing
                 .Param("EndPeriod", EndDate)
                 .Param("IsInternal", false)
                 .Param("AccountID", AccountID > 0, AccountID)
-                .Param("BillingTypeID", !ShowRemote, BillingTypes.Remote.BillingTypeID)
+                .Param("BillingTypeID", !ShowRemote, BillingTypes.Remote)
                 .FillDataSet("dbo.RoomApportionmentInDaysMonthly_Select");
 
             ds.Tables[0].Columns.Add("LineCost", typeof(double));

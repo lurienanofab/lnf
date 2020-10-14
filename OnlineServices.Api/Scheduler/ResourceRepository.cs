@@ -191,5 +191,25 @@ namespace OnlineServices.Api.Scheduler
         {
             throw new NotImplementedException();
         }
+
+        public IResourceActivityAuth GetResourceActivityAuth(int resourceId, int activityId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IResourceActivityAuth AddResourceActivityAuth(int resourceId, int activityId, ClientAuthLevel userAuth, ClientAuthLevel inviteeAuth, ClientAuthLevel startEndAuth, ClientAuthLevel noReservFenceAuth, ClientAuthLevel noMaxSchedAuth)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IResourceClient> GetResourceClients(int[] resources)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IResourceCost> GetCurrentResourceCosts(int resourceId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

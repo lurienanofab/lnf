@@ -10,11 +10,10 @@ namespace LNF.Impl.Mappings.Scheduler
             Schema("sselScheduler.dbo");
             Id(x => x.ProcessInfoLineID);
             Map(x => x.ProcessInfoID).Not.Nullable();
-            Map(x => x.Param); //<-- field will be deleted from the Database
-            Map(x => x.MinValue);
-            Map(x => x.MaxValue);
-            References(x => x.ProcessInfoLineParam);//.NotFound.Ignore();
-            //Map(x => x.ProcessInfoUnitID);
+            Map(x => x.Param).Not.Nullable();
+            Map(x => x.MinValue).Not.Nullable();
+            Map(x => x.MaxValue).Not.Nullable();
+            Map(x => x.ProcessInfoLineParamID).Not.Nullable();
         }
     }
 }

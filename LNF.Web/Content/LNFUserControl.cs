@@ -1,5 +1,7 @@
 ﻿using LNF.Data;
+using LNF.Repository;
 using System;
+using System.Data;
 using System.Web;
 using System.Web.UI;
 
@@ -12,6 +14,8 @@ namespace LNF.Web.Content
         public HttpContextBase ContextBase => LNFPage.ContextBase;
 
         public IClient CurrentUser => LNFPage.CurrentUser;
+
+        public IDataCommand DataCommand(CommandType type = CommandType.StoredProcedure) => LNFPage.DataCommand(type);
 
         public LNFPage LNFPage
         {

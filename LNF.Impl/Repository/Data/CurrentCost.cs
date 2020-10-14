@@ -1,10 +1,10 @@
+﻿using System;
 using LNF.Data;
 using LNF.DataAccess;
-using System;
 
 namespace LNF.Impl.Repository.Data
 {
-    public class Cost : IDataItem, ICost
+    public class CurrentCost : IDataItem, ICost
     {
         public virtual int CostID { get; set; }
         public virtual int ChargeTypeID { get; set; }

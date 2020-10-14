@@ -141,15 +141,6 @@ namespace LNF.Impl.DataAccess
                     .Mappings(HandleMappings)
                     .CurrentSessionContext<T>(); //this determines what CurrentSessionContext will be
 
-                if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["NHibernate.Glimpse.Loggers"]))
-                {
-                    config.ExposeConfiguration(cfg =>
-                    {
-                        cfg.SetProperty("format_sql", "true");
-                        cfg.SetProperty("generate_statistics", "true");
-                    });
-                }
-
                 _sessionFactory = config.BuildSessionFactory();
                 _factoryId = Guid.NewGuid();
                 sw.Stop();

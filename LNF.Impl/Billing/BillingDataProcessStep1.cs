@@ -108,7 +108,7 @@ namespace LNF.Impl.Billing
             dtResult.Columns["Entries"].DefaultValue = 0;
             dtResult.Columns["Entries"].AllowDBNull = false;
 
-            dtAccount.Columns.Add("IsGrowerObserver", typeof(bool), string.Format("BillingTypeID = {0}", BillingTypes.Grower_Observer.BillingTypeID));
+            dtAccount.Columns.Add("IsGrowerObserver", typeof(bool), string.Format("BillingTypeID = {0}", BillingTypes.Grower_Observer));
 
             int cid = 0;
             int rid = 0;
@@ -191,9 +191,9 @@ namespace LNF.Impl.Billing
                                 DataRow[] drsClientRemote = dtClientRemote.Select($"ClientID = {cid} AND AccountID = {aid}");
 
                                 if (drsClientRemote.Length > 0)
-                                    ndr["BillingTypeID"] = BillingTypes.Remote.BillingTypeID;
+                                    ndr["BillingTypeID"] = BillingTypes.Remote;
                                 else
-                                    ndr["BillingTypeID"] = BillingTypes.RegularException.BillingTypeID;
+                                    ndr["BillingTypeID"] = BillingTypes.RegularException;
 
                                 dtAccount.Rows.Add(ndr);
 
@@ -215,7 +215,7 @@ namespace LNF.Impl.Billing
                         // grower/observer org which means the next org will also be zero regardless of which billing type or if there is tool
                         // usage. So the current logic below only works for grower/observers if they have only one org, therefore an exception
                         // is thrown if this is not the case.
-                        bool isGrowerObserver = drowsAccountWithRemote.Any(x => x.Field<int>("BillingTypeID") == BillingTypes.Grower_Observer.BillingTypeID);
+                        bool isGrowerObserver = drowsAccountWithRemote.Any(x => x.Field<int>("BillingTypeID") == BillingTypes.Grower_Observer);
                         int numberOfOrgs = drowsAccountWithRemote.Select(x => x.Field<int>("OrgID")).Distinct().Count();
 
                         //if (isGrowerObserver && numberOfOrgs > 1)
@@ -303,7 +303,7 @@ namespace LNF.Impl.Billing
                             // and ChargeDays are never set to 0).
 
                             //if (BillingTypeID == BillingType.GetID("Grower/Observer") && AccountDays > 0) //<- removed AccountDays > 0
-                            if (billingTypeId == BillingTypes.Grower_Observer.BillingTypeID)
+                            if (billingTypeId == BillingTypes.Grower_Observer)
                             {
                                 DataRow[] rowsToolUsageData = dtToolUsageData.Select(string.Format("ClientID = {0} AND RoomID = {1}", cid, rid));
                                 if (rowsToolUsageData.Length > 0)
@@ -481,7 +481,7 @@ namespace LNF.Impl.Billing
                                 }
                                 else
                                 {
-                                    if (drow.Field<int>("BillingTypeID") == BillingTypes.Grower_Observer.BillingTypeID)
+                                    if (drow.Field<int>("BillingTypeID") == BillingTypes.Grower_Observer)
                                     {
                                         //It's possible to have zero charge days for observer/growser
                                         if (userDataRows.Length == 1)

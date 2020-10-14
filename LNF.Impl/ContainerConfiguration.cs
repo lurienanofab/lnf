@@ -45,7 +45,6 @@ using NHibernate.Context;
 using SimpleInjector;
 using SimpleInjector.Advanced;
 using SimpleInjector.Diagnostics;
-using SimpleInjector.Integration.Web;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -55,6 +54,8 @@ namespace LNF.Impl
     public abstract class ContainerConfiguration
     {
         private Container _container;
+
+        public bool SkipDataAccessRegistration { get; set; }
 
         public ContainerConfiguration(Container container)
         {
@@ -68,7 +69,10 @@ namespace LNF.Impl
 
             // DataAccess API
             RegisterSessionManager();
-            RegisterDataAccessService();
+
+            if (!SkipDataAccessRegistration)
+                RegisterDataAccessService();
+
             RegisterUnitOfWork();
 
             //Register<IUnitOfWork, NHibernateUnitOfWork>();  // not a singleton

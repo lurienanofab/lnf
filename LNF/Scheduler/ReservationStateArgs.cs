@@ -71,7 +71,8 @@ namespace LNF.Scheduler
 
         public bool IsStartable(DateTime now)
         {
-            return (now > BeginDateTime.AddMinutes(-1 * MinReservTime));
+            var startableDateTime = BeginDateTime.AddMinutes(-1 * MinReservTime);
+            return now >= startableDateTime;
         }
     }
 }

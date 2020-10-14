@@ -58,7 +58,7 @@ namespace LNF.Impl.Billing
             if (cobtLog != null)
                 return Require<BillingType>(cobtLog.BillingTypeID);
             else
-                return BillingTypes.Default;
+                return BillingTypes.Instance.Default;
         }
 
         public void UpdateBilling(int clientId, DateTime period, DateTime now)

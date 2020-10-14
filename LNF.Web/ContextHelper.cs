@@ -1,4 +1,5 @@
 ﻿using LNF.Data;
+using LNF.Scheduler;
 using LNF.Web.Models;
 using System;
 using System.Collections.Generic;
@@ -101,6 +102,12 @@ namespace LNF.Web
                 }
             }
             catch { } //silently fail, we don't want an error here to fuck everything up
+        }
+
+        public bool IsKiosk()
+        {
+            bool result = Kiosks.Create(Provider.Scheduler.Kiosk).IsKiosk(Context.CurrentIP()) || Context.Request.IsLocal;
+            return result;
         }
     }
 }

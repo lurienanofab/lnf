@@ -161,9 +161,9 @@ namespace LNF.CommonTools
                             //We also keep monthly room charge, this could save us a lot of time later on, and we also guarantee data persistance in future 
                             if (roomId == 6) //Only Clean Room allows monthly charge
                             {
-                                if (billingTypeId == BillingTypes.Int_Ga.BillingTypeID || billingTypeId == BillingTypes.ExtAc_Ga.BillingTypeID)
+                                if (billingTypeId == BillingTypes.Int_Ga || billingTypeId == BillingTypes.ExtAc_Ga)
                                     totalMonthlyRoomCharge = 875;
-                                else if (billingTypeId == BillingTypes.Int_Si.BillingTypeID || billingTypeId == BillingTypes.ExtAc_Si.BillingTypeID)
+                                else if (billingTypeId == BillingTypes.Int_Si || billingTypeId == BillingTypes.ExtAc_Si)
                                     totalMonthlyRoomCharge = 1315;
                                 else
                                     totalMonthlyRoomCharge = 0;

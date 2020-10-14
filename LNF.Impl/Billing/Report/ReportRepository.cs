@@ -41,8 +41,8 @@ namespace LNF.Impl.Billing.Report
             {
                 decimal total = 0;
 
-                total += toolUsage.Where(u => u.ChargeTypeID == x.ChargeTypeID && (u.BillingTypeID != BillingTypes.Remote.BillingTypeID || includeRemote)).Sum(s => BillingType.GetLineCost(s.CreateModel<IToolBilling>()));
-                total += roomUsage.Where(u => u.ChargeTypeID == x.ChargeTypeID && (u.BillingTypeID != BillingTypes.Remote.BillingTypeID || includeRemote)).Sum(s => BillingType.GetLineCost(s.CreateModel<IToolBilling>()));
+                total += toolUsage.Where(u => u.ChargeTypeID == x.ChargeTypeID && (u.BillingTypeID != BillingTypes.Remote || includeRemote)).Sum(s => BillingType.GetLineCost(s.CreateModel<IToolBilling>()));
+                total += roomUsage.Where(u => u.ChargeTypeID == x.ChargeTypeID && (u.BillingTypeID != BillingTypes.Remote || includeRemote)).Sum(s => BillingType.GetLineCost(s.CreateModel<IToolBilling>()));
                 total += storeUsage.Where(u => u.ChargeTypeID == x.ChargeTypeID).Sum(s => s.GetLineCost());
                 total += miscUsage.Where(u => accounts.First(a => a.AccountID == u.AccountID).ChargeTypeID == x.ChargeTypeID).Sum(s => s.GetLineCost());
 

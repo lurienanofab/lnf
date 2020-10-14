@@ -3,7 +3,7 @@ using LNF.Scheduler;
 
 namespace LNF.Impl.Repository.Scheduler
 {
-    public class ReservationInviteeInfo : ReservationInfoBase, IReservationInvitee
+    public class ReservationInviteeInfo : ReservationInfoBase, IReservationInvitee, IReservationInviteeItem
     {
         public virtual int InviteeID { get; set; }
         public virtual string InviteeLName { get; set; }
@@ -11,7 +11,6 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual string InviteeDisplayName => Clients.GetDisplayName(InviteeLName, InviteeFName);
         public virtual ClientPrivilege InviteePrivs { get; set; }
         public virtual bool InviteeActive { get; set; }
-
 
         public override bool Equals(object obj)
         {

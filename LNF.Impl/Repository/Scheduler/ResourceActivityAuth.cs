@@ -3,11 +3,11 @@ using LNF.Scheduler;
 
 namespace LNF.Impl.Repository.Scheduler
 {
-    public class ResourceActivityAuth : IDataItem
+    public class ResourceActivityAuth : IDataItem, IResourceActivityAuth
     {
         public virtual int ResourceActivityAuthID { get; set; }
-        public virtual Resource Resource { get; set; }
-        public virtual Activity Activity { get; set; }
+        public virtual int ResourceID { get; set; }
+        public virtual int ActivityID { get; set; }
         public virtual ClientAuthLevel UserAuth { get; set; }
         public virtual ClientAuthLevel InviteeAuth { get; set; }
         public virtual ClientAuthLevel StartEndAuth { get; set; }

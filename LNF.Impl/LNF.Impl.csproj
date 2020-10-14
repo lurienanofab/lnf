@@ -159,9 +159,12 @@
     <Compile Include="Mail\Criteria\CriteriaBase.cs" />
     <Compile Include="Mail\GroupEmailManager.cs" />
     <Compile Include="Mail\InvalidEmailManager.cs" />
+    <Compile Include="Mappings\Data\CurrentCostMap.cs" />
     <Compile Include="Mappings\Data\PasswordResetRequestMap.cs" />
     <Compile Include="Mappings\Scheduler\LabLocationMap.cs" />
     <Compile Include="Mappings\Scheduler\ReservationInfoBaseMap.cs" />
+    <Compile Include="Mappings\Scheduler\ReservationInviteeItemMap.cs" />
+    <Compile Include="Mappings\Scheduler\ReservationProcessInfoInfoMap.cs" />
     <Compile Include="Mappings\Scheduler\ResourceLabLocationMap.cs" />
     <Compile Include="Mappings\Store\ItemMap.cs" />
     <Compile Include="Authorization\AuthorizationService.cs" />
@@ -286,6 +289,7 @@
     <Compile Include="Repository\Data\ClientSessionInfo.cs" />
     <Compile Include="Repository\Data\Community.cs" />
     <Compile Include="Repository\Data\Cost.cs" />
+    <Compile Include="Repository\Data\CurrentCost.cs" />
     <Compile Include="Repository\Data\DataFeed.cs" />
     <Compile Include="Repository\Data\DemCitizen.cs" />
     <Compile Include="Repository\Data\DemDisability.cs" />
@@ -423,9 +427,11 @@
     <Compile Include="Repository\Scheduler\ReservationInfoBase.cs" />
     <Compile Include="Repository\Scheduler\ReservationInvitee.cs" />
     <Compile Include="Repository\Scheduler\ReservationInviteeInfo.cs" />
+    <Compile Include="Repository\Scheduler\ReservationInviteeItem.cs" />
     <Compile Include="Repository\Scheduler\ReservationLog.cs" />
     <Compile Include="Repository\Scheduler\ReservationOnTheFly.cs" />
     <Compile Include="Repository\Scheduler\ReservationProcessInfo.cs" />
+    <Compile Include="Repository\Scheduler\ReservationProcessInfoInfo.cs" />
     <Compile Include="Repository\Scheduler\ReservationRecurrence.cs" />
     <Compile Include="Repository\Scheduler\ReservationRecurrenceInfo.cs" />
     <Compile Include="Repository\Scheduler\Resource.cs" />

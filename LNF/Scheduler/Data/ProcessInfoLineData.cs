@@ -6,22 +6,34 @@ namespace LNF.Scheduler.Data
     /// <summary>
     /// A class for handling ProcessInfoLine data using the System.Data namespace.
     /// </summary>
-    public static class ProcessInfoLineData
+    public class ProcessInfoLineData
     {
+        public IProvider Provider { get; }
+
+        private ProcessInfoLineData(IProvider provider)
+        {
+            Provider = provider;
+        }
+
+        public static ProcessInfoLineData Create(IProvider provider)
+        {
+            return new ProcessInfoLineData(provider);
+        }
+
         /// <summary>
         /// Returns all ProcessInfo belonging to the specified Resource
         /// </summary>
-        public static DataTable SelectByResource(int resourceId)
+        public DataTable SelectByResource(int resourceId)
         {
-            var items = ServiceProvider.Current.Scheduler.Resource.GetProcessInfoLines(resourceId);
+            var items = Provider.Scheduler.Resource.GetProcessInfoLines(resourceId);
             var dt = CreateDataTable();
             FillDataTable(dt, items);
             return dt;
         }
 
-        public static DataTable SelectByProcessInfo(int resourceId)
+        public DataTable SelectByProcessInfo(int resourceId)
         {
-            var items = ServiceProvider.Current.Scheduler.ProcessInfo.GetProcessInfoLines(resourceId);
+            var items = Provider.Scheduler.ProcessInfo.GetProcessInfoLines(resourceId);
             var dt = CreateDataTable();
             FillDataTable(dt, items);
             return dt;
@@ -30,9 +42,9 @@ namespace LNF.Scheduler.Data
         /// <summary>
         /// Insert/Update/Delete ProcessInfo
         /// </summary>
-        public static void Update(IEnumerable<IProcessInfoLine> insert, IEnumerable<IProcessInfoLine> update, IEnumerable<IProcessInfoLine> delete)
+        public void Update(IEnumerable<IProcessInfoLine> insert, IEnumerable<IProcessInfoLine> update, IEnumerable<IProcessInfoLine> delete)
         {
-            ServiceProvider.Current.Scheduler.ProcessInfo.Update(insert, update, delete);
+            Provider.Scheduler.ProcessInfo.Update(insert, update, delete);
         }
 
         private static DataTable CreateDataTable()
@@ -41,14 +53,10 @@ namespace LNF.Scheduler.Data
 
             dt.Columns.Add("ProcessInfoLineID", typeof(int));
             dt.Columns.Add("ProcessInfoID", typeof(int));
-            dt.Columns.Add("ProcessInfoLineParamID", typeof(int));
-            dt.Columns.Add("ResourceID", typeof(int));
-            dt.Columns.Add("ResourceName", typeof(string));
             dt.Columns.Add("Param", typeof(string));
-            dt.Columns.Add("ParameterName", typeof(string));
-            dt.Columns.Add("ParameterType", typeof(int));
             dt.Columns.Add("MinValue", typeof(double));
             dt.Columns.Add("MaxValue", typeof(double));
+            dt.Columns.Add("ProcessInfoLineParamID", typeof(int));
 
             dt.Columns["ProcessInfoLineID"].AutoIncrement = true;
             dt.Columns["ProcessInfoLineID"].AutoIncrementSeed = 1;
@@ -66,11 +74,7 @@ namespace LNF.Scheduler.Data
                 ndr.SetField("ProcessInfoLineID", i.ProcessInfoLineID);
                 ndr.SetField("ProcessInfoID", i.ProcessInfoID);
                 ndr.SetField("ProcessInfoLineParamID", i.ProcessInfoLineParamID);
-                ndr.SetField("ResourceID", i.ResourceID);
-                ndr.SetField("ResourceName", i.ResourceName);
                 ndr.SetField("Param", i.Param);
-                ndr.SetField("ParameterName", i.ParameterName);
-                ndr.SetField("ParameterType", i.ParameterType);
                 ndr.SetField("MinValue", i.MinValue);
                 ndr.SetField("MaxValue", i.MaxValue);
                 dt.Rows.Add(ndr);

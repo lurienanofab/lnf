@@ -1,12 +1,18 @@
 ﻿using LNF.Scheduler;
 using System;
 using System.Collections.Generic;
+using System.Data;
 
 namespace OnlineServices.Api.Scheduler
 {
     public class ProcessInfoRepository : ApiClient, IProcessInfoRepository
     {
         public IReservationProcessInfo AddReservationProcessInfo(int reservationId, int processInfoLineId, double value, bool special, int runNumber, double chargeMultiplier, bool active)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IProcessInfo Create(DataRow dr)
         {
             throw new NotImplementedException();
         }
@@ -32,6 +38,11 @@ namespace OnlineServices.Api.Scheduler
         }
 
         public IEnumerable<IReservationProcessInfo> GetReservationProcessInfos(int reservationId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IReservationProcessInfo> GetReservationProcessInfos(int[] reservations)
         {
             throw new NotImplementedException();
         }

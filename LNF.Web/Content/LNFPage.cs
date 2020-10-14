@@ -1,5 +1,7 @@
 ﻿using LNF.Data;
+using LNF.Repository;
 using System;
+using System.Data;
 using System.IO;
 using System.Web;
 using System.Web.UI;
@@ -55,6 +57,8 @@ namespace LNF.Web.Content
         }
 
         public bool HasPriv(ClientPrivilege privs) => CurrentUser.HasPriv(privs);
+
+        public IDataCommand DataCommand(CommandType type = CommandType.StoredProcedure) => DefaultDataCommand.Create(type);
 
         public System.Web.UI.Control FindControlRecursive(string id) => WebUtility.FindControlRecursive(this, id);
     }

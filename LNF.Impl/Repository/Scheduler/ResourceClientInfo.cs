@@ -25,5 +25,10 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual bool HasAuth(ClientAuthLevel auths) => ResourceClients.HasAuth(AuthLevel, auths);
         public virtual bool IsEveryone() => ResourceClients.IsEveryone(ClientID);
         public virtual DateTime? WarningDate(double authExpWarning) => ResourceClients.GetWarningDate(this);
+
+        public override string ToString()
+        {
+            return $"{DisplayName} [{ClientID}/{UserName}]: {AuthLevel}";
+        }
     }
 }

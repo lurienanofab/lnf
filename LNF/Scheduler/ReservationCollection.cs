@@ -8,8 +8,10 @@ namespace LNF.Scheduler
     public class ReservationCollection : IEnumerable<IReservation>
     {
         private IList<IReservation> _items = new List<IReservation>();
+        private IEnumerable<IReservationInviteeItem> _invitees = null;
+        private IEnumerable<IReservationProcessInfo> _reservationProcessInfos = null;
         private int[] _invited = null;
-
+        
         public IProvider Provider { get; }
         public int ClientID { get; }
 
@@ -36,6 +38,31 @@ namespace LNF.Scheduler
             }
 
             return _invited;
+        }
+
+        public IEnumerable<IReservationInviteeItem> GetInvitees()
+        {
+            if (_items == null)
+                throw new Exception("No reservations have been selected yet.");
+
+            if (_invitees == null)
+                return new IReservationInviteeItem[0];
+            
+            return _invitees;
+        }
+
+        public IEnumerable<IReservationProcessInfo> GetReservationProcessInfos()
+        {
+            if (_items == null)
+                throw new Exception("No reservations have been selected yet.");
+
+            if (_reservationProcessInfos == null)
+            {
+                var ids = _items.Select(x => x.ReservationID).ToArray();
+                _reservationProcessInfos = Provider.Scheduler.ProcessInfo.GetReservationProcessInfos(ids);
+            }
+
+            return _reservationProcessInfos;
         }
 
         public IEnumerable<IReservation> Find(DateTime sd, DateTime ed, bool includeAllClients, bool includeCancelled)
@@ -70,32 +97,36 @@ namespace LNF.Scheduler
         public void SelectByResource(int resourceId, DateTime sd, DateTime ed)
         {
             AssertDatesAreValid(sd, ed);
-            //_items = Provider.Scheduler.Reservation.SelectByResource(resourceId, sd, ed, true).ToList();
             _items = Provider.Scheduler.Reservation.SelectByResource(resourceId, sd, ed, true).ToList();
+            _invitees = Provider.Scheduler.Reservation.SelectInviteesByResource(resourceId, sd, ed, true).ToList();
         }
 
         public void SelectByProcessTech(int processTechId, DateTime sd, DateTime ed)
         {
             AssertDatesAreValid(sd, ed);
             _items = Provider.Scheduler.Reservation.SelectByProcessTech(processTechId, sd, ed, true).ToList();
+            _invitees = Provider.Scheduler.Reservation.SelectInviteesByProcessTech(processTechId, sd, ed, true).ToList();
         }
 
         public void SelectByLabLocation(int labLocationId, DateTime sd, DateTime ed)
         {
             AssertDatesAreValid(sd, ed);
             _items = Provider.Scheduler.Reservation.SelectByLabLocation(labLocationId, sd, ed, true).ToList();
+            _invitees = Provider.Scheduler.Reservation.SelectInviteesByLabLocation(labLocationId, sd, ed, true).ToList();
         }
 
         public void SelectByClient(DateTime sd, DateTime ed)
         {
             AssertDatesAreValid(sd, ed);
             _items = Provider.Scheduler.Reservation.SelectByClient(ClientID, sd, ed, true).ToList();
+            _invitees = Provider.Scheduler.Reservation.SelectInviteesByClient(ClientID, sd, ed, true).ToList();
         }
 
         public void SelectByDateRange(DateTime sd, DateTime ed)
         {
             AssertDatesAreValid(sd, ed);
             _items = Provider.Scheduler.Reservation.SelectByDateRange(sd, ed, true).ToList();
+            _invitees = Provider.Scheduler.Reservation.SelectInviteesByDateRange(sd, ed, true).ToList();
         }
 
         public IEnumerator<IReservation> GetEnumerator()

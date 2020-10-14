@@ -546,5 +546,40 @@ namespace OnlineServices.Api.Scheduler
         {
             throw new NotImplementedException();
         }
+
+        public IEnumerable<IReservationInviteeItem> GetInviteeItems(int reservationId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IReservationInvitee> GetInvitees(int[] reservations)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IReservationInviteeItem> SelectInviteesByResource(int resourceId, DateTime sd, DateTime ed, bool includeDeleted)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IReservationInviteeItem> SelectInviteesByProcessTech(int processTechId, DateTime sd, DateTime ed, bool includeDeleted)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IReservationInviteeItem> SelectInviteesByLabLocation(int labLocationId, DateTime sd, DateTime ed, bool includeDeleted)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IReservationInviteeItem> SelectInviteesByClient(int clientId, DateTime sd, DateTime ed, bool includeDeleted)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IReservationInviteeItem> SelectInviteesByDateRange(DateTime sd, DateTime ed, bool includeDeleted)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

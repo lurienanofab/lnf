@@ -6,9 +6,8 @@ namespace LNF.Data
     {
         int CostID { get; set; }
         int ChargeTypeID { get; set; }
-        string ChargeTypeName { get; set; }
         string TableNameOrDescription { get; set; }
-        int RecordID { get; set; }
+        int? RecordID { get; set; }
         string AcctPer { get; set; }
         decimal AddVal { get; set; }
         decimal MulVal { get; set; }

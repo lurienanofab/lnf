@@ -1,4 +1,5 @@
 ﻿using LNF.PhysicalAccess;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -13,6 +14,12 @@ namespace LNF.Impl.PhysicalAccess
 
         static Repository()
         {
+            if (ConfigurationManager.ConnectionStrings["cnSselData"] == null)
+                throw new Exception("Missing connection string: cnSselData");
+
+            if (ConfigurationManager.ConnectionStrings["cnProwatch"] == null)
+                throw new Exception("Missing connection string: cnProwatch");
+
             LNF = new Repository(ConfigurationManager.ConnectionStrings["cnSselData"].ConnectionString);
             Prowatch = new Repository(ConfigurationManager.ConnectionStrings["cnProwatch"].ConnectionString);
         }

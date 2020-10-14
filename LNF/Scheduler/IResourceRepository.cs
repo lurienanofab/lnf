@@ -11,7 +11,10 @@ namespace LNF.Scheduler
         IEnumerable<IResource> SelectByLab(int? labId);
         string GetInterlockStatus(int resourceId);
         IEnumerable<IResourceActivityAuth> GetResourceActivityAuths(int resourceId);
+        IResourceActivityAuth GetResourceActivityAuth(int resourceId, int activityId);
+        IResourceActivityAuth AddResourceActivityAuth(int resourceId, int activityId, ClientAuthLevel userAuth, ClientAuthLevel inviteeAuth, ClientAuthLevel startEndAuth, ClientAuthLevel noReservFenceAuth, ClientAuthLevel noMaxSchedAuth);
         IEnumerable<IResourceClient> GetResourceClients(int resourceId = 0, int clientId = 0, ClientAuthLevel authLevel = 0);
+        IEnumerable<IResourceClient> GetResourceClients(int[] resources);
         IEnumerable<IProcessInfoLine> GetProcessInfoLines(int resourceId);
         IEnumerable<IResourceClient> GetActiveResourceClients(int resourceId = 0, int clientId = 0, ClientAuthLevel authLevel = 0);
         IEnumerable<IResourceClient> GetExpiringResourceClients(bool everyone = false);
@@ -21,6 +24,7 @@ namespace LNF.Scheduler
         IOnTheFlyResource GetOnTheFlyResource(int resourceId);
         IEnumerable<IResourceCost> GetResourceCosts(DateTime? cutoff = null);
         IEnumerable<IResourceCost> GetResourceCosts(int resourceId, DateTime? cutoff = null);
+        IEnumerable<IResourceCost> GetCurrentResourceCosts(int resourceId);
         IEnumerable<IResourceStatus> GetResourceStatuses(int[] tools);
         IEnumerable<IAuthLevel> GetAuthLevels();
         IEnumerable<GenericListItem> AllActiveResources();

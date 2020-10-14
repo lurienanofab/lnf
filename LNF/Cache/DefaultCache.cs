@@ -93,18 +93,6 @@ namespace LNF.Cache
 
         public bool WagoEnabled => GetBooleanOptionalAppSetting("WagoEnabled");
 
-        /// <summary>
-        /// Gets all active clients. Clients are cached for 5 minutes.
-        /// </summary>
-        public IEnumerable<IClient> Clients()
-        {
-            return GetValue("Clients", p => p.Data.Client.GetActiveClients(), DateTimeOffset.Now.AddMinutes(5));
-        }
-
-        public IClient GetClient(int clientId) => Clients().FirstOrDefault(x => x.ClientID == clientId);
-
-        public IClient GetClient(string username) => Clients().FirstOrDefault(x => x.UserName == username);
-
         public bool IsProduction() => ServiceProvider.Current.IsProduction();
 
         private bool GetBooleanOptionalAppSetting(string key)

@@ -3,6 +3,7 @@ using LNF.Impl.Repository;
 using LNF.Impl.Repository.Scheduler;
 using LNF.Scheduler;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace LNF.Impl.Scheduler
@@ -13,69 +14,23 @@ namespace LNF.Impl.Scheduler
 
         public IEnumerable<IProcessInfo> GetProcessInfos(int resourceId)
         {
-            //'DA.Current.Query(Of ProcessInfo)().Where(Function(x) x.Resource.ResourceID = Resource.ResourceID).ToList()
-
-            var result = Session.Query<ProcessInfo>()
-                .Where(x => x.Resource.ResourceID == resourceId)
-                .Select(x => new ProcessInfoItem
-                {
-                    ProcessInfoID = x.ProcessInfoID,
-                    ResourceID = x.Resource.ResourceID,
-                    ResourceName = x.Resource.ResourceName,
-                    ProcessInfoName = x.ProcessInfoName,
-                    ParamName = x.ParamName,
-                    ValueName = x.ValueName,
-                    Special = x.Special,
-                    AllowNone = x.AllowNone,
-                    Order = x.Order,
-                    RequireValue = x.RequireValue,
-                    RequireSelection = x.RequireSelection
-                }).ToList();
-
+            var result = Session.Query<ProcessInfo>().Where(x => x.ResourceID == resourceId).ToList();
             return result;
         }
 
         public IProcessInfoLine GetProcessInfoLine(int processInfoLineId)
         {
-            var pil = Session.Get<ProcessInfoLine>(processInfoLineId);
-            var pi = Session.Get<ProcessInfo>(pil.ProcessInfoID);
-
-            return new ProcessInfoLineItem
-            {
-                ProcessInfoLineID = pil.ProcessInfoLineID,
-                ProcessInfoID = pi.ProcessInfoID,
-                Param = pil.Param,
-                MinValue = pil.MinValue,
-                MaxValue = pil.MaxValue,
-                ProcessInfoLineParamID = pil.ProcessInfoLineParam.ProcessInfoLineParamID,
-                ResourceID = pi.Resource.ResourceID,
-                ResourceName = pi.Resource.ResourceName,
-                ParameterName = pil.ProcessInfoLineParam.ParameterName,
-                ParameterType = pil.ProcessInfoLineParam.ParameterType
-            };
+            return Session.Get<ProcessInfoLine>(processInfoLineId);
         }
 
         public IEnumerable<IProcessInfoLine> GetProcessInfoLines(int resourceId)
         {
-            var query = Session.Query<ProcessInfo>().Where(x => x.Resource.ResourceID == resourceId);
-            //var query = Session.Query<ProcessInfo>().Where(x => x.ProcessInfoID == processInfoId);
+            var query = Session.Query<ProcessInfo>().Where(x => x.ResourceID == resourceId);
 
             var result = query.Join(Session.Query<ProcessInfoLine>(),
                 o => o.ProcessInfoID,
                 i => i.ProcessInfoID,
-                (o, i) => new ProcessInfoLineItem
-                {
-                    ProcessInfoLineID = i.ProcessInfoLineID,
-                    ProcessInfoID = o.ProcessInfoID,
-                    Param = i.Param,
-                    MinValue = i.MinValue,
-                    MaxValue = i.MaxValue,
-                    ProcessInfoLineParamID = i.ProcessInfoLineParam.ProcessInfoLineParamID,
-                    ResourceID = o.Resource.ResourceID,
-                    ResourceName = o.Resource.ResourceName,
-                    ParameterName = i.ProcessInfoLineParam.ParameterName,
-                    ParameterType = i.ProcessInfoLineParam.ParameterType
-                }).ToList();
+                (o, i) => i).ToList();
 
             return result;
         }
@@ -93,28 +48,13 @@ namespace LNF.Impl.Scheduler
                 AND ReservationID = @ReservationID 
             */
 
-            var query = Session.Query<ReservationProcessInfo>().Where(x => x.Reservation.ReservationID == reservationId);
+            var result = Session.Query<ReservationProcessInfoInfo>().Where(x => x.ReservationID == reservationId).ToList();
+            return result;
+        }
 
-            var result = query.Join(Session.Query<ProcessInfo>(),
-                o => o.ProcessInfoLine.ProcessInfoID,
-                i => i.ProcessInfoID,
-                (o, i) => new ReservationProcessInfoItem
-                {
-                    ProcessInfoID = i.ProcessInfoID,
-                    ProcessInfoName = i.ProcessInfoName,
-                    Param = o.ProcessInfoLine.Param,
-                    ParameterName = o.ProcessInfoLine.ProcessInfoLineParam.ParameterName,
-                    ReservationProcessInfoID = o.ReservationProcessInfoID,
-                    ProcessInfoLineID = o.ProcessInfoLine.ProcessInfoLineID,
-                    ProcessInfoLineParamID = o.ProcessInfoLine.ProcessInfoLineParam.ProcessInfoLineParamID,
-                    ReservationID = o.Reservation.ReservationID,
-                    Value = o.Value,
-                    Special = o.Special,
-                    RunNumber = o.RunNumber,
-                    ChargeMultiplier = o.ChargeMultiplier,
-                    Active = o.Active
-                }).ToList();
-
+        public IEnumerable<IReservationProcessInfo> GetReservationProcessInfos(int[] reservations)
+        {
+            var result = Session.Query<ReservationProcessInfoInfo>().Where(x => reservations.Contains(x.ReservationID)).ToList();
             return result;
         }
 
@@ -126,8 +66,8 @@ namespace LNF.Impl.Scheduler
             {
                 var rpi = new ReservationProcessInfo()
                 {
-                    ProcessInfoLine = Session.Get<ProcessInfoLine>(item.ProcessInfoLineID),
-                    Reservation = Session.Get<Reservation>(item.ReservationID),
+                    ProcessInfoLineID = item.ProcessInfoLineID,
+                    ReservationID = item.ReservationID,
                     Value = item.Value,
                     Special = item.Special,
                     RunNumber = item.RunNumber,
@@ -161,8 +101,8 @@ namespace LNF.Impl.Scheduler
                 // This happens when a reservation is modified and an addtional process info is selected.
                 rpi = new ReservationProcessInfo()
                 {
-                    ProcessInfoLine = Session.Get<ProcessInfoLine>(item.ProcessInfoLineID),
-                    Reservation = Session.Get<Reservation>(item.ReservationID)
+                    ProcessInfoLineID = item.ProcessInfoLineID,
+                    ReservationID = item.ReservationID
                 };
 
                 Session.Save(rpi);
@@ -172,11 +112,10 @@ namespace LNF.Impl.Scheduler
 
             // still here?
 
-            if (item.ProcessInfoLineID != rpi.ProcessInfoLine.ProcessInfoLineID)
+            if (item.ProcessInfoLineID != rpi.ProcessInfoLineID)
             {
                 // This happens when the ProcessInfo is changed to different ProcessInfoLine
-                var pil = Session.Get<ProcessInfoLine>(item.ProcessInfoLineID);
-                rpi.ProcessInfoLine = pil;
+                rpi.ProcessInfoLineID = item.ProcessInfoLineID;
             }
 
             rpi.Value = item.Value;
@@ -190,8 +129,8 @@ namespace LNF.Impl.Scheduler
         {
             var rpi = new ReservationProcessInfo()
             {
-                Reservation = Require<Reservation>(reservationId),
-                ProcessInfoLine = Require<ProcessInfoLine>(processInfoLineId),
+                ReservationID = reservationId,
+                ProcessInfoLineID = processInfoLineId,
                 Value = value,
                 Special = special,
                 RunNumber = runNumber,
@@ -210,7 +149,7 @@ namespace LNF.Impl.Scheduler
             {
                 var processInfo = new ProcessInfo
                 {
-                    Resource = Require<Resource>(item.ResourceID),
+                    ResourceID = item.ResourceID,
                     ProcessInfoName = item.ProcessInfoName,
                     ParamName = item.ParamName,
                     ValueName = item.ValueName,
@@ -228,7 +167,7 @@ namespace LNF.Impl.Scheduler
             {
                 var processInfo = Require<ProcessInfo>(item.ProcessInfoID);
 
-                processInfo.Resource = Require<Resource>(item.ResourceID);
+                processInfo.ResourceID = item.ResourceID;
                 processInfo.ProcessInfoName = item.ProcessInfoName;
                 processInfo.ParamName = item.ParamName;
                 processInfo.ValueName = item.ValueName;
@@ -258,7 +197,7 @@ namespace LNF.Impl.Scheduler
                     MinValue = item.MinValue,
                     Param = item.Param,
                     ProcessInfoID = item.ProcessInfoID,
-                    ProcessInfoLineParam = Require<ProcessInfoLineParam>(item.ProcessInfoLineParamID)
+                    ProcessInfoLineParamID = item.ProcessInfoLineParamID
                 };
 
                 Session.Save(pil);
@@ -272,7 +211,7 @@ namespace LNF.Impl.Scheduler
                 pil.MinValue = item.MinValue;
                 pil.Param = item.Param;
                 pil.ProcessInfoID = item.ProcessInfoID;
-                pil.ProcessInfoLineParam = Require<ProcessInfoLineParam>(item.ProcessInfoLineParamID);
+                pil.ProcessInfoLineParamID = item.ProcessInfoLineParamID;
 
                 Session.Update(pil);
             }
@@ -292,8 +231,8 @@ namespace LNF.Impl.Scheduler
                 {
                     Active = item.Active,
                     ChargeMultiplier = item.ChargeMultiplier,
-                    ProcessInfoLine = Require<ProcessInfoLine>(item.ProcessInfoLineID),
-                    Reservation = Require<Reservation>(item.ReservationID),
+                    ProcessInfoLineID = item.ProcessInfoLineID,
+                    ReservationID = item.ReservationID,
                     RunNumber = item.RunNumber,
                     Special = item.Special,
                     Value = item.Value
@@ -308,8 +247,8 @@ namespace LNF.Impl.Scheduler
 
                 rpi.Active = item.Active;
                 rpi.ChargeMultiplier = item.ChargeMultiplier;
-                rpi.ProcessInfoLine = Require<ProcessInfoLine>(item.ProcessInfoLineID);
-                rpi.Reservation = Require<Reservation>(item.ReservationID);
+                rpi.ProcessInfoLineID = item.ProcessInfoLineID;
+                rpi.ReservationID = item.ReservationID;
                 rpi.RunNumber = item.RunNumber;
                 rpi.Special = item.Special;
                 rpi.Value = item.Value;
@@ -317,7 +256,7 @@ namespace LNF.Impl.Scheduler
                 Session.Update(rpi);
             }
 
-            foreach(var item in delete)
+            foreach (var item in delete)
             {
                 var rpi = Require<ReservationProcessInfo>(item.ReservationProcessInfoID);
                 Session.Delete(rpi);
@@ -326,24 +265,25 @@ namespace LNF.Impl.Scheduler
 
         public IProcessInfo GetProcessInfo(int processInfoId)
         {
-            var pi = Require<ProcessInfo>(processInfoId);
+            return Require<ProcessInfo>(processInfoId);
+        }
 
-            var result = new ProcessInfoItem
+        public IProcessInfo Create(DataRow dr)
+        {
+            return new ProcessInfo
             {
-                AllowNone = pi.AllowNone,
-                Order = pi.Order,
-                ParamName = pi.ParamName,
-                ProcessInfoID = pi.ProcessInfoID,
-                ProcessInfoName = pi.ProcessInfoName,
-                RequireSelection = pi.RequireSelection,
-                RequireValue = pi.RequireValue,
-                ResourceID = pi.Resource.ResourceID,
-                ResourceName = pi.Resource.ResourceName,
-                Special = pi.Special,
-                ValueName = pi.ValueName
+                ProcessInfoID = dr.Field<int>("ProcessInfoID"),
+                ResourceID = dr.Field<int>("ResourceID"),
+                ProcessInfoName = dr.Field<string>("ProcessInfoName"),
+                ParamName = dr.Field<string>("ParamName"),
+                ValueName = dr.Field<string>("ValueName"),
+                Special = dr.Field<string>("Special"),
+                AllowNone = dr.Field<bool>("AllowNone"),
+                Order = dr.Field<int>("Order"),
+                RequireValue = dr.Field<bool>("RequireValue"),
+                RequireSelection = dr.Field<bool>("RequireSelection"),
+                MaxAllowed = dr.Field<int>("MaxAllowed")
             };
-
-            return result;
         }
     }
 }

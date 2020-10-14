@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LNF.Data;
+using System;
 
 namespace LNF.PhysicalAccess
 {
@@ -25,6 +26,12 @@ namespace LNF.PhysicalAccess
         public bool IsActive()
         {
             return ExpireDate > DateTime.Now;
+        }
+
+        public override string ToString()
+        {
+            var currentArea = string.IsNullOrEmpty(CurrentAreaName) ? "none" : CurrentAreaName;
+            return $"{Clients.GetDisplayName(LastName, FirstName)} [{ClientID}/{UserName}]: {currentArea}";
         }
     }
 }

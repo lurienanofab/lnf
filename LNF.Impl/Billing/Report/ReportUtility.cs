@@ -130,7 +130,7 @@ namespace LNF.Impl.Billing.Report
                         dr["LineCost"] = (dr.Field<decimal>("AccountDays") * dr.Field<decimal>("RoomRate")) + dr.Field<decimal>("EntryCharge");
 
                 }
-                else if (billingTypeId == BillingTypes.Other.BillingTypeID)
+                else if (billingTypeId == BillingTypes.Other)
                 {
                     dr["LineCost"] = 0;
                 }

@@ -480,7 +480,7 @@ namespace LNF.Scheduler
         /// <summary>
         /// Compose the tooltip text for the specified reservation
         /// </summary>
-        public string GetReservationToolTip(IReservation item, ReservationState state)
+        public string GetReservationToolTip(IReservation item, ReservationState state, IEnumerable<IReservationProcessInfo> reservationProcessInfos, IEnumerable<IReservationInviteeItem> invitees)
         {
             // Display Reservation info
             string toolTip = string.Empty;
@@ -495,14 +495,9 @@ namespace LNF.Scheduler
                 toolTip += string.Format("<div><b>Reserved by {0}</b></div>", displayName);
 
             if (state == ReservationState.Other || state == ReservationState.PastOther)
-            {
-                int clientId = item.ClientID;
-                int accountId = item.AccountID;
-
-                var c = Provider.Data.Client.GetClient(item.ClientID);
-
-                string phone = c.Phone;
-                string email = c.Email;
+            {                
+                string phone = item.Phone;
+                string email = item.Email;
 
                 if (!string.IsNullOrEmpty(phone))
                     toolTip += string.Format("<div><b>Phone: {0}</b></div>", phone);
@@ -527,20 +522,16 @@ namespace LNF.Scheduler
             }
 
             // Reservation Process Info
-            var processInfos = Provider.Scheduler.ProcessInfo.GetReservationProcessInfos(item.ReservationID);
-
-            if (processInfos.Count() > 0)
+            if (reservationProcessInfos.Count() > 0)
             {
                 toolTip += "<hr><div><b>Process Info:</b></div>";
-                foreach (var rpi in processInfos)
+                foreach (var rpi in reservationProcessInfos)
                 {
                     toolTip += string.Format("<div>{0}: {1}: {2}</div>", rpi.ProcessInfoName, rpi.Param, rpi.Value);
                 }
             }
 
             // Reservation Invitees
-            var invitees = Provider.Scheduler.Reservation.GetInvitees(item.ReservationID);
-
             if (invitees.Count() > 0)
             {
                 toolTip += "<hr><div><b>Invitees:</b></div>";

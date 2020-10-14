@@ -10,8 +10,8 @@ namespace LNF.Impl.Mappings.Scheduler
         {
             Schema("sselScheduler.dbo");
             Id(x => x.ResourceActivityAuthID);
-            References(x => x.Resource, "ResourceID");
-            References(x => x.Activity, "ActivityID");
+            Map(x => x.ResourceID);
+            Map(x => x.ActivityID);
             Map(x => x.UserAuth).CustomType<ClientAuthLevel>();
             Map(x => x.InviteeAuth).CustomType<ClientAuthLevel>();
             Map(x => x.StartEndAuth).CustomType<ClientAuthLevel>();

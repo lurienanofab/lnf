@@ -2,17 +2,13 @@
 using LNF.Data;
 using LNF.Scheduler;
 using System;
-using System.CodeDom;
-using System.CodeDom.Compiler;
 using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
-using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -372,9 +368,9 @@ namespace LNF.CommonTools
 
         public static IEnumerable<IHoliday> GetHolidays(DateTime sd, DateTime ed) => ServiceProvider.Current.Data.Holiday.GetHolidays(sd, ed);
 
-        public static bool IsKiosk(string userHostAddress)
+        public static bool IsKiosk(IKioskRepository repo, string userHostAddress)
         {
-            return Scheduler.Kiosks.IsKiosk(userHostAddress);
+            return Kiosks.Create(repo).IsKiosk(userHostAddress);
         }
 
         public static bool IsMobile(string userAgent, string preferredMobileView)

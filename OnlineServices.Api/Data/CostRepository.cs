@@ -8,12 +8,12 @@ namespace OnlineServices.Api.Data
     {
         public ICost GetCost(int costId)
         {
-            return Get<CostItem>("webapi/data/cost/{costId}", UrlSegments(new { costId }));
+            return Get<Cost>("webapi/data/cost/{costId}", UrlSegments(new { costId }));
         }
 
         public IEnumerable<ICost> GetCosts(int limit, int skip = 0)
         {
-            return Get<List<CostItem>>("webapi/data/cost", QueryStrings(new { limit, skip }));
+            return Get<List<Cost>>("webapi/data/cost", QueryStrings(new { limit, skip }));
         }
 
         public IEnumerable<ICost> FindAuxiliaryCosts(string table, DateTime? cutoff = null, int chargeTypeId = 0)
@@ -47,6 +47,21 @@ namespace OnlineServices.Api.Data
         }
 
         public IGlobalCost GetActiveGlobalCost()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<ICost> FindCurrentCosts(string[] tables, int recordId = 0, int chargeTypeId = 0)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<ICost> FindCurrentToolCosts()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<ICost> FindCurrentToolCosts(int resourceId, int chargeTypeId = 0)
         {
             throw new NotImplementedException();
         }

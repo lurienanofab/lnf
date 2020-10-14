@@ -67,7 +67,9 @@ namespace LNF.Scheduler
                     priority: pri
                 );
 
-                SendHardwareIssueEmail(res, rsv, clientId, reservationText, subjectText, messageText, pri, requestUri);
+                int sent = SendHardwareIssueEmail(res, rsv, clientId, reservationText, subjectText, messageText, pri, requestUri);
+
+                result.HardwareTicketEmailsSent = sent;
 
                 return result;
             }
@@ -77,20 +79,27 @@ namespace LNF.Scheduler
             }
         }
 
-        public static void SendHardwareIssueEmail(IResource res, IReservation reservation, int clientId, string reservationText, string subject, string message, TicketPriorty pri, Uri requestUri)
+        public static int SendHardwareIssueEmail(IResource res, IReservation reservation, int clientId, string reservationText, string subject, string message, TicketPriorty pri, Uri requestUri)
         {
             if (pri == TicketPriorty.HardwareIssue)
             {
                 string body = GetMessageBody(res, reservation, clientId, reservationText, message, TicketPriorityToString(pri), requestUri);
-                SendHardwareIssueEmail(res, clientId, subject, body);
+                return SendHardwareIssueEmail(res, clientId, subject, body);
             }
+
+            return 0;
         }
 
-        public static void SendHardwareIssueEmail(IResource res, int clientId, string subject, string body)
+        public static int SendHardwareIssueEmail(IResource res, int clientId, string subject, string body)
         {
             body += Environment.NewLine + Environment.NewLine + "This email has been sent by the system to notify you that a hardware issue exists on this resource and availability may be affected. Do not respond to this email. Please log into the Scheduler to view or respond to this ticket.";
+
             string[] recipients = GetCcEmailsForHardwareIssue(res, clientId);
-            SendEmail.SendSystemEmail("LNF.Scheduler.HelpdeskUtility.SendHardwareIssueEmail", subject, body, recipients);
+
+            if (recipients.Length > 0)
+                SendEmail.SendSystemEmail("LNF.Scheduler.HelpdeskUtility.SendHardwareIssueEmail", subject, body, recipients, false);
+
+            return recipients.Length;
         }
 
         public static string[] GetCcEmailsForHardwareIssue(IResource resource, int clientId)
