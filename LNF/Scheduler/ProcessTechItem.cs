@@ -8,5 +8,6 @@
         public string ProcessTechName { get; set; }
         public string ProcessTechDescription { get; set; }
         public bool ProcessTechIsActive { get; set; }
+        public override string ToString() => $"{ProcessTechName} [{ProcessTechID}]";
     }
 }

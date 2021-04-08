@@ -56,14 +56,18 @@ namespace OnlineServices.Api.Scheduler
         public DateTime ChargeEndDateTime => throw new NotImplementedException();
 
         public int? ClientIDBegin { get; set; }
+        public string ClientBeginLName { get; set; }
+        public string ClientBeginFName { get; set; }
         public int? ClientIDEnd { get; set; }
+        public string ClientEndLName { get; set; }
+        public string ClientEndFName { get; set; }
         public DateTime CreatedOn { get; set; }
         public DateTime LastModifiedOn { get; set; }
         public double Duration { get; set; }
         public string Notes { get; set; }
         public double ChargeMultiplier { get; set; }
         public bool ApplyLateChargePenalty { get; set; }
-        public bool AutoEnd { get; set; }
+        public bool ReservationAutoEnd { get; set; }
         public bool HasProcessInfo { get; set; }
         public bool HasInvitees { get; set; }
         public bool IsUnloaded { get; set; }
@@ -75,6 +79,9 @@ namespace OnlineServices.Api.Scheduler
         public DateTime? OriginalBeginDateTime { get; set; }
         public DateTime? OriginalEndDateTime { get; set; }
         public DateTime? OriginalModifiedOn { get; set; }
+        public int RoomID { get; set; }
+        public string RoomName { get; set; }
+        public string RoomDisplayName { get; set; }
 
         public bool IsRunning => throw new NotImplementedException();
 

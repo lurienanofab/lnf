@@ -1,14 +1,7 @@
-﻿using LNF.Data;
-
-namespace LNF.Scheduler
+﻿namespace LNF.Scheduler
 {
-    public interface IReservationInvitee : IReservation
-    {
-        int InviteeID { get; set; }
-        bool InviteeActive { get; set; }
-        string InviteeLName { get; set; }
-        string InviteeFName { get; set; }
-        string InviteeDisplayName { get; }
-        ClientPrivilege InviteePrivs { get; set; }
-    }
+    // This is the interface for ReservationInviteeInfo.
+    // IReservationInviteeItem is the more primitive form.
+
+    public interface IReservationInvitee : IReservationInviteeItem, IReservation { }
 }

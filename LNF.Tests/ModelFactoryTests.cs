@@ -446,39 +446,42 @@ namespace LNF.Tests
 
         private void AssertReservation(IReservation rsv)
         {
+            IResource res = rsv;
+            IPrivileged p = rsv;
+
             Assert.AreEqual(123456, rsv.ReservationID);
-            Assert.AreEqual(62040, rsv.ResourceID);
-            Assert.AreEqual("SJ-20 Evaporator", rsv.ResourceName);
+            Assert.AreEqual(62040, res.ResourceID);
+            Assert.AreEqual("SJ-20 Evaporator", res.ResourceName);
             Assert.AreEqual("Used for metal deposition.\r\nFixturing: Lift-off dome.\r\nTool specifications:\r\nSubstrate size:Fragments up to 4 inch.\r\nMaximum capacity: 9, 4\" wafers.\r\nMaterial maximum thickness: \r\nGe\t   4000Ǻ\r\nAu\t   4000Ǻ\r\nNi         2000Ǻ\r\nTi         8000Ǻ", rsv.ResourceDescription);
-            Assert.AreEqual(15, rsv.Granularity);
-            Assert.AreEqual(10080, rsv.ReservFence);
-            Assert.AreEqual(90, rsv.MinReservTime);
-            Assert.AreEqual(240, rsv.MaxReservTime);
-            Assert.AreEqual(1560, rsv.MaxAlloc);
-            Assert.AreEqual(0, rsv.Offset);
-            Assert.AreEqual(15, rsv.GracePeriod);
-            Assert.AreEqual(30, rsv.ResourceAutoEnd);
-            Assert.AreEqual(0, rsv.MinCancelTime);
+            Assert.AreEqual(15, res.Granularity);
+            Assert.AreEqual(10080, res.ReservFence);
+            Assert.AreEqual(90, res.MinReservTime);
+            Assert.AreEqual(240, res.MaxReservTime);
+            Assert.AreEqual(1560, res.MaxAlloc);
+            Assert.AreEqual(0, res.Offset);
+            Assert.AreEqual(15, res.GracePeriod);
+            Assert.AreEqual(30, res.ResourceAutoEnd);
+            Assert.AreEqual(0, res.MinCancelTime);
             Assert.AreEqual(15, rsv.UnloadTime);
             Assert.AreEqual(null, rsv.OTFSchedTime);
-            Assert.AreEqual(true, rsv.AuthState);
-            Assert.AreEqual(12, rsv.AuthDuration);
+            Assert.AreEqual(true, res.AuthState);
+            Assert.AreEqual(12, res.AuthDuration);
             Assert.AreEqual((ResourceState)1, rsv.State);
             Assert.AreEqual(true, rsv.IsSchedulable);
             Assert.AreEqual(true, rsv.ResourceIsActive);
             Assert.AreEqual("helpdesk.deposition@lnf.umich.edu", rsv.HelpdeskEmail);
-            Assert.AreEqual(8, rsv.ProcessTechID);
+            Assert.AreEqual(8, res.ProcessTechID);
             Assert.AreEqual("PVD", rsv.ProcessTechName);
-            Assert.AreEqual(1, rsv.LabID);
+            Assert.AreEqual(1, res.LabID);
             Assert.AreEqual("Clean Room", rsv.LabName);
             Assert.AreEqual("Clean Room", rsv.LabDisplayName);
-            Assert.AreEqual(4, rsv.BuildingID);
+            Assert.AreEqual(4, res.BuildingID);
             Assert.AreEqual("EECS", rsv.BuildingName);
-            Assert.AreEqual(322, rsv.ClientID);
-            Assert.AreEqual("junyang", rsv.UserName);
+            Assert.AreEqual(322, p.ClientID);
+            Assert.AreEqual("junyang", p.UserName);
             Assert.AreEqual("Yang", rsv.LName);
             Assert.AreEqual("Jun", rsv.FName);
-            Assert.AreEqual((ClientPrivilege)1029, rsv.Privs);
+            Assert.AreEqual((ClientPrivilege)1029, p.Privs);
             Assert.AreEqual(424, rsv.AccountID);
             Assert.AreEqual("Quantum Dot Heterostructures for Slow Light Studie", rsv.AccountName);
             Assert.AreEqual("055991", rsv.ShortCode);
@@ -503,7 +506,7 @@ namespace LNF.Tests
             Assert.AreEqual("", rsv.Notes);
             Assert.AreEqual(1, rsv.ChargeMultiplier);
             Assert.AreEqual(true, rsv.ApplyLateChargePenalty);
-            Assert.AreEqual(false, rsv.AutoEnd);
+            Assert.AreEqual(false, rsv.ReservationAutoEnd);
             Assert.AreEqual(true, rsv.HasProcessInfo);
             Assert.AreEqual(false, rsv.HasInvitees);
             Assert.AreEqual(true, rsv.IsActive);
@@ -525,7 +528,8 @@ namespace LNF.Tests
     {
         public override bool AreEqual(IReservation obj1, Reservation obj2)
         {
-            return obj1.UserName == obj2.Client.UserName
+            IPrivileged p = obj1;
+            return p.UserName == obj2.Client.UserName
                 && obj1.ReservationID == obj2.ReservationID;
         }
     }

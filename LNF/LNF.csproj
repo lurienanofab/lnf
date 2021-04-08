@@ -96,6 +96,8 @@
     <Compile Include="Billing\IBillingType.cs" />
     <Compile Include="Billing\IBillingTypeRepository.cs" />
     <Compile Include="Billing\IClientOrgBillingTypeLog.cs" />
+    <Compile Include="Billing\IExternalInvoiceManager.cs" />
+    <Compile Include="Billing\IExternalInvoiceRepository.cs" />
     <Compile Include="Billing\IMiscBillingCharge.cs" />
     <Compile Include="Billing\IMiscBillingRepository.cs" />
     <Compile Include="Billing\IMiscDataRepository.cs" />
@@ -157,12 +159,14 @@
     <Compile Include="DataAccess\ISession.cs" />
     <Compile Include="DataAccess\IUnitOfWork.cs" />
     <Compile Include="DataAccess\IUnitOfWorkAdapter.cs" />
+    <Compile Include="DataAccess\SimpleRepository.cs" />
     <Compile Include="Data\Clients.cs" />
     <Compile Include="Data\IClientOrg.cs" />
     <Compile Include="Data\IMessengerMessage.cs" />
     <Compile Include="Data\IMessengerRecipient.cs" />
     <Compile Include="Data\IPasswordResetRequest.cs" />
     <Compile Include="DynamicDictionary.cs" />
+    <Compile Include="Extentions.cs" />
     <Compile Include="Feedback\Enums.cs" />
     <Compile Include="Feedback\IFeedbackIssue.cs" />
     <Compile Include="Feedback\IFeedbackService.cs" />
@@ -444,6 +448,7 @@
     <Compile Include="Reporting\Individual\RoomByOrgItem.cs" />
     <Compile Include="Reporting\Individual\StoreByOrgItem.cs" />
     <Compile Include="Reporting\Individual\SubsidyByOrgItem.cs" />
+    <Compile Include="Reporting\Individual\ToolBilling.cs" />
     <Compile Include="Reporting\Individual\ToolByOrgItem.cs" />
     <Compile Include="Reporting\Individual\UserUsageSummary.cs" />
     <Compile Include="Reporting\IReportingClient.cs" />
@@ -576,6 +581,9 @@
     <Compile Include="Scheduler\KioskItem.cs" />
     <Compile Include="Scheduler\LabItem.cs" />
     <Compile Include="Scheduler\OnTheFlyResourceItem.cs" />
+    <Compile Include="Scheduler\ProcessInfos.cs" />
+    <Compile Include="Scheduler\RecentReservation.cs" />
+    <Compile Include="Scheduler\ReservationProcessInfoItem.cs" />
     <Compile Include="Scheduler\ProcessTechGroupItem.cs" />
     <Compile Include="Scheduler\ProcessTechItem.cs" />
     <Compile Include="Scheduler\ReservationClient.cs" />
@@ -594,7 +602,6 @@
     <Compile Include="Scheduler\ReservationHistoryUpdate.cs" />
     <Compile Include="Scheduler\RepairInProgress.cs" />
     <Compile Include="Scheduler\ReservationInvitees.cs" />
-    <Compile Include="Scheduler\ReservationItem.cs" />
     <Compile Include="Scheduler\ReservationRecurrenceItem.cs" />
     <Compile Include="Scheduler\ReservationStateArgs.cs" />
     <Compile Include="Scheduler\Reservations.cs" />

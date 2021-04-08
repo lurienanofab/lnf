@@ -73,6 +73,30 @@ namespace LNF.Web
             return log;
         }
 
+        public string GetLogText()
+        {
+            var log = GetLog();
+            return string.Join(Environment.NewLine, log);
+        }
+
+        /// <summary>
+        /// Checks if the kiosk ip begins with the ResourceIPPrefix (e.g. 192.168.1), or is a defined kiosk IP, or if Request.IsLocal is true. Does not check if user is in the lab.
+        /// </summary>
+        public bool IsKiosk()
+        {
+            bool result = Kiosks.Create(Provider.Scheduler.Kiosk).IsKiosk(Context.CurrentIP()) || Context.Request.IsLocal;
+            return result;
+        }
+
+        /// <summary>
+        /// Checks if on a kiosk based on ip (set in database), or if override is true (set in appSettings), or if ip is a defined kiosk (set in appSettings), of if Request.IsLocal is true.
+        /// </summary>
+        public bool IsOnKiosk()
+        {
+            bool result = Kiosks.Create(Provider.Scheduler.Kiosk).IsOnKiosk(Context.CurrentIP()) || Context.Request.IsLocal;
+            return result;
+        }
+
         private void AppendLogToFile(SessionLogMessage logmsg)
         {
             try
@@ -102,12 +126,6 @@ namespace LNF.Web
                 }
             }
             catch { } //silently fail, we don't want an error here to fuck everything up
-        }
-
-        public bool IsKiosk()
-        {
-            bool result = Kiosks.Create(Provider.Scheduler.Kiosk).IsKiosk(Context.CurrentIP()) || Context.Request.IsLocal;
-            return result;
         }
     }
 }

@@ -42,6 +42,9 @@ namespace LNF.Scheduler
         public int MinReservTime { get; set; }
         public int MaxReservTime { get; set; }
         public int GracePeriod { get; set; }
+        public int RoomID { get; set; }
+        public string RoomName { get; set; }
+        public string RoomDisplayName { get; set; }
         public override string ToString() => Resources.GetResourceDisplayName(ResourceName, ResourceID);
 
         public DateTime GetNextGranularity(DateTime now, GranularityDirection dir) => Resources.GetNextGranularity(Granularity, Offset, now, dir);

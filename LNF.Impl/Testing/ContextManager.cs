@@ -47,13 +47,14 @@ namespace LNF.Impl.Testing
 
             var container = new Container();
             ContainerConfiguration = new ThreadStaticContainerConfiguration(container);
-            ContainerConfiguration.Configure();
+            ContainerConfiguration.RegisterAllTypes();
 
-            ServiceProvider.Setup(container.GetInstance<IProvider>());
+            var provider = container.GetInstance<IProvider>();
+            ServiceProvider.Setup(provider);
 
             Login(username);
 
-            _uow = DA.StartUnitOfWork();
+            _uow = provider.DataAccess.StartUnitOfWork();
         }
 
         public HttpContextBase CreateHttpContext()

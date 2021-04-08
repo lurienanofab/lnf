@@ -8,15 +8,15 @@ namespace LNF.Scheduler
     {
         public ReservationData() : this(null, null) { }
 
-        public ReservationData(IEnumerable<IReservationProcessInfo> processInfos)
+        public ReservationData(IEnumerable<ReservationProcessInfoItem> processInfos)
             : this(processInfos, null) { }
 
         public ReservationData(IEnumerable<Invitee> invitees)
             : this(null, invitees) { }
 
-        public ReservationData(IEnumerable<IReservationProcessInfo> processInfos, IEnumerable<Invitee> invitees)
+        public ReservationData(IEnumerable<ReservationProcessInfoItem> processInfos, IEnumerable<Invitee> invitees)
         {
-            ProcessInfos = processInfos == null ? new List<IReservationProcessInfo>() : processInfos.ToList();
+            ProcessInfos = processInfos == null ? new List<ReservationProcessInfoItem>() : processInfos.ToList();
             Invitees = invitees == null ? new List<Invitee>() : invitees.ToList();
         }
 
@@ -29,7 +29,7 @@ namespace LNF.Scheduler
         public bool AutoEnd { get; set; }
         public bool KeepAlive { get; set; }
         public ReservationDuration Duration { get; set; }
-        public IList<IReservationProcessInfo> ProcessInfos { get; }
+        public IList<ReservationProcessInfoItem> ProcessInfos { get; }
         public IList<Invitee> Invitees { get; }
 
         /// <summary>
@@ -69,6 +69,7 @@ namespace LNF.Scheduler
                 HasInvitees = Invitees.Any(x => !x.Removed),
                 HasProcessInfo = ProcessInfos.Any(),
                 Notes = Notes,
+                ChargeMultiplier = 1, // any update from Reservation.aspx occurs before a reservation would ever be forgiven
                 Now = now,
                 ModifiedByClientID = modifiedByClientId.GetValueOrDefault(ClientID)
             };

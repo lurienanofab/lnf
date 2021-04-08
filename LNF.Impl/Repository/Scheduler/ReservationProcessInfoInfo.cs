@@ -16,5 +16,14 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual string Param { get; set; }
         public virtual int ProcessInfoID { get; set; }
         public virtual string ProcessInfoName { get; set; }
+
+        public override string ToString()
+        {
+            // ProcessInfo.ProcessInfoName
+            // ProcessInfoLine.Param
+            // ReservationProcessInfo.ReservationID
+            // ReservationProcessInfo.Value
+            return $"{ProcessInfoName}/{Param}/{ReservationID}/{Value} [{ReservationProcessInfoID}]";
+        }
     }
 }

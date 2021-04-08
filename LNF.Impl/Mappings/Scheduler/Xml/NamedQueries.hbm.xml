@@ -29,4 +29,8 @@
     <return class="ResourceTree"/>
     <![CDATA[EXEC sselScheduler.dbo.procResourceTreeSelect @ClientID=:ClientID]]>
   </sql-query>
+  <sql-query name="SelectByDateRange">
+    <return class="ReservationItem"/>
+    <![CDATA[SELECT * FROM sselScheduler.dbo.v_ReservationItem rsv WHERE rsv.IsActive = ISNULL(:active, rsv.IsActive) AND ((rsv.BeginDateTime < :ed AND rsv.EndDateTime > :sd) OR (rsv.ActualBeginDateTime < :ed AND rsv.ActualEndDateTime > :sd))]]>
+  </sql-query>
 </hibernate-mapping>

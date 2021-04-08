@@ -62,7 +62,12 @@ namespace LNF.Impl
             _container = container ?? throw new ArgumentNullException("container");
         }
 
-        public virtual void Configure()
+        public virtual void EnablePropertyInjection()
+        {
+            _container.Options.PropertySelectionBehavior = new InjectPropertySelectionBehavior();
+        }
+
+        public virtual void RegisterAllTypes()
         {
             // Context API
             RegisterContext();
@@ -121,6 +126,7 @@ namespace LNF.Impl
             RegisterSingleton<IStoreDataRepository, StoreDataRepository>();
             RegisterSingleton<IMiscDataRepository, MiscDataRepository>();
             RegisterSingleton<IOrgRechargeRepository, OrgRechargeRepository>();
+            RegisterSingleton<IExternalInvoiceRepository, ExternalInvoiceRepository>();
 
             // Inventory API
             RegisterSingleton<IInventoryService, InventoryService>();

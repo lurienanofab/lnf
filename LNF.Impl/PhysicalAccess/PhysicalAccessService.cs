@@ -179,13 +179,13 @@ namespace LNF.Impl.PhysicalAccess
 
         public IEnumerable<Badge> GetBadge(int clientId = 0)
         {
-            string sql = "SELECT ID, BADGE_CLIENTID" +
-                ", BADGE_SSEL_UNAME, LNAME, FNAME" +
-                ", ISSUE_DATE, EXPIRE_DATE, EVENT_TIME" +
-                ", CARD_NO, EVENT_DESCRP" +
-                ", AREA_NAME, ALT_DESCRP " +
-                "FROM LNF.dbo.Badges " +
-                "WHERE BADGE_CLIENTID = ISNULL(@ClientID, BADGE_CLIENTID)";
+            string sql = "SELECT ID, BADGE_CLIENTID"
+                + ", BADGE_SSEL_UNAME, LNAME, FNAME"
+                + ", ISSUE_DATE, EXPIRE_DATE, EVENT_TIME"
+                + ", CARD_NO, EVENT_DESCRP"
+                + ", AREA_NAME, ALT_DESCRP "
+                + " FROM LNF.dbo.Badges "
+                + " WHERE BADGE_CLIENTID = ISNULL(@ClientID, BADGE_CLIENTID)";
 
             var dt = Repository.Prowatch.FillDataTable(sql, new Dictionary<string, object>
             {
@@ -199,12 +199,12 @@ namespace LNF.Impl.PhysicalAccess
 
         public IEnumerable<Card> GetCards(int clientId = 0)
         {
-            string sql = "SELECT ID, BADGE_CLIENTID" +
-                    ", BADGE_SSEL_UNAME, LNAME, FNAME" +
-                    ", CARDNO, LAST_ACC, CARD_ISSUE_DATE, CARD_EXPIRE_DATE" +
-                    ", BADGE_ISSUE_DATE, BADGE_EXPIRE_DATE, STAT_COD " +
-                    "FROM LNF.dbo.Cards " +
-                    "WHERE BADGE_CLIENTID = ISNULL(@ClientID, BADGE_CLIENTID)";
+            string sql = "SELECT ID, BADGE_CLIENTID"
+                    + ", BADGE_SSEL_UNAME, LNAME, FNAME"
+                    + ", CARDNO, LAST_ACC, CARD_ISSUE_DATE, CARD_EXPIRE_DATE"
+                    + ", BADGE_ISSUE_DATE, BADGE_EXPIRE_DATE, STAT_COD "
+                    + " FROM LNF.dbo.Cards "
+                    + " WHERE BADGE_CLIENTID = ISNULL(@ClientID, BADGE_CLIENTID)";
 
             var dt = Repository.Prowatch.FillDataTable(sql, new Dictionary<string, object>
             {
@@ -212,6 +212,26 @@ namespace LNF.Impl.PhysicalAccess
             });
 
             IList<Card> result = Utility.CreateCards(dt);
+
+            return result;
+        }
+
+        public Card GetCard(string cardnum)
+        {
+            string sql = "SELECT ID, BADGE_CLIENTID"
+                    + ", BADGE_SSEL_UNAME, LNAME, FNAME"
+                    + ", CARDNO, LAST_ACC, CARD_ISSUE_DATE, CARD_EXPIRE_DATE"
+                    + ", BADGE_ISSUE_DATE, BADGE_EXPIRE_DATE, STAT_COD"
+                    + " FROM LNF.dbo.Cards"
+                    + " WHERE CARDNO = @CARDNO";
+
+            var dt = Repository.Prowatch.FillDataTable(sql, new Dictionary<string, object>
+            {
+                ["CARDNO"] = cardnum
+            });
+
+            IList<Card> list = Utility.CreateCards(dt);
+            var result = list.First();
 
             return result;
         }

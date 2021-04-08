@@ -12,9 +12,10 @@ namespace OnlineServices.Api.Data
         {
             string url = "webapi/data/servicelog";
 
-            ParameterCollection parameters = new ParameterCollection();
-
-            parameters.Add("limit", limit, ParameterType.QueryString);
+            ParameterCollection parameters = new ParameterCollection
+            {
+                { "limit", limit, ParameterType.QueryString }
+            };
 
             if (skip > 0)
             {
@@ -49,7 +50,7 @@ namespace OnlineServices.Api.Data
         public bool UpdateServiceLog(Guid id, string data)
         {
             IDictionary<string, string> postData = new Dictionary<string, string> { { "", data } };
-            ParameterCollection parameters = new ParameterCollection { postData.Select(x => new Parameter(x.Key, x.Value, ParameterType.RequestBody)) };
+            ParameterCollection parameters = new ParameterCollection { postData.Select(x => new ParameterItem(x.Key, x.Value, ParameterType.RequestBody)) };
             return Put(string.Format("webapi/data/servicelog/{0}", id), parameters);
         }
     }

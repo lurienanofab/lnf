@@ -23,7 +23,7 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.BeginDate);
             Map(x => x.BeginTime);
             Map(x => x.EndDate);
-            Map(x => x.EndTime);
+            //Map(x => x.EndTime);
             Map(x => x.Duration);
             Map(x => x.Notes);
         }

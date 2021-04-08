@@ -18,12 +18,12 @@ namespace LNF
             if (Current == null)
             {
                 Current = provider;
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] ServiceProvider setup complete." + Environment.NewLine + stack.ToString());
+                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] ServiceProvider setup complete.{Environment.NewLine}{stack}");
                 CacheManager.Setup(new DefaultCache(provider));
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] ServiceProvider has already been setup. What are you trying to do?" + Environment.NewLine + stack.ToString());
+                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] ServiceProvider has already been setup. What are you trying to do?{Environment.NewLine}{stack}");
             }
         }
 

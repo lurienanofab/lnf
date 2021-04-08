@@ -274,7 +274,9 @@ namespace LNF.Scheduler
                 ? TruthTableTE[subStateValue]
                 : TruthTable[subStateValue];
 
-            if (result == ReservationState.Undefined)
+            bool throwErrorOnUndefined = false;
+
+            if (throwErrorOnUndefined && result == ReservationState.Undefined)
             {
                 var errmsg = "Unstarted reservation state is undefined."
                     + " ReservationID: {0}, IsToolEngineer: {1}, IsInLab: {2}, IsReserver: {3}, IsInvited: {4}, IsAuthorized: {5}, IsBeforeMinCancelTime: {6}, IsStartable: {7}, SubStateValue: {8}";

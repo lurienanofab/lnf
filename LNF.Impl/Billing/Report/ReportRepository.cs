@@ -16,8 +16,8 @@ namespace LNF.Impl.Billing.Report
 {
     public class ReportRepository : RepositoryBase, IReportRepository
     {
-        public IBillingTypeRepository BillingType { get; }
-        public IApportionmentRepository Apportionment { get; }
+        protected IBillingTypeRepository BillingType { get; }
+        protected IApportionmentRepository Apportionment { get; }
 
         public ReportRepository(ISessionManager mgr, IBillingTypeRepository billingType, IApportionmentRepository apportionment) : base(mgr)
         {

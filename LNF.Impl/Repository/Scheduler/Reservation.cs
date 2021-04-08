@@ -101,19 +101,28 @@ namespace LNF.Impl.Repository.Scheduler
 
         public virtual ClientAccountInfo GetClientAccount(NHibernate.ISession session)
         {
+            // client/account mismatches are possible because of remote processing, so this may be null
             if (_clientAccountInfo == null)
-                _clientAccountInfo = session.Query<ClientAccountInfo>().First(x => x.ClientID == Client.ClientID && x.AccountID == Account.AccountID);
+                _clientAccountInfo = session.Query<ClientAccountInfo>().FirstOrDefault(x => x.ClientID == Client.ClientID && x.AccountID == Account.AccountID);
             return _clientAccountInfo;
         }
 
         public virtual string GetPhone(NHibernate.ISession session)
         {
-            return GetClientAccount(session).Phone;
+            var ca = GetClientAccount(session);
+            if (ca != null)
+                return ca.Phone;
+            else
+                return session.Get<ClientInfo>(Client.ClientID).Phone;
         }
 
         public virtual string GetEmail(NHibernate.ISession session)
         {
-            return GetClientAccount(session).Email;
+            var ca = GetClientAccount(session);
+            if (ca != null)
+                return ca.Email;
+            else
+                return session.Get<ClientInfo>(Client.ClientID).Email;
         }
 
         public virtual DateTime ChargeEndDateTime()
@@ -134,7 +143,7 @@ namespace LNF.Impl.Repository.Scheduler
             return Math.Max(result, 0);
         }
 
-        public virtual bool IsRunning() => ReservationItem.GetIsRunning(ActualBeginDateTime, ActualEndDateTime);
+        public virtual bool IsRunning() => Reservations.GetIsRunning(ActualBeginDateTime, ActualEndDateTime);
 
         public virtual bool InCurrentPeriod()
         {

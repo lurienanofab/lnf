@@ -23,9 +23,11 @@ namespace LNF.Impl.Scheduler
         }
 
         //Email users who want to be notified of open reservation slots
-        public EmailOnOpenReservationsProcessResult EmailOnOpenReservations(IReservation rsv, DateTime startDate, DateTime endDate)
+        public EmailOnOpenReservationsProcessResult EmailOnOpenReservations(int reservationId, DateTime startDate, DateTime endDate)
         {
             var result = new EmailOnOpenReservationsProcessResult();
+
+            var rsv = Require<ReservationInfo>(reservationId);
 
             IList<ResourceClientInfo> emailClients = Session.SelectEmailClients(rsv.ResourceID).ToList();
 
@@ -61,10 +63,12 @@ namespace LNF.Impl.Scheduler
             return result;
         }
 
-        public void EmailOnSaveHistory(IReservation rsv, bool updateCharges, bool updateAccount, bool updateNotes, bool sendToUser, int clientId)
+        public void EmailOnSaveHistory(int reservationId, bool updateCharges, bool updateAccount, bool updateNotes, bool sendToUser, int clientId)
         {
             if (updateCharges || updateAccount || updateNotes)
             {
+                var rsv = Require<ReservationInfo>(reservationId);
+
                 string subject;
                 List<string> toAddr = new List<string>();
                 string emailForgivenCharge = ConfigurationManager.AppSettings["EmailForgivenCharge"];
@@ -100,8 +104,9 @@ namespace LNF.Impl.Scheduler
         }
 
         //Send email to reserver when his/her reservation is created
-        public void EmailOnUserCreate(IReservation rsv, int clientId)
+        public void EmailOnUserCreate(int reservationId, int clientId)
         {
+            var rsv = Require<ReservationInfo>(reservationId);
             ClientSetting reserverSetting = Session.Get<ClientSetting>(rsv.ClientID);
             if (reserverSetting.EmailCreateReserv.Value || rsv.ClientID != clientId)
             {
@@ -124,8 +129,9 @@ namespace LNF.Impl.Scheduler
         }
 
         //Send email to reserver when his/her reservation is updated, either by reserver or by TE
-        public void EmailOnUserUpdate(IReservation rsv, int clientId)
+        public void EmailOnUserUpdate(int reservationId, int clientId)
         {
+            var rsv = Require<ReservationInfo>(reservationId);
             ClientSetting reserverSetting = Session.Get<ClientSetting>(rsv.ClientID);
             if (reserverSetting.EmailModifyReserv.Value || rsv.ClientID != clientId)
             {
@@ -147,8 +153,9 @@ namespace LNF.Impl.Scheduler
         }
 
         //Send email to reserver when his/her reservation is deleted, either by reserver or by TE
-        public void EmailOnUserDelete(IReservation rsv, int clientId)
+        public void EmailOnUserDelete(int reservationId, int clientId)
         {
+            var rsv = Require<ReservationInfo>(reservationId);
             ClientSetting reserverSetting = Session.Get<ClientSetting>(rsv.ClientID);
             if (reserverSetting.EmailDeleteReserv.Value || rsv.ClientID != clientId)
             {
@@ -170,8 +177,9 @@ namespace LNF.Impl.Scheduler
         }
 
         //Send email to reserver when reservation is overrode by TE
-        public void EmailOnToolEngDelete(IReservation rsv, IClient toolEng, int clientId)
+        public void EmailOnToolEngDelete(int reservationId, IClient toolEng, int clientId)
         {
+            var rsv = Require<ReservationInfo>(reservationId);
             string displayName = Clients.GetDisplayName(rsv.LName, rsv.FName);
             string fromAddr, subject, body;
             fromAddr = toolEng.Email;
@@ -193,7 +201,7 @@ namespace LNF.Impl.Scheduler
         }
 
         //Send email to invitees when they are invited to a reservation
-        public void EmailOnInvited(IReservation rsv, IEnumerable<Invitee> invitees, int clientId, ReservationModificationType modificationType = ReservationModificationType.Created)
+        public void EmailOnInvited(int reservationId, IEnumerable<Invitee> invitees, int clientId, ReservationModificationType modificationType = ReservationModificationType.Created)
         {
             if (invitees == null) return;
 
@@ -201,6 +209,7 @@ namespace LNF.Impl.Scheduler
 
             if (invited.Length == 0) return;
 
+            var rsv = Require<ReservationInfo>(reservationId);
             string fromAddr, subject, body;
             List<string> toAddr = new List<string>();
             fromAddr = Properties.Current.SchedulerEmail;
@@ -239,13 +248,15 @@ namespace LNF.Impl.Scheduler
         }
 
         //Send email to invitees when they are uninvited to a reservation
-        public void EmailOnUninvited(IReservation rsv, IEnumerable<Invitee> invitees, int clientId)
+        public void EmailOnUninvited(int reservationId, IEnumerable<Invitee> invitees, int clientId)
         {
             if (invitees == null) return;
 
             var removed = invitees.Where(x => x.Removed).ToArray();
 
             if (removed.Length == 0) return;
+
+            var rsv = Require<ReservationInfo>(reservationId);
 
             string fromAddr, subject, body;
             List<string> toAddr = new List<string>();
@@ -278,10 +289,12 @@ namespace LNF.Impl.Scheduler
         }
 
         //Email users who want to be notified of open reservation slots
-        public void EmailOnOpenSlot(IReservation rsv, DateTime beginDateTime, DateTime endDateTime, EmailNotify notifyType, int clientId)
+        public void EmailOnOpenSlot(int reservationId, DateTime beginDateTime, DateTime endDateTime, EmailNotify notifyType, int clientId)
         {
             IList<ResourceClientInfo> clients = null;
             string footer = string.Empty;
+
+            var rsv = Require<ReservationInfo>(reservationId);
 
             if (notifyType == EmailNotify.Always)
             {
@@ -318,8 +331,10 @@ namespace LNF.Impl.Scheduler
             SendEmail.Send(clientId, "LNF.Scheduler.EmailUtility.EmailOnOpenSlot", subject, body, fromAddr, toAddr);
         }
 
-        public void EmailOnPracticeRes(IReservation rsv, string inviteeName, int clientId)
+        public void EmailOnPracticeRes(int reservationId, string inviteeName, int clientId)
         {
+            var rsv = Require<ReservationInfo>(reservationId);
+
             IList<ResourceClientInfo> clients = Session.SelectNotifyOnPracticeRes(rsv.ResourceID).ToList();
             if (clients == null || clients.Count == 0) return;
 
@@ -344,8 +359,9 @@ namespace LNF.Impl.Scheduler
         }
 
         //Email reservers when their reservations are canceled because TE changed granularity.
-        public void EmailOnCanceledByResource(IReservation rsv, int clientId)
+        public void EmailOnCanceledByResource(int reservationId, int clientId)
         {
+            var rsv = Require<ReservationInfo>(reservationId);
             string fromAddr, subject, body;
             fromAddr = Properties.Current.SchedulerEmail;
             IEnumerable<string> toAddr = Client.ActiveEmails(rsv.ClientID);
@@ -364,8 +380,9 @@ namespace LNF.Impl.Scheduler
         }
 
         //Email reservers when their reservations are canceled because TE needs to repair resource.
-        public void EmailOnCanceledByRepair(IReservation rsv, bool isRemoved, string state, string notes, DateTime repairEndDateTime, int clientId)
+        public void EmailOnCanceledByRepair(int reservationId, bool isRemoved, string state, string notes, DateTime repairEndDateTime, int clientId)
         {
+            var rsv = Require<ReservationInfo>(reservationId);
             string fromAddr, subject, body;
             fromAddr = Properties.Current.SchedulerEmail;
             IEnumerable<string> toAddr = Client.ActiveEmails(rsv.ClientID);
@@ -390,10 +407,11 @@ namespace LNF.Impl.Scheduler
         /// <summary>
         /// Email reservers when tool engineers have forgiven charges to their reservations.
         /// </summary>
-        public void EmailOnForgiveCharge(IReservation rsv, double forgiveAmount, bool sendToUser, int clientId)
+        public void EmailOnForgiveCharge(int reservationId, double forgiveAmount, bool sendToUser, int clientId)
         {
             // clientId is for the user sending the email (i.e. staff doing the forgiving)
 
+            var rsv = Require<ReservationInfo>(reservationId);
             string fromAddr, subject, body;
             List<string> toAddr = new List<string>();
             string emailForgivenCharge = ConfigurationManager.AppSettings["EmailForgivenCharge"];

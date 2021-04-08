@@ -285,7 +285,7 @@ namespace LNF.Impl.Billing
             //Part I: Get the true cost based on billing types
             foreach (DataRow dr in dt.Rows)
             {
-                var item = ToolBillingUtility.CreateToolBillingFromDataRow(dr, false);
+                var item = CreateToolBillingFromDataRow(dr, false);
                 dr.SetField("Room", Rooms.GetRoomDisplayName(item.RoomID));
                 dr.SetField("LineCost", GetLineCost(item));
             }

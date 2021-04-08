@@ -8,6 +8,7 @@ namespace LNF.PhysicalAccess
     {
         IEnumerable<Badge> GetBadge(int clientId = 0);
         IEnumerable<Card> GetCards(int clientId = 0);
+        Card GetCard(string cardnum);
         IEnumerable<Area> GetAreas();
         IEnumerable<Area> GetAreas(int[] areaIds);
         IEnumerable<Badge> GetCurrentlyInArea(string alias);

@@ -30,5 +30,16 @@ namespace LNF.Impl.Scheduler
 
             return kiosks;
         }
+
+        public bool RefreshCache()
+        {
+            if (Cache.Contains("Kiosks"))
+            {
+                Cache.Remove("Kiosks");
+                return true;
+            }
+
+            return false;
+        }
     }
 }

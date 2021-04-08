@@ -15,5 +15,10 @@
         {
             return OrgActive && ClientActive;
         }
+
+        public override string ToString()
+        {
+            return $"{DisplayName} [{ClientID}]";
+        }
     }
 }

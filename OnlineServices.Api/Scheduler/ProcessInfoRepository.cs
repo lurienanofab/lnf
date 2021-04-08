@@ -52,6 +52,11 @@ namespace OnlineServices.Api.Scheduler
             throw new NotImplementedException();
         }
 
+        public void InsertReservationProcessInfo(ReservationProcessInfoItem item)
+        {
+            throw new NotImplementedException();
+        }
+
         public void Update(IEnumerable<IProcessInfo> insert, IEnumerable<IProcessInfo> update, IEnumerable<IProcessInfo> delete)
         {
             throw new NotImplementedException();
@@ -68,6 +73,11 @@ namespace OnlineServices.Api.Scheduler
         }
 
         public void UpdateReservationProcessInfo(IReservationProcessInfo item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UpdateReservationProcessInfo(ReservationProcessInfoItem item)
         {
             throw new NotImplementedException();
         }

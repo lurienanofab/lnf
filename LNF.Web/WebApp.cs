@@ -22,30 +22,18 @@ namespace LNF.Web
         {
             Current = new WebApp();
         }
-
-        private Container _container;
-        private bool _dataAccessRegistered = false;
-
         private WebApp()
         {
-            _container = new Container();
+            Container = new Container();
 
             // Needed for SimpleInjector v5
             // See https://simpleinjector.readthedocs.io/en/latest/resolving-unregistered-concrete-types-Is-disallowed-by-default.html
-            _container.Options.ResolveUnregisteredConcreteTypes = true;
+            Container.Options.ResolveUnregisteredConcreteTypes = true;
 
-            _container.Options.DefaultScopedLifestyle = new WebRequestLifestyle();
+            Container.Options.DefaultScopedLifestyle = new WebRequestLifestyle();
         }
 
-        public Container GetContainer()
-        {
-            return _container;
-        }
-
-        public void EnablePropertyInjection()
-        {
-            _container.Options.PropertySelectionBehavior = new InjectPropertySelectionBehavior();
-        }
+        public Container Container { get; }
 
         public void RegisterWebPages(Assembly[] assemblies)
         {
@@ -60,46 +48,28 @@ namespace LNF.Web
 
             foreach (Type type in pageTypes)
             {
-                var reg = Lifestyle.Transient.CreateRegistration(type, _container);
+                var reg = Lifestyle.Transient.CreateRegistration(type, Container);
                 reg.SuppressDiagnosticWarning(DiagnosticType.DisposableTransientComponent, "ASP.NET creates and disposes page classes for us.");
-                _container.AddRegistration(type, reg);
+                Container.AddRegistration(type, reg);
             }
-        }
-
-        public void RegisterMvcControllers(Assembly[] assemblies)
-        {
-            _container.RegisterMvcControllers(assemblies.ToArray());
-        }
-
-        public void Configure()
-        {
-            var cfg = new WebContainerConfiguration(_container);
-            cfg.SkipDataAccessRegistration = _dataAccessRegistered;
-            cfg.Configure();
         }
 
         public void InitializeHandler(IHttpHandler handler)
         {
             var handlerType = handler is Page ? handler.GetType().BaseType : handler.GetType();
-            _container.GetRegistration(handlerType, true).Registration.InitializeInstance(handler);
+            Container.GetRegistration(handlerType, true).Registration.InitializeInstance(handler);
         }
 
         public T GetInstance<T>() where T : class
         {
-            return _container.GetInstance<T>();
-        }
-
-        public void RegisterDataAccess<TImplementation>() where TImplementation : class, IDataAccessService
-        {
-            _container.RegisterSingleton<IDataAccessService, TImplementation>();
-            _dataAccessRegistered = true;
+            return Container.GetInstance<T>();
         }
 
         public void Register<TService, TImplementation>()
             where TService : class
             where TImplementation : class, TService
         {
-            _container.Register<TService, TImplementation>();
+            Container.Register<TService, TImplementation>();
         }
 
         /// <summary>
@@ -108,11 +78,9 @@ namespace LNF.Web
         /// </summary>
         public void Bootstrap(params Assembly[] assemblies)
         {
-            EnablePropertyInjection();
-            Configure();
             RegisterWebPages(assemblies);
-            _container.Verify();
-            ServiceProvider.Setup(_container.GetInstance<IProvider>());
+            Container.Verify();
+            ServiceProvider.Setup(Container.GetInstance<IProvider>());
         }
 
         /// <summary>
@@ -121,11 +89,10 @@ namespace LNF.Web
         /// </summary>
         public void BootstrapMvc(params Assembly[] assemblies)
         {
-            Configure();
-            RegisterMvcControllers(assemblies);
-            _container.Verify();
-            ServiceProvider.Setup(_container.GetInstance<IProvider>());
-            DependencyResolver.SetResolver(new SimpleInjectorDependencyResolver(_container));
+            Container.RegisterMvcControllers(assemblies);
+            Container.Verify();
+            ServiceProvider.Setup(Container.GetInstance<IProvider>());
+            DependencyResolver.SetResolver(new SimpleInjectorDependencyResolver(Container));
         }
     }
 

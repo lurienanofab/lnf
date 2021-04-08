@@ -8,7 +8,6 @@ namespace LNF.Scheduler.Data
     /// <summary>
     /// A class for handling ResourceClient data using the System.Data namespace.
     /// </summary>
-    [Obsolete("What uses this? Preferences.aspx.vb")]
     public static class ResourceClientData
     {
         /// <summary>
@@ -18,7 +17,7 @@ namespace LNF.Scheduler.Data
         {
             ClientPrivilege p = ClientPrivilege.LabUser | ClientPrivilege.Staff;
 
-            var dt = DefaultDataCommand.Create()
+            var dt = DataCommand.Create()
                 .Param(new { Action = "SelectAvailClients", ResourceID = resourceId, Privs = (int)p })
                 .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
 
@@ -32,7 +31,7 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectByResource(int resourceId)
         {
-            return DefaultDataCommand.Create()
+            return DataCommand.Create()
                 .Param("Action", "SelectByResource")
                 .Param("ResourceID", resourceId)
                 .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
@@ -43,7 +42,7 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static ExecuteReaderResult SelectClientList(int resourceId)
         {
-            return DefaultDataCommand.Create()
+            return DataCommand.Create()
                 .Param("Action", "SelectClientList")
                 .Param("ResourceID", resourceId)
                 .ExecuteReader("sselScheduler.dbo.procResourceClientSelect");
@@ -54,7 +53,7 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectByClient(int clientId)
         {
-            return DefaultDataCommand.Create()
+            return DataCommand.Create()
                 .Param("Action", "SelectByClient")
                 .Param("ClientID", clientId)
                 .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
@@ -65,7 +64,7 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectNotifyOnCancelClients(int resourceId)
         {
-            return DefaultDataCommand.Create()
+            return DataCommand.Create()
                 .Param("Action", "SelectNotifyOnCancelClients")
                 .Param("ResourceID", resourceId)
                 .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
@@ -76,7 +75,7 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectNotifyOnOpeningClients(int resourceId)
         {
-            return DefaultDataCommand.Create()
+            return DataCommand.Create()
                 .Param("Action", "SelectNotifyOnOpeningClients")
                 .Param("ResourceID", resourceId)
                 .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
@@ -87,7 +86,7 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectNotifyOnPracticeRes(int resourceId)
         {
-            return DefaultDataCommand.Create()
+            return DataCommand.Create()
                 .Param("Action", "SelectNotifyOnPracticeRes")
                 .Param("ResourceID", resourceId)
                 .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
@@ -98,7 +97,7 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static ExecuteReaderResult SelectResourceClient(int resourceId, int clientId)
         {
-            return DefaultDataCommand.Create()
+            return DataCommand.Create()
                 .Param(new { Action = "Select", ResourceID = resourceId, ClientID = clientId })
                 .ExecuteReader("sselScheduler.dbo.procResourceClientSelect");
         }
@@ -108,7 +107,7 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectEngineers(int resourceId = -1)
         {
-            return DefaultDataCommand.Create()
+            return DataCommand.Create()
                 .Param("Action", "SelectEngineers")
                 .Param("ResourceID", resourceId)
                 .FillDataTable("sselScheduler.dbo.procResourceClientSelect");
@@ -119,7 +118,7 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static DataTable SelectEmails(int resourceId, int privs)
         {
-            return DefaultDataCommand.Create()
+            return DataCommand.Create()
                 .Param("ResourceID", resourceId)
                 .Param("Privs", privs)
                 .FillDataTable("sselScheduler.dbo.procResourceEmailSelect");
@@ -130,7 +129,7 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static void Update(DataTable dt)
         {
-            DefaultDataCommand.Create().Update(dt, x =>
+            DataCommand.Create().Update(dt, x =>
             {
                 x.Insert.SetCommandText("sselScheduler.dbo.procResourceClientInsert");
                 x.Insert.AddParameter("Action", "InsertClient");
@@ -154,7 +153,7 @@ namespace LNF.Scheduler.Data
 
         public static void UpdateToolEngineers(DataTable dt)
         {
-            DefaultDataCommand.Create().Update(dt, x =>
+            DataCommand.Create().Update(dt, x =>
             {
                 x.Insert.SetCommandText("sselScheduler.dbo.procResourceClientInsert");
                 x.Insert.AddParameter("Action", "InsertClient");
@@ -183,7 +182,7 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static int UpdateEmailNotify(int resourceClientId, int emailNotify)
         {
-            return DefaultDataCommand.Create()
+            return DataCommand.Create()
                 .Param("Action", "UpdateEmailNofity")
                 .Param("ResourceClientID", resourceClientId)
                 .Param("EmailNotify", emailNotify)
@@ -195,7 +194,7 @@ namespace LNF.Scheduler.Data
         /// </summary>
         public static int UpdatePracticeResEmailNotify(int resourceClientId, int emailNotify)
         {
-            return DefaultDataCommand.Create()
+            return DataCommand.Create()
                 .Param("Action", "UpdatePracticeResEmailNotify")
                 .Param("ResourceClientID", resourceClientId)
                 .Param("EmailNotify", emailNotify)

@@ -14,6 +14,7 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual bool ResourceIsActive { get; set; }
         public virtual string DisplayName { get; set; }
         public virtual string Email { get; set; }
+        public virtual string Phone { get; set; }
         public virtual bool ClientActive { get; set; }
         public virtual DateTime? Expiration { get; set; }
         public virtual int? EmailNotify { get; set; }

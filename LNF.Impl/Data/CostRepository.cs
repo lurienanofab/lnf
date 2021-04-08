@@ -64,7 +64,7 @@ namespace LNF.Impl.Data
 
         public IEnumerable<ICost> FindToolCosts(int resourceId, DateTime? cutoff = null, int chargeTypeId = 0)
         {
-            string[] tables = new[] { "ToolCost", "ToolOvertimeCost" };
+            string[] tables = new[] { "ToolCost", "ToolOvertimeCost" };   
             var result = FindCosts(tables, cutoff, resourceId, chargeTypeId);
             return result;
         }

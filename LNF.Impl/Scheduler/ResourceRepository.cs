@@ -96,8 +96,8 @@ namespace LNF.Impl.Scheduler
 
         public IEnumerable<IResourceTree> GetResourceTree(int clientId)
         {
-            var query = Session.GetNamedQuery("SelectResourceTree").SetParameter("ClientID", clientId);
-            var result = query.List<ResourceTree>();
+            var dt = DataCommand().Param("ClientID", clientId).FillDataTable("sselScheduler.dbo.procResourceTreeSelect");
+            var result = CreateResourceTreeModels(dt);
             return result;
         }
 
@@ -479,6 +479,121 @@ namespace LNF.Impl.Scheduler
                 (o, i) => i).ToList();
 
             return result;
+        }
+
+        private IEnumerable<IResourceTree> CreateResourceTreeModels(DataTable dt)
+        {
+            List<IResourceTree> result = new List<IResourceTree>();
+            foreach (DataRow dr in dt.Rows)
+            {
+                var rt = new ResourceTree();
+                SetResourceTreeProperties(rt, dr);
+                result.Add(rt);
+            }
+            return result;
+        }
+
+        private void SetResourceTreeProperties(IResourceTree x, DataRow dr)
+        {
+            SetAuthorizedProperties(x, dr);
+            SetPrivilegedProperites(x, dr);
+            SetResourceProperties(x, dr);
+            x.CurrentReservationID = dr.Field<int>("CurrentReservationID");
+            x.CurrentClientID = dr.Field<int>("CurrentReservationID");
+            x.CurrentActivityID = dr.Field<int>("CurrentActivityID");
+            x.CurrentFirstName = dr.Field<string>("CurrentFirstName");
+            x.CurrentLastName = dr.Field<string>("CurrentLastName");
+            x.CurrentActivityName = dr.Field<string>("CurrentActivityName");
+            x.CurrentActivityEditable = dr.Field<bool>("CurrentActivityEditable");
+            x.CurrentBeginDateTime = dr.Field<DateTime?>("CurrentBeginDateTime");
+            x.CurrentEndDateTime = dr.Field<DateTime?>("CurrentEndDateTime");
+            x.CurrentNotes = dr.Field<string>("CurrentNotes");
+            x.Communities = dr.Field<int>("Communities");
+            x.DisplayName = dr.Field<string>("DisplayName");
+            x.ClientActive = dr.Field<bool>("ClientActive");
+            x.OrgID = dr.Field<int>("OrgID");
+            x.Email = dr.Field<string>("Email");
+            x.Phone = dr.Field<string>("Phone");
+            x.MaxChargeTypeID = dr.Field<int>("MaxChargeTypeID");
+            x.ResourceClientID = dr.Field<int>("ResourceClientID");
+            x.EveryoneAuthLevel = dr.Field<ClientAuthLevel>("EveryoneAuthLevel");
+            x.EffectiveAuthLevel = dr.Field<ClientAuthLevel>("EffectiveAuthLevel");
+            x.Expiration = dr.Field<DateTime?>("Expiration");
+            x.EmailNotify = dr.Field<int?>("EmailNotify");
+            x.PracticeResEmailNotify = dr.Field<int?>("PracticeResEmailNotify");
+            x.ResourceClientClientID = dr.Field<int?>("ResourceClientClientID");
+        }
+
+        private void SetResourceProperties(IResource x, DataRow dr)
+        {
+            SetProcessTechProperties(x, dr);
+            x.ResourceID = dr.Field<int>("ResourceID");
+            x.ResourceName = dr.Field<string>("ResourceName");
+            x.ResourceDescription = dr.Field<string>("ResourceDescription");
+            x.ResourceIsActive = dr.Field<bool>("ResourceIsActive");
+            x.IsSchedulable = dr.Field<bool>("IsSchedulable");
+            x.HelpdeskEmail = dr.Field<string>("HelpdeskEmail");
+            x.WikiPageUrl = dr.Field<string>("WikiPageUrl");
+            x.State = dr.Field<ResourceState>("State");
+            x.StateNotes = dr.Field<string>("StateNotes");
+            x.AuthDuration = dr.Field<int>("AuthDuration");
+            x.AuthState = dr.Field<bool>("AuthState");
+            x.ReservFence = dr.Field<int>("ReservFence");
+            x.MaxAlloc = dr.Field<int>("MaxAlloc");
+            x.MinCancelTime = dr.Field<int>("MinCancelTime");
+            x.ResourceAutoEnd = dr.Field<int>("ResourceAutoEnd");
+            x.UnloadTime = dr.Field<int?>("UnloadTime");
+            x.OTFSchedTime = dr.Field<int?>("OTFSchedTime");
+            x.Granularity = dr.Field<int>("Granularity");
+            x.Offset = dr.Field<int>("Offset");
+            x.IsReady = dr.Field<bool>("IsReady");
+            x.MinReservTime = dr.Field<int>("MinReservTime");
+            x.MaxReservTime = dr.Field<int>("MaxReservTime");
+            x.GracePeriod = dr.Field<int>("GracePeriod");
+            x.RoomID = dr.Field<int>("RoomID");
+            x.RoomName = dr.Field<string>("RoomName");
+            x.RoomDisplayName = dr.Field<string>("RoomDisplayName");
+        }
+
+        private void SetPrivilegedProperites(IPrivileged x, DataRow dr)
+        {
+            x.ClientID = dr.Field<int>("ClientID");
+            x.UserName = dr.Field<string>("UserName");
+            x.Privs = dr.Field<ClientPrivilege>("Privs");
+        }
+
+        private void SetAuthorizedProperties(IAuthorized x, DataRow dr)
+        {
+            x.AuthLevel = dr.Field<ClientAuthLevel>("AuthLevel");
+        }
+
+        private void SetProcessTechProperties(IProcessTech x, DataRow dr)
+        {
+            SetLabProperties(x, dr);
+            x.ProcessTechID = dr.Field<int>("ProcessTechID");
+            x.ProcessTechName = dr.Field<string>("ProcessTechName");
+            x.ProcessTechDescription = dr.Field<string>("ProcessTechDescription");
+            x.ProcessTechIsActive = dr.Field<bool>("ProcessTechIsActive");
+            x.ProcessTechGroupID = dr.Field<int>("ProcessTechGroupID");
+            x.ProcessTechGroupName = dr.Field<string>("ProcessTechGroupName");
+        }
+
+        private void SetLabProperties(ILab x, DataRow dr)
+        {
+            SetBuildingProperties(x, dr);
+            x.LabID = dr.Field<int>("LabID");
+            x.LabName = dr.Field<string>("LabName");
+            x.LabDisplayName = dr.Field<string>("LabDisplayName");
+            x.LabDescription = dr.Field<string>("LabDescription");
+            x.LabIsActive = dr.Field<bool>("LabIsActive");
+        }
+
+        private void SetBuildingProperties(IBuilding x, DataRow dr)
+        {
+            x.BuildingID = dr.Field<int>("BuildingID");
+            x.BuildingName = dr.Field<string>("BuildingName");
+            x.BuildingDescription = dr.Field<string>("BuildingDescription");
+            x.BuildingIsActive = dr.Field<bool>("BuildingIsActive");
         }
     }
 }

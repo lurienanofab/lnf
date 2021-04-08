@@ -9,8 +9,8 @@ namespace LNF.Scheduler
         IEnumerable<IProcessInfoLine> GetProcessInfoLines(int resourceId);
         IEnumerable<IReservationProcessInfo> GetReservationProcessInfos(int reservationId);
         IEnumerable<IReservationProcessInfo> GetReservationProcessInfos(int[] reservations);
-        void InsertReservationProcessInfo(IReservationProcessInfo item);
-        void UpdateReservationProcessInfo(IReservationProcessInfo item);
+        void InsertReservationProcessInfo(ReservationProcessInfoItem item);
+        void UpdateReservationProcessInfo(ReservationProcessInfoItem item);
         IProcessInfoLine GetProcessInfoLine(int processInfoLineId);
         IReservationProcessInfo AddReservationProcessInfo(int reservationId, int processInfoLineId, double value, bool special, int runNumber, double chargeMultiplier, bool active);
         void Update(IEnumerable<IProcessInfo> insert, IEnumerable<IProcessInfo> update, IEnumerable<IProcessInfo> delete);

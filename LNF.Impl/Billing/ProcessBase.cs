@@ -14,13 +14,13 @@ namespace LNF.Impl.Billing
         public ProcessBase(SqlConnection conn)
         {
             Connection = conn;
+            _result = CreateResult();
         }
 
         protected abstract T CreateResult();
 
         public virtual T Start()
         {
-            _result = CreateResult();
             _result.RowsDeleted = DeleteExisting();
 
             var dtExtract = Extract();

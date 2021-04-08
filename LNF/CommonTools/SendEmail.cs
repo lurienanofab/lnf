@@ -57,7 +57,7 @@ namespace LNF.CommonTools
             body.AppendLine($"Current url: {url}");
             body.AppendLine($"Current user: {GetClientName(client)}");
 
-            foreach(var ex in exceptions)
+            foreach (var ex in exceptions)
             {
                 body.AppendLine("--------------------------------------------------");
                 body.AppendLine($"Message: {ex.Message}");
@@ -74,11 +74,18 @@ namespace LNF.CommonTools
             SendDeveloperEmail("LNF.CommonTools.SendEmail.SendErrorEmail", $"ERROR in {app} application at {now:yyyy-MM-dd HH:mm:ss}", body.ToString());
         }
 
+        public static void SendDebugEmail(int clientId, string caller, string subject, string body)
+        {
+            Send(clientId, caller, subject, body, SystemEmail, new[] { DebugEmail });
+        }
+
         public static string GetClientName(IClient client) => client == null ? "unknown" : $"{client.DisplayName} [{client.UserName}] [{client.ClientID}]";
 
         public static string SystemEmail => Utility.GetGlobalSetting("SystemEmail");
 
         public static string[] DeveloperEmails => Utility.GetGlobalSetting("DeveloperEmails").Split(',');
+
+        public static string DebugEmail => Utility.GetGlobalSetting("DebugEmail");
 
         public static string CompanyName => Utility.GetGlobalSetting("CompanyName");
 

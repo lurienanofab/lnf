@@ -19,5 +19,6 @@ namespace LNF.Billing
         IStoreDataRepository StoreData { get; }
         IMiscDataRepository MiscData { get; }
         IOrgRechargeRepository OrgRecharge { get; }
+        IExternalInvoiceRepository ExternalInvoice { get; }
     }
 }

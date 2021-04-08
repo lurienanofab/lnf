@@ -40,7 +40,7 @@ namespace LNF.Data
         string RoleName { get; set; }
         int MaxChargeTypeID { get; set; }
         string MaxChargeTypeName { get; set; }
-        int EmailRank { get; set; }
+        long EmailRank { get; set; }
         bool IsStaff();
     }
 }

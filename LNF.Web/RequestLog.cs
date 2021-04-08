@@ -5,6 +5,7 @@ using System.Web;
 
 namespace LNF.Web
 {
+    [Obsolete("Use SessionLog instead.")]
     public static class RequestLog
     {
         public static void Start()

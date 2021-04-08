@@ -206,7 +206,7 @@ namespace LNF.Impl.Repository.Data
         /// <summary>
         /// The email rank assigned to a ClientOrgInfo - used to determine priority when a Client is assigned to multiple ClientOrgs
         /// </summary>
-        public virtual int EmailRank { get; set; }
+        public virtual long EmailRank { get; set; }
 
         public virtual bool IsStaff() => this.HasPriv(ClientPrivilege.Staff);
     }

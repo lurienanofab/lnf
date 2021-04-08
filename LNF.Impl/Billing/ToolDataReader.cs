@@ -15,6 +15,8 @@ namespace LNF.Impl.Billing
 
         public DataTable ReadToolDataRaw(DateTime sd, DateTime ed, int clientId = 0)
         {
+            // all this does is call sselScheduler.dbo.SSEL_DataRead passing the same arguments so if you're trying to figure
+            // out what this stored proc does go directly to sselScheduler.dbo.SSEL_DataRead
             using (var cmd = new SqlCommand("dbo.sselScheduler_Select", _conn) { CommandType = CommandType.StoredProcedure })
             using (var adap = new SqlDataAdapter(cmd))
             {

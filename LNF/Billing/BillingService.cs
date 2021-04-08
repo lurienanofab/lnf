@@ -33,6 +33,8 @@ namespace LNF.Billing
 
         public IOrgRechargeRepository OrgRecharge { get; }
 
+        public IExternalInvoiceRepository ExternalInvoice { get; }
+
         public BillingService(
             IProcessRepository process,
             IApportionmentRepository apportionment,
@@ -47,7 +49,8 @@ namespace LNF.Billing
             IToolDataRepository readToolData,
             IStoreDataRepository readStoreData,
             IMiscDataRepository readMiscData,
-            IOrgRechargeRepository orgRecharge)
+            IOrgRechargeRepository orgRecharge,
+            IExternalInvoiceRepository externalInvoice)
         {
             Process = process;
             Apportionment = apportionment;
@@ -63,6 +66,7 @@ namespace LNF.Billing
             StoreData = readStoreData;
             MiscData = readMiscData;
             OrgRecharge = orgRecharge;
+            ExternalInvoice = externalInvoice;
         }
     }
 }

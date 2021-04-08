@@ -3,13 +3,11 @@ using LNF.CommonTools;
 using LNF.Data;
 using LNF.Impl.DataAccess;
 using LNF.Impl.Repository;
-using LNF.Impl.Repository.Billing;
 using LNF.Impl.Repository.Data;
 using LNF.Impl.Repository.Scheduler;
 using LNF.PhysicalAccess;
 using LNF.Scheduler;
 using NHibernate;
-using NHibernate.Criterion;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -33,6 +31,8 @@ namespace LNF.Impl.Scheduler
 
         public IReservation GetReservation(int reservationId) => Session.Get<ReservationInfo>(reservationId);
 
+        public IReservationItem GetReservationItem(int reservationId) => Session.Get<ReservationItem>(reservationId);
+
         public IEnumerable<IReservation> GetReservations(DateTime sd, DateTime ed, int clientId = 0, int resourceId = 0, int activityId = 0, bool? started = null, bool? active = null)
         {
             var query = ReservationInfoQuery(sd, ed, clientId, resourceId, activityId, started, active);
@@ -40,16 +40,16 @@ namespace LNF.Impl.Scheduler
             return result;
         }
 
-        public IReservationWithInvitees GetReservationWithInvitees(int reservationId) => Session.Get<ReservationInfo>(reservationId).CreateModel<IReservationWithInvitees>();
+        public IReservationWithInvitees GetReservationWithInvitees(int reservationId) => CreateReservationWithInviteesModel(Session.Get<ReservationInfo>(reservationId));
 
         public IEnumerable<IReservationWithInvitees> GetReservationsWithInvitees(DateTime sd, DateTime ed, int clientId = 0, int resourceId = 0, int activityId = 0, bool? started = null, bool? active = null)
         {
-            var query = ReservationQuery(sd, ed, clientId, resourceId, activityId, started, active);
-            var result = query.CreateModels<IReservationWithInvitees>();
+            var query = ReservationInfoQuery(sd, ed, clientId, resourceId, activityId, started, active);
+            var result = query.ToList().Select(x => CreateReservationWithInviteesModel(x)).ToList();
             return result;
         }
 
-        public IEnumerable<IClientAccount> AvailableAccounts(IReservation rsv)
+        public IEnumerable<IClientAccount> AvailableAccounts(IReservationItem rsv)
         {
             IList<IClientAccount> result = null;
 
@@ -110,7 +110,7 @@ namespace LNF.Impl.Scheduler
                 .SetParameter("ModifiedByClientID", modifiedByClientId)
                 .List<Reservation>().FirstOrDefault();
 
-            var result = rsv.CreateModel<IReservation>();
+            var result = CreateReservationModel<ReservationInfo>(rsv);
 
             return result;
         }
@@ -255,6 +255,7 @@ namespace LNF.Impl.Scheduler
             r.ChargeMultiplier = 0;
             r.ApplyLateChargePenalty = false;
             r.ClientIDEnd = endedByClientId.GetValueOrDefault(-1);
+            r.Notes = string.Format("{0} Ended and forgiven for repair.", r.Notes).Trim();
 
             Session.SaveOrUpdate(r);
 
@@ -275,7 +276,7 @@ namespace LNF.Impl.Scheduler
                 .UniqueResult<int>();
         }
 
-        public IEnumerable<ReservationHistoryFilterItem> FilterCancelledReservations(IEnumerable<IReservation> items, bool includeCanceledForModification)
+        public IEnumerable<ReservationHistoryFilterItem> FilterCancelledReservations(IEnumerable<IReservationItem> items, bool includeCanceledForModification)
         {
             if (items == null || items.Count() == 0)
                 return new List<ReservationHistoryFilterItem>();
@@ -338,10 +339,14 @@ namespace LNF.Impl.Scheduler
 
         public IEnumerable<IReservationHistory> GetHistory(int reservationId)
         {
-            return Session.Query<ReservationHistory>().Where(x => x.Reservation.ReservationID == reservationId).CreateModels<IReservationHistory>();
+            return Session.Query<ReservationHistory>()
+                .Where(x => x.Reservation.ReservationID == reservationId)
+                .ToList()
+                .Select(x => CreateReservationHistoryModel(x))
+                .ToList();
         }
 
-        public IReservation InsertReservation(InsertReservationArgs args)
+        public IReservationItem InsertReservation(InsertReservationArgs args)
         {
             // procReservationInsert @Action = 'Insert'
 
@@ -359,10 +364,10 @@ namespace LNF.Impl.Scheduler
             // also an entry into history is made
             InsertReservationHistory("Insert", "procReservationInsert", r, args.ModifiedByClientID);
 
-            return r.CreateModel<IReservation>();
+            return CreateReservationItem(r);
         }
 
-        public IReservation InsertForModification(InsertReservationArgs args)
+        public IReservationItem InsertForModification(InsertReservationArgs args)
         {
             // The idea here is that linkedReservation is an existing reservation that has been modified (all propeties already set), and
             // we are using it to create a new reservation for modification. The ReservationID of linkedReservation will be used to link the
@@ -393,7 +398,7 @@ namespace LNF.Impl.Scheduler
 
             InsertReservationHistory("InsertForModification", "procReservationInsert", r, args.ModifiedByClientID, linkedReservation.ReservationID);
 
-            return r.CreateModel<IReservation>();
+            return CreateReservationItem(r);
         }
 
         public IReservation InsertFacilityDownTime(int resourceId, int clientId, int groupId, DateTime beginDateTime, DateTime endDateTime, string notes, int? modifiedByClientId)
@@ -464,7 +469,7 @@ namespace LNF.Impl.Scheduler
 
             InsertReservationHistory("InsertFacilityDownTime", "procReservationInsert", r, modifiedByClientId);
 
-            return r.CreateModel<IReservation>();
+            return CreateReservationModel<ReservationInfo>(r);
         }
 
         public IReservation InsertRepair(int resourceId, int clientId, DateTime beginDateTime, DateTime endDateTime, DateTime actualBeginDateTime, string notes, int? modifiedByClientId)
@@ -554,7 +559,7 @@ namespace LNF.Impl.Scheduler
 
             InsertReservationHistory("InsertRepair", "procReservationInsert", r, modifiedByClientId);
 
-            return r.CreateModel<IReservation>();
+            return CreateReservationModel<ReservationInfo>(r);
         }
 
         public void AppendNotes(int reservationId, string notes)
@@ -567,7 +572,7 @@ namespace LNF.Impl.Scheduler
 
         public bool IsInvited(int reservationId, int clientId)
         {
-            return Session.Query<ReservationInviteeInfo>().Any(x => x.ReservationID == reservationId && x.InviteeID == clientId);
+            return Session.Query<ReservationInviteeItem>().Any(x => x.ReservationID == reservationId && x.InviteeID == clientId);
         }
 
         public IEnumerable<IReservation> ReservationsInGranularityWindow(IResource res)
@@ -585,30 +590,35 @@ namespace LNF.Impl.Scheduler
             return Session.GetNamedQuery("SelectAutoEndReservations").List<ReservationInfo>();
         }
 
-        public IEnumerable<IReservation> SelectByClient(int clientId, DateTime sd, DateTime ed, bool includeDeleted)
+        public IEnumerable<IReservationItem> SelectByClient(int clientId, DateTime sd, DateTime ed, bool includeDeleted)
         {
-            List<IReservation> result = new List<IReservation>();
+            List<IReservationItem> result = new List<IReservationItem>();
 
-            if (includeDeleted)
-            {
-                result.AddRange(Session.Query<ReservationInfo>().Where(x => x.ClientID == clientId && x.BeginDateTime < ed && x.EndDateTime > sd).ToList());
-                result.AddRange(Session.Query<ReservationInviteeInfo>().Where(x => x.InviteeID == clientId && x.BeginDateTime < ed && x.EndDateTime > sd).ToList());
-            }
-            else
-            {
-                result.AddRange(Session.Query<ReservationInfo>().Where(x => x.ClientID == clientId && x.BeginDateTime < ed && x.EndDateTime > sd && x.IsActive).ToList());
-                result.AddRange(Session.Query<ReservationInviteeInfo>().Where(x => x.InviteeID == clientId && x.BeginDateTime < ed && x.EndDateTime > sd && x.IsActive).ToList());
-            }
+            result.AddRange(ByClientQuery(clientId, sd, ed, includeDeleted));
+            result.AddRange(ByInviteeQuery(clientId, sd, ed, includeDeleted));
 
             return result;
         }
 
-        public IEnumerable<IReservation> SelectByDateRange(DateTime sd, DateTime ed, bool includeDeleted)
+        public IEnumerable<IReservationItem> SelectByDateRange(DateTime sd, DateTime ed, bool includeDeleted)
         {
-            return ByDateRangeQuery<ReservationInfo>(sd, ed, includeDeleted);
+            object active = DBNull.Value;
+            if (!includeDeleted)
+                active = true;
+
+            var dt = DataCommand()
+                .Param("Action", "SelectByDateRange")
+                .Param("StartDate", sd)
+                .Param("EndDate", ed)
+                .Param("IsActive", active)
+                .FillDataTable("sselScheduler.dbo.procReservationItemSelect");
+
+            var result = CreateReservationItems(dt);
+
+            return result;
         }
 
-        public IEnumerable<IReservation> SelectByGroup(int groupId)
+        public IEnumerable<IReservationItem> SelectByGroup(int groupId)
         {
             // procReservationSelect @Action = 'ByGroupID'
 
@@ -617,24 +627,71 @@ namespace LNF.Impl.Scheduler
             //INNER JOIN [Resource] res ON res.ResourceID = r.ResourceID
             //WHERE r.GroupID = @GroupID
 
-            var result = Session.Query<ReservationInfo>().Where(x => x.GroupID == groupId).ToList();
+            var dt = DataCommand()
+                .Param("Action", "SelectByGroup")
+                .Param("GroupID", groupId)
+                .FillDataTable("sselScheduler.dbo.procReservationItemSelect");
+
+            var result = CreateReservationItems(dt);
 
             return result;
         }
 
-        public IEnumerable<IReservation> SelectByProcessTech(int processTechId, DateTime sd, DateTime ed, bool includeDeleted)
+        public IEnumerable<IReservationItem> SelectByProcessTech(int procTechId, DateTime sd, DateTime ed, bool includeDeleted)
         {
-            return ByProcessTechQuery<ReservationInfo>(processTechId, sd, ed, includeDeleted);
+            object active = DBNull.Value;
+            if (!includeDeleted)
+                active = true;
+
+            var dt = DataCommand()
+                .Param("Action", "SelectByProcessTech")
+                .Param("ProcessTechID", procTechId)
+                .Param("StartDate", sd)
+                .Param("EndDate", ed)
+                .Param("IsActive", active)
+                .FillDataTable("sselScheduler.dbo.procReservationItemSelect");
+
+            var result = CreateReservationItems(dt);
+
+            return result;
         }
 
-        public IEnumerable<IReservation> SelectByLabLocation(int labLocationId, DateTime sd, DateTime ed, bool includeDeleted)
+        public IEnumerable<IReservationItem> SelectByLabLocation(int labLocationId, DateTime sd, DateTime ed, bool includeDeleted)
         {
-            return ByLabLocationQuery<ReservationInfo>(labLocationId, sd, ed, includeDeleted);
+            object active = DBNull.Value;
+            if (!includeDeleted)
+                active = true;
+
+            var dt = DataCommand()
+                .Param("Action", "SelectByLabLocation")
+                .Param("LabLocationID", labLocationId)
+                .Param("StartDate", sd)
+                .Param("EndDate", ed)
+                .Param("IsActive", active)
+                .FillDataTable("sselScheduler.dbo.procReservationItemSelect");
+
+            var result = CreateReservationItems(dt);
+
+            return result;
         }
 
-        public IEnumerable<IReservation> SelectByResource(int resourceId, DateTime sd, DateTime ed, bool includeDeleted)
+        public IEnumerable<IReservationItem> SelectByResource(int resourceId, DateTime sd, DateTime ed, bool includeDeleted)
         {
-            return ByResourceQuery<ReservationInfo>(resourceId, sd, ed, includeDeleted);
+            object active = DBNull.Value;
+            if (!includeDeleted)
+                active = true;
+
+            var dt = DataCommand()
+                .Param("Action", "SelectByResource")
+                .Param("ResourceID", resourceId)
+                .Param("StartDate", sd)
+                .Param("EndDate", ed)
+                .Param("IsActive", active)
+                .FillDataTable("sselScheduler.dbo.procReservationItemSelect");
+
+            var result = CreateReservationItems(dt);
+
+            return result;
         }
 
         public IEnumerable<IReservation> SelectEndableReservations(int resourceId)
@@ -761,7 +818,7 @@ namespace LNF.Impl.Scheduler
 
             foreach (DataRow dr in dt.Rows)
             {
-                result.Add(new ReservationItem
+                result.Add(new ReservationInfo
                 {
                     ReservationID = dr.Field<int>("ReservationID"),
                     ClientID = dr.Field<int>("ClientID"),
@@ -792,7 +849,7 @@ namespace LNF.Impl.Scheduler
                     Notes = dr.Field<string>("Notes"),
                     ChargeMultiplier = dr.Field<double>("ChargeMultiplier"),
                     ApplyLateChargePenalty = dr.Field<bool>("ApplyLateChargePenalty"),
-                    AutoEnd = dr.Field<bool>("AutoEnd"),
+                    ReservationAutoEnd = dr.Field<bool>("AutoEnd"),
                     HasProcessInfo = dr.Field<bool>("HasProcessInfo"),
                     HasInvitees = dr.Field<bool>("HasInvitees"),
                     IsActive = dr.Field<bool>("IsActive"),
@@ -843,7 +900,16 @@ namespace LNF.Impl.Scheduler
                     State = dr.Field<ResourceState>("State"),
                     StateNotes = dr.Field<string>("StateNotes"),
                     UnloadTime = dr.Field<int?>("UnloadTime"),
-                    WikiPageUrl = dr.Field<string>("WikiPageUrl")
+                    WikiPageUrl = dr.Field<string>("WikiPageUrl"),
+                    ClientAddressID = dr.Field<int>("ClientAddressID"),
+                    ClientOrgActive = dr.Field<bool>("ClientOrgActive"),
+                    ClientOrgID = dr.Field<int>("ClientOrgID"),
+                    Email = dr.Field<string>("Email"),
+                    Phone = dr.Field<string>("Phone"),
+                    IsFinManager = dr.Field<bool>("IsFinManager"),
+                    IsManager = dr.Field<bool>("IsManager"),
+                    NewFacultyStartDate = dr.Field<DateTime?>("NewFacultyStartDate"),
+                    SubsidyStartDate = dr.Field<DateTime?>("SubsidyStartDate")
                 });
             }
 
@@ -853,6 +919,19 @@ namespace LNF.Impl.Scheduler
         public IEnumerable<IReservation> SelectPastUnstarted()
         {
             return Session.GetNamedQuery("SelectPastUnstartedReservations").List<ReservationInfo>();
+        }
+
+        public IEnumerable<IReservation> SelectUnstarted(int resourceId, DateTime sd, DateTime ed)
+        {
+            var result = Session.Query<ReservationInfo>()
+                .Where(x =>
+                    x.ResourceID == resourceId
+                    && x.IsActive
+                    && x.ActualBeginDateTime == null
+                    && (x.BeginDateTime < ed && x.EndDateTime > sd))
+                .ToList();
+
+            return result;
         }
 
         public double GetReservableMinutes(int resourceId, int clientId, TimeSpan reservFence, TimeSpan maxAlloc, DateTime now)
@@ -879,14 +958,14 @@ namespace LNF.Impl.Scheduler
             TimeSpan reserved = TimeSpan.Zero;
             int[] activityFilter = { 6, 7, 16 };
 
-            var query = Session.Query<Reservation>().Where(x =>
-                x.Resource.ResourceID == resourceId
-                && x.Client.ClientID == clientId
+            var query = Session.Query<ReservationItem>().Where(x =>
+                x.ResourceID == resourceId
+                && x.ClientID == clientId
                 && x.BeginDateTime < now.Add(reservFence)
                 && x.EndDateTime >= now
                 && x.ActualEndDateTime == null
                 && x.IsActive
-                && activityFilter.Contains(x.Activity.ActivityID)).ToList();
+                && activityFilter.Contains(x.ActivityID)).ToList();
 
             if (query != null)
                 reserved = TimeSpan.FromMinutes(query.Sum(x => x.Duration));
@@ -936,7 +1015,7 @@ namespace LNF.Impl.Scheduler
             InsertReservationHistory("Start", "procReservationUpdate", r, modifiedByClientId);
         }
 
-        public IReservation UpdateReservation(UpdateReservationArgs args)
+        public IReservationItem UpdateReservation(UpdateReservationArgs args)
         {
             // This is all that happens in procReservationUpdate @Action = 'Update'
 
@@ -977,7 +1056,7 @@ namespace LNF.Impl.Scheduler
             // also an entry into history is made
             InsertReservationHistory("Update", "procReservationUpdate", r, args.ModifiedByClientID);
 
-            return r.CreateModel<IReservation>();
+            return CreateReservationItem(r);
         }
 
         public void UpdateAccount(int reservationId, int accountId, int? modifiedByClientId)
@@ -1037,7 +1116,7 @@ namespace LNF.Impl.Scheduler
             InsertReservationHistory("UpdateCharges", "procReservationUpdate", r, modifiedByClientId);
         }
 
-        public IReservation UpdateFacilityDownTime(int reservationId, DateTime beginDateTime, DateTime endDateTime, int? modifiedByClientId)
+        public IReservationItem UpdateFacilityDownTime(int reservationId, DateTime beginDateTime, DateTime endDateTime, int? modifiedByClientId)
         {
             // this is all that happens in procReservationUpdate @Action = 'UpdateFacilityDownTime'
 
@@ -1074,7 +1153,7 @@ namespace LNF.Impl.Scheduler
             // also an entry into history is made
             InsertReservationHistory("UpdateFacilityDownTime", "procReservationUpdate", rsv, modifiedByClientId);
 
-            return rsv.CreateModel<IReservation>();
+            return CreateReservationItem(rsv);
         }
 
         public IReservation UpdateRepair(int reservationId, DateTime endDateTime, string notes, int? modifiedByClientId)
@@ -1090,7 +1169,7 @@ namespace LNF.Impl.Scheduler
 
             InsertReservationHistory("UpdateRepair", "procReservationUpdate", rsv, modifiedByClientId);
 
-            return rsv.CreateModel<IReservation>();
+            return CreateReservationModel<ReservationInfo>(rsv);
         }
 
         public void UpdateNotes(int reservationId, string notes)
@@ -1107,113 +1186,28 @@ namespace LNF.Impl.Scheduler
 
         public TimeSpan GetTimeUntilNextReservation(IResource res, int reservationId, int clientId, DateTime beginDateTime)
         {
-            // procReservationSelect @Action = 'TimeTillNextReservation'
+            int timeUntilNext = DataCommand()
+                .Param("Action", "TimeTillNextReservation")
+                .Param("ReservationID", reservationId)
+                .Param("ResourceID", res.ResourceID)
+                .Param("ClientID", clientId)
+                .Param("BeginDateTime", beginDateTime)
+                .ExecuteScalar<int>("sselScheduler.dbo.procReservationSelect")
+                .Value;
 
-            //DECLARE @NextBeginTime datetime
-            //DECLARE @TimeTillNext int
-            //SET @NextBeginTime = NULL
-            //SET @TimeTillNext = 9999999 -- arbitrarily large number
+            var result = TimeSpan.FromMinutes(timeUntilNext);
 
-            DateTime? nextBeginTime = null;
-            double timeUntilNext = 9999999;
-
-            //SELECT TOP 1 @NextBeginTime = Rv.BeginDateTime
-            //FROM dbo.Reservation Rv
-            //WHERE Rv.ResourceID = @ResourceID
-            //    AND Rv.BeginDateTime >= @BeginDateTime
-            //    AND Rv.IsActive = 1
-            //    AND Rv.ReservationID <> @ReservationID
-            //    AND Rv.ActualEndDateTime IS NULL
-            //ORDER BY BeginDateTime
-
-            nextBeginTime = Session.Query<Reservation>()
-                .Where(x =>
-                    x.Resource.ResourceID == res.ResourceID
-                    && x.IsActive
-                    && x.BeginDateTime >= beginDateTime
-                    && x.ReservationID != reservationId
-                    && x.ActualEndDateTime == null)
-                .OrderBy(x => x.BeginDateTime)
-                .Select(x => x.BeginDateTime)
-                .FirstOrDefault();
-
-            //IF NOT @NextBeginTime IS NULL
-            //    SET @TimeTillNext = DATEDIFF(minute, @BeginDateTime, @NextBeginTime)
-
-            if (nextBeginTime != null)
-                timeUntilNext = nextBeginTime.Value.Subtract(beginDateTime).TotalMinutes;
-
-            //DECLARE @ReservableMinutes int
-            //SET @ReservableMinutes = dbo.udf_SelectReservableMinutes (@ResourceID, @ClientID, GETDATE())
-
-            double reservableMinutes = GetReservableMinutes(res.ResourceID, clientId, TimeSpan.FromMinutes(res.ReservFence), TimeSpan.FromMinutes(res.MaxAlloc), DateTime.Now);
-
-            //IF @ReservableMinutes < 0 
-            //BEGIN
-            //    SELECT TimeTillNextReservation = 0
-            //    RETURN
-            //END
-
-            if (reservableMinutes <= 0)
-                return TimeSpan.FromMinutes(0);
-
-            //SET @ReservedMinutes = 0
-
-            //SELECT @ReservedMinutes = Duration 
-            //FROM dbo.Reservation Rv
-            //WHERE Rv.ReservationID = @ReservationID
-
-            double reservedMinutes = 0;
-
-            if (reservationId > 0)
-            {
-                Reservation rsv = Session.Get<Reservation>(reservationId);
-
-                if (rsv != null)
-                    reservedMinutes = rsv.Duration;
-            }
-
-            //-- A reservation can be increased in duration by any available time
-            //SET @ReservableMinutes = @ReservableMinutes + @ReservedMinutes
-
-            reservableMinutes = reservableMinutes + reservedMinutes;
-
-            //-- return the min of reservable minutes or time till next
-            //IF @ReservableMinutes > @TimeTillNext
-            //    SELECT TimeTillNextReservation = @TimeTillNext
-            //ELSE
-            //BEGIN
-            //    DECLARE @MaxReservTime integer
-            //    SELECT @MaxReservTime = MaxReservTime
-            //    FROM dbo.[Resource]
-            //    WHERE ResourceID = @ResourceID
-
-            //    IF @ReservableMinutes >= @MaxReservTime
-            //        SELECT TimeTillNextReservation = @ReservableMinutes
-            //    ELSE
-            //        SELECT TimeTillNextReservation = -1 * @ReservableMinutes
-            //END
-
-            if (reservableMinutes > timeUntilNext)
-                return TimeSpan.FromMinutes(timeUntilNext);
-            else
-            {
-                var maxReservTime = res.MaxReservTime;
-                if (reservableMinutes >= maxReservTime)
-                    return TimeSpan.FromMinutes(reservableMinutes);
-                else
-                    return TimeSpan.FromMinutes(-1 * reservableMinutes);
-            }
+            return result;
         }
 
-        public IEnumerable<IResource> GetResources(IEnumerable<IReservation> reservations)
+        public IEnumerable<IResource> GetResources(IEnumerable<IReservationItem> reservations)
         {
             int[] ids = reservations.Select(x => x.ResourceID).ToArray();
             var result = Session.Query<ResourceInfo>().Where(x => ids.Contains(x.ResourceID));
             return result;
         }
 
-        public SaveReservationHistoryResult SaveReservationHistory(IReservation rsv, int accountId, double? forgivenPct, string notes, bool emailClient)
+        public SaveReservationHistoryResult SaveReservationHistory(IReservationItem rsv, int accountId, double? forgivenPct, string notes, bool emailClient, int modifiedByClientId)
         {
             // If forgivenPct is null then do not update ChargeMultiplier
 
@@ -1228,7 +1222,8 @@ namespace LNF.Impl.Scheduler
                 AccountID = accountId,
                 ChargeMultiplier = chargeMultiplier,
                 Notes = notes,
-                EmailClient = emailClient
+                EmailClient = emailClient,
+                ClientID = modifiedByClientId
             });
 
             var result = new SaveReservationHistoryResult
@@ -1236,23 +1231,6 @@ namespace LNF.Impl.Scheduler
                 ReservationUpdated = true,
                 UpdateBilling = updateBilling
             };
-
-            if (result.UpdateBilling)
-            {
-                var period = rsv.ChargeBeginDateTime.FirstOfMonth();
-                var tdc = Session.Query<ToolDataClean>().FirstOrDefault(x => x.ReservationID == rsv.ReservationID);
-
-                // If this reservation exists in ToolDataClean update it. It might not if it was created on the
-                // current day, in this case it will be imported during the normal daily process.
-
-                if (tdc != null)
-                {
-                    if (chargeMultiplier.HasValue)
-                        tdc.ChargeMultiplier = chargeMultiplier.GetValueOrDefault();
-                    tdc.AccountID = accountId;
-                    Session.Update(tdc);
-                }
-            }
 
             return result;
         }
@@ -1352,14 +1330,14 @@ namespace LNF.Impl.Scheduler
             rr.BeginTime = beginDate.Date.Add(beginTime);
             rr.Duration = duration;
             rr.EndDate = endDate;
-            rr.EndTime = beginDate.Date.Add(endTime);
+            //rr.EndTime = beginDate.Date.Add(endTime);
 
             Session.SaveOrUpdate(rr);
 
             return true;
         }
 
-        public int InsertReservationRecurrence(int resourceId, int clientId, int accountId, int activityId, int patternId, int param1, int? param2, DateTime beginDateTime, double duration, DateTime? endDate, bool autoEnd, bool keepAlive, string notes)
+        public int InsertReservationRecurrence(int resourceId, int clientId, int accountId, int activityId, int patternId, int param1, int? param2, DateTime beginDate, DateTime? endDate, DateTime beginTime, double duration, bool autoEnd, bool keepAlive, string notes)
         {
             var rr = new ReservationRecurrence
             {
@@ -1370,10 +1348,10 @@ namespace LNF.Impl.Scheduler
                 Pattern = Require<RecurrencePattern>(patternId),
                 PatternParam1 = param1,
                 PatternParam2 = param2,
-                BeginTime = beginDateTime,
-                BeginDate = beginDateTime.Date,
+                BeginTime = beginTime,
+                BeginDate = beginDate,
                 Duration = duration,
-                EndTime = beginDateTime.AddMinutes(duration),
+                //EndTime = null,
                 EndDate = endDate,
                 AutoEnd = autoEnd,
                 KeepAlive = keepAlive,
@@ -1498,8 +1476,7 @@ namespace LNF.Impl.Scheduler
 
             if (sendEmail)
             {
-                var model = rsv.CreateModel<IReservation>();
-                Email.EmailOnForgiveCharge(model, forgivenAmount, true, model.ClientID);
+                Email.EmailOnForgiveCharge(rsv.ReservationID, forgivenAmount, true, rsv.Client.ClientID);
             }
 
             return updateBilling;
@@ -1512,7 +1489,7 @@ namespace LNF.Impl.Scheduler
 
         public IEnumerable<ReservationStateItem> GetReservationStates(DateTime sd, DateTime ed, string kioskIp, int? clientId = null, int? resourceId = null, int? reserverId = null)
         {
-            IEnumerable<IReservationInvitee> invitees = Session.Query<ReservationInviteeInfo>().ToList();
+            IEnumerable<IReservationInviteeItem> invitees = Session.Query<ReservationInviteeItem>().ToList();
 
             IEnumerable<IResourceClient> resourceClients = Session.Query<ResourceClientInfo>().Where(x => x.ResourceID == resourceId.GetValueOrDefault(x.ResourceID)).ToList();
 
@@ -1524,7 +1501,7 @@ namespace LNF.Impl.Scheduler
                     && ((x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime.HasValue && x.ActualBeginDateTime < ed && x.ActualEndDateTime.HasValue && x.ActualEndDateTime > sd)))
                 .OrderBy(x => x.ResourceName).ThenBy(x => x.BeginDateTime).ThenBy(x => x.EndDateTime);
 
-            var items = query.CreateModels<IReservationWithInvitees>();
+            IEnumerable<IReservationWithInvitees> items = query.ToList().Select(x => CreateReservationWithInviteesModel(x)).ToList();
 
             var now = DateTime.Now;
 
@@ -1536,9 +1513,11 @@ namespace LNF.Impl.Scheduler
 
             return items.Select(x =>
             {
-                var reserverUser = clients.First(c => c.ClientID == x.ClientID);
+                var item = (IReservationItem)x;
 
-                var currentUser = clients.First(c => c.ClientID == clientId.GetValueOrDefault(x.ClientID));
+                var reserverUser = clients.First(c => c.ClientID == item.ClientID);
+
+                var currentUser = clients.First(c => c.ClientID == clientId.GetValueOrDefault(item.ClientID));
 
                 var inLab = access.ClientInLab(currentUser.ClientID);
 
@@ -1550,16 +1529,16 @@ namespace LNF.Impl.Scheduler
 
                     return new ReservationStateItem()
                     {
-                        ReservationID = x.ReservationID,
-                        ResourceID = x.ResourceID,
-                        ResourceName = x.ResourceName,
+                        ReservationID = item.ReservationID,
+                        ResourceID = item.ResourceID,
+                        ResourceName = item.ResourceName,
                         Reserver = reserverUser,
                         CurrentUser = currentUser,
                         State = state,
-                        BeginDateTime = x.BeginDateTime,
-                        EndDateTime = x.EndDateTime,
-                        ActualBeginDateTime = x.ActualBeginDateTime,
-                        ActualEndDateTime = x.ActualEndDateTime,
+                        BeginDateTime = item.BeginDateTime,
+                        EndDateTime = item.EndDateTime,
+                        ActualBeginDateTime = item.ActualBeginDateTime,
+                        ActualEndDateTime = item.ActualEndDateTime,
                         IsToolEngineer = args.IsToolEngineer,
                         IsReserver = args.IsReserver,
                         IsInvited = args.IsInvited,
@@ -1569,28 +1548,29 @@ namespace LNF.Impl.Scheduler
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception($"{ex.Message} ReservationID: {x.ReservationID}, Resource: {x.ResourceName} [{x.ResourceID}], Client: {x.LName}, {x.FName} [{x.ClientID}]");
+                    throw new Exception($"{ex.Message} ReservationID: {item.ReservationID}, Resource: {item.ResourceName} [{item.ResourceID}], Client: {item.LName}, {item.FName} [{item.ClientID}]");
                 }
             });
         }
 
-        public IReservationInvitee AddInvitee(int reservationId, int inviteeId)
+        public IReservationInviteeItem AddInvitee(int reservationId, int inviteeId)
         {
-            if (!InviteeExists(reservationId, inviteeId))
+            var key = new ReservationInvitee()
             {
-                var ri = new ReservationInvitee()
-                {
-                    Reservation = Require<Reservation>(reservationId),
-                    Invitee = Require<Client>(inviteeId)
-                };
+                Reservation = Require<Reservation>(reservationId),
+                Invitee = Require<Client>(inviteeId)
+            };
 
-                Session.Save(ri);
+            var ri = FindReservationInvitee(key);
 
-                return ri.CreateModel<IReservationInvitee>();
+            if (ri == null)
+            {
+                Session.Save(key);
+                return CreateReservationInviteeModel(key);
             }
             else
             {
-                return GetInvitee(reservationId, inviteeId);
+                return CreateReservationInviteeModel(ri);
             }
         }
 
@@ -1612,27 +1592,23 @@ namespace LNF.Impl.Scheduler
 
         public bool InviteeExists(int reservationId, int inviteeId)
         {
-            return Session.Query<ReservationInviteeInfo>().Any(x => x.InviteeID == inviteeId && x.ReservationID == reservationId);
+            var invitee = FindReservationInvitee(reservationId, inviteeId);
+            return invitee != null;
         }
 
-        public IEnumerable<IReservationInviteeItem> GetInviteeItems(int reservationId)
+        public IEnumerable<IReservationInviteeItem> GetInvitees(int reservationId)
         {
             return Session.Query<ReservationInviteeItem>().Where(x => x.ReservationID == reservationId).ToList();
         }
 
-        public IEnumerable<IReservationInvitee> GetInvitees(int reservationId)
+        public IEnumerable<IReservationInviteeItem> GetInvitees(int[] reservations)
         {
-            return Session.Query<ReservationInviteeInfo>().Where(x => x.ReservationID == reservationId).ToList();
+            return Session.Query<ReservationInviteeItem>().Where(x => reservations.Contains(x.ReservationID)).ToList();
         }
 
-        public IEnumerable<IReservationInvitee> GetInvitees(int[] reservations)
+        public IReservationInviteeItem GetInvitee(int reservationId, int inviteeId)
         {
-            return Session.Query<ReservationInviteeInfo>().Where(x => reservations.Contains(x.ReservationID)).ToList();
-        }
-
-        public IReservationInvitee GetInvitee(int reservationId, int inviteeId)
-        {
-            return FindReservationInvitee(reservationId, inviteeId).CreateModel<IReservationInvitee>();
+            return CreateReservationInviteeModel(FindReservationInvitee(reservationId, inviteeId));
         }
 
         public IEnumerable<AvailableInvitee> GetAvailableInvitees(int reservationId, int resourceId, int activityId, int clientId)
@@ -1657,35 +1633,101 @@ namespace LNF.Impl.Scheduler
 
         public IEnumerable<IReservationInviteeItem> SelectInviteesByResource(int resourceId, DateTime sd, DateTime ed, bool includeDeleted)
         {
-            return ByResourceQuery<ReservationInviteeItem>(resourceId, sd, ed, includeDeleted);
+            object active = DBNull.Value;
+            if (!includeDeleted)
+                active = true;
+
+            var dt = DataCommand()
+                .Param("Action", "SelectInviteesByResource")
+                .Param("ResourceID", resourceId)
+                .Param("StartDate", sd)
+                .Param("EndDate", ed)
+                .Param("IsActive", active)
+                .FillDataTable("sselScheduler.dbo.procReservationInviteeItemSelect");
+
+            var result = CreateReservationInviteeModels(dt);
+
+            return result;
         }
 
-        public IEnumerable<IReservationInviteeItem> SelectInviteesByProcessTech(int processTechId, DateTime sd, DateTime ed, bool includeDeleted)
+        public IEnumerable<IReservationInviteeItem> SelectInviteesByProcessTech(int procTechId, DateTime sd, DateTime ed, bool includeDeleted)
         {
-            return ByProcessTechQuery<ReservationInviteeItem>(processTechId, sd, ed, includeDeleted);
+            object active = DBNull.Value;
+            if (!includeDeleted)
+                active = true;
+
+            var dt = DataCommand()
+                .Param("Action", "SelectInviteesByProcessTech")
+                .Param("ProcessTechID", procTechId)
+                .Param("StartDate", sd)
+                .Param("EndDate", ed)
+                .Param("IsActive", active)
+                .FillDataTable("sselScheduler.dbo.procReservationInviteeItemSelect");
+
+            var result = CreateReservationInviteeModels(dt);
+
+            return result;
         }
 
         public IEnumerable<IReservationInviteeItem> SelectInviteesByLabLocation(int labLocationId, DateTime sd, DateTime ed, bool includeDeleted)
         {
-            return ByLabLocationQuery<ReservationInviteeItem>(labLocationId, sd, ed, includeDeleted);
+            object active = DBNull.Value;
+            if (!includeDeleted)
+                active = true;
+
+            var dt = DataCommand()
+                .Param("Action", "SelectInviteesByLabLocation")
+                .Param("LabLocationID", labLocationId)
+                .Param("StartDate", sd)
+                .Param("EndDate", ed)
+                .Param("IsActive", active)
+                .FillDataTable("sselScheduler.dbo.procReservationInviteeItemSelect");
+
+            var result = CreateReservationInviteeModels(dt);
+
+            return result;
         }
 
         public IEnumerable<IReservationInviteeItem> SelectInviteesByClient(int clientId, DateTime sd, DateTime ed, bool includeDeleted)
         {
-            if (includeDeleted)
-                return Session.Query<ReservationInviteeItem>().Where(x => x.ClientID == clientId && x.BeginDateTime < ed && x.EndDateTime > sd).ToList();
-            else
-                return Session.Query<ReservationInviteeItem>().Where(x => x.ClientID == clientId && x.BeginDateTime < ed && x.EndDateTime > sd && x.IsActive).ToList();
+            object active = DBNull.Value;
+            if (!includeDeleted)
+                active = true;
+
+            var dt = DataCommand()
+                .Param("Action", "SelectInviteesByClient")
+                .Param("ClientID", clientId)
+                .Param("StartDate", sd)
+                .Param("EndDate", ed)
+                .Param("IsActive", active)
+                .FillDataTable("sselScheduler.dbo.procReservationInviteeItemSelect");
+
+            var result = CreateReservationInviteeModels(dt);
+
+            return result;
         }
 
         public IEnumerable<IReservationInviteeItem> SelectInviteesByDateRange(DateTime sd, DateTime ed, bool includeDeleted)
         {
-            return ByDateRangeQuery<ReservationInviteeItem>(sd, ed, includeDeleted);
+            object active = DBNull.Value;
+            if (!includeDeleted)
+                active = true;
+
+            var dt = DataCommand()
+                .Param("Action", "SelectInviteesByDateRange")
+                .Param("StartDate", sd)
+                .Param("EndDate", ed)
+                .Param("IsActive", active)
+                .FillDataTable("sselScheduler.dbo.procReservationInviteeItemSelect");
+
+            var result = CreateReservationInviteeModels(dt);
+
+            return result;
         }
 
         public int[] FilterInvitedReservations(int[] reservationIds, int clientId)
         {
-            var query = Session.Query<ReservationInviteeInfo>().Where(x => reservationIds.Contains(x.ReservationID) && x.InviteeID == clientId);
+            var query = Session.Query<ReservationInviteeItem>().Where(x => reservationIds.Contains(x.ReservationID) && x.InviteeID == clientId);
             var result = query.Select(x => x.ReservationID).ToArray();
             return result;
         }
@@ -1700,7 +1742,7 @@ namespace LNF.Impl.Scheduler
             InsertReservationHistory("ExtendReservation", "LNF.Impl.Scheduler.ReservationManager", rsv, modifiedByClientId);
         }
 
-        public IEnumerable<IReservation> SelectRecentReservations(int resourceId, int? take = null)
+        public IEnumerable<RecentReservation> SelectRecentReservations(int resourceId)
         {
             // procReservationSelect @Action = 'SelectRecent'
 
@@ -1711,14 +1753,12 @@ namespace LNF.Impl.Scheduler
             //ORDER BY ABS (datediff (second, Rv.BeginDateTime, getdate())) ASC
 
             // Need to use criterion because of the complicated order by clause.
+            var dt = DataCommand()
+                .Param("Action", "SelectRecent")
+                .Param("ResourceID", resourceId)
+                .FillDataTable("sselScheduler.dbo.procReservationSelect");
 
-            var result = Session.CreateCriteria<ReservationInfo>()
-                .Add(Restrictions.Eq("ResourceID", resourceId))
-                .AddOrder(Order.Asc(Projections.SqlFunction("abs", NHibernateUtil.Int32, DateProjections.DateDiff(DatePart.Second, Projections.Property<Reservation>(x => x.BeginDateTime), DateProjections.GetDate()))))
-                .SetMaxResults(take.GetValueOrDefault(6))
-                .List<ReservationInfo>();
-
-            return result;
+            return CreateRecentReservations(dt);
         }
 
         private ReservationHistory InsertReservationHistory(string action, string actionSource, Reservation rsv, int? modifiedByClientId = null, int? linkedReservationId = null)
@@ -1857,7 +1897,7 @@ namespace LNF.Impl.Scheduler
             // is extending a scheduled maintenance (for example). If we query Reservation IsActive will be false, but ReservationInfo will still
             // be true until the transaction is committed.
             var conflict = Session.Query<Reservation>()
-                .Where(x => x.Resource.ResourceID == res.ResourceID && x.IsActive && (x.BeginDateTime < args.EndDateTime && x.EndDateTime > args.BeginDateTime))
+                .Where(x => x.Resource == res && x.IsActive && (x.BeginDateTime < args.EndDateTime && x.EndDateTime > args.BeginDateTime))
                 .FirstOrDefault(x => !x.ActualEndDateTime.HasValue && x.ReservationID != args.LinkedReservationID);
 
             if (conflict != null)
@@ -1886,30 +1926,6 @@ namespace LNF.Impl.Scheduler
             rsv.MaxReservedDuration = Math.Max(rsv.Duration, rsv.MaxReservedDuration);
         }
 
-        private IQueryable<Reservation> ReservationQuery(DateTime sd, DateTime ed, int clientId = 0, int resourceId = 0, int activityId = 0, bool? started = null, bool? active = null)
-        {
-            var query = Session.Query<Reservation>().Where(x =>
-                    (x.BeginDateTime < ed && x.EndDateTime > sd)
-                    || ((x.ActualBeginDateTime.HasValue && x.ActualBeginDateTime.Value < ed) && (x.ActualEndDateTime.HasValue && x.ActualEndDateTime.Value > sd)));
-
-            if (clientId != 0)
-                query = query.Where(x => x.Client.ClientID == clientId);
-
-            if (resourceId != 0)
-                query = query.Where(x => x.Resource.ResourceID == resourceId);
-
-            if (activityId != 0)
-                query = query.Where(x => x.Activity.ActivityID == activityId);
-
-            if (started.HasValue)
-                query = query.Where(x => x.IsStarted == started.Value);
-
-            if (active.HasValue)
-                query = query.Where(x => x.IsActive == active.Value);
-
-            return query;
-        }
-
         private IQueryable<ReservationInfo> ReservationInfoQuery(DateTime sd, DateTime ed, int clientId = 0, int resourceId = 0, int activityId = 0, bool? started = null, bool? active = null)
         {
             var query = Session.Query<ReservationInfo>().Where(x =>
@@ -1936,15 +1952,16 @@ namespace LNF.Impl.Scheduler
 
         private ReservationClient GetReservationClient(IReservationWithInvitees rsv, IClient client, bool inLab)
         {
-            var resourceClients = GetResourceClients(rsv.ResourceID);
+            var item = (IReservationItem)rsv;
+            var resourceClients = GetResourceClients(item.ResourceID);
             var userAuth = Reservations.GetAuthLevel(resourceClients, client);
 
             var result = new ReservationClient
             {
                 ClientID = client.ClientID,
-                ReservationID = rsv.ReservationID,
-                ResourceID = rsv.ResourceID,
-                IsReserver = rsv.ClientID == client.ClientID,
+                ReservationID = item.ReservationID,
+                ResourceID = item.ResourceID,
+                IsReserver = item.ClientID == client.ClientID,
                 IsInvited = rsv.Invitees.Any(x => x.InviteeID == client.ClientID),
                 InLab = inLab,
                 UserAuth = userAuth
@@ -1968,70 +1985,49 @@ namespace LNF.Impl.Scheduler
             var r = Session.Get<Reservation>(reservationId);
             var i = Session.Get<Client>(inviteeId);
             var key = new ReservationInvitee { Reservation = r, Invitee = i };
+            return FindReservationInvitee(key);
+        }
+
+        private ReservationInvitee FindReservationInvitee(ReservationInvitee key)
+        {
             var result = Session.Get<ReservationInvitee>(key);
             return result;
         }
 
-        private IEnumerable<T> ByResourceQuery<T>(int resourceId, DateTime sd, DateTime ed, bool includeDeleted) where T : IReservationItem
+        private IEnumerable<IReservationItem> ByClientQuery(int clientId, DateTime sd, DateTime ed, bool includeDeleted)
         {
-            IQueryable<T> query;
-
-            if (includeDeleted)
-                query = Session.Query<T>().Where(x => x.ResourceID == resourceId &&
-                    ((x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd)));
-            else
-                query = Session.Query<T>().Where(x => x.IsActive && x.ResourceID == resourceId &&
-                    ((x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd)));
-
-            IEnumerable<T> result = query.ToList();
-
-            return result;
-        }
-
-        private IEnumerable<T> ByProcessTechQuery<T>(int processTechId, DateTime sd, DateTime ed, bool includeDeleted) where T : IReservationItem
-        {
-            if (includeDeleted)
-                return Session.Query<T>().Where(x => x.ProcessTechID == processTechId && x.BeginDateTime < ed && x.EndDateTime > sd).ToList();
-            else
-                return Session.Query<T>().Where(x => x.ProcessTechID == processTechId && x.BeginDateTime < ed && x.EndDateTime > sd && x.IsActive).ToList();
-        }
-
-        private IEnumerable<T> ByLabLocationQuery<T>(int labLocationId, DateTime sd, DateTime ed, bool includeDeleted) where T : class, IReservationItem
-        {
-            T reservation = null;
-            ResourceLabLocation location = null;
-
-            var query = Session.QueryOver(() => reservation)
-                .JoinEntityAlias(() => location, () => reservation.ResourceID == location.ResourceID)
-                .Where(() => location.LabLocationID == labLocationId && reservation.BeginDateTime < ed && reservation.EndDateTime > sd);
-
+            object active = DBNull.Value;
             if (!includeDeleted)
-                query = query.And(() => reservation.IsActive);
+                active = true;
 
-            var result = query.List();
+            var dt = DataCommand()
+                .Param("Action", "SelectByClient")
+                .Param("ClientID", clientId)
+                .Param("StartDate", sd)
+                .Param("EndDate", ed)
+                .Param("IsActive", active)
+                .FillDataTable("sselScheduler.dbo.procReservationItemSelect");
+
+            var result = CreateReservationItems(dt);
 
             return result;
         }
 
-        private IEnumerable<T> ByDateRangeQuery<T>(DateTime sd, DateTime ed, bool includeDeleted) where T : IReservationItem
+        private IEnumerable<IReservationItem> ByInviteeQuery(int inviteeId, DateTime sd, DateTime ed, bool includeDeleted)
         {
-            IEnumerable<T> result;
+            object active = DBNull.Value;
+            if (!includeDeleted)
+                active = true;
 
-            if (includeDeleted)
-            {
-                result = Session.Query<T>().Where(x =>
-                    ((x.BeginDateTime < ed && x.EndDateTime > sd) ||
-                    (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd))
-                ).ToList();
-            }
-            else
-            {
-                result = Session.Query<T>().Where(x =>
-                    ((x.BeginDateTime < ed && x.EndDateTime > sd) ||
-                    (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd))
-                    && x.IsActive
-                ).ToList();
-            }
+            var dt = DataCommand()
+                .Param("Action", "SelectByInvitee")
+                .Param("InviteeID", inviteeId)
+                .Param("StartDate", sd)
+                .Param("EndDate", ed)
+                .Param("IsActive", active)
+                .FillDataTable("sselScheduler.dbo.procReservationItemSelect");
+
+            var result = CreateReservationItems(dt);
 
             return result;
         }
@@ -2050,10 +2046,10 @@ namespace LNF.Impl.Scheduler
             rg.EndDateTime = endDateTime;
             Session.Update(rg);
 
-            return rg.CreateModel<IReservationGroup>();
+            return CreateReservationGroupModel(rg);
         }
 
-        public IAutoEndLog AddAutoEndLog(IReservation rsv, string action)
+        public IAutoEndLog AddAutoEndLog(IReservationItem rsv, string action)
         {
             var entry = new AutoEndLog()
             {
@@ -2061,14 +2057,525 @@ namespace LNF.Impl.Scheduler
                 ResourceID = rsv.ResourceID,
                 ResourceName = rsv.ResourceName,
                 ClientID = rsv.ClientID,
-                DisplayName = rsv.DisplayName,
+                DisplayName = Clients.GetDisplayName(rsv.LName, rsv.FName),
                 Timestamp = DateTime.Now,
                 Action = action
             };
 
             Session.Update(entry);
 
-            return entry.CreateModel<IAutoEndLog>();
+            return CreateAutoEndLogModel(entry);
+        }
+
+        private IReservationItem CreateReservationItem(Reservation rsv)
+        {
+            var result = new ReservationItem
+            {
+                ReservationID = rsv.ReservationID,
+                ResourceID = rsv.Resource.ResourceID,
+                ResourceName = rsv.Resource.ResourceName,
+                Granularity = rsv.Resource.Granularity,
+                Offset = rsv.Resource.Offset,
+                MinReservTime = rsv.Resource.MinReservTime,
+                MaxReservTime = rsv.Resource.MaxReservTime,
+                MinCancelTime = rsv.Resource.MinCancelTime,
+                GracePeriod = rsv.Resource.GracePeriod,
+                ReservFence = rsv.Resource.ReservFence,
+                AuthDuration = rsv.Resource.AuthDuration,
+                AuthState = rsv.Resource.AuthState,
+                ResourceAutoEnd = rsv.Resource.AutoEnd,
+                ProcessTechID = rsv.Resource.ProcessTech.ProcessTechID,
+                LabID = rsv.Resource.ProcessTech.Lab.LabID,
+                BuildingID = rsv.Resource.ProcessTech.Lab.Building.BuildingID,
+                ActivityID = rsv.Activity.ActivityID,
+                ActivityName = rsv.Activity.ActivityName,
+                Editable = rsv.Activity.Editable,
+                IsFacilityDownTime = rsv.Activity.IsFacilityDownTime,
+                ActivityAccountType = rsv.Activity.AccountType,
+                StartEndAuth = rsv.Activity.StartEndAuth,
+                ClientID = rsv.Client.ClientID,
+                UserName = rsv.Client.UserName,
+                Privs = rsv.Client.Privs,
+                Email = rsv.GetEmail(Session),
+                Phone = rsv.GetPhone(Session),
+                LName = rsv.Client.LName,
+                MName = rsv.Client.MName,
+                FName = rsv.Client.FName,
+                RecurrenceID = rsv.RecurrenceID,
+                GroupID = rsv.GroupID,
+                ClientIDBegin = rsv.ClientIDBegin,
+                ClientIDEnd = rsv.ClientIDEnd,
+                AccountID = rsv.Account.AccountID,
+                AccountName = rsv.Account.Name,
+                ShortCode = rsv.Account.ShortCode,
+                ChargeTypeID = rsv.Account.Org.OrgType.ChargeType.ChargeTypeID,
+                BeginDateTime = rsv.BeginDateTime,
+                EndDateTime = rsv.EndDateTime,
+                ActualBeginDateTime = rsv.ActualBeginDateTime,
+                ActualEndDateTime = rsv.ActualEndDateTime,
+                Duration = rsv.Duration,
+                ChargeMultiplier = rsv.ChargeMultiplier,
+                ApplyLateChargePenalty = rsv.ApplyLateChargePenalty,
+                ReservationAutoEnd = rsv.AutoEnd,
+                IsActive = rsv.IsActive,
+                IsStarted = rsv.IsStarted,
+                KeepAlive = rsv.KeepAlive,
+                Notes = rsv.Notes,
+                CreatedOn = rsv.CreatedOn,
+                LastModifiedOn = rsv.LastModifiedOn,
+                CancelledDateTime = rsv.CancelledDateTime
+            };
+
+            return result;
+        }
+
+        private IEnumerable<RecentReservation> CreateRecentReservations(DataTable dt)
+        {
+            var result = new List<RecentReservation>();
+            foreach (DataRow dr in dt.Rows)
+            {
+                result.Add(CreateRecentReservation(dr));
+            }
+            return result;
+        }
+
+        private RecentReservation CreateRecentReservation(DataRow dr)
+        {
+            if (dr == null) return null;
+
+            return new RecentReservation
+            {
+                ReservationID = dr.Field<int>("ReservationID"),
+                BeginDateTime = dr.Field<DateTime>("BeginDateTime"),
+                EndDateTime = dr.Field<DateTime>("EndDateTime"),
+                ClientID = dr.Field<int>("ClientID"),
+                DisplayName = dr.Field<string>("DisplayName")
+            };
+        }
+
+        private IEnumerable<IReservationItem> CreateReservationItems(DataTable dt)
+        {
+            IList<IReservationItem> result = new List<IReservationItem>();
+            foreach (DataRow dr in dt.Rows)
+            {
+                var item = CreateReservationItem(dr);
+                result.Add(item);
+            }
+            return result;
+        }
+
+        private IReservationItem CreateReservationItem(DataRow dr)
+        {
+            var result = new ReservationItem
+            {
+                ReservationID = dr.Field<int>("ReservationID"),
+                ResourceID = dr.Field<int>("ResourceID"),
+                ResourceName = dr.Field<string>("ResourceName"),
+                Granularity = dr.Field<int>("Granularity"),
+                Offset = dr.Field<int>("Offset"),
+                MinReservTime = dr.Field<int>("MinReservTime"),
+                MaxReservTime = dr.Field<int>("MaxReservTime"),
+                MinCancelTime = dr.Field<int>("MinCancelTime"),
+                GracePeriod = dr.Field<int>("GracePeriod"),
+                ReservFence = dr.Field<int>("ReservFence"),
+                AuthDuration = dr.Field<int>("AuthDuration"),
+                AuthState = dr.Field<bool>("AuthState"),
+                ResourceAutoEnd = dr.Field<int>("ResourceAutoEnd"),
+                ProcessTechID = dr.Field<int>("ProcessTechID"),
+                LabID = dr.Field<int>("LabID"),
+                BuildingID = dr.Field<int>("BuildingID"),
+                ActivityID = dr.Field<int>("ActivityID"),
+                ActivityName = dr.Field<string>("ActivityName"),
+                Editable = dr.Field<bool>("Editable"),
+                IsFacilityDownTime = dr.Field<bool>("IsFacilityDownTime"),
+                ActivityAccountType = dr.Field<ActivityAccountType>("ActivityAccountType"),
+                StartEndAuth = dr.Field<ClientAuthLevel>("StartEndAuth"),
+                ClientID = dr.Field<int>("ClientID"),
+                UserName = dr.Field<string>("UserName"),
+                Privs = dr.Field<ClientPrivilege>("Privs"),
+                Email = dr.Field<string>("Email"),
+                Phone = dr.Field<string>("Phone"),
+                LName = dr.Field<string>("LName"),
+                MName = dr.Field<string>("MName"),
+                FName = dr.Field<string>("FName"),
+                AccountID = dr.Field<int>("AccountID"),
+                AccountName = dr.Field<string>("AccountName"),
+                ShortCode = dr.Field<string>("ShortCode"),
+                ChargeTypeID = dr.Field<int>("ChargeTypeID"),
+                RecurrenceID = dr.Field<int?>("RecurrenceID"),
+                GroupID = dr.Field<int?>("GroupID"),
+                ClientIDBegin = dr.Field<int?>("ClientIDBegin"),
+                ClientIDEnd = dr.Field<int?>("ClientIDEnd"),
+                BeginDateTime = dr.Field<DateTime>("BeginDateTime"),
+                EndDateTime = dr.Field<DateTime>("EndDateTime"),
+                ActualBeginDateTime = dr.Field<DateTime?>("ActualBeginDateTime"),
+                ActualEndDateTime = dr.Field<DateTime?>("ActualEndDateTime"),
+                Duration = dr.Field<double>("Duration"),
+                ChargeMultiplier = dr.Field<double>("ChargeMultiplier"),
+                ApplyLateChargePenalty = dr.Field<bool>("ApplyLateChargePenalty"),
+                ReservationAutoEnd = dr.Field<bool>("ReservationAutoEnd"),
+                HasProcessInfo = dr.Field<bool>("HasProcessInfo"),
+                HasInvitees = dr.Field<bool>("HasInvitees"),
+                IsActive = dr.Field<bool>("IsActive"),
+                IsStarted = dr.Field<bool>("IsStarted"),
+                KeepAlive = dr.Field<bool>("KeepAlive"),
+                Notes = dr.Field<string>("Notes"),
+                CreatedOn = dr.Field<DateTime>("CreatedOn"),
+                LastModifiedOn = dr.Field<DateTime>("LastModifiedOn"),
+                CancelledDateTime = dr.Field<DateTime?>("CancelledDateTime")
+            };
+
+            return result;
+        }
+
+        private T CreateReservationModel<T>(Reservation rsv) where T : ReservationInfoBase, new()
+        {
+            if (rsv == null) return null;
+
+            // This is weird because ReservationInfo is also a persisted entity in NHiberante, but it is read-only.
+            // Hopefully this won't cause any issues.
+
+            ClientOrgInfo co = Session.Query<ClientOrgInfo>().FirstOrDefault(x => x.ClientID == rsv.Client.ClientID && x.OrgID == rsv.Account.Org.OrgID);
+            if (co == null)
+            {
+                // This happens when there is a remote reservation because the client and account don't match.
+                // In this case use the "primary" ClientOrg.
+                co = Session.Query<ClientOrgInfo>().FirstOrDefault(x => x.ClientID == rsv.Client.ClientID && x.EmailRank == 1);
+            }
+
+            return new T()
+            {
+                ReservationID = rsv.ReservationID,
+
+                ResourceID = rsv.Resource.ResourceID,
+                ResourceName = rsv.Resource.ResourceName,
+                ResourceDescription = rsv.Resource.Description,
+                AuthDuration = rsv.Resource.AuthDuration,
+                AuthState = rsv.Resource.AuthState,
+                GracePeriod = rsv.Resource.GracePeriod,
+                Granularity = rsv.Resource.Granularity,
+                HelpdeskEmail = rsv.Resource.HelpdeskEmail,
+                WikiPageUrl = rsv.Resource.WikiPageUrl,
+                IsReady = rsv.Resource.IsReady,
+                IsSchedulable = rsv.Resource.IsSchedulable,
+                MaxAlloc = rsv.Resource.MaxAlloc,
+                MinReservTime = rsv.Resource.MinReservTime,
+                MaxReservTime = rsv.Resource.MaxReservTime,
+                MinCancelTime = rsv.Resource.MinCancelTime,
+                Offset = rsv.Resource.Offset,
+                OTFSchedTime = rsv.Resource.OTFSchedTime,
+                ReservFence = rsv.Resource.ReservFence,
+                ResourceAutoEnd = rsv.Resource.AutoEnd,
+                ResourceIsActive = rsv.Resource.IsActive,
+                State = rsv.Resource.State,
+                StateNotes = rsv.Resource.StateNotes,
+                UnloadTime = rsv.Resource.UnloadTime,
+
+                ProcessTechID = rsv.Resource.ProcessTech.ProcessTechID,
+                ProcessTechName = rsv.Resource.ProcessTech.ProcessTechName,
+                ProcessTechDescription = rsv.Resource.ProcessTech.Description,
+                ProcessTechIsActive = rsv.Resource.ProcessTech.IsActive,
+
+                ProcessTechGroupID = rsv.Resource.ProcessTech.Group.ProcessTechGroupID,
+                ProcessTechGroupName = rsv.Resource.ProcessTech.Group.GroupName,
+
+                LabID = rsv.Resource.ProcessTech.Lab.LabID,
+                LabName = rsv.Resource.ProcessTech.Lab.LabName,
+                LabDisplayName = rsv.Resource.ProcessTech.Lab.DisplayName,
+                LabDescription = rsv.Resource.ProcessTech.Lab.Description,
+                LabIsActive = rsv.Resource.ProcessTech.Lab.IsActive,
+
+                BuildingID = rsv.Resource.ProcessTech.Lab.Building.BuildingID,
+                BuildingName = rsv.Resource.ProcessTech.Lab.Building.BuildingName,
+                BuildingDescription = rsv.Resource.ProcessTech.Lab.Building.BuildingDescription,
+                BuildingIsActive = rsv.Resource.ProcessTech.Lab.Building.BuildingIsActive,
+
+                AccountID = rsv.Account.AccountID,
+                AccountName = rsv.Account.Name,
+                ShortCode = rsv.Account.ShortCode,
+
+                ClientID = rsv.Client.ClientID,
+                UserName = rsv.Client.UserName,
+                FName = rsv.Client.FName,
+                MName = rsv.Client.MName,
+                LName = rsv.Client.LName,
+                Privs = rsv.Client.Privs,
+
+                ClientOrgID = co.ClientOrgID,
+                ClientOrgActive = co.ClientOrgActive,
+                ClientAddressID = co.ClientAddressID,
+                Email = co.Email,
+                Phone = co.Phone,
+                IsManager = co.IsManager,
+                IsFinManager = co.IsFinManager,
+                SubsidyStartDate = co.SubsidyStartDate,
+                NewFacultyStartDate = co.NewFacultyStartDate,
+                ChargeTypeID = rsv.Account.Org.OrgType.ChargeType.ChargeTypeID,
+
+                ActivityID = rsv.Activity.ActivityID,
+                ActivityName = rsv.Activity.ActivityName,
+                ActivityAccountType = rsv.Activity.AccountType,
+                StartEndAuth = rsv.Activity.StartEndAuth,
+                Editable = rsv.Activity.Editable,
+                IsFacilityDownTime = rsv.Activity.IsFacilityDownTime,
+
+                BeginDateTime = rsv.BeginDateTime,
+                EndDateTime = rsv.EndDateTime,
+                ActualBeginDateTime = rsv.ActualBeginDateTime,
+                ActualEndDateTime = rsv.ActualEndDateTime,
+                CancelledDateTime = rsv.CancelledDateTime,
+                ChargeMultiplier = rsv.ChargeMultiplier,
+                ClientIDBegin = rsv.ClientIDBegin,
+                ClientIDEnd = rsv.ClientIDEnd,
+                CreatedOn = rsv.CreatedOn,
+                LastModifiedOn = rsv.LastModifiedOn,
+                Duration = rsv.Duration,
+                HasInvitees = rsv.HasInvitees,
+                HasProcessInfo = rsv.HasProcessInfo,
+                IsActive = rsv.IsActive,
+                IsStarted = rsv.IsStarted,
+                GroupID = rsv.GroupID,
+                RecurrenceID = rsv.RecurrenceID,
+                IsUnloaded = rsv.IsUnloaded,
+                KeepAlive = rsv.KeepAlive,
+                ApplyLateChargePenalty = rsv.ApplyLateChargePenalty,
+                ReservationAutoEnd = rsv.AutoEnd,
+                MaxReservedDuration = rsv.MaxReservedDuration,
+                Notes = rsv.Notes,
+                OriginalBeginDateTime = rsv.OriginalBeginDateTime,
+                OriginalEndDateTime = rsv.OriginalEndDateTime,
+                OriginalModifiedOn = rsv.OriginalModifiedOn
+            };
+        }
+
+        private IEnumerable<IReservationInviteeItem> CreateReservationInviteeModels(DataTable dt)
+        {
+            List<IReservationInviteeItem> result = new List<IReservationInviteeItem>();
+
+            foreach (DataRow dr in dt.Rows)
+            {
+                result.Add(CreateReservationInviteeModel(dr));
+            }
+
+            return result;
+        }
+
+        private IReservationInviteeItem CreateReservationInviteeModel(DataRow dr)
+        {
+            if (dr == null) return null;
+
+            return new ReservationInviteeItem
+            {
+                InviteeID = dr.Field<int>("InviteeID"),
+                ReservationID = dr.Field<int>("ReservationID"),
+                BeginDateTime = dr.Field<DateTime>("BeginDateTime"),
+                EndDateTime = dr.Field<DateTime>("EndDateTime"),
+                ActualBeginDateTime = dr.Field<DateTime?>("ActualBeginDateTime"),
+                ActualEndDateTime = dr.Field<DateTime?>("ActualEndDateTime"),
+                IsStarted = dr.Field<bool>("IsStarted"),
+                IsActive = dr.Field<bool>("IsActive"),
+                ResourceID = dr.Field<int>("ResourceID"),
+                ProcessTechID = dr.Field<int>("ProcessTechID"),
+                InviteeActive = dr.Field<bool>("InviteeActive"),
+                InviteeFName = dr.Field<string>("InviteeFName"),
+                InviteeLName = dr.Field<string>("InviteeLName"),
+                InviteePrivs = dr.Field<ClientPrivilege>("InviteePrivs")
+            };
+        }
+
+        private IReservationInviteeItem CreateReservationInviteeModel(ReservationInvitee inv)
+        {
+            if (inv == null) return null;
+
+            return new ReservationInviteeItem
+            {
+                InviteeID = inv.Invitee.ClientID,
+                ReservationID = inv.Reservation.ReservationID,
+                BeginDateTime = inv.Reservation.BeginDateTime,
+                EndDateTime = inv.Reservation.EndDateTime,
+                ActualBeginDateTime = inv.Reservation.ActualBeginDateTime,
+                ActualEndDateTime = inv.Reservation.ActualEndDateTime,
+                IsStarted = inv.Reservation.IsStarted,
+                IsActive = inv.Reservation.IsActive,
+                ResourceID = inv.Reservation.Resource.ResourceID,
+                ProcessTechID = inv.Reservation.Resource.ProcessTech.ProcessTechID,
+                InviteeActive = inv.Invitee.Active,
+                InviteeFName = inv.Invitee.FName,
+                InviteeLName = inv.Invitee.LName,
+                InviteePrivs = inv.Invitee.Privs
+            };
+        }
+
+        private IReservationWithInvitees CreateReservationWithInviteesModel(Reservation rsv)
+        {
+            var result = CreateReservationModel<ReservationWithInvitees>(rsv);
+            result.Invitees = GetInvitees(rsv.ReservationID);
+            return result;
+        }
+
+        private IReservationWithInvitees CreateReservationWithInviteesModel(ReservationInfo rsv)
+        {
+            if (rsv == null) return null;
+
+            return new ReservationWithInvitees
+            {
+                ReservationID = rsv.ReservationID,
+
+                ResourceID = rsv.ResourceID,
+                ResourceName = rsv.ResourceName,
+                ResourceDescription = rsv.ResourceDescription,
+                AuthDuration = rsv.AuthDuration,
+                AuthState = rsv.AuthState,
+                GracePeriod = rsv.GracePeriod,
+                Granularity = rsv.Granularity,
+                HelpdeskEmail = rsv.HelpdeskEmail,
+                WikiPageUrl = rsv.WikiPageUrl,
+                IsReady = rsv.IsReady,
+                IsSchedulable = rsv.IsSchedulable,
+                MaxAlloc = rsv.MaxAlloc,
+                MinReservTime = rsv.MinReservTime,
+                MaxReservTime = rsv.MaxReservTime,
+                MinCancelTime = rsv.MinCancelTime,
+                Offset = rsv.Offset,
+                OTFSchedTime = rsv.OTFSchedTime,
+                ReservFence = rsv.ReservFence,
+                ResourceAutoEnd = rsv.ResourceAutoEnd,
+                ResourceIsActive = rsv.IsActive,
+                State = rsv.State,
+                StateNotes = rsv.StateNotes,
+                UnloadTime = rsv.UnloadTime,
+
+                ProcessTechID = rsv.ProcessTechID,
+                ProcessTechName = rsv.ProcessTechName,
+                ProcessTechDescription = rsv.ProcessTechDescription,
+                ProcessTechIsActive = rsv.ProcessTechIsActive,
+
+                ProcessTechGroupID = rsv.ProcessTechGroupID,
+                ProcessTechGroupName = rsv.ProcessTechGroupName,
+
+                LabID = rsv.LabID,
+                LabName = rsv.LabName,
+                LabDisplayName = rsv.LabDisplayName,
+                LabDescription = rsv.LabDescription,
+                LabIsActive = rsv.IsActive,
+
+                BuildingID = rsv.BuildingID,
+                BuildingName = rsv.BuildingName,
+                BuildingDescription = rsv.BuildingDescription,
+                BuildingIsActive = rsv.BuildingIsActive,
+
+                AccountID = rsv.AccountID,
+                AccountName = rsv.AccountName,
+                ShortCode = rsv.ShortCode,
+
+                ClientID = rsv.ClientID,
+                UserName = rsv.UserName,
+                FName = rsv.FName,
+                MName = rsv.MName,
+                LName = rsv.LName,
+                Privs = rsv.Privs,
+
+                ClientOrgID = rsv.ClientOrgID,
+                ClientOrgActive = rsv.ClientOrgActive,
+                ClientAddressID = rsv.ClientAddressID,
+                Email = rsv.Email,
+                Phone = rsv.Phone,
+                IsManager = rsv.IsManager,
+                IsFinManager = rsv.IsFinManager,
+                SubsidyStartDate = rsv.SubsidyStartDate,
+                NewFacultyStartDate = rsv.NewFacultyStartDate,
+                ChargeTypeID = rsv.ChargeTypeID,
+
+                ActivityID = rsv.ActivityID,
+                ActivityName = rsv.ActivityName,
+                ActivityAccountType = rsv.ActivityAccountType,
+                StartEndAuth = rsv.StartEndAuth,
+                Editable = rsv.Editable,
+                IsFacilityDownTime = rsv.IsFacilityDownTime,
+
+                BeginDateTime = rsv.BeginDateTime,
+                EndDateTime = rsv.EndDateTime,
+                ActualBeginDateTime = rsv.ActualBeginDateTime,
+                ActualEndDateTime = rsv.ActualEndDateTime,
+                CancelledDateTime = rsv.CancelledDateTime,
+                ChargeMultiplier = rsv.ChargeMultiplier,
+                ClientIDBegin = rsv.ClientIDBegin,
+                ClientIDEnd = rsv.ClientIDEnd,
+                CreatedOn = rsv.CreatedOn,
+                LastModifiedOn = rsv.LastModifiedOn,
+                Duration = rsv.Duration,
+                HasInvitees = rsv.HasInvitees,
+                HasProcessInfo = rsv.HasProcessInfo,
+                IsActive = rsv.IsActive,
+                IsStarted = rsv.IsStarted,
+                GroupID = rsv.GroupID,
+                RecurrenceID = rsv.RecurrenceID,
+                IsUnloaded = rsv.IsUnloaded,
+                KeepAlive = rsv.KeepAlive,
+                ApplyLateChargePenalty = rsv.ApplyLateChargePenalty,
+                ReservationAutoEnd = rsv.ReservationAutoEnd,
+                MaxReservedDuration = rsv.MaxReservedDuration,
+                Notes = rsv.Notes,
+                OriginalBeginDateTime = rsv.OriginalBeginDateTime,
+                OriginalEndDateTime = rsv.OriginalEndDateTime,
+                OriginalModifiedOn = rsv.OriginalModifiedOn,
+
+                Invitees = GetInvitees(rsv.ReservationID)
+            };
+        }
+
+        private IReservationGroup CreateReservationGroupModel(ReservationGroup rg)
+        {
+            if (rg == null) return null;
+
+            return new ReservationGroupItem
+            {
+                GroupID = rg.GroupID,
+                ClientID = rg.Client.ClientID,
+                AccountID = rg.Account.AccountID,
+                ActivityID = rg.Activity.ActivityID,
+                BeginDateTime = rg.BeginDateTime,
+                EndDateTime = rg.EndDateTime,
+                CreatedOn = rg.CreatedOn,
+                IsActive = rg.IsActive
+            };
+        }
+
+        private IAutoEndLog CreateAutoEndLogModel(AutoEndLog log)
+        {
+            if (log == null) return null;
+
+            return new AutoEndLogItem
+            {
+                Action = log.Action,
+                AutoEndLogID = log.AutoEndLogID,
+                ClientID = log.ClientID,
+                DisplayName = log.DisplayName,
+                ReservationID = log.ReservationID,
+                ResourceID = log.ResourceID,
+                ResourceName = log.ResourceName,
+                Timestamp = log.Timestamp
+            };
+        }
+
+        private IReservationHistory CreateReservationHistoryModel(ReservationHistory rh)
+        {
+            if (rh == null) return null;
+
+            return new ReservationHistoryItem
+            {
+                ReservationHistoryID = rh.ReservationHistoryID,
+                ReservationID = rh.Reservation.ReservationID,
+                AccountID = rh.Account.AccountID,
+                UserAction = rh.UserAction,
+                ActionSource = rh.ActionSource,
+                BeginDateTime = rh.BeginDateTime,
+                EndDateTime = rh.EndDateTime,
+                ChargeMultiplier = rh.ChargeMultiplier,
+                LinkedReservationID = rh.LinkedReservationID,
+                ModifiedByClientID = rh.ModifiedByClientID,
+                ModifiedDateTime = rh.ModifiedDateTime
+            };
         }
     }
 }

@@ -13,11 +13,11 @@ namespace LNF.Cache
             if (Current == null)
             {
                 Current = cache;
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] CacheManager setup complete." + Environment.NewLine + stack.ToString());
+                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] CacheManager setup complete.{Environment.NewLine}{stack}");
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] CacheManager has already been setup. What are you trying to do?" + Environment.NewLine + stack.ToString());
+                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] CacheManager has already been setup. What are you trying to do?{Environment.NewLine}{stack}");
             }
         }
     }

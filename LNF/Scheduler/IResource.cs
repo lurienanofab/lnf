@@ -86,6 +86,10 @@ namespace LNF.Scheduler
         ///// </summary>
         int GracePeriod { get; set; }
 
+        int RoomID { get; set; }
+        string RoomName { get; set; }
+        string RoomDisplayName { get; set; }
+
         string ResourceDisplayName { get; }
 
         bool HasState(ResourceState state);

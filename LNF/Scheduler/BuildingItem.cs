@@ -6,5 +6,6 @@
         public string BuildingName { get; set; }
         public string BuildingDescription { get; set; }
         public bool BuildingIsActive { get; set; }
+        public override string ToString() => $"{BuildingName} [{BuildingID}]";
     }
 }

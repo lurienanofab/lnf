@@ -3,7 +3,7 @@ using LNF.DataAccess;
 
 namespace LNF.Impl.Repository.Data
 {
-    public class ClientAccountAssignment : IDataItem
+    public class ClientAccountAssignment : IDataItem, IClientAccountAssignment
     {
         public virtual int ClientManagerID { get; set; }
         public virtual int ClientOrgID { get; set; }

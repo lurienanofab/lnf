@@ -65,7 +65,7 @@ namespace OnlineServices.Api
             if (parameters != null && parameters.Count() > 0)
             {
                 foreach (var p in parameters)
-                    req.AddParameter(p);
+                    req.AddParameter(p.Name, p.Value, p.Type);
             }
         }
 
@@ -418,14 +418,16 @@ namespace OnlineServices.Api
 
         protected ParameterCollection Parameters(IDictionary<object, object> dict, ParameterType type, CreateParameterOptions opts)
         {
-            var list = new List<Parameter>();
+            var list = new List<ParameterItem>();
 
             foreach (var kvp in dict)
             {
                 var name = kvp.Key.ToString();
                 var value = kvp.Value;
                 if (!opts.SkipNull || value != null)
+                {
                     list.Add(CreateParameter(name, value, type, opts));
+                }
             }
 
             var result = new ParameterCollection { list };
@@ -444,13 +446,13 @@ namespace OnlineServices.Api
             req.AddJsonBody(body);
         }
 
-        protected Parameter CreateParameter(string name, object value, ParameterType type)
+        protected ParameterItem CreateParameter(string name, object value, ParameterType type)
         {
             // use default options (lcase enum values)
             return CreateParameter(name, value, type, new CreateParameterOptions());
         }
 
-        protected Parameter CreateParameter(string name, object value, ParameterType type, CreateParameterOptions opts)
+        protected ParameterItem CreateParameter(string name, object value, ParameterType type, CreateParameterOptions opts)
         {
             if (opts == null)
                 throw new ArgumentNullException("opts");
@@ -477,15 +479,29 @@ namespace OnlineServices.Api
                 val = value;
             }
 
-            var result = new Parameter(name, val, type);
+            var result = new ParameterItem(name, val, type);
 
             return result;
         }
     }
 
-    public class ParameterCollection : IEnumerable<Parameter>
+    public class ParameterItem
     {
-        private List<Parameter> _items = new List<Parameter>();
+        public string Name { get; }
+        public object Value { get; }
+        public ParameterType Type { get; }
+
+        public ParameterItem(string name, object value, ParameterType type)
+        {
+            Name = name;
+            Value = value;
+            Type = type;
+        }
+    }
+
+    public class ParameterCollection : IEnumerable<ParameterItem>
+    {
+        private List<ParameterItem> _items = new List<ParameterItem>();
 
         public ParameterCollection() { }
 
@@ -495,24 +511,24 @@ namespace OnlineServices.Api
             return result;
         }
 
-        public void Add(IEnumerable<Parameter> items)
+        public void Add(IEnumerable<ParameterItem> items)
         {
             _items.AddRange(items);
         }
 
-        public void Add(Parameter item)
+        public void Add(ParameterItem item)
         {
             _items.Add(item);
         }
 
         public void Add(string name, object value, ParameterType type)
         {
-            _items.Add(new Parameter(name, value, type));
+            _items.Add(new ParameterItem(name, value, type));
         }
 
         public int Count => _items.Count;
 
-        public IEnumerator<Parameter> GetEnumerator()
+        public IEnumerator<ParameterItem> GetEnumerator()
         {
             return _items.GetEnumerator();
         }

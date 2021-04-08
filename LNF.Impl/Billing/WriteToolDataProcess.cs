@@ -288,7 +288,7 @@ namespace LNF.Impl.Billing
         }
 
         //This handles generation of toolData table since 2011-04-01
-        private DataTable DailyToolData20110401(DataTable dtToolDataClean)
+        public DataTable DailyToolData20110401(DataTable dtToolDataClean)
         {
             DataTable dtOutput = CreateToolDataTable();
 
@@ -712,6 +712,7 @@ namespace LNF.Impl.Billing
         private IEnumerable<ReservationDateRangeItem> GetReservationDateRangeItems(DataTable dtToolDataClean)
         {
             var cutoff = Period.AddMonths(1);
+
             var costs = ServiceProvider.Current.Data.Cost.FindToolCosts(ResourceID, cutoff);
 
             var result = new List<ReservationDateRangeItem>();

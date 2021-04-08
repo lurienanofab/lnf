@@ -76,8 +76,6 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.EndDateTime);
             Map(x => x.ActualBeginDateTime);
             Map(x => x.ActualEndDateTime);
-            Map(x => x.ChargeBeginDateTime);
-            Map(x => x.ChargeEndDateTime);
             Map(x => x.ClientIDBegin);
             Map(x => x.ClientIDEnd);
             Map(x => x.CreatedOn);
@@ -86,7 +84,7 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.Notes);
             Map(x => x.ChargeMultiplier);
             Map(x => x.ApplyLateChargePenalty);
-            Map(x => x.AutoEnd);
+            Map(x => x.ReservationAutoEnd);
             Map(x => x.HasProcessInfo);
             Map(x => x.HasInvitees);
             Map(x => x.IsActive);

@@ -93,8 +93,8 @@ namespace LNF.Impl.Billing
             DataTable dtRoom = dsSource.Tables[1]; //all rooms we can bill in this period
             DataTable dtAccount = dsSource.Tables[2]; //all active accounts for each user in table #0
             DataTable dtRoomDay = dsSource.Tables[3]; //RoomDataDayView data - aggreate based on daily data of room usage
-            DataTable dtRoomMonth = dsSource.Tables[4]; //RoomDataMonthView data - aggregate based on monthly data of room usage
-            DataTable dtToolDayByAcct = dsSource.Tables[5]; //ToolDataDayView - get to know accounts used for tool
+            DataTable dtRoomMonth = dsSource.Tables[4]; //RoomDataMonthView data - aggregate based on monthly data of room usage (the view column TotalDaysPerMonth is aliased PhysicalDays
+            DataTable dtToolDayByAcct = dsSource.Tables[5]; //ToolDataDayView - get to know accounts used for tool, we get AccountDays from this table
             DataTable dtDefault = dsSource.Tables[6]; //Default apportionment values
             DataTable dtAccountsUsedInTool = dsSource.Tables[7]; //Accounts used in tool usage (Including remote processing accounts)
             DataTable dtRoomCost = dsSource.Tables[8]; //Room Cost table for this period
@@ -113,6 +113,7 @@ namespace LNF.Impl.Billing
             int cid = 0;
             int rid = 0;
             int accountId = 0;
+            int chargeTypeId = 0;
             int billingTypeId = 0;
             decimal physicalDays = 0;
             decimal accountDays = 0;
@@ -229,6 +230,7 @@ namespace LNF.Impl.Billing
                                 orgsPerClient.Add(orgId);
 
                             accountId = arow.Field<int>("AccountID");
+                            chargeTypeId = arow.Field<int>("ChargeTypeID");
                             billingTypeId = arow.Field<int>("BillingTypeID");
 
                             // At this point, we have right physicalDays value (account in full month of partial month),
@@ -257,6 +259,7 @@ namespace LNF.Impl.Billing
                             {
                                 // Multiple accounts during this period
 
+                                //ChargeDays = IIf(AccountDays > PhysicalDays, PhysicalDays, AccountDays)
                                 chargeDays = (accountDays > physicalDays) ? physicalDays : accountDays;
 
                                 // [2015-12-01 jg] It is possible for physicalDays to be zero at this point if the user is a grower/observer and
@@ -274,8 +277,12 @@ namespace LNF.Impl.Billing
 
                                 // Get default apportion value for this client/room/account
                                 DataRow[] rowDefaultApportion = dtDefault.Select(string.Format("ClientID = {0} AND RoomID = {1} AND AccountID = {2}", cid, rid, accountId));
-                                if (rowDefaultApportion.Length == 1)
-                                    defaultPercentage = Convert.ToDouble(rowDefaultApportion[0]["Percentage"]) / 100D;
+                                if (rowDefaultApportion.Length > 0)
+                                {
+                                    // [2021-03-05 jg] In case there are multiple entires use the last one because this will be the most recently added.
+                                    var lastRow = rowDefaultApportion.Last();
+                                    defaultPercentage = Convert.ToDouble(lastRow["Percentage"]) / 100D;
+                                }
                                 else
                                 {
                                     // No default value, so we have to treat it as zero always
@@ -290,8 +297,8 @@ namespace LNF.Impl.Billing
                             newRow["ClientID"] = cid;
                             newRow["RoomID"] = rid;
                             newRow["AccountID"] = accountId;
-                            newRow["OrgID"] = arow["OrgID"];
-                            newRow["ChargeTypeID"] = arow["ChargeTypeID"];
+                            newRow["OrgID"] = orgId;
+                            newRow["ChargeTypeID"] = chargeTypeId;
                             newRow["BillingTypeID"] = billingTypeId;
 
                             // Grower/Observer would have different physical days
@@ -332,7 +339,7 @@ namespace LNF.Impl.Billing
                             newRow["MonthlyRoomCharge"] = totalMonthlyRoomCharge; //this is always zero
 
                             // We store the rate, it's for historical data integrity reason, since we know rate changes over time
-                            DataRow[] costrows = dtRoomCost.Select(string.Format("ChargeTypeID = {0} AND RecordID = {1}", arow["ChargeTypeID"], rid));
+                            DataRow[] costrows = dtRoomCost.Select(string.Format("ChargeTypeID = {0} AND RecordID = {1}", chargeTypeId, rid));
                             newRow["RoomRate"] = costrows[0]["MulVal"];
                             newRow["EntryRate"] = costrows[0]["AddVal"];
 
@@ -367,7 +374,10 @@ namespace LNF.Impl.Billing
                             }
 
                             int totalChargeDays = Convert.ToInt32(dtResult.Compute("SUM(ChargeDays)", string.Format("ClientID = {0} AND RoomID = {1}", cid, rid)));
-                            int totalPhysicalDays = Convert.ToInt32(dtResult.Compute("SUM(PhysicalDays)", string.Format("", cid, rid)));
+
+                            // totalChargeDays is the sum of charge days for each account. This can be greater than physicalDays, for example
+                            // if two accounts both have a reservation on the same day totalChargeDays will be 2 and physicalDays will be 1
+
                             offDays = physicalDays - totalChargeDays;
 
                             if (offDays > 0) //we cannot allow ChargeDays be less than Physical Days
@@ -410,16 +420,19 @@ namespace LNF.Impl.Billing
                                     {
                                         //We have to reduce the offDays
                                         resultRows = dtResult.Select(string.Format("ClientID = {0} AND RoomID = {1} AND OrgID = {2}", cid, rid, orgId));
-                                        decimal TotalPercentage = Convert.ToDecimal(dtResult.Compute("SUM(Percentage)", string.Format("ClientID = {0} AND RoomID = {1} AND OrgID = {2}", cid, rid, orgId)));
+                                        decimal totalPercentage = Convert.ToDecimal(dtResult.Compute("SUM(Percentage)", string.Format("ClientID = {0} AND RoomID = {1} AND OrgID = {2}", cid, rid, orgId)));
 
-                                        if (TotalPercentage > 0)
+                                        if (totalPercentage > 0)
                                         {
                                             foreach (DataRow frow in resultRows)
                                             {
-                                                decimal pct = Convert.ToDecimal(frow.Field<double>("Percentage"));
-                                                if (pct > 0)
+                                                decimal percentage = Convert.ToDecimal(frow.Field<double>("Percentage"));
+                                                if (percentage > 0)
                                                 {
-                                                    frow["ChargeDays"] = frow.Field<decimal>("ChargeDays") - (offDays * -1) * (pct / TotalPercentage);
+                                                    //frow("ChargeDays") -= CType(offDays * -1, Double) * (frow("Percentage") / TotalPercentage)
+                                                    decimal value = frow.Field<decimal>("ChargeDays");
+                                                    decimal adjustment = -offDays * (percentage / totalPercentage);
+                                                    frow["ChargeDays"] = value - adjustment;
 
                                                     if (frow.Field<decimal>("ChargeDays") < 0)
                                                         frow["ChargeDays"] = 0;

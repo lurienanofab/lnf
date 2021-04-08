@@ -20,9 +20,6 @@ namespace LNF.Web
         public static readonly string ToolEngineers = "ToolEngineers";
         public static readonly string ClientSetting = "ClientSetting";
         public static readonly string DisplayDefaultHours = "DisplayDefaultHours";
-        public static readonly string ReservationProcessInfos = "ReservationProcessInfos";
-        public static readonly string ReservationInvitees = "ReservationInvitees";
-        public static readonly string AvailableInvitees = "AvailableInvitees";
         public static readonly string RemovedInvitees = "RemovedInvitees";
 
         public static string[] AllKeys()

@@ -62,7 +62,7 @@ namespace LNF.Scheduler
             return Provider.Scheduler.Reservation.InviteeExists(reservationId, inviteeId);
         }
 
-        public static DataTable ToDataTable(IEnumerable<IReservationInvitee> invitees)
+        public static DataTable ToDataTable(IEnumerable<IReservationInviteeItem> invitees)
         {
             var dt = new DataTable();
             dt.Columns.Add("ReservationID", typeof(int));
@@ -76,22 +76,22 @@ namespace LNF.Scheduler
                 var ndr = dt.NewRow();
                 ndr.SetField("ReservationID", i.ReservationID);
                 ndr.SetField("InviteeID", i.InviteeID);
-                ndr.SetField("LName", i.LName);
-                ndr.SetField("LName", i.FName);
-                ndr.SetField("DisplayName", i.DisplayName);
+                ndr.SetField("LName", i.InviteeLName);
+                ndr.SetField("LName", i.InviteeFName);
+                ndr.SetField("DisplayName", i.InviteeDisplayName);
                 dt.Rows.Add(ndr);
             }
 
             return dt;
         }
 
-        public static IEnumerable<IReservationInvitee> ToList(DataTable dt, int reservationId)
+        public static IEnumerable<IReservationInviteeItem> ToList(DataTable dt, int reservationId)
         {
             if (dt == null) return null;
 
             if (dt.Columns.Contains("ReservationID") && dt.Columns.Contains("InviteeID"))
             {
-                var result = new List<IReservationInvitee>();
+                var result = new List<IReservationInviteeItem>();
 
                 foreach (DataRow dr in dt.Rows)
                 {

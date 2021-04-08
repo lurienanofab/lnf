@@ -5,7 +5,8 @@ namespace LNF
 {
     public class SiteMenu : SiteMenuBase
     {
-        public SiteMenu(IClient client, string target, string loginUrl, bool isSecureConnection) : base(client, target, loginUrl, isSecureConnection) { }
+        public SiteMenu(IClient client, string target, string loginUrl, bool isSecureConnection, string option)
+            : base(client, target, loginUrl, isSecureConnection, option) { }
 
         protected override IEnumerable<IMenu> GetMenuItems()
         {

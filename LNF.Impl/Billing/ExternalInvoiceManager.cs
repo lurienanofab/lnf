@@ -10,14 +10,14 @@ using System.Linq;
 
 namespace LNF.Impl.Billing
 {
-    public class ExternalInvoiceManager : IEnumerable<KeyValuePair<string, ExternalInvoiceUsage>>
+    internal class ExternalInvoiceManager : IExternalInvoiceManager
     {
         public int AccountID { get; }
         public DateTime StartDate { get; }
         public DateTime EndDate { get; }
         public bool ShowRemote { get; }
         public bool IncludeAccountsWithNoUsage { get; set; }
-        protected IBillingTypeRepository BillingTypeManager { get; }
+        protected IBillingTypeRepository BillingTypeRepository { get; }
         protected ISession Session { get; }
         protected IDataCommand Command(CommandType type = CommandType.StoredProcedure) => Session.Command(type);
 
@@ -26,20 +26,20 @@ namespace LNF.Impl.Billing
         /// <summary>
         /// Generates invoices for all accounts.
         /// </summary>
-        public ExternalInvoiceManager(DateTime sd, DateTime ed, bool showRemote, IBillingTypeRepository billingTypeManager, ISession session)
-            : this(0, sd, ed, showRemote, billingTypeManager, session) { }
+        public ExternalInvoiceManager(DateTime sd, DateTime ed, bool showRemote, IBillingTypeRepository billingTypeRepository, ISession session)
+            : this(0, sd, ed, showRemote, billingTypeRepository, session) { }
 
         /// <summary>
         /// Generates invoices for a single account.
         /// </summary>
-        public ExternalInvoiceManager(int accountId, DateTime sd, DateTime ed, bool showRemote, IBillingTypeRepository billingTypeManager, ISession session)
+        public ExternalInvoiceManager(int accountId, DateTime sd, DateTime ed, bool showRemote, IBillingTypeRepository billingTypeRepository, ISession session)
         {
             AccountID = accountId;
             StartDate = sd;
             EndDate = ed;
             ShowRemote = showRemote;
             IncludeAccountsWithNoUsage = false;
-            BillingTypeManager = billingTypeManager;
+            BillingTypeRepository = billingTypeRepository;
             Session = session;
 
             _data = GetAllUsage();
@@ -68,7 +68,7 @@ namespace LNF.Impl.Billing
             }
         }
 
-        public IList<ExternalInvoice> GetInvoices(int accountId = 0)
+        public IEnumerable<ExternalInvoice> GetInvoices(int accountId = 0)
         {
             var headers = GetHeaders(accountId);
             IList<ExternalInvoice> result = new List<ExternalInvoice>();
@@ -190,7 +190,7 @@ namespace LNF.Impl.Billing
             ds.Tables[0].Columns.Add("LineCost", typeof(double));
 
             //Calculate the true cost based on billing types
-            BillingTypeManager.CalculateToolLineCost(ds.Tables[0]);
+            BillingTypeRepository.CalculateToolLineCost(ds.Tables[0]);
 
             var dt = ds.Tables[0];
             var dtClient = ds.Tables[1];
@@ -224,7 +224,7 @@ namespace LNF.Impl.Billing
             ds.Tables[0].Columns.Add("LineCost", typeof(double));
 
             //Calculate the true cost based on billing types
-            BillingTypeManager.CalculateRoomLineCost(ds.Tables[0]);
+            BillingTypeRepository.CalculateRoomLineCost(ds.Tables[0]);
 
             DataTable dt = ds.Tables[0];
             DataTable dtClient = ds.Tables[1];

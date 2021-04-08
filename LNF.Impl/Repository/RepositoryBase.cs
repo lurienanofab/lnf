@@ -1,6 +1,7 @@
 ﻿using LNF.DataAccess;
 using LNF.Impl.DataAccess;
 using LNF.Impl.Repository.Data;
+using LNF.Repository;
 using System.Data;
 using System.Linq;
 using System.Runtime.Caching;
@@ -30,5 +31,10 @@ namespace LNF.Impl.Repository
         }
 
         protected T Require<T>(object id) => Session.Require<T>(id);
+
+        protected IDataCommand DataCommand(CommandType type = CommandType.StoredProcedure)
+        {
+            return LNF.Repository.DataCommand.Create(type);
+        }
     }
 }

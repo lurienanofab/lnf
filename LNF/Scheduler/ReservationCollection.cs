@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace LNF.Scheduler
 {
-    public class ReservationCollection : IEnumerable<IReservation>
+    public class ReservationCollection : IEnumerable<IReservationItem>
     {
-        private IList<IReservation> _items = new List<IReservation>();
+        private IList<IReservationItem> _items = new List<IReservationItem>();
         private IEnumerable<IReservationInviteeItem> _invitees = null;
         private IEnumerable<IReservationProcessInfo> _reservationProcessInfos = null;
         private int[] _invited = null;
@@ -21,7 +21,7 @@ namespace LNF.Scheduler
             ClientID = clientId;
         }
 
-        public void Add(IReservation item)
+        public void Add(IReservationItem item)
         {
             _items.Add(item);
         }
@@ -65,33 +65,53 @@ namespace LNF.Scheduler
             return _reservationProcessInfos;
         }
 
-        public IEnumerable<IReservation> Find(DateTime sd, DateTime ed, bool includeAllClients, bool includeCancelled)
+        public IEnumerable<IReservationItem> Find(DateTime sd, DateTime ed, bool includeAllClients, bool includeCancelled)
         {
-            IList<IReservation> step1;
-            IList<IReservation> step2;
-            IList<IReservation> step3;
-
-            step1 = _items.Where(x => (x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd)).ToList();
-
-            if (includeAllClients)
-                step2 = step1.ToList();
-            else
-                step2 = step1.Where(x => x.ClientID == ClientID || GetInvited().Contains(x.ReservationID)).ToList();
-
-            if (includeCancelled)
-                step3 = step2.ToList();
-            else
-                step3 = step2.Where(x => x.IsActive).ToList();
-
-            return step3;
+            var filter = CreateFilter(sd, ed, includeAllClients, includeCancelled);
+            return _items.Where(filter).ToList();
         }
 
-        public IEnumerable<IReservation> Find(DateTime d, bool includeAllClients, bool includeCancelled)
+        public IEnumerable<IReservationItem> Find(DateTime d, bool includeAllClients, bool includeCancelled)
         {
             DateTime sd = d.Date;
             DateTime ed = sd.AddDays(1);
-
             return Find(sd, ed, includeAllClients, includeCancelled);
+        }
+
+        public int Count(DateTime sd, DateTime ed, bool includeAllClients, bool includeCancelled)
+        {
+            var filter = CreateFilter(sd, ed, includeAllClients, includeCancelled);
+            return _items.Count(filter);
+        }
+
+        public int Count(DateTime d, bool includeAllClients, bool includeCancelled)
+        {
+            DateTime sd = d.Date;
+            DateTime ed = sd.AddDays(1);
+            return Count(sd, ed, includeAllClients, includeCancelled);
+        }
+
+        public Func<IReservationItem, bool> CreateFilter(DateTime sd, DateTime ed, bool includeAllClients, bool includeCancelled)
+        {
+            Func<IReservationItem, bool> filter1;
+            Func<IReservationItem, bool> filter2;
+            Func<IReservationItem, bool> filter3;
+
+            filter1 = x => (x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd);
+
+            if (includeAllClients)
+                filter2 = x => true;
+            else
+                filter2 = x => x.ClientID == ClientID || GetInvited().Contains(x.ReservationID);
+
+            if (includeCancelled)
+                filter3 = x => true;
+            else
+                filter3 = x => x.IsActive;
+
+            Func<IReservationItem, bool> result = x => filter1(x) && filter2(x) && filter3(x);
+
+            return result;
         }
 
         public void SelectByResource(int resourceId, DateTime sd, DateTime ed)
@@ -129,7 +149,7 @@ namespace LNF.Scheduler
             _invitees = Provider.Scheduler.Reservation.SelectInviteesByDateRange(sd, ed, true).ToList();
         }
 
-        public IEnumerator<IReservation> GetEnumerator()
+        public IEnumerator<IReservationItem> GetEnumerator()
         {
             return _items.GetEnumerator();
         }

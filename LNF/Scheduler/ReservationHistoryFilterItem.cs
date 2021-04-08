@@ -2,7 +2,7 @@
 {
     public class ReservationHistoryFilterItem
     {
-        public IReservation Reservation { get; set; }
+        public IReservationItem Reservation { get; set; }
         public bool IsCanceledForModification { get; set; }
     }
 }

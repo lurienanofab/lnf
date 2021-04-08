@@ -20,6 +20,11 @@ namespace OnlineServices.Api.PhysicalAccess
             return Get<List<Card>>("webapi/physical-access/cards/{clientId}", UrlSegments(new { clientId }));
         }
 
+        public Card GetCard(string cardnum)
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<Card> GetExpiringCards(DateTime cutoff)
         {
             return Get<List<Card>>("webapi/physical-access/cards/expiring", QueryStrings(new { cutoff = cutoff.ToString("yyyy-MM-dd") }));
@@ -81,7 +86,7 @@ namespace OnlineServices.Api.PhysicalAccess
             ParameterCollection parameters = null;
 
             if (expireOn.HasValue)
-                parameters = new ParameterCollection { new Parameter[] { new Parameter("expireOn", expireOn.Value.ToString("yyyy-MM-dd"), ParameterType.QueryString) } };
+                parameters = new ParameterCollection { new ParameterItem("expireOn", expireOn.Value.ToString("yyyy-MM-dd"), ParameterType.QueryString) };
 
             return Post<int>("webapi/physical-access/client/enable", c, parameters);
         }
@@ -91,7 +96,7 @@ namespace OnlineServices.Api.PhysicalAccess
             ParameterCollection parameters = null;
 
             if (expireOn.HasValue)
-                parameters = new ParameterCollection { new Parameter("expireOn", expireOn.Value.ToString("yyyy-MM-dd"), ParameterType.QueryString) };
+                parameters = new ParameterCollection { new ParameterItem("expireOn", expireOn.Value.ToString("yyyy-MM-dd"), ParameterType.QueryString) };
 
             return Post<int>("webapi/physical-access/client/disable", c, parameters);
         }

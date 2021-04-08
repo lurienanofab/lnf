@@ -1,4 +1,6 @@
-﻿using LNF.Repository;
+﻿using LNF.DataAccess;
+using LNF.Impl.DataAccess;
+using NHibernate.Context;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -19,7 +21,7 @@ namespace LNF.Impl
 
         public async Task Invoke(IDictionary<string, object> environment)
         {
-            using (DA.StartUnitOfWork())
+            using (IUnitOfWork uow = new NHibernateUnitOfWork(SessionManager<WebSessionContext>.Current))
                 await _next.Invoke(environment);
         }
     }

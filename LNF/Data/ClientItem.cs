@@ -43,7 +43,7 @@ namespace LNF.Data
         public string RoleName { get; set; }
         public int MaxChargeTypeID { get; set; }
         public string MaxChargeTypeName { get; set; }
-        public int EmailRank { get; set; }
+        public long EmailRank { get; set; }
         public bool IsStaff() => this.HasPriv(ClientPrivilege.Staff);
 
         public override string ToString()

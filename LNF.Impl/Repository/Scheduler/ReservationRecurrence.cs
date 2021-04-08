@@ -9,7 +9,7 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual int RecurrenceID { get; set; }
         public virtual Resource Resource { get; set; }
         public virtual Client Client { get; set; }
-        public virtual DateTime EndTime { get; set; }
+        //public virtual DateTime? EndTime { get; set; }
         public virtual bool IsActive { get; set; }
         public virtual Account Account { get; set; }
         public virtual Activity Activity { get; set; }

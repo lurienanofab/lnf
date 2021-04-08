@@ -38,10 +38,10 @@ namespace LNF.Scheduler
             UserAuth = userAuth;
         }
 
-        public static ReservationStateArgs Create(IReservation rsv, ReservationClient client, DateTime now)
+        public static ReservationStateArgs Create(IReservationItem rsv, ReservationClient client, DateTime now)
         {
-            var isAuthorized = (client.UserAuth & rsv.StartEndAuth) > 0;
-            var args = new ReservationStateArgs(rsv.ReservationID, client.InLab, client.IsReserver, client.IsInvited, isAuthorized, rsv.IsRepair, rsv.IsFacilityDownTime, rsv.MinCancelTime, rsv.MinReservTime, rsv.BeginDateTime, rsv.EndDateTime, rsv.ActualBeginDateTime, rsv.ActualEndDateTime, client.UserAuth);
+            var isAuthorized = client.IsAuthorized(rsv);
+            var args = new ReservationStateArgs(rsv.ReservationID, client.InLab, client.IsReserver, client.IsInvited, isAuthorized, !rsv.Editable, rsv.IsFacilityDownTime, rsv.MinCancelTime, rsv.MinReservTime, rsv.BeginDateTime, rsv.EndDateTime, rsv.ActualBeginDateTime, rsv.ActualEndDateTime, client.UserAuth);
             return args;
         }
 

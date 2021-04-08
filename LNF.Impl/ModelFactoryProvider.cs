@@ -15,11 +15,11 @@ namespace LNF.Impl
             {
                 //var factory = new ValueInjecterModelFactory(mgr);
                 Current = new ModelFactoryProvider(factory);
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Model setup complete." + Environment.NewLine + stack.ToString());
+                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Model setup complete.{Environment.NewLine}{stack}");
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Model has already been setup. What are you trying to do?" + Environment.NewLine + stack.ToString());
+                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Model has already been setup. What are you trying to do?{Environment.NewLine}{stack}");
             }
         }
 

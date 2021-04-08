@@ -14,6 +14,7 @@ namespace LNF.Web
 {
     public static class ListItemCollectionExtentions
     {
+
         public static void LoadPrivs(this ListItemCollection items, IProvider provider)
         {
             if (provider == null)
@@ -325,7 +326,7 @@ namespace LNF.Web
             return (Guid)context.Session["Cache"];
         }
 
-        public static void CacheData(this HttpContextBase context, DataSet ds)
+        public static void SetCacheData(this HttpContextBase context, DataSet ds)
         {
             if (context == null)
                 throw new ArgumentNullException("context");
@@ -334,7 +335,7 @@ namespace LNF.Web
             context.Cache.Insert(key, ds, null, DateTime.Now.AddMinutes(10), System.Web.Caching.Cache.NoSlidingExpiration);
         }
 
-        public static DataSet CacheData(this HttpContextBase context)
+        public static DataSet GetCacheData(this HttpContextBase context)
         {
             if (context == null)
                 throw new ArgumentNullException("context");

@@ -16,12 +16,12 @@ namespace LNF.Impl.Data
 
         public IAccount GetAccount(int accountId)
         {
-            return Session.Get<Account>(accountId).CreateModel<IAccount>();
+            return Session.Get<AccountInfo>(accountId);
         }
 
         public IEnumerable<IAccount> GetAccounts()
         {
-            return Session.Query<Account>().CreateModels<IAccount>();
+            return Session.Query<AccountInfo>().ToList();
         }
 
         public IEnumerable<IAccount> GetAccounts(string shortCode)

@@ -58,13 +58,15 @@ namespace LNF.Impl.Scheduler
             return result;
         }
 
-        public void InsertReservationProcessInfo(IReservationProcessInfo item)
+        public void InsertReservationProcessInfo(ReservationProcessInfoItem item)
         {
             // This happens when a new reservation is created.
 
+            ReservationProcessInfo rpi = null;
+
             if (item.ProcessInfoLineID > 0)
             {
-                var rpi = new ReservationProcessInfo()
+                rpi = new ReservationProcessInfo()
                 {
                     ProcessInfoLineID = item.ProcessInfoLineID,
                     ReservationID = item.ReservationID,
@@ -81,7 +83,7 @@ namespace LNF.Impl.Scheduler
             }
         }
 
-        public void UpdateReservationProcessInfo(IReservationProcessInfo item)
+        public void UpdateReservationProcessInfo(ReservationProcessInfoItem item)
         {
             var rpi = Session.Get<ReservationProcessInfo>(item.ReservationProcessInfoID);
 

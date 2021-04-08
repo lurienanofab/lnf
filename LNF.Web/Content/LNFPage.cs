@@ -1,4 +1,5 @@
 ﻿using LNF.Data;
+using LNF.DataAccess;
 using LNF.Repository;
 using System;
 using System.Data;
@@ -56,9 +57,19 @@ namespace LNF.Web.Content
             }
         }
 
+        public virtual ContextHelper Helper
+        {
+            get
+            {
+                return new ContextHelper(ContextBase, Provider);
+            }
+        }
+
         public bool HasPriv(ClientPrivilege privs) => CurrentUser.HasPriv(privs);
 
-        public IDataCommand DataCommand(CommandType type = CommandType.StoredProcedure) => DefaultDataCommand.Create(type);
+        public IDataCommand DataCommand(CommandType type = CommandType.StoredProcedure) => Repository.DataCommand.Create(type);
+
+        public ISession DataSession => Provider.DataAccess.Session;
 
         public System.Web.UI.Control FindControlRecursive(string id) => WebUtility.FindControlRecursive(this, id);
     }

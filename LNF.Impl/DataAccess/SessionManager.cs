@@ -1,6 +1,7 @@
 ﻿using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
 using FluentNHibernate.Conventions.Helpers;
+using LNF.CommonTools;
 using LNF.DataAccess;
 using LNF.Impl.DataAccess.ModelFactory;
 using NHibernate;
@@ -100,7 +101,8 @@ namespace LNF.Impl.DataAccess
             }
             catch (Exception ex)
             {
-                var path = Path.Combine(ConfigurationManager.AppSettings["SecurePath"], "logs", "SesisonManagerError.log");
+                var securePath = Utility.GetRequiredAppSetting("SecurePath");
+                var path = Path.Combine(securePath, "logs", "SesisonManagerError.log");
 
                 using (var writer = File.AppendText(path))
                 {

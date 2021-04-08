@@ -17,7 +17,7 @@ namespace LNF.Web
             container.Options.DefaultScopedLifestyle = new WebRequestLifestyle();
 
             var config = new WebContainerConfiguration(container);
-            config.Configure();
+            config.RegisterAllTypes();
 
             _provider = container.GetInstance<IProvider>();
             ServiceProvider.Setup(_provider);

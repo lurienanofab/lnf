@@ -71,7 +71,7 @@ namespace LNF.CommonTools
         {
             InitArrays();
 
-            var dtAuxCost = DefaultDataCommand.Create()
+            var dtAuxCost = DataCommand.Create()
                 .Param("CostType", "All")
                 .FillDataTable("dbo.AuxCost_Select");
 
@@ -446,7 +446,7 @@ namespace LNF.CommonTools
             // strange, but makes things consistent
             if (type == "Misc")
             {
-                var dtMisc = DefaultDataCommand.Create()
+                var dtMisc = DataCommand.Create()
                     .Param("Action", "ByPeriod")
                     .Param("Period", period)
                     .Param(costFilter, !string.IsNullOrEmpty(costFilter), costFilterValue)
@@ -497,7 +497,7 @@ namespace LNF.CommonTools
                 DataTable dtCliAcctType;
                 DataTable dtAggCols;
 
-                var ds = DefaultDataCommand.Create()
+                var ds = DataCommand.Create()
                     .Timeout(300)
                     .Param("CostType", CostType)
                     .Param("Period", period)
@@ -569,7 +569,7 @@ namespace LNF.CommonTools
                 // get formula from DB
                 if (formula.Length == 0)
                 {
-                    formula = DefaultDataCommand.Create()
+                    formula = DataCommand.Create()
                         .Param(new { FormulaType = type, sDate = period, CostToday = exp })
                         .ExecuteScalar<string>($"dbo.{tableNamePrefix}CostFormula_Select").Value;
                 }
@@ -645,7 +645,7 @@ namespace LNF.CommonTools
             // strange, but makes things consistent
             if (type == "Misc")
             {
-                var dtMisc = DefaultDataCommand.Create()
+                var dtMisc = DataCommand.Create()
                         .Param("Action", "ByPeriod")
                         .Param("Period", period)
                         .Param(costFilter, !string.IsNullOrEmpty(costFilter), costFilterValue)
@@ -696,7 +696,7 @@ namespace LNF.CommonTools
                 DataTable dtCliAcctType;
                 DataTable dtAggCols;
 
-                var ds = DefaultDataCommand.Create()
+                var ds = DataCommand.Create()
                     .Param("CostType", costType)
                     .Param("Period", period)
                     .Param(costFilter, !string.IsNullOrEmpty(costFilter), costFilterValue)
@@ -767,7 +767,7 @@ namespace LNF.CommonTools
                 // get formula from DB
                 if (formula.Length == 0)
                 {
-                    formula = DefaultDataCommand.Create()
+                    formula = DataCommand.Create()
                         .Param(new { FormulaType = type, sDate = period, CostToday = exp })
                         .ExecuteScalar<string>($"dbo.{tableNamePrefix}CostFormula_Select2").Value;
                 }
@@ -842,11 +842,11 @@ namespace LNF.CommonTools
 
         public double EstimateToolRunCost(int accountId, int resourceId, double duration)
         {
-            DataTable dt = DefaultDataCommand.Create()
+            DataTable dt = DataCommand.Create()
                 .Param(new { AccountID = accountId, ResourceID = resourceId, Duration = duration })
                 .FillDataTable("dbo.ToolCost_Estimate");
 
-            string formula = DefaultDataCommand.Create()
+            string formula = DataCommand.Create()
                 .Param(new { FormulaType = "Tool", sDate = DateTime.Now.Date })
                 .ExecuteScalar<string>("dbo.CostFormula_Select").Value;
 

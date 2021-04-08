@@ -10,5 +10,10 @@ namespace OnlineServices.Api.Scheduler
         {
             throw new NotImplementedException();
         }
+
+        public bool RefreshCache()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -15,36 +15,37 @@ namespace LNF.Repository
         /// <summary>
         /// Gets an ISession instance that uses the current data access context.
         /// </summary>
-        [Obsolete("Move to LNF.Impl")]
+        [Obsolete("Use dependency injection.")]
         public static ISession Current => GetSession(ServiceProvider.Current);
 
+        [Obsolete("Use dependency injection.")]
         public static ISession GetSession(IProvider provider) => provider.DataAccess.Session;
 
         /// <summary>
         /// Initiates a new current session. All subsequent data access actions (DA.Current) will be in one transaction which is committed when this instance is disposed.
         /// </summary>
         /// <returns></returns>
+        [Obsolete("Use dependency injection.")]
         public static IDisposable StartUnitOfWork() => ServiceProvider.Current.DataAccess.StartUnitOfWork();
 
         /// <summary>
         /// Create a new DataCommand instance.
         /// </summary>
         /// <param name="type">The CommandType used for selects. Also the default CommandType for updates (can be changed in Update action).</param>
-        [Obsolete("Use Session.Command() instead.")]
-        public static IDataCommand Command(CommandType type = CommandType.StoredProcedure) => DefaultDataCommand.Create(type);
-
+        [Obsolete("Use DataCommand.Create() instead.")]
+        public static IDataCommand Command(CommandType type = CommandType.StoredProcedure) => DataCommand.Create(type);
 
         //The methods that were previously defined here have been moved to LNF.Repository.ISession
         //I think these methods should only be defined once, so now they are accessed via Current
     }
 
-    public class DefaultDataCommand : DataCommandBase
+    public class DataCommand : DataCommandBase
     {
-        private DefaultDataCommand(CommandType type) : base(type) { }
+        private DataCommand(CommandType type) : base(type) { }
 
         protected override IUnitOfWorkAdapter GetAdapter() => SQLDBAccess.Create("cnSselData");
 
-        public static DataCommandBase Create(CommandType type = CommandType.StoredProcedure) => new DefaultDataCommand(type);
+        public static DataCommandBase Create(CommandType type = CommandType.StoredProcedure) => new DataCommand(type);
     }
 
     public class ReadOnlyDataCommand : DataCommandBase
@@ -54,15 +55,6 @@ namespace LNF.Repository
         protected override IUnitOfWorkAdapter GetAdapter() => SQLDBAccess.Create("cnSselDataReadOnly");
 
         public static DataCommandBase Create(CommandType type = CommandType.StoredProcedure) => new ReadOnlyDataCommand(type);
-    }
-
-    public class SessionDataCommand : DataCommandBase
-    {
-        private SessionDataCommand(CommandType type) : base(type) { }
-
-        protected override IUnitOfWorkAdapter GetAdapter() => throw new NotImplementedException(); //ServiceProvider.Current.DataAccess.Session.GetAdapter();
-
-        public static DataCommandBase Create(CommandType type = CommandType.StoredProcedure) => new SessionDataCommand(type);
     }
 
     public abstract class DataCommandBase : IDataCommand
@@ -84,7 +76,6 @@ namespace LNF.Repository
 
         protected DataCommandBase(CommandType type)
         {
-            //_adap = fn;
             _configs["select"].SetCommandType(type);
             _configs["insert"].SetCommandType(type);
             _configs["update"].SetCommandType(type);
@@ -92,10 +83,6 @@ namespace LNF.Repository
         }
 
         protected abstract IUnitOfWorkAdapter GetAdapter();
-        //{
-        //    if (_adap != null) return _adap();
-        //    else throw new Exception("Use the static Create method or override this class.");
-        //}
 
         public IDataCommand Timeout(int value)
         {
@@ -107,6 +94,11 @@ namespace LNF.Repository
         {
             _mapSchema = true;
             return this;
+        }
+
+        public ParameterDefinition GetParam(string name)
+        {
+            return _configs["select"].GetParameter(name);
         }
 
         public IDataCommand Param(object parameters)
@@ -340,6 +332,8 @@ namespace LNF.Repository
         private CommandType _commandType = CommandType.StoredProcedure;
         private readonly ParameterDefinitionCollection _parameters = new ParameterDefinitionCollection();
         private readonly IDictionary<string, string> _lists = new Dictionary<string, string>();
+
+        public ParameterDefinition GetParameter(string name) => _parameters["name"];
 
         public void SetCommandText(string value)
         {

@@ -23,6 +23,8 @@ namespace LNF.Repository
         ExecuteFillDataTableResult GetDataTableResult(string commandText);
         IDataCommand MapSchema();
 
+        ParameterDefinition GetParam(string name);
+
         /// <summary>
         /// Adds parameters to the select command.
         /// </summary>

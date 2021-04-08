@@ -36,20 +36,7 @@ namespace LNF.Impl.DataAccess.ModelFactory
             return result;
         }
 
-        private IReservationWithInvitees MapReservationWithInvitees(Reservation source)
-        {
-            var info = Session.Get<ReservationInfo>(source.ReservationID);
-            return MapReservationWithInvitees(info);
-        }
-
-        private IReservationWithInvitees MapReservationWithInvitees(ReservationInfo source)
-        {
-            var result = MapFrom<ReservationWithInviteesItem>(source);
-            result.Invitees = Session.Query<ReservationInviteeInfo>().Where(x => x.ReservationID == source.ReservationID).ToList();
-            return result;
-        }
-
-        private IReservationInvitee MapReservationInvitee(ReservationInvitee source)
+        private IReservationInviteeItem MapReservationInvitee(ReservationInvitee source)
         {
             var reservationInfo = Session.Get<ReservationInfo>(source.Reservation.ReservationID);
 
@@ -90,11 +77,7 @@ namespace LNF.Impl.DataAccess.ModelFactory
             Map<Resource, ResourceInfo, ResourceItem, IResource>(x => x.ResourceID);
             Map<ResourceInfo, ResourceItem, IResource>();
             Map<ResourceClient, ResourceClientInfo, IResourceClient>(x => x.ResourceClientID);
-            Map<Reservation, ReservationInfo, ReservationItem, IReservation>(x => x.ReservationID);
-            Map<ReservationInfo, ReservationItem, IReservation>();
-            Map<Reservation, IReservationWithInvitees>(MapReservationWithInvitees);
-            Map<ReservationInfo, IReservationWithInvitees>(MapReservationWithInvitees);
-            Map<ReservationInvitee, IReservationInvitee>(MapReservationInvitee);
+            Map<ReservationInvitee, IReservationInviteeItem>(MapReservationInvitee);
             Map<ReservationRecurrenceInfo, ReservationRecurrenceItem, IReservationRecurrence>();
             Map<ReservationRecurrence, ReservationRecurrenceInfo, ReservationRecurrenceItem, IReservationRecurrence>(x => x.RecurrenceID);
         }

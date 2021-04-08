@@ -7,5 +7,6 @@
         public string LabDisplayName { get; set; }
         public string LabDescription { get; set; }
         public bool LabIsActive { get; set; }
+        public override string ToString() => $"{LabDisplayName} [{LabID}]";
     }
 }

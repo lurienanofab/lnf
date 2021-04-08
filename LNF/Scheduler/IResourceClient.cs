@@ -11,6 +11,7 @@ namespace LNF.Scheduler
         bool ResourceIsActive { get; set; }
         string DisplayName { get; set; }
         string Email { get; set; }
+        string Phone { get; set; }
         bool ClientActive { get; set; }
         DateTime? Expiration { get; set; }
         int? EmailNotify { get; set; }

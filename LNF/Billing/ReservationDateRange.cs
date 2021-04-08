@@ -156,7 +156,7 @@ namespace LNF.Billing
             return result;
         }
 
-        private static ReservationDateRangeItem CreateReservation(IReservation rsv, IEnumerable<ICost> costs)
+        private static ReservationDateRangeItem CreateReservation(IReservationItem rsv, IEnumerable<ICost> costs)
         {
             var filtered = costs.Where(c => (c.RecordID == rsv.ResourceID || c.RecordID == 0) && c.ChargeTypeID == rsv.ChargeTypeID).ToList();
             IResourceCost rc = ResourceCost.CreateResourceCosts(filtered).FirstOrDefault();
@@ -253,7 +253,7 @@ namespace LNF.Billing
             return result;
         }
 
-        public static IEnumerable<ReservationDateRangeItem> GetReservationDateRangeItems(IEnumerable<IReservation> reservations, IEnumerable<ICost> costs, DateRange range)
+        public static IEnumerable<ReservationDateRangeItem> GetReservationDateRangeItems(IEnumerable<IReservationItem> reservations, IEnumerable<ICost> costs, DateRange range)
         {
             //var costs = ServiceProvider.Current.Data.Cost.FindToolCosts(ResourceID, range.EndDate);
             //var reservations = ServiceProvider.Current.Billing.Tool.SelectReservations(range.StartDate, range.EndDate, ResourceID);
@@ -292,7 +292,7 @@ namespace LNF.Billing
             var truncatedActualBeginDateTime = Utility.Truncate(actualBeginDateTime);
             var truncatedActualEndDateTime = Utility.Truncate(actualEndDateTime);
 
-            bool isCancelledBeforeCutoff = ReservationItem.GetIsCancelledBeforeCutoff(truncatedCancelledDateTime, truncatedBeginDateTime);
+            bool isCancelledBeforeCutoff = Reservations.GetIsCancelledBeforeCutoff(truncatedCancelledDateTime, truncatedBeginDateTime);
             IResourceCost cost = ResourceCost.CreateResourceCosts(costs.Where(c => (c.RecordID == resourceId || c.RecordID == 0) && c.ChargeTypeID == chargeTypeId)).FirstOrDefault();
 
             var chargeBeginDateTime = (truncatedActualBeginDateTime.HasValue && truncatedActualBeginDateTime < truncatedBeginDateTime) ? truncatedActualBeginDateTime.Value : truncatedBeginDateTime;

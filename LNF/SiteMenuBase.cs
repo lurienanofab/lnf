@@ -1,9 +1,11 @@
-﻿using LNF.Data;
+﻿using LNF.CommonTools;
+using LNF.Data;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Net;
 
 namespace LNF
 {
@@ -19,7 +21,9 @@ namespace LNF
 
         public bool IsSecureConnection { get; }
 
-        public SiteMenuBase(IClient client, string target, string loginUrl, bool isSecureConnection)
+        public string Option { get; }
+
+        public SiteMenuBase(IClient client, string target, string loginUrl, bool isSecureConnection, string option)
         {
             Client = client ?? throw new ArgumentNullException("client");
 
@@ -29,9 +33,9 @@ namespace LNF
 
             IsSecureConnection = isSecureConnection;
 
-            _items = GetMenuItems().ToList();
+            Option = option;
 
-            SetLoginUrl();
+            _items = GetMenuItems().ToList();
 
             SetNavigateUrl();
         }
@@ -47,43 +51,53 @@ namespace LNF
                 if (string.IsNullOrEmpty(Target))
                     return "_self";
                 else
-                    return Target;
+                {
+                    if (Option == "UseViewLink")
+                    {
+                        // the link will be something like /sselonline?View=<url> so we always want to load in the top window
+                        return "_top"; 
+                    }
+                    else
+                    {
+                        return Target;
+                    }
+                }
             }
         }
 
         protected abstract IEnumerable<IMenu> GetMenuItems();
 
-        private void SetLoginUrl()
-        {
-            var logout = _items.FirstOrDefault(x => x.IsLogout);
-            if (logout != null)
-                logout.MenuURL = FormatUrl(LoginUrl, false);
-        }
-
         private void SetNavigateUrl()
         {
             foreach (var m in _items.Where(x => x.MenuURL != null))
             {
-                var url = FormatUrl(m.MenuURL, true);
-                m.MenuURL = url;
+                m.MenuURL = FormatUrl(m.MenuURL);
+                m.MenuURL = HandleOption(m);
             }
         }
 
-        private string FormatUrl(string url, bool prependScheme)
+        private string HandleOption(IMenu m)
         {
-            if (string.IsNullOrEmpty(ConfigurationManager.AppSettings["AppServer"]))
-                throw new Exception("AppSetting AppServer is required.");
+            string url = m.MenuURL;
 
-            if (string.IsNullOrEmpty(ConfigurationManager.AppSettings["SchedServer"]))
-                throw new Exception("AppSetting SchedServer is required.");
+            // if true we will target an iframe
+            bool useTarget = !m.TopWindow && !m.NewWindow;
 
-            string scheme = string.Empty;
+            if (useTarget && Option == "UseViewLink")
+            {
+                string format = Utility.GetRequiredAppSetting("ViewLinkFormat");
+                bool urlEncode = bool.Parse(Utility.GetRequiredAppSetting("ViewLinkUrlEncode"));
+                if (urlEncode) url = WebUtility.UrlEncode(url);
+                url = string.Format(format, url);
+            }
 
-            if (prependScheme)
-                scheme = IsSecureConnection ? "https://" : "http://";
+            return url;
+        }
 
-            var appServer = scheme + ConfigurationManager.AppSettings["AppServer"];
-            var schedServer = scheme + ConfigurationManager.AppSettings["SchedServer"];
+        private string FormatUrl(string url)
+        {
+            var appServer = Utility.GetRequiredAppSetting("AppServer");
+            var schedServer = Utility.GetRequiredAppSetting("SchedServer");
 
             return url
                 .Replace("{AppServer}", appServer)

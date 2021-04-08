@@ -25,6 +25,7 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual bool LabIsActive { get; set; }
         public virtual int RoomID { get; set; }
         public virtual string RoomName { get; set; }
+        public virtual string RoomDisplayName { get; set; }
         public virtual int BuildingID { get; set; }
         public virtual string BuildingName { get; set; }
         public virtual string BuildingDescription { get; set; }
@@ -74,7 +75,7 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual DateTime? Expiration { get; set; }
         public virtual int? EmailNotify { get; set; }
         public virtual int? PracticeResEmailNotify { get; set; }
-        public virtual int ResourceClientClientID { get; set; }
+        public virtual int? ResourceClientClientID { get; set; }
         public virtual string ResourceDisplayName => Resources.GetResourceDisplayName(ResourceName, ResourceID);
         public virtual DateTime GetNextGranularity(DateTime now, GranularityDirection dir) => Resources.GetNextGranularity(Granularity, Offset, now, dir);
         public virtual string GetResourceName(ResourceNamePartial part) => Resources.GetResourceName(this, part);
@@ -93,6 +94,11 @@ namespace LNF.Impl.Repository.Scheduler
         public override int GetHashCode()
         {
             return new { ClientID, ResourceID }.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return GetResourceName(ResourceNamePartial.BuildingName);
         }
     }
 }

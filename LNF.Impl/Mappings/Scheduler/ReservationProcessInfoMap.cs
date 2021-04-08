@@ -9,13 +9,13 @@ namespace LNF.Impl.Mappings.Scheduler
         {
             Schema("sselScheduler.dbo");
             Id(x => x.ReservationProcessInfoID);
-            Map(x => x.ReservationID);
-            Map(x => x.ProcessInfoLineID);
+            Map(x => x.ReservationID).Not.Nullable();
+            Map(x => x.ProcessInfoLineID).Not.Nullable();
             Map(x => x.Value).Not.Nullable();
             Map(x => x.Special).Not.Nullable();
-            Map(x => x.RunNumber).Nullable();
-            Map(x => x.ChargeMultiplier).Nullable();
-            Map(x => x.Active).Nullable();
+            Map(x => x.RunNumber).Not.Nullable();
+            Map(x => x.ChargeMultiplier).Not.Nullable();
+            Map(x => x.Active).Not.Nullable();
         }
     }
 }

@@ -57,6 +57,7 @@ namespace LNF.Scheduler.Data
 
             dt.Columns.Add("ProcessInfoID", typeof(int));
             dt.Columns.Add("ResourceID", typeof(int));
+            dt.Columns.Add("ResourceName", typeof(string));
             dt.Columns.Add("ProcessInfoName", typeof(string));
             dt.Columns.Add("ParamName", typeof(string));
             dt.Columns.Add("ValueName", typeof(string));

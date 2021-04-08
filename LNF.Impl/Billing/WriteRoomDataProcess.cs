@@ -164,7 +164,7 @@ namespace LNF.Impl.Billing
             string room = string.Empty;
             DataRow[] aggRoomDataCleanRows, clientAccountRows;
 
-            ClientPrivilege privsToCheck = ClientPrivilege.LabUser | ClientPrivilege.Staff;
+            int privsToCheck = Convert.ToInt32(ClientPrivilege.LabUser | ClientPrivilege.Staff);
 
             // TODO: add support for non-passback rooms
             // Wen: dtClient has three columns 1.ClientID, 2.Privs, 3.DisplayName
@@ -173,7 +173,7 @@ namespace LNF.Impl.Billing
             // The table contains distinct clients that entered or exited rooms during the date range.
             foreach (DataRow drClient in dtClient.Rows)
             {
-                if ((drClient.Field<int>("Privs") & (int)privsToCheck) > 0)
+                if ((drClient.Field<int>("Privs") & privsToCheck) > 0)
                 {
                     errClient = string.Empty;
 
@@ -231,9 +231,9 @@ namespace LNF.Impl.Billing
                             else
                             {
                                 // set up array
-                                var list = clientAccountRows.Select(x => x.Field<int>("AccountID")).ToList();
-                                list.AddRange(toolData.Where(x => x.Field<int>("ClientID") == cid && x.Field<int>("RoomID") == rid && x.Field<DateTime>("ActDate") == entryDate).Select(x => x.Field<int>("AccountID")));
-                                var accounts = list.Distinct().ToArray();
+                                var accountList = clientAccountRows.Select(x => x.Field<int>("AccountID")).ToList();
+                                accountList.AddRange(toolData.Where(x => x.Field<int>("ClientID") == cid && x.Field<int>("RoomID") == rid && x.Field<DateTime>("ActDate") == entryDate).Select(x => x.Field<int>("AccountID")));
+                                var accounts = accountList.Distinct().ToArray();
 
                                 // Wen: We no longer look at last time's data to apportion
 
@@ -365,17 +365,22 @@ namespace LNF.Impl.Billing
                         duration = exitDate.Subtract(entryDate).TotalHours;
                         DateTime newDate = new DateTime(exitDate.Year, exitDate.Month, exitDate.Day);
 
+                        // [2021-01-27 jg] We now will put the entire Entry amount (1) on the day the entry occurred and zero on the day the exit occurred.
+
+                        var entryDuration = newDate.Subtract(entryDate).TotalHours;
+                        var exitDuration = exitDate.Subtract(newDate).TotalHours;
+
                         drRoomDataClean.SetField("ExitDT", newDate);
-                        drRoomDataClean.SetField("Duration", newDate.Subtract(entryDate).TotalHours);
-                        drRoomDataClean.SetField("Entries", drRoomDataClean.Field<double>("Duration") / duration);
+                        drRoomDataClean.SetField("Duration", entryDuration);
+                        drRoomDataClean.SetField("Entries", 1D);
 
                         ndr = dtRoomData.NewRow();
                         ndr.ItemArray = drRoomDataClean.ItemArray; //start by copying everything
                         ndr.SetField("EntryDT", newDate);
                         ndr.SetField("eDay", newDate.Day);
                         ndr.SetField("ExitDT", exitDate);
-                        ndr.SetField("Duration", exitDate.Subtract(newDate).TotalHours);
-                        ndr.SetField("Entries", ndr.Field<double>("Duration") / duration);
+                        ndr.SetField("Duration", exitDuration);
+                        ndr.SetField("Entries", 0D);
                         dtRoomData.Rows.Add(ndr);
                     }
                 }
@@ -537,6 +542,9 @@ namespace LNF.Impl.Billing
 
             foreach (var accountId in accounts)
             {
+                var e = entries / count;
+                var d = duration / count;
+
                 DataRow ndr = dtRoomData.NewRow();
                 ndr.SetField("Period", Period);
                 ndr.SetField("ClientID", clientId);
@@ -545,8 +553,8 @@ namespace LNF.Impl.Billing
                 ndr.SetField("PassbackRoom", passbackRoom);
                 ndr.SetField("EvtDate", eventDate);
                 ndr.SetField("AccountID", accountId);
-                ndr.SetField("Entries", entries / count);
-                ndr.SetField("Hours", duration / count);
+                ndr.SetField("Entries", e);
+                ndr.SetField("Hours", d);
                 ndr.SetField("Days", 0D);
                 ndr.SetField("Months", 0D);
                 ndr.SetField("DataSource", DataSourceType.ApportionEqually);

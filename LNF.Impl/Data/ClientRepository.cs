@@ -105,7 +105,7 @@ namespace LNF.Impl.Data
 
         public IEnumerable<IClientAccountAssignment> GetClientAccountAssignments(int managerOrgId)
         {
-            return Session.Query<ClientAccountAssignment>().Where(x => x.ManagerOrgID == managerOrgId).CreateModels<IClientAccountAssignment>();
+            return Session.Query<ClientAccountAssignment>().Where(x => x.ManagerOrgID == managerOrgId).ToList();
         }
 
         //public IEnumerable<IAccount> ActiveAccounts(int clientId, DateTime sd, DateTime ed)

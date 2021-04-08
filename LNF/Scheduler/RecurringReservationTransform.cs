@@ -128,17 +128,17 @@ namespace LNF.Scheduler
             return result;
         }
 
-        public List<IReservationProcessInfo> GetProcessInfos(int recurrenceId)
+        public List<ReservationProcessInfoItem> GetProcessInfos(int recurrenceId)
         {
             // get any process infos for the most recent recurrence reservation
             var prev = GetPreviousRecurrence(recurrenceId);
 
-            List<IReservationProcessInfo> result;
+            List<ReservationProcessInfoItem> result;
 
             if (prev != null)
-                result = Provider.Scheduler.ProcessInfo.GetReservationProcessInfos(prev.ReservationID).ToList();
+                result = ProcessInfos.CreateReservationProcessInfoItems(Provider.Scheduler.ProcessInfo.GetReservationProcessInfos(prev.ReservationID));
             else
-                result = new List<IReservationProcessInfo>();
+                result = new List<ReservationProcessInfoItem>();
 
             return result;
         }
@@ -152,7 +152,7 @@ namespace LNF.Scheduler
             }
         }
 
-        public void CopyInvitees(int reservationId, IEnumerable<IReservationInvitee> invitees)
+        public void CopyInvitees(int reservationId, IEnumerable<IReservationInviteeItem> invitees)
         {
             foreach (var item in invitees)
             {
