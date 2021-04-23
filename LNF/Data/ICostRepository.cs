@@ -17,5 +17,6 @@ namespace LNF.Data
         IEnumerable<ICost> FindAuxiliaryCosts(string table, DateTime? cutoff = null, int chargeTypeId = 0);
         IEnumerable<IGlobalCost> GetGlobalCosts();
         IGlobalCost GetActiveGlobalCost();
+        IEnumerable<IChargeType> GetChargeTypes();
     }
 }

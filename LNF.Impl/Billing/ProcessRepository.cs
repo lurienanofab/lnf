@@ -34,15 +34,15 @@ namespace LNF.Impl.Billing
                 DataCleanResult result = new DataCleanResult();
 
                 if ((command.BillingCategory & BillingCategory.Tool) > 0)
-                    result.WriteToolDataCleanProcessResult = new WriteToolDataCleanProcess(conn, command.StartDate, command.EndDate, command.ClientID).Start();
+                    result.WriteToolDataCleanProcessResult = new WriteToolDataCleanProcess(new WriteToolDataCleanConfig { Connection = conn, Context = "ProcessRepository.DataClean", StartDate = command.StartDate, EndDate = command.EndDate, ClientID = command.ClientID }).Start();
 
                 if ((command.BillingCategory & BillingCategory.Room) > 0)
-                    result.WriteRoomDataCleanProcessResult = new WriteRoomDataCleanProcess(conn, command.StartDate, command.EndDate, command.ClientID).Start();
+                    result.WriteRoomDataCleanProcessResult = new WriteRoomDataCleanProcess(new WriteRoomDataCleanConfig { Connection = conn, Context = "ProcessRepository.DataClean", StartDate = command.StartDate, EndDate = command.EndDate, ClientID = command.ClientID }).Start();
 
                 if ((command.BillingCategory & BillingCategory.Store) > 0)
                 {
                     using (var uow = NewUnitOfWork())
-                        result.WriteStoreDataCleanProcessResult = new WriteStoreDataCleanProcess(conn, command.StartDate, command.EndDate, command.ClientID).Start();
+                        result.WriteStoreDataCleanProcessResult = new WriteStoreDataCleanProcess(new WriteStoreDataCleanConfig { Connection = conn, Context = "ProcessRepository.DataClean", StartDate = command.StartDate, EndDate = command.EndDate, ClientID = command.ClientID }).Start();
                 }
 
                 conn.Close();
@@ -66,13 +66,13 @@ namespace LNF.Impl.Billing
                 DataResult result = new DataResult();
 
                 if ((command.BillingCategory & BillingCategory.Tool) > 0)
-                    result.WriteToolDataProcessResult = new WriteToolDataProcess(conn, command.Period, command.ClientID, command.Record).Start();
+                    result.WriteToolDataProcessResult = new WriteToolDataProcess(new WriteToolDataConfig { Connection = conn, Context = "ProcessRepository.Data", Period = command.Period, ClientID = command.ClientID, ResourceID = command.Record }).Start();
 
                 if ((command.BillingCategory & BillingCategory.Room) > 0)
-                    result.WriteRoomDataProcessResult = new WriteRoomDataProcess(conn, command.Period, command.ClientID, command.Record).Start();
+                    result.WriteRoomDataProcessResult = new WriteRoomDataProcess(new WriteRoomDataConfig { Connection = conn, Context = "ProcessRepository.Data", Period = command.Period, ClientID = command.ClientID, RoomID = command.Record }).Start();
 
                 if ((command.BillingCategory & BillingCategory.Store) > 0)
-                    result.WriteStoreDataProcessResult = new WriteStoreDataProcess(conn, command.Period, command.ClientID, command.Record).Start();
+                    result.WriteStoreDataProcessResult = new WriteStoreDataProcess(new WriteStoreDataConfig { Connection = conn, Context = "ProcessRepository.Data", Period = command.Period, ClientID = command.ClientID, ItemID = command.Record }).Start();
 
                 conn.Close();
 
@@ -92,20 +92,20 @@ namespace LNF.Impl.Billing
             {
                 conn.Open();
 
-                var step1 = new BillingDataProcessStep1(conn);
+                DateTime now = DateTime.Now;
+
+                var step1 = new BillingDataProcessStep1(new Step1Config { Connection = conn, Context = "ProcessRepository.Step1", Period = command.Period, Now = now, ClientID = command.ClientID, IsTemp = command.IsTemp });
 
                 Step1Result result = new Step1Result();
 
-                DateTime now = DateTime.Now;
-
                 if ((command.BillingCategory & BillingCategory.Tool) > 0)
-                    result.PopulateToolBillingProcessResult = step1.PopulateToolBilling(command.Period, now, command.ClientID, command.IsTemp);
+                    result.PopulateToolBillingProcessResult = step1.PopulateToolBilling();
 
                 if ((command.BillingCategory & BillingCategory.Room) > 0)
-                    result.PopulateRoomBillingProcessResult = step1.PopulateRoomBilling(command.Period, now, command.ClientID, command.IsTemp);
+                    result.PopulateRoomBillingProcessResult = step1.PopulateRoomBilling();
 
                 if ((command.BillingCategory & BillingCategory.Store) > 0)
-                    result.PopulateStoreBillingProcessResult = step1.PopulateStoreBilling(command.Period, now, command.IsTemp);
+                    result.PopulateStoreBillingProcessResult = step1.PopulateStoreBilling();
 
                 conn.Close();
 
@@ -118,21 +118,21 @@ namespace LNF.Impl.Billing
             if (command.Period == default(DateTime))
                 throw new Exception("Missing parameter: Period");
 
-            if (command.Period.Day != 1)
-                throw new Exception("Period must be the first day of the month.");
+            if (command.Period.Day != 1 || command.Period.Hour != 0 || command.Period.Minute != 0 || command.Period.Second != 0)
+                throw new Exception("Period must be midnight on the first day of the month.");
 
             using (var conn = NewConnection())
             {
                 conn.Open();
 
-                var step4 = new BillingDataProcessStep4Subsidy(conn);
+                var step4 = new BillingDataProcessStep4Subsidy(new Step4Config { Connection = conn, Context = "ProcessRepository.Step4", Period = command.Period, ClientID = command.ClientID });
 
                 PopulateSubsidyBillingResult result;
 
                 switch (command.Command)
                 {
                     case "subsidy":
-                        result = step4.PopulateSubsidyBilling(command);
+                        result = step4.PopulateSubsidyBilling();
                         break;
                     case "distribution":
                         result = new PopulateSubsidyBillingResult { Command = "distribution" };
@@ -245,22 +245,22 @@ namespace LNF.Impl.Billing
                             switch (funcName)
                             {
                                 case "WriteRoomDataClean":
-                                    result.WriteRoomDataCleanProcessResult = new WriteRoomDataCleanProcess(conn, sd, ed, command.ClientID).Start();
+                                    result.WriteRoomDataCleanProcessResult = new WriteRoomDataCleanProcess(new WriteRoomDataCleanConfig { Connection = conn, Context = "ProcessRepository.Update", StartDate = sd, EndDate = ed, ClientID = command.ClientID }).Start();
                                     break;
                                 case "WriteRoomData":
-                                    result.WriteRoomDataProcessResult = new WriteRoomDataProcess(conn, sd, command.ClientID, 0).Start();
+                                    result.WriteRoomDataProcessResult = new WriteRoomDataProcess(new WriteRoomDataConfig { Connection = conn, Context = "ProcessRepository.Update", Period = sd, ClientID = command.ClientID, RoomID = 0 }).Start();
                                     break;
                                 case "WriteToolDataClean":
-                                    result.WriteToolDataCleanProcessResult = new WriteToolDataCleanProcess(conn, sd, ed, command.ClientID).Start();
+                                    result.WriteToolDataCleanProcessResult = new WriteToolDataCleanProcess(new WriteToolDataCleanConfig { Connection = conn, Context = "ProcessRepository.Update", StartDate = sd, EndDate = ed, ClientID = command.ClientID }).Start();
                                     break;
                                 case "WriteToolData":
-                                    result.WriteToolDataProcessResult = new WriteToolDataProcess(conn, sd, command.ClientID, 0).Start();
+                                    result.WriteToolDataProcessResult = new WriteToolDataProcess(new WriteToolDataConfig { Connection = conn, Context = "ProcessRepository.Update", Period = sd, ClientID = command.ClientID, ResourceID = 0 }).Start();
                                     break;
                                 case "WriteStoreDataClean":
-                                    result.WriteStoreDataCleanProcessResult = new WriteStoreDataCleanProcess(conn, sd, ed, command.ClientID).Start();
+                                    result.WriteStoreDataCleanProcessResult = new WriteStoreDataCleanProcess(new WriteStoreDataCleanConfig { Connection = conn, Context = "ProcessRepository.Update", StartDate = sd, EndDate = ed, ClientID = command.ClientID }).Start();
                                     break;
                                 case "WriteStoreData":
-                                    result.WriteStoreDataProcessResult = new WriteStoreDataProcess(conn, sd, command.ClientID, 0).Start();
+                                    result.WriteStoreDataProcessResult = new WriteStoreDataProcess(new WriteStoreDataConfig { Connection = conn, Context = "ProcessRepository.Update", Period = sd, ClientID = command.ClientID, ItemID = 0 }).Start();
                                     break;
                             }
                         }
@@ -298,22 +298,21 @@ namespace LNF.Impl.Billing
             {
                 conn.Open();
 
-                var step1 = new BillingDataProcessStep1(conn);
-                var step4 = new BillingDataProcessStep4Subsidy(conn);
-                var fc = new Step4Command { ClientID = 0, Command = "subsidy", Period = command.Period };
-
                 DateTime now = DateTime.Now;
+
+                var step1 = new BillingDataProcessStep1(new Step1Config { Connection = conn, Context = "ProcessRepository.Finalize", Period = command.Period, Now = now, ClientID = 0, IsTemp = false });
+                var step4 = new BillingDataProcessStep4Subsidy(new Step4Config { Connection = conn, Context = "ProcessRepository.Finalize", Period = command.Period, ClientID = 0 });
 
                 var result = new FinalizeResult
                 {
                     Period = command.Period,
-                    WriteToolDataProcessResult = new WriteToolDataProcess(conn, command.Period).Start(),
-                    WriteRoomDataProcessResult = new WriteRoomDataProcess(conn, command.Period).Start(),
-                    WriteStoreDataProcessResult = new WriteStoreDataProcess(conn, command.Period).Start(),
-                    PopulateToolBillingProcessResult = step1.PopulateToolBilling(command.Period, now, 0, false),
-                    PopulateRoomBillingProcessResult = step1.PopulateRoomBilling(command.Period, now, 0, false),
-                    PopulateStoreBillingProcessResult = step1.PopulateStoreBilling(command.Period, now, false),
-                    PopulateSubsidyBillingProcessResult = step4.PopulateSubsidyBilling(fc)
+                    WriteToolDataProcessResult = new WriteToolDataProcess(new WriteToolDataConfig { Connection = conn, Context = "ProcessRepository.Finalize", Period = command.Period, ClientID = 0, ResourceID = 0 }).Start(),
+                    WriteRoomDataProcessResult = new WriteRoomDataProcess(new WriteRoomDataConfig { Connection = conn, Context = "ProcessRepository.Finalize", Period = command.Period, ClientID = 0, RoomID = 0 }).Start(),
+                    WriteStoreDataProcessResult = new WriteStoreDataProcess(new WriteStoreDataConfig { Connection = conn, Context = "ProcessRepository.Finalize", Period = command.Period, ClientID = 0, ItemID = 0 }).Start(),
+                    PopulateToolBillingProcessResult = step1.PopulateToolBilling(),
+                    PopulateRoomBillingProcessResult = step1.PopulateRoomBilling(),
+                    PopulateStoreBillingProcessResult = step1.PopulateStoreBilling(),
+                    PopulateSubsidyBillingProcessResult = step4.PopulateSubsidyBilling()
                 };
 
                 conn.Close();
@@ -404,7 +403,7 @@ namespace LNF.Impl.Billing
                     if (p.Day != 1)
                         throw new Exception("Period must be the first day of the month.");
 
-                    var isTemp = Utility.IsCurrentPeriod(p);
+                    var temp = Utility.IsCurrentPeriod(p);
 
                     sd = p;
                     ed = p.AddMonths(1);
@@ -413,12 +412,14 @@ namespace LNF.Impl.Billing
 
                     sw = new Stopwatch();
 
-                    var step1 = new BillingDataProcessStep1(conn);
+                    DateTime now = DateTime.Now;
+
+                    var step1 = new BillingDataProcessStep1(new Step1Config { Connection = conn, Context = "ProcessRepository.UpdateBilling", Period = p, Now = now, ClientID = args.ClientID, IsTemp = temp});
 
                     if (args.BillingCategory.HasFlag(BillingCategory.Tool))
                     {
-                        var toolDataClean = new WriteToolDataCleanProcess(conn, sd, ed, args.ClientID);
-                        var toolData = new WriteToolDataProcess(conn, p, args.ClientID, 0);
+                        var toolDataClean = new WriteToolDataCleanProcess(new WriteToolDataCleanConfig { Connection = conn, Context = "ProcessRepository.UpdateBilling", StartDate = sd, EndDate = ed, ClientID = args.ClientID });
+                        var toolData = new WriteToolDataProcess(new WriteToolDataConfig { Connection = conn, Context = "ProcessRepository.UpdateBilling", Period = p, ClientID = args.ClientID, ResourceID = 0 });
 
                         sw.Restart();
                         toolDataClean.Start();
@@ -429,7 +430,7 @@ namespace LNF.Impl.Billing
                         result.Add(string.Format("Completed ToolData in {0}", sw.Elapsed));
 
                         sw.Restart();
-                        step1.PopulateToolBilling(p, DateTime.Now, args.ClientID, isTemp);
+                        step1.PopulateToolBilling();
                         result.Add(string.Format("Completed ToolBilling in {0}", sw.Elapsed));
 
                         populateSubsidy = true;
@@ -437,8 +438,8 @@ namespace LNF.Impl.Billing
 
                     if (args.BillingCategory.HasFlag(BillingCategory.Room))
                     {
-                        var roomDataClean = new WriteRoomDataCleanProcess(conn, sd, ed, args.ClientID);
-                        var roomData = new WriteRoomDataProcess(conn, p, args.ClientID, 0);
+                        var roomDataClean = new WriteRoomDataCleanProcess(new WriteRoomDataCleanConfig { Connection = conn, Context = "ProcessRepository.UpdateBilling", StartDate = sd, EndDate = ed, ClientID = args.ClientID, RoomID = 0 });
+                        var roomData = new WriteRoomDataProcess(new WriteRoomDataConfig { Connection = conn, Context = "ProcessRepository.UpdateBilling", Period = p, ClientID = args.ClientID, RoomID = 0 });
 
                         sw.Restart();
                         roomDataClean.Start();
@@ -449,7 +450,7 @@ namespace LNF.Impl.Billing
                         result.Add(string.Format("Completed RoomData in {0}", sw.Elapsed));
 
                         sw.Restart();
-                        step1.PopulateRoomBilling(p, DateTime.Now, args.ClientID, isTemp);
+                        step1.PopulateRoomBilling();
                         result.Add(string.Format("Completed RoomBilling in {0}", sw.Elapsed));
 
                         populateSubsidy = true;
@@ -457,8 +458,8 @@ namespace LNF.Impl.Billing
 
                     if (args.BillingCategory.HasFlag(BillingCategory.Store))
                     {
-                        var storeDataClean = new WriteStoreDataCleanProcess(conn, sd, ed, args.ClientID);
-                        var storeData = new WriteStoreDataProcess(conn, p, args.ClientID, 0);
+                        var storeDataClean = new WriteStoreDataCleanProcess(new WriteStoreDataCleanConfig { Connection = conn, Context = "ProcessRepository.UpdateBilling", StartDate = sd, EndDate = ed, ClientID = args.ClientID });
+                        var storeData = new WriteStoreDataProcess(new WriteStoreDataConfig { Connection = conn, Context = "ProcessRepository.UpdateBilling", Period = p, ClientID = args.ClientID, ItemID = 0 });
 
                         sw.Restart();
                         storeDataClean.Start();
@@ -469,21 +470,16 @@ namespace LNF.Impl.Billing
                         result.Add(string.Format("Completed StoreData in {0}", sw.Elapsed));
 
                         sw.Restart();
-                        step1.PopulateStoreBilling(p, DateTime.Now, isTemp);
+                        step1.PopulateStoreBilling();
                         result.Add(string.Format("Completed StoreBilling in {0}", sw.Elapsed));
                     }
 
-                    if (!isTemp && populateSubsidy)
+                    if (!temp && populateSubsidy)
                     {
                         sw.Restart();
-                        var step4 = new BillingDataProcessStep4Subsidy(conn);
+                        var step4 = new BillingDataProcessStep4Subsidy(new Step4Config { Connection = conn, Context = "ProcessRepository.UpdateBilling", Period = p, ClientID = args.ClientID });
 
-                        step4.PopulateSubsidyBilling(new Step4Command
-                        {
-                            Command = "subsidy",
-                            Period = p,
-                            ClientID = args.ClientID
-                        });
+                        step4.PopulateSubsidyBilling();
 
                         result.Add(string.Format("Completed SubsidyBilling in {0}", sw.Elapsed));
                     }
@@ -516,11 +512,11 @@ namespace LNF.Impl.Billing
                 DateTime sd = command.Period;
                 DateTime ed = command.Period.AddMonths(1);
 
-                var toolDataClean = new WriteToolDataCleanProcess(conn, sd, ed, command.ClientID);
-                var toolData = new WriteToolDataProcess(conn, sd, command.ClientID, 0);
+                var toolDataClean = new WriteToolDataCleanProcess(new WriteToolDataCleanConfig { Connection = conn, Context = "ProcessRepository.UpdateClientBilling", StartDate = sd, EndDate = ed, ClientID = command.ClientID });
+                var toolData = new WriteToolDataProcess(new WriteToolDataConfig { Connection = conn, Context = "ProcessRepository.UpdateClientBilling", Period = sd, ClientID = command.ClientID, ResourceID = 0 });
 
-                var roomDataClean = new WriteRoomDataCleanProcess(conn, sd, ed, command.ClientID);
-                var roomData = new WriteRoomDataProcess(conn, sd, command.ClientID, 0);
+                var roomDataClean = new WriteRoomDataCleanProcess(new WriteRoomDataCleanConfig { Connection = conn, Context = "ProcessRepository.UpdateClientBilling", StartDate = sd, EndDate = ed, ClientID = command.ClientID });
+                var roomData = new WriteRoomDataProcess(new WriteRoomDataConfig { Connection = conn, Context = "ProcessRepository.UpdateClientBilling", Period = sd, ClientID = command.ClientID, RoomID = 0 });
 
                 var pr1 = toolDataClean.Start();
                 var pr2 = roomDataClean.Start();
@@ -528,25 +524,19 @@ namespace LNF.Impl.Billing
                 var pr3 = toolData.Start();
                 var pr4 = roomData.Start();
 
-                bool isTemp = DateTime.Now.FirstOfMonth() == command.Period;
+                bool temp = DateTime.Now.FirstOfMonth() == command.Period;
 
-                var step1 = new BillingDataProcessStep1(conn);
+                var step1 = new BillingDataProcessStep1(new Step1Config { Connection = conn, Context = "ProcessRepository.UpdateClientBilling", Period = command.Period, Now = now, ClientID = command.ClientID, IsTemp = temp });
 
-                var pr5 = step1.PopulateToolBilling(command.Period, DateTime.Now, command.ClientID, isTemp);
-                var pr6 = step1.PopulateRoomBilling(command.Period, DateTime.Now, command.ClientID, isTemp);
+                var pr5 = step1.PopulateToolBilling();
+                var pr6 = step1.PopulateRoomBilling();
 
                 PopulateSubsidyBillingResult pr7 = null;
 
-                if (!isTemp)
+                if (!temp)
                 {
-                    var step4 = new BillingDataProcessStep4Subsidy(conn);
-
-                    pr7 = step4.PopulateSubsidyBilling(new Step4Command
-                    {
-                        Command = "subsidy",
-                        Period = command.Period,
-                        ClientID = command.ClientID
-                    });
+                    var step4 = new BillingDataProcessStep4Subsidy(new Step4Config { Connection = conn, Context = "ProcessRepository.UpdateClientBilling", Period = command.Period, ClientID = command.ClientID });
+                    pr7 = step4.PopulateSubsidyBilling();
                 }
 
                 var result = new UpdateClientBillingResult

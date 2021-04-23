@@ -11,5 +11,7 @@
         }
 
         public JournalUnitTypes JournalUnitType { get; set; }
+
+        public override string ReportName => $"{BillingCategory}-{ReportType}{JournalUnitType}";
     }
 }

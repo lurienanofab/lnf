@@ -10,5 +10,7 @@
         {
             get { return ReportTypes.SUB; }
         }
+
+        public override string ReportName => $"{BillingCategory}-{ReportType}";
     }
 }

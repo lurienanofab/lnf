@@ -4,25 +4,9 @@ using System.Collections.Generic;
 
 namespace LNF.Scheduler
 {
-    public interface IReservationItem
+    public interface IReservationItem : IResourceItem
     {
         int ReservationID { get; set; }
-        int ResourceID { get; set; }
-        string ResourceName { get; set; }
-        string ResourceDisplayName { get; }
-        int ReservFence { get; set; }
-        int Granularity { get; set; }
-        int Offset { get; set; }
-        int MinReservTime { get; set; }
-        int MaxReservTime { get; set; }
-        int MinCancelTime { get; set; }
-        int GracePeriod { get; set; }
-        int ResourceAutoEnd { get; set; }
-        int AuthDuration { get; set; }
-        bool AuthState { get; set; }
-        int ProcessTechID { get; set; }
-        int LabID { get; set; }
-        int BuildingID { get; set; }
         int ActivityID { get; set; }
         string ActivityName { get; set; }
         bool Editable { get; set; }
@@ -73,7 +57,6 @@ namespace LNF.Scheduler
         TimeSpan GetActualDuration();
         TimeSpan GetChargeDuration();
         TimeSpan GetOvertimeDuration();
-        DateTime GetNextGranularity(DateTime now, GranularityDirection dir);
     }
 
     public interface IReservationWithInviteesItem : IReservationItem

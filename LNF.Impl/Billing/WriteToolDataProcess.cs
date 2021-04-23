@@ -9,6 +9,11 @@ using System.Linq;
 
 namespace LNF.Impl.Billing
 {
+    public class WriteToolDataConfig : PeriodProcessConfig
+    {
+        public int ResourceID { get; set; }
+    }
+
     /// <summary>
     /// This process will:
     ///     1) Delete records from ToolData in the date range.
@@ -16,7 +21,7 @@ namespace LNF.Impl.Billing
     ///     3) Insert records from ToolDataClean records into ToolData.
     ///     4) Adjust records in ToolData.
     /// </summary>
-    public class WriteToolDataProcess : ProcessBase<WriteToolDataResult>
+    public class WriteToolDataProcess : PeriodProcessBase<WriteToolDataResult>
     {
         public static readonly DateTime NewBillingDate = new DateTime(2011, 4, 1);
 
@@ -24,19 +29,19 @@ namespace LNF.Impl.Billing
         //Delete this ONLY when there is no need to regenerate the April 2011 data
         public static readonly List<int> CancelledReservation20110401 = new List<int>(new int[] { 286867, 302663, 302703, 303807, 303818, 303856, 302876, 303041, 303155, 303156, 303168, 303288, 303444, 303534, 303556, 303697, 303735, 303787 });
 
-        public DateTime Period { get; set; }
-        public int ClientID { get; set; }
-        public int ResourceID { get; set; }
+        private readonly WriteToolDataConfig _config;
+
+        public int ResourceID => _config.ResourceID;
 
         private DataSet _ds = null;
         private DataTable _activities = null;
 
-        public WriteToolDataProcess(SqlConnection conn, DateTime period, int clientId = 0, int resourceId = 0) : base(conn)
+        public WriteToolDataProcess(WriteToolDataConfig cfg) : base(cfg)
         {
-            Period = period;
-            ClientID = clientId;
-            ResourceID = resourceId;
+            _config = cfg;
         }
+
+        public override string ProcessName => "ToolData";
 
         protected override WriteToolDataResult CreateResult()
         {
@@ -52,9 +57,10 @@ namespace LNF.Impl.Billing
         {
             using (var cmd = new SqlCommand("dbo.ToolData_Delete", Connection) { CommandType = CommandType.StoredProcedure })
             {
-                cmd.Parameters.AddWithValue("Period", Period);
-                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID);
-                AddParameterIf(cmd, "ResourceID", ResourceID > 0, ResourceID);
+                AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
+                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID, SqlDbType.Int);
+                AddParameterIf(cmd, "ResourceID", ResourceID > 0, ResourceID, SqlDbType.Int);
+                AddParameter(cmd, "Context", _config.Context, SqlDbType.NVarChar, 50);
 
                 var result = cmd.ExecuteNonQuery();
 

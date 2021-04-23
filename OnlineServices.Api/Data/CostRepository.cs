@@ -65,5 +65,10 @@ namespace OnlineServices.Api.Data
         {
             throw new NotImplementedException();
         }
+
+        public IEnumerable<IChargeType> GetChargeTypes()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

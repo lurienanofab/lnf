@@ -5,12 +5,7 @@ namespace LNF.Impl.Billing.Report
 {
     public class ToolJournalUnitGenerator : JournalUnitGenerator<ToolJU>
     {
-        private readonly NHibernate.ISession _session;
-
-        private ToolJournalUnitGenerator(NHibernate.ISession session, ToolJU report) : base(report)
-        {
-            _session = session;
-        }
+        private ToolJournalUnitGenerator(NHibernate.ISession session, ToolJU report) : base(session, report) { }
 
         public static ToolJournalUnitGenerator Create(NHibernate.ISession session, ToolJU report)
         {
@@ -26,7 +21,7 @@ namespace LNF.Impl.Billing.Report
             else
                 queryParameters = new { Action = "ForSUBReport", Report.StartPeriod, Report.EndPeriod, Report.ClientID };
 
-            var ds = DataAccess.ToolBillingSelect(_session, queryParameters);
+            var ds = DataAccess.ToolBillingSelect(Session, queryParameters);
 
             DataTable dtBillingData = ds.Tables[0];
             ClientAccountData = ds.Tables[1];

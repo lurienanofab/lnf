@@ -67,9 +67,9 @@ namespace LNF.Impl.Billing
             {
                 conn.Open();
                 bool temp = Utility.IsCurrentPeriod(period);
-                var step1 = new BillingDataProcessStep1(conn);
-                step1.PopulateToolBilling(period, now, clientId, temp);
-                step1.PopulateRoomBilling(period, now, clientId, temp);
+                var step1 = new BillingDataProcessStep1(new Step1Config { Connection = conn, Context = "BillingTypeRepository.UpdateBilling", Period = period, Now = now, ClientID = clientId, IsTemp = temp });
+                step1.PopulateToolBilling();
+                step1.PopulateRoomBilling();
                 conn.Close();
             }
         }

@@ -1,6 +1,7 @@
 ﻿using LNF.Billing;
 using LNF.Billing.Reports.ServiceUnitBilling;
 using LNF.CommonTools;
+using NHibernate;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -9,7 +10,7 @@ namespace LNF.Impl.Billing.Report
 {
     public abstract class JournalUnitGenerator<T> : ReportGenerator<T> where T : JournalUnitReport, new()
     {
-        protected JournalUnitGenerator(T report) : base(report) { }
+        protected JournalUnitGenerator(ISession session, T report) : base(session, report) { }
 
         protected override void LoadReportItems(DataView dv)
         {
@@ -39,6 +40,8 @@ namespace LNF.Impl.Billing.Report
             {
                 if (cadr.RowState != DataRowState.Deleted)
                 {
+                    ValidPeriodCheck(cadr);
+
                     chargeAmount = Math.Round(Convert.ToDouble(dtBilling.Compute("SUM(LineCost)", DataRowFilter(cadr))), 2);
                     if (Math.Abs(chargeAmount) > 0.01)
                     {

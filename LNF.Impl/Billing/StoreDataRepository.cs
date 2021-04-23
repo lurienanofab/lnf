@@ -129,6 +129,7 @@ namespace LNF.Impl.Billing
                 .Param("ClientID", clientId > 0, clientId)
                 .Param("ItemID", itemId > 0, itemId)
                 .Param("CategoryID", catId > 0, catId)
+                .Param("Context", "StoreDataRepository.DeleteStoreDataClean")
                 .ExecuteNonQuery("dbo.StoreDataClean_Delete").Value;
         }
 

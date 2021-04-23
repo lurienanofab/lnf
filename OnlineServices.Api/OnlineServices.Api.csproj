@@ -78,6 +78,7 @@
     <Compile Include="Billing\ApportionmentRepository.cs" />
     <Compile Include="Billing\BillingTypeRepository.cs" />
     <Compile Include="Billing\MiscBillingCharge.cs" />
+    <Compile Include="Billing\MiscBillingChargeItem.cs" />
     <Compile Include="Billing\MiscBillingRepository.cs" />
     <Compile Include="Billing\MiscDataRepository.cs" />
     <Compile Include="Billing\OrgRechargeRepository.cs" />

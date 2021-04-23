@@ -9,5 +9,6 @@ namespace LNF.Billing.Reports.ServiceUnitBilling
         public DateTime EndPeriod { get; set; }
         public abstract ReportTypes ReportType { get; }
         public abstract BillingCategory BillingCategory { get; }
+        public abstract string ReportName { get; }
     }
 }

@@ -1,8 +1,7 @@
 ﻿namespace LNF.Scheduler
 {
-    public interface IProcessTech : ILab
+    public interface IProcessTech : IProcessTechItem, ILab
     {
-        int ProcessTechID { get; set; }
         int ProcessTechGroupID { get; set; }
         string ProcessTechGroupName { get; set; }
         string ProcessTechDescription { get; set; }

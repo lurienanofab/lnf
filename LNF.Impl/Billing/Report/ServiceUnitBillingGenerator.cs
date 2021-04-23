@@ -1,6 +1,7 @@
 ﻿using LNF.Billing;
 using LNF.Billing.Reports.ServiceUnitBilling;
 using LNF.CommonTools;
+using NHibernate;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,7 +11,7 @@ namespace LNF.Impl.Billing.Report
 {
     public abstract class ServiceUnitBillingGenerator<T> : ReportGenerator<T> where T : ServiceUnitBillingReport, new()
     {
-        protected ServiceUnitBillingGenerator(T report) : base(report) { }
+        protected ServiceUnitBillingGenerator(ISession session, T report) : base(session, report) { }
 
         protected override void LoadReportItems(DataView dv)
         {
@@ -43,6 +44,8 @@ namespace LNF.Impl.Billing.Report
             {
                 if (cadr.RowState != DataRowState.Deleted)
                 {
+                    ValidPeriodCheck(cadr);
+
                     chargeAmount = Math.Round(Utility.ConvertTo(dtBilling.Compute("SUM(LineCost)", DataRowFilter(cadr)), 0D), 2);
                     if (dtBilling.Columns.Contains("SubsidyDiscount"))
                         subsidyDiscount = Utility.ConvertTo(dtBilling.Compute("SUM(SubsidyDiscount)", DataRowFilter(cadr)), 0D);

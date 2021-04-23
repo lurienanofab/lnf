@@ -1,4 +1,5 @@
 ﻿using LNF.Billing;
+using LNF.CommonTools;
 using LNF.Impl.Repository;
 using LNF.Repository;
 using NHibernate;
@@ -12,6 +13,11 @@ namespace LNF.Impl.Billing
 {
     internal class ExternalInvoiceManager : IExternalInvoiceManager
     {
+        public static readonly string Tool = "Tool";
+        public static readonly string Room = "Room";
+        public static readonly string Store = "Store";
+        public static readonly string Misc = "Misc";
+
         public int AccountID { get; }
         public DateTime StartDate { get; }
         public DateTime EndDate { get; }
@@ -172,6 +178,25 @@ namespace LNF.Impl.Billing
             return dt;
         }
 
+        protected void ValidPeriodCheck(DataRow dr, string billingCategory)
+        {
+            var period = dr.Field<DateTime>("Period");
+            var clientId = dr.Field<int>("ClientID");
+            var accountId = dr.Field<int>("AccountID");
+
+            // sanity check
+            if (period.Day != 1 || period.Hour != 0 || period.Minute != 0 || period.Second != 0)
+            {
+                SendEmail.SendDeveloperEmail("LNF.Impl.Billing.ExternalInvoiceManager.ValidPeriodCheck", $"Invalid period detected in External Invoice - {billingCategory} Data [run at {DateTime.Now:yyyy-MM-dd HH:mm:ss}]", $"Invalid period used - not midnight or 1st of month. Period = '{period:yyyy-MM-dd HH:mm:ss}', ClientID = {clientId}, AccountID = {accountId}");
+                throw new Exception($"Period is not midnight on the 1st of the month. Report: External Invoice - {billingCategory} Data, Period: {period:yyyy-MM-dd HH:mm:ss}, ClientID: {clientId}");
+            }
+        }
+
+        protected string GetFilter(DataRow dr)
+        {
+            return $"Period = #{dr["Period"]}# AND ClientID = {dr["ClientID"]} AND AccountID = {dr["AccountID"]}";
+        }
+
         public ExternalInvoiceUsage GetToolUsage()
         {
             var ds = Command()
@@ -200,7 +225,8 @@ namespace LNF.Impl.Billing
             //Aggregate the report based on ClientID
             foreach (DataRow dr in dtClient.Rows)
             {
-                string filter = $"ClientID = {dr["ClientID"]} AND AccountID = {dr["AccountID"]}";
+                ValidPeriodCheck(dr, Tool);
+                string filter = GetFilter(dr);
                 double totalFee = Convert.ToDouble(dt.Compute("SUM(LineCost)", filter));
                 DataRow[] rows = dt.Select(filter);
                 string desc = ExternalInvoiceUtility.GetToolDescription(rows[0]);
@@ -234,7 +260,8 @@ namespace LNF.Impl.Billing
             //Aggregate the report based on ClientID
             foreach (DataRow dr in dtClient.Rows)
             {
-                string filter = $"ClientID = {dr["ClientID"]} AND AccountID = {dr["AccountID"]}";
+                ValidPeriodCheck(dr, Room);
+                string filter = GetFilter(dr);
                 double totalFee = Convert.ToDouble(dt.Compute("SUM(LineCost)", filter));
                 DataRow[] rows = dt.Select(filter);
                 string desc = ExternalInvoiceUtility.GetRoomDescription(rows[0]);
@@ -262,7 +289,8 @@ namespace LNF.Impl.Billing
             //Aggregate the report based on ClientID
             foreach (DataRow dr in dtClient.Rows)
             {
-                string filter = $"ClientID = {dr["ClientID"]} AND AccountID = {dr["AccountID"]}";
+                ValidPeriodCheck(dr, Store);
+                string filter = GetFilter(dr);
                 double totalFee = Convert.ToDouble(dt.Compute("SUM(LineCost)", filter));
                 DataRow[] rows = dt.Select(filter);
                 string desc = ExternalInvoiceUtility.GetStoreDescription(rows[0]);
@@ -289,6 +317,7 @@ namespace LNF.Impl.Billing
             //Aggregate the report based on ClientID
             foreach (DataRow dr in dt.Rows)
             {
+                ValidPeriodCheck(dr, Misc);
                 double totalFee = Convert.ToDouble(dr.Field<decimal>("Cost"));
                 string desc = ExternalInvoiceUtility.GetMiscDescription(dr);
                 result.Add(ExternalInvoiceUtility.CreateInvoiceLineItem(dr, dr.Field<double>("Quantity"), totalFee, desc));
@@ -301,10 +330,10 @@ namespace LNF.Impl.Billing
         {
             return new Dictionary<string, ExternalInvoiceUsage>
             {
-                { "Tool", GetToolUsage() },
-                { "Room", GetExternalRoomUsage() },
-                { "Store", GetStoreUsage() },
-                { "Misc", GetMiscUsage() }
+                { Tool, GetToolUsage() },
+                { Room, GetExternalRoomUsage() },
+                { Store, GetStoreUsage() },
+                { Misc, GetMiscUsage() }
             };
         }
 

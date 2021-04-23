@@ -88,7 +88,7 @@ namespace LNF.Impl.Billing.Report
         public RoomSUB GetRoomSUB(DateTime sd, DateTime ed, int id = 0)
         {
             RoomSUB report = new RoomSUB { StartPeriod = sd, EndPeriod = ed, ClientID = id };
-            RoomServiceUnitBillingGenerator.Create(report).Generate();
+            RoomServiceUnitBillingGenerator.Create(Session, report).Generate();
             return report;
         }
 
@@ -100,7 +100,7 @@ namespace LNF.Impl.Billing.Report
                 twoCreditAccounts = option == "two-credit-accounts";
 
             StoreSUB report = new StoreSUB { StartPeriod = sd, EndPeriod = ed, ClientID = id, TwoCreditAccounts = twoCreditAccounts };
-            StoreServiceUnitBillingGenerator.Create(report).Generate();
+            StoreServiceUnitBillingGenerator.Create(Session, report).Generate();
             return report;
         }
 

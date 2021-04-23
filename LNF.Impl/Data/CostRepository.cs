@@ -64,7 +64,7 @@ namespace LNF.Impl.Data
 
         public IEnumerable<ICost> FindToolCosts(int resourceId, DateTime? cutoff = null, int chargeTypeId = 0)
         {
-            string[] tables = new[] { "ToolCost", "ToolOvertimeCost" };   
+            string[] tables = new[] { "ToolCost", "ToolOvertimeCost" };
             var result = FindCosts(tables, cutoff, resourceId, chargeTypeId);
             return result;
         }
@@ -83,12 +83,41 @@ namespace LNF.Impl.Data
 
         public IGlobalCost GetActiveGlobalCost()
         {
-            return Session.SelectGlobalCost().CreateModel<IGlobalCost>();
+            return CreateGlobalCostItem(Session.SelectGlobalCost());
         }
 
         public IEnumerable<IGlobalCost> GetGlobalCosts()
         {
-            return Session.SelectGlobalCosts().CreateModels<IGlobalCost>();
+            return CreateGlobalCostItems(Session.SelectGlobalCosts().ToList());
+        }
+
+        public IEnumerable<IChargeType> GetChargeTypes()
+        {
+            return Session.Query<ChargeType>().ToList();
+        }
+
+        private IEnumerable<GlobalCostItem> CreateGlobalCostItems(IEnumerable<GlobalCost> source)
+        {
+            return source.Select(x => CreateGlobalCostItem(x));
+        }
+
+        private GlobalCostItem CreateGlobalCostItem(GlobalCost source)
+        {
+            return new GlobalCostItem
+            {
+                GlobalID = source.GlobalID,
+                BusinessDay = source.BusinessDay,
+                LabAccountID = source.LabAccount.AccountID,
+                LabCreditAccountID = source.LabCreditAccount.AccountID,
+                LabCreditAccountNumber = source.LabCreditAccount.Number,
+                LabCreditAccountShortCode = source.LabCreditAccount.ShortCode,
+                SubsidyCreditAccountID = source.SubsidyCreditAccount.AccountID,
+                SubsidyCreditAccountNumber = source.SubsidyCreditAccount.Number,
+                SubsidyCreditAccountShortCode = source.SubsidyCreditAccount.ShortCode,
+                AdminID = source.Admin.ClientID,
+                AccessToOld = source.AccessToOld,
+                EffDate = source.EffDate
+            };
         }
     }
 }

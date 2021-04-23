@@ -13,7 +13,7 @@ namespace LNF.CommonTools
             Provider = provider;
         }
 
-        public UpdateTablesResult UpdateTables(BillingCategory types)
+        public UpdateTablesResult UpdateTables(BillingCategory categories, UpdateDataType types = UpdateDataType.DataClean | UpdateDataType.Data)
         {
             DateTime now = DateTime.Now;
             DateTime period = now.FirstOfMonth();
@@ -28,8 +28,8 @@ namespace LNF.CommonTools
                 //First, update tables
                 UpdateResult = Provider.Billing.Process.Update(new UpdateCommand
                 {
-                    BillingTypes = types,
-                    UpdateTypes = UpdateDataType.DataClean | UpdateDataType.Data,
+                    BillingTypes = categories,
+                    UpdateTypes = types,
                     Period = period,
                     ClientID = 0
                 })

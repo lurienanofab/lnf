@@ -79,6 +79,27 @@ namespace LNF.CommonTools
             Send(clientId, caller, subject, body, SystemEmail, new[] { DebugEmail });
         }
 
+        public static void SendDebugEmail(int clientId, string caller, string body, Exception ex)
+        {
+            var nl = Environment.NewLine;
+
+            var subj = $"Error in {caller} at {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+
+            if (!string.IsNullOrEmpty(body))
+                body = body + nl + nl;
+
+            body += $"Message:"
+                + $"{nl}--------------------------------------------------"
+                + $"{nl}{ex.Message}"
+                + $"{nl}{nl}"
+                + $"StackTrace:"
+                + $"{nl}--------------------------------------------------"
+                + $"{nl}{ex.StackTrace}"
+                + $"{nl}{nl}";
+
+            SendDebugEmail(clientId, caller, subj, body);
+        }
+
         public static string GetClientName(IClient client) => client == null ? "unknown" : $"{client.DisplayName} [{client.UserName}] [{client.ClientID}]";
 
         public static string SystemEmail => Utility.GetGlobalSetting("SystemEmail");

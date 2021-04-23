@@ -11,9 +11,9 @@ namespace OnlineServices.Api.Billing
             return Get<MiscBillingCharge>("webapi/billing/{expId}", UrlSegments(new { expId }));
         }
 
-        public IEnumerable<IMiscBillingCharge> GetMiscBillingCharges(DateTime period, int clientId = 0, int accountId = 0, string[] types = null, bool? active = null)
+        public IEnumerable<IMiscBillingChargeItem> GetMiscBillingCharges(DateTime period, string[] types, int clientId = 0, int accountId = 0, bool? active = null)
         {
-            return Get<List<MiscBillingCharge>>("webapi/billing/misc", QueryStrings(new { period, clientId, accountId, types, active }));
+            return Get<List<MiscBillingChargeItem>>("webapi/billing/misc", QueryStrings(new { period, clientId, accountId, types, active }));
         }
 
         public int CreateMiscBillingCharge(MiscBillingChargeCreateArgs args)

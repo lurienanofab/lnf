@@ -1,80 +1,159 @@
 ﻿using LNF.Billing;
-using LNF.Impl.DataAccess;
 using LNF.Impl.Repository;
 using LNF.Impl.Repository.Billing;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 
 namespace LNF.Impl.Billing
 {
-    public class MiscBillingRepository : RepositoryBase, IMiscBillingRepository
+    public class MiscBillingRepository : SqlClientRepositoryBase, IMiscBillingRepository
     {
-        public MiscBillingRepository(ISessionManager mgr) : base(mgr) { }
-
         public int CreateMiscBillingCharge(MiscBillingChargeCreateArgs args)
         {
-            return Session.CreateSQLQuery("EXEC sselData.dbo.MiscBillingCharge_Insert @AccountID = :AccountID, @ActDate = :ActDate, @ClientID = :ClientID, @Description = :Description, @Period = :Period, @Quantity = :Quantity, @SUBType = :SUBType, @UnitCost = :UnitCost")
-                .SetParameter("AccountID", args.AccountID)
-                .SetParameter("ActDate", args.ActDate)
-                .SetParameter("ClientID", args.ClientID)
-                .SetParameter("Description", args.Description)
-                .SetParameter("Period", args.Period)
-                .SetParameter("Quantity", args.Quantity)
-                .SetParameter("SUBType", args.SUBType)
-                .SetParameter("UnitCost", args.UnitCost)
-                .UniqueResult<int>();
+            using (var cmd = NewCommand("sselData.dbo.MiscBillingCharge_Insert"))
+            {
+                cmd.Parameters.AddWithValue("AccountID", args.AccountID, SqlDbType.Int);
+                cmd.Parameters.AddWithValue("ActDate", args.ActDate, SqlDbType.DateTime);
+                cmd.Parameters.AddWithValue("ClientID", args.ClientID, SqlDbType.Int);
+                cmd.Parameters.AddWithValue("Description", args.Description, SqlDbType.NVarChar, 100);
+                cmd.Parameters.AddWithValue("Period", args.Period, SqlDbType.DateTime);
+                cmd.Parameters.AddWithValue("Quantity", args.Quantity, SqlDbType.Float);
+                cmd.Parameters.AddWithValue("SUBType", args.SUBType, SqlDbType.NVarChar, 10);
+                cmd.Parameters.AddWithValue("UnitCost", args.UnitCost, SqlDbType.Decimal);
+
+                cmd.Connection.Open();
+                var obj = cmd.ExecuteScalar();
+                cmd.Connection.Close();
+                var result = Convert.ToInt32(obj ?? 0);
+
+                return result;
+            }
         }
 
         public int UpdateMiscBilling(MiscBillingChargeUpdateArgs args)
         {
-            return Session.CreateSQLQuery("EXEC sselData.dbo.MiscBillingCharge_Update @Description = :Description, @ExpID = :ExpID, @Period = :Period, @Quantity = :Quantity, @UnitCost = :UnitCost")
-                .SetParameter("Description", args.Description)
-                .SetParameter("ExpID", args.ExpID)
-                .SetParameter("Period", args.Period)
-                .SetParameter("Quantity", args.Quantity)
-                .SetParameter("UnitCost", args.UnitCost)
-                .ExecuteUpdate();
+            using (var cmd = NewCommand("sselData.dbo.MiscBillingCharge_Update"))
+            {
+                cmd.Parameters.AddWithValue("ExpID", args.ExpID, SqlDbType.Int);
+                cmd.Parameters.AddWithValue("Description", args.Description, SqlDbType.NVarChar, 100);
+                cmd.Parameters.AddWithValue("Period", args.Period, SqlDbType.DateTime);
+                cmd.Parameters.AddWithValue("Quantity", args.Quantity, SqlDbType.Float);
+                cmd.Parameters.AddWithValue("UnitCost", args.UnitCost, SqlDbType.Decimal);
+
+                cmd.Connection.Open();
+                var result = cmd.ExecuteNonQuery();
+                cmd.Connection.Close();
+
+                return result;
+            }
         }
 
         public int DeleteMiscBillingCharge(int expId)
         {
-            return Session.CreateSQLQuery("EXEC sselData.dbo.MiscBillingCharge_Delete @ExpID = :ExpID")
-                .SetParameter("ExpID", expId)
-                .ExecuteUpdate();
+            using (var cmd = NewCommand("sselData.dbo.MiscBillingCharge_Delete"))
+            {
+                cmd.Parameters.AddWithValue("ExpID", expId, SqlDbType.Int);
+
+                cmd.Connection.Open();
+                var result = cmd.ExecuteNonQuery();
+                cmd.Connection.Close();
+
+                return result;
+            }
         }
 
         public IMiscBillingCharge GetMiscBillingCharge(int expId)
         {
-            return Session.CreateSQLQuery("EXEC sselData.dbo.MiscBillingCharge_Select @Action = 'ByExpID', @ExpID = :ExpID")
-                .SetParameter("ExpID", expId)
-                .List<MiscBillingCharge>()
-                .FirstOrDefault()
-                .CreateModel<IMiscBillingCharge>();
+            using (var cmd = NewCommand("sselData.dbo.MiscBillingCharge_Select"))
+            using (var adap = new SqlDataAdapter(cmd))
+            {
+                cmd.Parameters.AddWithValue("Action", "ByExpID", SqlDbType.NVarChar, 50);
+                cmd.Parameters.AddWithValue("ExpID", expId, SqlDbType.Int);
+
+                var dt = new DataTable();
+                adap.Fill(dt);
+
+                if (dt.Rows.Count == 0)
+                    return null;
+
+                var dr = dt.Rows[0];
+
+                var result = new MiscBillingCharge
+                {
+                    ExpID = dr.Field<int>("ExpID"),
+                    ClientID = dr.Field<int>("ClientID"),
+                    AccountID = dr.Field<int>("AccountID"),
+                    SUBType = dr.Field<string>("SUBType"),
+                    Period = dr.Field<DateTime>("Period"),
+                    ActDate = dr.Field<DateTime>("ActDate"),
+                    Description = dr.Field<string>("Description"),
+                    Quantity = dr.Field<double>("Quantity"),
+                    UnitCost = dr.Field<decimal>("UnitCost"),
+                    SubsidyDiscount = dr.Field<decimal>("SubsidyDiscount"),
+                    Active = dr.Field<bool>("Active")
+                };
+
+                return result;
+            }
         }
 
-        public IEnumerable<IMiscBillingCharge> GetMiscBillingCharges(DateTime period, int clientId = 0, int accountId = 0, string[] types = null, bool? active = null)
+        public IEnumerable<IMiscBillingChargeItem> GetMiscBillingCharges(DateTime period, string[] types, int clientId = 0, int accountId = 0, bool? active = null)
         {
-            var query = Session.CreateSQLQuery("EXEC sselData.dbo.MiscBillingCharge_Select @Action = 'Search', @Period = :Period, @ClientID = :ClientID, @AccountID = :AccountID, @Active = :Active")
-                .SetParameter("Period", period)
-                .SetParameter("Active", active);
+            //EXEC sselData.dbo.MiscBillingCharge_Select @Action = 'Search', @Period = :Period, @ClientID = :ClientID, @AccountID = :AccountID, @Active = :Active
+            using (var cmd = NewCommand("sselData.dbo.MiscBillingCharge_Select"))
+            using (var adap = new SqlDataAdapter(cmd))
+            {
+                cmd.Parameters.AddWithValue("Action", "Search", SqlDbType.NVarChar, 50);
+                cmd.Parameters.AddWithValue("Period", period, SqlDbType.DateTime);
 
-            if (clientId > 0)
-                query.SetParameter("ClientID", clientId);
-            else
-                query.SetParameter("ClientID", null);
+                if (clientId > 0)
+                    cmd.Parameters.AddWithValue("ClientID", clientId, SqlDbType.Int);
 
-            if (accountId > 0)
-                query.SetParameter("AccountID", accountId);
-            else
-                query.SetParameter("AccountID", null);
+                if (accountId > 0)
+                    cmd.Parameters.AddWithValue("AccountID", accountId, SqlDbType.Int);
 
-            var list = query.List<MiscBillingCharge>();
+                cmd.Parameters.AddWithValue("Active", active, SqlDbType.Bit);
 
-            var result = list.Where(x => types.Contains(x.SUBType)).CreateModels<IMiscBillingCharge>();
+                var dt = new DataTable();
+                adap.Fill(dt);
 
-            return result;
+                if (dt.Rows.Count == 0)
+                    return new List<IMiscBillingChargeItem>();
+
+                var result = new List<IMiscBillingChargeItem>();
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    var subType = dr.Field<string>("SUBType");
+
+                    if (types.Contains(subType))
+                    {
+                        result.Add(new MiscBillingChargeItem
+                        {
+                            ExpID = dr.Field<int>("ExpID"),
+                            ClientID = dr.Field<int>("ClientID"),
+                            LName = dr.Field<string>("LName"),
+                            FName = dr.Field<string>("FName"),
+                            AccountID = dr.Field<int>("AccountID"),
+                            AccountName = dr.Field<string>("AccountName"),
+                            ShortCode = dr.Field<string>("ShortCode"),
+                            SUBType = subType,
+                            Period = dr.Field<DateTime>("Period"),
+                            ActDate = dr.Field<DateTime>("ActDate"),
+                            Description = dr.Field<string>("Description"),
+                            Quantity = dr.Field<double>("Quantity"),
+                            UnitCost = dr.Field<decimal>("UnitCost"),
+                            SubsidyDiscount = dr.Field<decimal>("SubsidyDiscount"),
+                            Active = dr.Field<bool>("Active")
+                        });
+                    }
+                }
+
+                return result;
+            }
         }
     }
 }

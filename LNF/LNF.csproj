@@ -99,6 +99,7 @@
     <Compile Include="Billing\IExternalInvoiceManager.cs" />
     <Compile Include="Billing\IExternalInvoiceRepository.cs" />
     <Compile Include="Billing\IMiscBillingCharge.cs" />
+    <Compile Include="Billing\IMiscBillingChargeItem.cs" />
     <Compile Include="Billing\IMiscBillingRepository.cs" />
     <Compile Include="Billing\IMiscDataRepository.cs" />
     <Compile Include="Billing\IOrgRecharge.cs" />
@@ -543,12 +544,14 @@
     <Compile Include="Scheduler\IAuthorized.cs" />
     <Compile Include="Scheduler\IAutoEndLog.cs" />
     <Compile Include="Scheduler\IBuilding.cs" />
+    <Compile Include="Scheduler\IBuildingItem.cs" />
     <Compile Include="Scheduler\IClientSetting.cs" />
     <Compile Include="Scheduler\IClientSettingRepository.cs" />
     <Compile Include="Scheduler\IEmailRepository.cs" />
     <Compile Include="Scheduler\IKiosk.cs" />
     <Compile Include="Scheduler\IKioskRepository.cs" />
     <Compile Include="Scheduler\ILab.cs" />
+    <Compile Include="Scheduler\ILabItem.cs" />
     <Compile Include="Scheduler\ILabLocation.cs" />
     <Compile Include="Scheduler\ILabLocationRepository.cs" />
     <Compile Include="Scheduler\InsertReservationArgs.cs" />
@@ -558,6 +561,7 @@
     <Compile Include="Scheduler\IProcessInfoLine.cs" />
     <Compile Include="Scheduler\IProcessInfoRepository.cs" />
     <Compile Include="Scheduler\IProcessTech.cs" />
+    <Compile Include="Scheduler\IProcessTechItem.cs" />
     <Compile Include="Scheduler\IReservation.cs" />
     <Compile Include="Scheduler\IReservationGroup.cs" />
     <Compile Include="Scheduler\IReservationHistory.cs" />
@@ -571,6 +575,7 @@
     <Compile Include="Scheduler\IResourceActivityAuth.cs" />
     <Compile Include="Scheduler\IResourceClient.cs" />
     <Compile Include="Scheduler\IResourceCost.cs" />
+    <Compile Include="Scheduler\IResourceItem.cs" />
     <Compile Include="Scheduler\IResourceLabLocation.cs" />
     <Compile Include="Scheduler\IResourceRepository.cs" />
     <Compile Include="Scheduler\IResourceStatus.cs" />

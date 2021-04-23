@@ -7,6 +7,11 @@ using System.Linq;
 
 namespace LNF.Impl.Billing
 {
+    public class WriteRoomDataCleanConfig : RangeProcessConfig
+    {
+        public int RoomID { get; set; }
+    }
+
     // [2018-09-13 jg]
     // I'm going back to using stored procedures for everything. NHibernate doesn't work very well when dealing
     // with large data sets. There were too many situations where individual records where selected inside a
@@ -25,10 +30,11 @@ namespace LNF.Impl.Billing
 
         public DateTime StartDate { get; }
         public DateTime EndDate { get; }
-        public int ClientID { get; }
         public int RoomID { get; set; }
 
         private DataSet _ds;
+
+        public override string ProcessName => "RoomDataClean";
 
         protected override WriteRoomDataCleanResult CreateResult()
         {
@@ -41,12 +47,11 @@ namespace LNF.Impl.Billing
             };
         }
 
-        public WriteRoomDataCleanProcess(SqlConnection conn, DateTime sd, DateTime ed, int clientId = 0, int roomId = 0) : base(conn)
+        public WriteRoomDataCleanProcess(WriteRoomDataCleanConfig cfg) : base(cfg)
         {
-            StartDate = sd;
-            EndDate = ed;
-            ClientID = clientId;
-            RoomID = roomId;
+            StartDate = cfg.StartDate;
+            EndDate = cfg.EndDate;
+            RoomID = cfg.RoomID;
         }
 
         public override int DeleteExisting()
@@ -54,10 +59,11 @@ namespace LNF.Impl.Billing
             //Delete the data because there are many chances that might need to re-generate the Clean table again and again
             using (var cmd = new SqlCommand("dbo.RoomDataClean_Delete", Connection) { CommandType = CommandType.StoredProcedure })
             {
-                cmd.Parameters.AddWithValue("sDate", StartDate);
-                cmd.Parameters.AddWithValue("eDate", EndDate);
-                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID);
-                AddParameterIf(cmd, "RoomID", RoomID > 0, RoomID);
+                AddParameter(cmd, "sDate", StartDate, SqlDbType.DateTime);
+                AddParameter(cmd, "eDate", EndDate, SqlDbType.DateTime);
+                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID, SqlDbType.Int);
+                AddParameterIf(cmd, "RoomID", RoomID > 0, RoomID, SqlDbType.Int);
+                AddParameter(cmd, "Context", Context, SqlDbType.NVarChar, 50);
                 int result = cmd.ExecuteNonQuery();
                 return result;
             }

@@ -1,6 +1,7 @@
 ﻿using LNF.DataAccess;
 using LNF.Impl.DataAccess;
 using LNF.Repository;
+using System;
 using System.Data;
 
 namespace LNF.Impl.Repository
@@ -11,7 +12,7 @@ namespace LNF.Impl.Repository
 
         public NHibernateDataCommand(NHibernate.ISession session, CommandType type) : base(type)
         {
-            _session = session;
+            _session = session ?? throw new ArgumentNullException("session");
         }
 
         protected override IUnitOfWorkAdapter GetAdapter()

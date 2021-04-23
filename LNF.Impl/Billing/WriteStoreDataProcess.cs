@@ -7,24 +7,29 @@ using System.Data.SqlClient;
 
 namespace LNF.Impl.Billing
 {
+    public class WriteStoreDataConfig : PeriodProcessConfig
+    {
+        public int ItemID { get; set; }
+    }
+
     /// <summary>
     /// This process will:
     ///     1) Delete records from StoreData in the date range.
     ///     2) Select records from StoreDataClean in the date range to insert.
     ///     3) Insert records from StoreDataClean records into StoreData.
     /// </summary>
-    public class WriteStoreDataProcess : ProcessBase<WriteStoreDataResult>
+    public class WriteStoreDataProcess : PeriodProcessBase<WriteStoreDataResult>
     {
-        public DateTime Period { get; set; }
-        public int ClientID { get; set; }
-        public int ItemID { get; set; }
+        private readonly WriteStoreDataConfig _config;
 
-        public WriteStoreDataProcess(SqlConnection conn, DateTime period, int clientId = 0, int itemId = 0) : base(conn)
+        public int ItemID => _config.ItemID;
+
+        public WriteStoreDataProcess(WriteStoreDataConfig cfg) : base(cfg)
         {
-            Period = period;
-            ClientID = clientId;
-            ItemID = itemId;
+            _config = cfg;
         }
+
+        public override string ProcessName => "StoreData";
 
         protected override WriteStoreDataResult CreateResult()
         {
@@ -41,9 +46,10 @@ namespace LNF.Impl.Billing
             //get rid of any non-user entered entries
             using (var cmd = new SqlCommand("dbo.StoreData_Delete", Connection) { CommandType = CommandType.StoredProcedure })
             {
-                cmd.Parameters.AddWithValue("Period", Period);
-                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID);
-                AddParameterIf(cmd, "ItemID", ItemID > 0, ItemID);
+                AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
+                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID, SqlDbType.Int);
+                AddParameterIf(cmd, "ItemID", ItemID > 0, ItemID, SqlDbType.Int);
+                AddParameter(cmd, "Context", _config.Context, SqlDbType.NVarChar, 50);
                 var result = cmd.ExecuteNonQuery();
                 return result;
             }

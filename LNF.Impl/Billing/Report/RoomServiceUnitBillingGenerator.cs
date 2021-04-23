@@ -1,15 +1,16 @@
 ﻿using LNF.Billing.Reports.ServiceUnitBilling;
+using NHibernate;
 using System.Data;
 
 namespace LNF.Impl.Billing.Report
 {
     public class RoomServiceUnitBillingGenerator : ServiceUnitBillingGenerator<RoomSUB>
     {
-        private RoomServiceUnitBillingGenerator(RoomSUB report) : base(report) { }
+        private RoomServiceUnitBillingGenerator(ISession session, RoomSUB report) : base(session, report) { }
 
-        public static RoomServiceUnitBillingGenerator Create(RoomSUB report)
+        public static RoomServiceUnitBillingGenerator Create(ISession session, RoomSUB report)
         {
-            return new RoomServiceUnitBillingGenerator(report);
+            return new RoomServiceUnitBillingGenerator(session, report);
         }
 
         protected override void GenerateDataTables()

@@ -7,7 +7,7 @@ namespace LNF.Billing
     {
         IMiscBillingCharge GetMiscBillingCharge(int expId);
 
-        IEnumerable<IMiscBillingCharge> GetMiscBillingCharges(DateTime period, int clientId = 0, int accountId = 0, string[] types = null, bool? active = null);
+        IEnumerable<IMiscBillingChargeItem> GetMiscBillingCharges(DateTime period, string[] types, int clientId = 0, int accountId = 0, bool? active = null);
 
         /// <summary>
         /// Adds a new MiscBillingCharge item to the database. Be sure to recalculate subsidy after doing this.

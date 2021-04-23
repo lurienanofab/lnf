@@ -27,12 +27,9 @@ namespace LNF.Impl.Billing
 
                 var result = new List<IRoomBilling>();
 
-                var step1 = new BillingDataProcessStep1(conn)
-                {
-                    Period = period,
-                    ClientID = clientId,
-                    IsTemp = temp
-                };
+                DateTime now = DateTime.Now;
+
+                var step1 = new BillingDataProcessStep1(new Step1Config { Connection = conn, Context = "RoomBillingRepository.CreateRoomBilling", Period = period, Now = now, ClientID = clientId, IsTemp = temp });
 
                 ds = step1.GetRoomData();
                 dt = step1.LoadRoomBilling(ds);
@@ -54,7 +51,7 @@ namespace LNF.Impl.Billing
             // Does the processing without saving anything to the database.
             using (var conn = NewConnection())
             {
-                var proc = new WriteRoomDataProcess(conn, period, clientId, roomId);
+                var proc = new WriteRoomDataProcess(new WriteRoomDataConfig { Connection = conn, Context = "RoomBillingRepository.CreateRoomData", Period = period, ClientID = clientId, RoomID = roomId });
                 var dtExtract = proc.Extract();
                 var dtTransform = proc.Transform(dtExtract);
 

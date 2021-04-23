@@ -5,12 +5,8 @@ namespace LNF.Impl.Billing.Report
 {
     public class RoomJournalUnitGenerator : JournalUnitGenerator<RoomJU>
     {
-        private readonly NHibernate.ISession _session;
 
-        private RoomJournalUnitGenerator(NHibernate.ISession session, RoomJU report) : base(report)
-        {
-            _session = session;
-        }
+        private RoomJournalUnitGenerator(NHibernate.ISession session, RoomJU report) : base(session, report) { }
 
         public static RoomJournalUnitGenerator Create(NHibernate.ISession session, RoomJU report)
         {
@@ -26,7 +22,7 @@ namespace LNF.Impl.Billing.Report
             else
                 queryParameters = new { Action = "ForSUBReport", Report.StartPeriod, Report.EndPeriod, Report.ClientID };
 
-            var ds = DataAccess.RoomBillingSelect(_session, queryParameters);
+            var ds = DataAccess.RoomBillingSelect(Session, queryParameters);
 
             DataTable dtBillingData = ds.Tables[0];
             ClientAccountData = ds.Tables[1];

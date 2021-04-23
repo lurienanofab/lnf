@@ -3,6 +3,7 @@ using LNF.Billing.Reports.ServiceUnitBilling;
 using LNF.CommonTools;
 using LNF.Data;
 using NHibernate;
+using System;
 using System.Collections.Generic;
 using System.Data;
 
@@ -32,7 +33,7 @@ namespace LNF.Impl.Billing.Report
             get
             {
                 if (dtManagers == null)
-                { 
+                {
                     dtManagers = DataAccess.ClientAccountSelect(Session, new { Action = "AllWithManagerName", sDate = Report.StartPeriod, eDate = Report.EndPeriod });
                 }
 
@@ -43,8 +44,9 @@ namespace LNF.Impl.Billing.Report
         public string CreditAccount { get { return _CreditAccount; } }
         public string CreditAccountShortCode { get { return _CreditAccountShortCode; } }
 
-        public ReportGenerator(T report)
+        public ReportGenerator(ISession session, T report)
         {
+            Session = session;
             Report = report;
 
             GlobalCost = ServiceProvider.Current.Data.Cost.GetActiveGlobalCost();
@@ -84,9 +86,22 @@ namespace LNF.Impl.Billing.Report
             }
         }
 
+        protected void ValidPeriodCheck(DataRow dr)
+        {
+            var period = dr.Field<DateTime>("Period");
+            var clientId = dr.Field<int>("ClientID");
+
+            // sanity check
+            if (period.Day != 1 || period.Hour != 0 || period.Minute != 0 || period.Second != 0)
+            {
+                SendEmail.SendDeveloperEmail("LNF.Impl.Billing.Report.ReportGenerator<T>.ValidPeriodCheck", $"Invalid period detected in {Report.ReportName} [run at {DateTime.Now:yyyy-MM-dd HH:mm:ss}]", $"Invalid period used - not midnight or 1st of month. Period = '{period:yyyy-MM-dd HH:mm:ss}', ClientID = {clientId}");
+                throw new Exception($"Period is not midnight on the 1st of the month. Report: {Report.ReportName}, Period: {period:yyyy-MM-dd HH:mm:ss}, ClientID: {clientId}");
+            }
+        }
+
         protected string DataRowFilter(DataRow dr)
         {
-            return string.Format("Period = '{0}' AND ClientID = {1} AND AccountID = {2}", dr["Period"], dr["ClientID"], dr["AccountID"]);
+            return string.Format("Period = #{0}# AND ClientID = {1} AND AccountID = {2}", dr["Period"], dr["ClientID"], dr["AccountID"]);
         }
 
         protected void ApplyFilter()

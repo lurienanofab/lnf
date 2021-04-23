@@ -906,14 +906,73 @@ namespace LNF.Impl.Scheduler
                     ClientOrgID = dr.Field<int>("ClientOrgID"),
                     Email = dr.Field<string>("Email"),
                     Phone = dr.Field<string>("Phone"),
-                    IsFinManager = dr.Field<bool>("IsFinManager"),
-                    IsManager = dr.Field<bool>("IsManager"),
+                    IsFinManager = GetBoolValue(dr, "IsFinManager"),
+                    IsManager = GetBoolValue(dr, "IsManager"),
                     NewFacultyStartDate = dr.Field<DateTime?>("NewFacultyStartDate"),
                     SubsidyStartDate = dr.Field<DateTime?>("SubsidyStartDate")
                 });
             }
 
             return result;
+        }
+
+        private bool GetBoolValue(DataRow dr, string col)
+        {
+            if (!dr.Table.Columns.Contains(col))
+                return false;
+
+            if (dr[col] == DBNull.Value)
+                return false;
+
+            if (dr.Table.Columns[col].DataType == typeof(bool))
+            {
+                bool val = Convert.ToBoolean(dr[col]);
+                return val;
+            }
+
+            if (dr.Table.Columns[col].DataType == typeof(short))
+            {
+                short val = Convert.ToInt16(dr[col]);
+                return val != 0;
+            }
+
+            if (dr.Table.Columns[col].DataType == typeof(int))
+            {
+                int val = Convert.ToInt32(dr[col]);
+                return val != 0;
+            }
+
+            if (dr.Table.Columns[col].DataType == typeof(long))
+            {
+                long val = Convert.ToInt64(dr[col]);
+                return val != 0;
+            }
+
+            if (dr.Table.Columns[col].DataType == typeof(double))
+            {
+                double val = Convert.ToDouble(dr[col]);
+                return val != 0;
+            }
+
+            if (dr.Table.Columns[col].DataType == typeof(decimal))
+            {
+                decimal val = Convert.ToDecimal(dr[col]);
+                return val != 0;
+            }
+
+            if (dr.Table.Columns[col].DataType == typeof(byte))
+            {
+                byte val = Convert.ToByte(dr[col]);
+                return val != 0;
+            }
+
+            if (dr.Table.Columns[col].DataType == typeof(string))
+            {
+                string val = dr[col].ToString().ToLower();
+                return val == "true";
+            }
+
+            return false;
         }
 
         public IEnumerable<IReservation> SelectPastUnstarted()
@@ -2062,7 +2121,7 @@ namespace LNF.Impl.Scheduler
                 Action = action
             };
 
-            Session.Update(entry);
+            Session.Save(entry);
 
             return CreateAutoEndLogModel(entry);
         }

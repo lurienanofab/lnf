@@ -8,18 +8,30 @@ using System.Linq;
 
 namespace LNF.Impl.Billing
 {
+    public class Step4Config
+    {
+        public SqlConnection Connection { get; set; }
+        public string Context { get; set; }
+        public DateTime Period { get; set; }
+        public int ClientID { get; set; }
+    }
+
     //2010-03-23 Subsidy billing data process - run after the 3rd day of business every month
     public class BillingDataProcessStep4Subsidy : ReaderBase
     {
         private DataTable _special = null;
         private DataTable _newfac = null;
 
-        public DateTime Period { get; private set; }
-        public int ClientID { get; private set; }
+        private Step4Config _config;
 
-        public BillingDataProcessStep4Subsidy(SqlConnection conn) : base(conn)
+        public DateTime Period => _config.Period;
+        public int ClientID => _config.ClientID;
+
+        public BillingDataProcessStep4Subsidy(Step4Config cfg) : base(cfg.Connection)
         {
-            using (var cmd = new SqlCommand("SELECT * FROM Billing.dbo.SpecialSubsidy", conn) { CommandType = CommandType.Text })
+            _config = cfg;
+
+            using (var cmd = new SqlCommand("SELECT * FROM Billing.dbo.SpecialSubsidy", _config.Connection) { CommandType = CommandType.Text })
             using (var adap = new SqlDataAdapter(cmd))
             {
                 _special = new DataTable();
@@ -63,11 +75,8 @@ namespace LNF.Impl.Billing
             }
         }
 
-        public PopulateSubsidyBillingResult PopulateSubsidyBilling(Step4Command cmd)
+        public PopulateSubsidyBillingResult PopulateSubsidyBilling()
         {
-            Period = cmd.Period;
-            ClientID = cmd.ClientID;
-
             var result = new PopulateSubsidyBillingResult
             {
                 Period = Period,
@@ -727,9 +736,10 @@ namespace LNF.Impl.Billing
         {
             using (var cmd = new SqlCommand("dbo.TieredSubsidyBillingDetail_Delete", Connection) { CommandType = CommandType.StoredProcedure })
             {
-                cmd.Parameters.AddWithValue("Action", "DeleteCurrentRange");
-                cmd.Parameters.AddWithValue("Period", Period);
-                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID);
+                AddParameter(cmd, "Action", "DeleteCurrentRange", SqlDbType.NVarChar, 50);
+                AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
+                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID, SqlDbType.Int);
+                AddParameter(cmd, "Context", _config.Context, SqlDbType.NVarChar, 50);
                 cmd.ExecuteNonQuery();
             }
         }
@@ -833,9 +843,10 @@ namespace LNF.Impl.Billing
         {
             using (var cmd = new SqlCommand("dbo.TieredSubsidyBilling_Delete", Connection) { CommandType = CommandType.StoredProcedure })
             {
-                cmd.Parameters.AddWithValue("Action", "DeleteCurrentRange");
-                cmd.Parameters.AddWithValue("Period", Period);
-                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID);
+                AddParameter(cmd, "Action", "DeleteCurrentRange", SqlDbType.NVarChar, 50);
+                AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
+                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID, SqlDbType.Int);
+                AddParameter(cmd, "Context", _config.Context, SqlDbType.NVarChar, 50);
                 var result = cmd.ExecuteNonQuery();
                 return result;
             }

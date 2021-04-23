@@ -26,18 +26,33 @@ namespace LNF.Impl.Billing
         }
     }
 
+    public class Step1Config
+    {
+        public SqlConnection Connection { get; set; }
+        public string Context { get; set; }
+        public DateTime Period { get; set; }
+        public DateTime Now { get; set; }
+        public int ClientID { get; set; }
+        public bool IsTemp { get; set; }
+    }
+
     //This is the main class to process the billing information since 2009-07-01
     //This class will popuate the RoomBilling, ToolBilling, StoreBilling and all associated temporary tables
     public class BillingDataProcessStep1 : ReaderBase
     {
         protected IToolBillingRepository ToolBilling { get; }
 
-        public BillingDataProcessStep1(SqlConnection conn) : base(conn) { }
+        private Step1Config _config;
 
-        public DateTime Period { get; set; }
-        public DateTime Now { get; set; }
-        public int ClientID { get; set; }
-        public bool IsTemp { get; set; }
+        public BillingDataProcessStep1(Step1Config cfg) : base(cfg.Connection)
+        {
+            _config = cfg;
+        }
+
+        public DateTime Period => _config.Period;
+        public DateTime Now => _config.Now;
+        public int ClientID => _config.ClientID;
+        public bool IsTemp => _config.IsTemp;
 
         #region Room Billing
         public const string FOR_PARENT_ROOMS = "ForParentRooms";
@@ -46,18 +61,10 @@ namespace LNF.Impl.Billing
         ///The main process that loads data into the RoomBilling table.
         ///Note: This table is called RoomApportionmentInDaysMonthly.
         ///</summary>
-        public PopulateRoomBillingResult PopulateRoomBilling(DateTime period, DateTime now, int clientId, bool temp)
+        public PopulateRoomBillingResult PopulateRoomBilling()
         {
-            Period = period;
-            Now = now;
-            ClientID = clientId;
-            IsTemp = temp;
-
             var result = new PopulateRoomBillingResult
             {
-                Period = period,
-                ClientID = clientId,
-                IsTemp = temp,
                 UseParentRooms = bool.Parse(Utility.GetRequiredGlobalSetting("UseParentRooms")),
 
                 //Before saving to DB, we have to delete the old data in the same period
@@ -570,9 +577,10 @@ namespace LNF.Impl.Billing
 
             using (var cmd = new SqlCommand(proc, Connection) { CommandType = CommandType.StoredProcedure })
             {
-                cmd.Parameters.AddWithValue("Action", "DeleteCurrentRange");
-                cmd.Parameters.AddWithValue("Period", Period);
-                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID);
+                AddParameter(cmd, "Action", "DeleteCurrentRange", SqlDbType.NVarChar, 50);
+                AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
+                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID, SqlDbType.Int);
+                AddParameter(cmd, "Context", _config.Context, SqlDbType.NVarChar, 50);
                 var result = cmd.ExecuteNonQuery();
                 return result;
             }
@@ -632,18 +640,13 @@ namespace LNF.Impl.Billing
         #endregion
 
         #region ToolBilling
-        public PopulateToolBillingResult PopulateToolBilling(DateTime period, DateTime now, int clientId, bool temp)
+        public PopulateToolBillingResult PopulateToolBilling()
         {
-            Period = period;
-            Now = now;
-            ClientID = clientId;
-            IsTemp = temp;
-
             var result = new PopulateToolBillingResult
             {
-                Period = period,
-                ClientID = clientId,
-                IsTemp = temp
+                Period = Period,
+                ClientID = ClientID,
+                IsTemp = IsTemp
             };
 
             IToolBilling[] source = GetToolData(0);
@@ -678,9 +681,10 @@ namespace LNF.Impl.Billing
 
             using (var cmd = new SqlCommand(proc, Connection) { CommandType = CommandType.StoredProcedure })
             {
-                cmd.Parameters.AddWithValue("Action", "DeleteCurrentRange");
-                cmd.Parameters.AddWithValue("Period", Period);
-                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID);
+                AddParameter(cmd, "Action", "DeleteCurrentRange", SqlDbType.NVarChar, 50);
+                AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
+                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID, SqlDbType.Int);
+                AddParameter(cmd, "Context", _config.Context, SqlDbType.NVarChar, 50);
                 var result = cmd.ExecuteNonQuery();
                 return result;
             }
@@ -699,17 +703,12 @@ namespace LNF.Impl.Billing
         #endregion
 
         #region StoreBilling
-        public PopulateStoreBillingResult PopulateStoreBilling(DateTime period, DateTime now, bool temp)
+        public PopulateStoreBillingResult PopulateStoreBilling()
         {
-            Period = period;
-            Now = now;
-            ClientID = 0;
-            IsTemp = temp;
-
             var result = new PopulateStoreBillingResult
             {
-                Period = period,
-                IsTemp = temp
+                Period = Period,
+                IsTemp = IsTemp
             };
 
             var dt = GetStoreData();
@@ -784,7 +783,8 @@ namespace LNF.Impl.Billing
 
             using (var cmd = new SqlCommand(proc, Connection) { CommandType = CommandType.StoredProcedure })
             {
-                cmd.Parameters.AddWithValue("Period", Period);
+                AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
+                AddParameter(cmd, "Context", _config.Context, SqlDbType.NVarChar, 50);
                 var result = cmd.ExecuteNonQuery();
                 return result;
             }

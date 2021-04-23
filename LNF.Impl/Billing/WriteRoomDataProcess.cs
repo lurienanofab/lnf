@@ -8,6 +8,11 @@ using System.Linq;
 
 namespace LNF.Impl.Billing
 {
+    public class WriteRoomDataConfig : PeriodProcessConfig
+    {
+        public int RoomID { get; set; }
+    }
+
     #region "Explanation of Data Source Types"
     //TODO: Add support for apportioning entries for non-hourly rooms
 
@@ -78,7 +83,7 @@ namespace LNF.Impl.Billing
     ///     4) Insert the processed RoomDataClean records into RoomData.
     ///     5) Adjust records in RoomData.
     /// </summary>
-    public class WriteRoomDataProcess : ProcessBase<WriteRoomDataResult>
+    public class WriteRoomDataProcess : PeriodProcessBase<WriteRoomDataResult>
     {
         public enum DataSourceType
         {
@@ -90,11 +95,13 @@ namespace LNF.Impl.Billing
             Undefined = 99
         }
 
-        public DateTime Period { get; }
-        public int ClientID { get; }
-        public int RoomID { get; }
+        private readonly WriteRoomDataConfig _config;
+
+        public int RoomID => _config.RoomID;
 
         private DataSet _ds;
+
+        public override string ProcessName => "RoomData";
 
         protected override WriteRoomDataResult CreateResult()
         {
@@ -106,23 +113,20 @@ namespace LNF.Impl.Billing
             };
         }
 
-        public WriteRoomDataProcess(SqlConnection conn) : base(conn) { }
-
-        public WriteRoomDataProcess(SqlConnection conn, DateTime period, int clientId = 0, int roomId = 0) : base(conn)
+        public WriteRoomDataProcess(WriteRoomDataConfig cfg) : base(cfg)
         {
-            Period = period;
-            ClientID = clientId;
-            RoomID = roomId;
+            _config = cfg;
         }
 
         public override int DeleteExisting()
         {
             using (var cmd = new SqlCommand("dbo.RoomData_Delete", Connection) { CommandType = CommandType.StoredProcedure })
             {
-                cmd.Parameters.AddWithValue("Action", "PreClean");
-                cmd.Parameters.AddWithValue("Period", Period);
-                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID);
-                AddParameterIf(cmd, "RoomID", RoomID > 0, RoomID);
+                AddParameter(cmd, "Action", "PreClean", SqlDbType.NVarChar, 50);
+                AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
+                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID, SqlDbType.Int);
+                AddParameterIf(cmd, "RoomID", RoomID > 0, RoomID, SqlDbType.Int);
+                AddParameter(cmd, "Context", _config.Context, SqlDbType.NVarChar, 50);
                 int result = cmd.ExecuteNonQuery();
                 return result;
             }
@@ -270,22 +274,23 @@ namespace LNF.Impl.Billing
             using (var delete = new SqlCommand("dbo.RoomData_Delete", Connection) { CommandType = CommandType.StoredProcedure })
             using (var adap = new SqlDataAdapter { InsertCommand = insert, DeleteCommand = delete })
             {
-                insert.Parameters.Add("Period", SqlDbType.DateTime, 0, "Period");
-                insert.Parameters.Add("ClientID", SqlDbType.Int, 0, "ClientID");
-                insert.Parameters.Add("RoomID", SqlDbType.Int, 0, "RoomID");
-                insert.Parameters.Add("ParentID", SqlDbType.Int, 0, "ParentID");
-                insert.Parameters.Add("PassbackRoom", SqlDbType.Bit, 0, "PassbackRoom");
-                insert.Parameters.Add("EvtDate", SqlDbType.DateTime, 0, "EvtDate");
-                insert.Parameters.Add("AccountID", SqlDbType.Int, 0, "AccountID");
-                insert.Parameters.Add("Entries", SqlDbType.Float, 0, "Entries");
-                insert.Parameters.Add("Hours", SqlDbType.Float, 0, "Hours");
-                insert.Parameters.Add("Days", SqlDbType.Float, 0, "Days");
-                insert.Parameters.Add("Months", SqlDbType.Float, 0, "Months");
-                insert.Parameters.Add("DataSource", SqlDbType.Int, 0, "DataSource");
-                insert.Parameters.Add("HasToolUsage", SqlDbType.Bit, 0, "HasToolUsage");
+                AddParameter(insert, "Period", SqlDbType.DateTime, 0, "Period");
+                AddParameter(insert, "ClientID", SqlDbType.Int, 0, "ClientID");
+                AddParameter(insert, "RoomID", SqlDbType.Int, 0, "RoomID");
+                AddParameter(insert, "ParentID", SqlDbType.Int, 0, "ParentID");
+                AddParameter(insert, "PassbackRoom", SqlDbType.Bit, 0, "PassbackRoom");
+                AddParameter(insert, "EvtDate", SqlDbType.DateTime, 0, "EvtDate");
+                AddParameter(insert, "AccountID", SqlDbType.Int, 0, "AccountID");
+                AddParameter(insert, "Entries", SqlDbType.Float, 0, "Entries");
+                AddParameter(insert, "Hours", SqlDbType.Float, 0, "Hours");
+                AddParameter(insert, "Days", SqlDbType.Float, 0, "Days");
+                AddParameter(insert, "Months", SqlDbType.Float, 0, "Months");
+                AddParameter(insert, "DataSource", SqlDbType.Int, 0, "DataSource");
+                AddParameter(insert, "HasToolUsage", SqlDbType.Bit, 0, "HasToolUsage");
 
-                delete.Parameters.AddWithValue("Action", "BadEntry");
-                delete.Parameters.Add("RoomDataID", SqlDbType.Int, 0, "RoomDataID");
+                AddParameter(delete, "Action", "BadEntry", SqlDbType.NVarChar, 50);
+                AddParameter(delete, "RoomDataID", SqlDbType.Int, 0, "RoomDataID");
+                AddParameter(delete, "Context", _config.Context, SqlDbType.NVarChar, 50);
 
                 _result.BadEntryRowsDeleted = dtTransform.AsEnumerable().Count(x => x.RowState == DataRowState.Deleted);
 

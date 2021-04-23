@@ -1,8 +1,7 @@
 ﻿namespace LNF.Scheduler
 {
-    public interface ILab : IBuilding
+    public interface ILab : ILabItem, IBuilding
     {
-        int LabID { get; set; }
         string LabName { get; set; }
         string LabDescription { get; set; }
         string LabDisplayName { get; set; }

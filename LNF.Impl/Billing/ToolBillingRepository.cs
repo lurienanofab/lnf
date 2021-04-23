@@ -25,8 +25,9 @@ namespace LNF.Impl.Billing
             using (var conn = NewConnection())
             {
                 conn.Open();
-                var temp = period == DateTime.Now.FirstOfMonth();
-                var step1 = new BillingDataProcessStep1(conn) { Period = period, ClientID = clientId, IsTemp = temp, Now = DateTime.Now };
+                var now = DateTime.Now;
+                var temp = period == now.FirstOfMonth();
+                var step1 = new BillingDataProcessStep1(new Step1Config { Connection = conn, Context = "ToolBillingRepository.CreateToolBilling", Period = period, Now = now, ClientID = clientId, IsTemp = temp });
                 var source = step1.GetToolData(0);
                 var result = CreateToolBillingItems(source);
                 conn.Close();
@@ -39,9 +40,10 @@ namespace LNF.Impl.Billing
             using (var conn = NewConnection())
             {
                 conn.Open();
+                var now = DateTime.Now;
                 var period = GetPeriod(conn, reservationId);
-                var temp = period == DateTime.Now.FirstOfMonth();
-                var step1 = new BillingDataProcessStep1(conn) { Period = period, ClientID = 0, IsTemp = temp, Now = DateTime.Now };
+                var temp = period == now.FirstOfMonth();
+                var step1 = new BillingDataProcessStep1(new Step1Config { Connection = conn, Context = "ToolBillingRepository.CreateToolBilling", Period = period, Now = now, ClientID = 0, IsTemp = temp });
                 var source = step1.GetToolData(reservationId);
                 var result = CreateToolBillingItems(source);
                 conn.Close();
@@ -55,7 +57,7 @@ namespace LNF.Impl.Billing
             {
                 conn.Open();
 
-                var proc = new WriteToolDataProcess(conn, period, clientId, resourceId);
+                var proc = new WriteToolDataProcess(new WriteToolDataConfig { Connection = conn, Context = "ToolBillingRepository.CreateToolData", Period = period, ClientID = clientId, ResourceID = resourceId });
                 var dtExtract = proc.Extract();
                 var dtTransform = proc.Transform(dtExtract);
 

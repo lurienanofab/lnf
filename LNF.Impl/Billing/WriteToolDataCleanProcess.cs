@@ -7,6 +7,8 @@ using System.Data.SqlClient;
 
 namespace LNF.Impl.Billing
 {
+    public class WriteToolDataCleanConfig : RangeProcessConfig { }
+
     /// <summary>
     /// This process will:
     ///     1) Select records from Scheduler in the date range to insert.
@@ -17,14 +19,14 @@ namespace LNF.Impl.Billing
     {
         public DateTime StartDate { get; }
         public DateTime EndDate { get; }
-        public int ClientID { get; }
 
-        public WriteToolDataCleanProcess(SqlConnection conn, DateTime sd, DateTime ed, int clientId = 0) : base(conn)
+        public WriteToolDataCleanProcess(WriteToolDataCleanConfig cfg) : base(cfg)
         {
-            StartDate = sd;
-            EndDate = ed;
-            ClientID = clientId;
+            StartDate = cfg.StartDate;
+            EndDate = cfg.EndDate;
         }
+
+        public override string ProcessName => "ToolDataClean";
 
         protected override WriteToolDataCleanResult CreateResult()
         {
@@ -40,9 +42,10 @@ namespace LNF.Impl.Billing
         {
             using (var cmd = new SqlCommand("dbo.ToolDataClean_Delete", Connection) { CommandType = CommandType.StoredProcedure })
             {
-                cmd.Parameters.AddWithValue("sDate", StartDate);
-                cmd.Parameters.AddWithValue("eDate", EndDate);
-                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID);
+                AddParameter(cmd, "sDate", StartDate, SqlDbType.DateTime);
+                AddParameter(cmd, "eDate", EndDate, SqlDbType.DateTime);
+                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID, SqlDbType.Int);
+                AddParameter(cmd, "Context", Context, SqlDbType.NVarChar, 50);
                 var result = cmd.ExecuteNonQuery();
                 return result;
             }

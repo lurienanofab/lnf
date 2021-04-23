@@ -17,7 +17,7 @@ namespace LNF.Reporting
         {
             var result = new AggregateByOrg();
 
-            var miscUsage = ServiceProvider.Current.Billing.Misc.GetMiscBillingCharges(period, clientId, active: true);
+            var miscUsage = ServiceProvider.Current.Billing.Misc.GetMiscBillingCharges(period, new[] { "Tool", "Room", "Store" }, clientId: clientId, active: true);
             var roomUsage = ServiceProvider.Current.Billing.Room.GetRoomBilling(period, clientId);
             var toolUsage = ServiceProvider.Current.Billing.Tool.GetToolBilling(period, clientId);
 
