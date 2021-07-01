@@ -26,7 +26,6 @@ namespace OnlineServices.Api.Scheduler
         public string ProcessTechGroupName { get; set; }
         public string ProcessTechDescription { get; set; }
         public bool ProcessTechIsActive { get; set; }
-        public string ProcessTechName { get; set; }
         public string LabName { get; set; }
         public string LabDescription { get; set; }
         public string LabDisplayName { get; set; }

@@ -16,6 +16,7 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual bool RequireValue { get; set; }
         public virtual bool RequireSelection { get; set; }
         public virtual int MaxAllowed { get; set; }
+        public virtual bool Deleted { get; set; }
 
         public override string ToString()
         {

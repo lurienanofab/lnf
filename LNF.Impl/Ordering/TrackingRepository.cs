@@ -15,7 +15,7 @@ namespace LNF.Impl.Ordering
 
         public IEnumerable<ITracking> GetTracking(int poid)
         {
-            return Session.Query<Repository.Ordering.Tracking>().Where(x => x.PurchaseOrder.POID == poid).CreateModels<ITracking>();
+            return Session.Query<Repository.Ordering.Tracking>().Where(x => x.PurchaseOrder.POID == poid).CreateModels();
         }
 
         public ITracking AddTracking(TrackingCheckpoints checkpoint, int poid, int clientId, string data)
@@ -31,17 +31,17 @@ namespace LNF.Impl.Ordering
 
             Session.Save(tracking);
 
-            return tracking.CreateModel<ITracking>();
+            return tracking.CreateModel();
         }
 
         public IEnumerable<ITrackingCheckpoint> GetCheckpoints()
         {
-            return Session.Query<TrackingCheckpoint>().CreateModels<ITrackingCheckpoint>();
+            return Session.Query<TrackingCheckpoint>().ToList();
         }
 
         public ITrackingCheckpoint GetCheckpoint(TrackingCheckpoints checkpoint)
         {
-            return RequireCheckpoint(checkpoint).CreateModel<ITrackingCheckpoint>();
+            return RequireCheckpoint(checkpoint);
         }
 
         private TrackingCheckpoint RequireCheckpoint(TrackingCheckpoints checkpoint)

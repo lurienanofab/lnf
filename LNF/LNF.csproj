@@ -446,6 +446,7 @@
     <Compile Include="Reporting\Individual\ManagerUsageSummaryAccount.cs" />
     <Compile Include="Reporting\Individual\ManagerUsageSummaryClient.cs" />
     <Compile Include="Reporting\Individual\ManagerUsageSummaryItem.cs" />
+    <Compile Include="Reporting\Individual\ResourceDetailItem.cs" />
     <Compile Include="Reporting\Individual\RoomByOrgItem.cs" />
     <Compile Include="Reporting\Individual\StoreByOrgItem.cs" />
     <Compile Include="Reporting\Individual\SubsidyByOrgItem.cs" />
@@ -559,6 +560,7 @@
     <Compile Include="Scheduler\IOnTheFlyResource.cs" />
     <Compile Include="Scheduler\IProcessInfo.cs" />
     <Compile Include="Scheduler\IProcessInfoLine.cs" />
+    <Compile Include="Scheduler\IProcessInfoLineParam.cs" />
     <Compile Include="Scheduler\IProcessInfoRepository.cs" />
     <Compile Include="Scheduler\IProcessTech.cs" />
     <Compile Include="Scheduler\IProcessTechItem.cs" />
@@ -586,7 +588,10 @@
     <Compile Include="Scheduler\KioskItem.cs" />
     <Compile Include="Scheduler\LabItem.cs" />
     <Compile Include="Scheduler\OnTheFlyResourceItem.cs" />
+    <Compile Include="Scheduler\ProcessInfoLineModel.cs" />
+    <Compile Include="Scheduler\ProcessInfoModel.cs" />
     <Compile Include="Scheduler\ProcessInfos.cs" />
+    <Compile Include="Scheduler\ProcessInfoSort.cs" />
     <Compile Include="Scheduler\RecentReservation.cs" />
     <Compile Include="Scheduler\ReservationProcessInfoItem.cs" />
     <Compile Include="Scheduler\ProcessTechGroupItem.cs" />

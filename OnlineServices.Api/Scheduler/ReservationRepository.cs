@@ -102,12 +102,12 @@ namespace OnlineServices.Api.Scheduler
             throw new NotImplementedException();
         }
 
-        public void CancelReservation(int reservationId, int? modifiedByClientId)
+        public void CancelReservation(int reservationId, string note, int? modifiedByClientId)
         {
             throw new NotImplementedException();
         }
 
-        public void CancelAndForgive(int reservationId, int? modifiedByClientId)
+        public void CancelAndForgive(int reservationId, string note, int? modifiedByClientId)
         {
             throw new NotImplementedException();
         }
@@ -127,7 +127,7 @@ namespace OnlineServices.Api.Scheduler
             throw new NotImplementedException();
         }
 
-        public void EndForRepair(int reservationId, int? endedByClientId, int? modifiedByClientId)
+        public void EndAndForgiveForRepair(int reservationId, string note, int? endedByClientId, int? modifiedByClientId)
         {
             throw new NotImplementedException();
         }
@@ -302,7 +302,7 @@ namespace OnlineServices.Api.Scheduler
             throw new NotImplementedException();
         }
 
-        public void UpdateCharges(int reservationId, double chargeMultiplier, bool applyLateChargePenalty, int? modifiedByClientId)
+        public void UpdateCharges(int reservationId, string note, double chargeMultiplier, bool applyLateChargePenalty, int? modifiedByClientId)
         {
             throw new NotImplementedException();
         }

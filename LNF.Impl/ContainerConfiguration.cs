@@ -60,6 +60,7 @@ namespace LNF.Impl
         public ContainerConfiguration(Container container)
         {
             _container = container ?? throw new ArgumentNullException("container");
+            if (_container.IsLocked) throw new ArgumentException("The container cannot already be locked.");
         }
 
         public virtual void EnablePropertyInjection()

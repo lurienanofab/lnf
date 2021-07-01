@@ -7,12 +7,27 @@ namespace OnlineServices.Api.Scheduler
 {
     public class ProcessInfoRepository : ApiClient, IProcessInfoRepository
     {
+        public IProcessInfoLineParam AddProcessInfoLineParam(int resourceId, string paramName, string paramUnit, int paramType)
+        {
+            throw new NotImplementedException();
+        }
+
         public IReservationProcessInfo AddReservationProcessInfo(int reservationId, int processInfoLineId, double value, bool special, int runNumber, double chargeMultiplier, bool active)
         {
             throw new NotImplementedException();
         }
 
         public IProcessInfo Create(DataRow dr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DeleteProcessInfo(int processInfoId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DeleteProcessInfoLine(int processInfoLineId)
         {
             throw new NotImplementedException();
         }
@@ -28,6 +43,11 @@ namespace OnlineServices.Api.Scheduler
         }
 
         public IEnumerable<IProcessInfoLine> GetProcessInfoLines(int resourceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IProcessInfoLineParam> GetProcessInfoParams(int resourceId)
         {
             throw new NotImplementedException();
         }

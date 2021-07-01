@@ -16,12 +16,22 @@ namespace OnlineServices.Api.Store
             throw new NotImplementedException();
         }
 
+        public IStoreOrder GetStoreOrder(int soid)
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<IStoreOrderDetail> GetStoreOrderDetails(int soid)
         {
             throw new NotImplementedException();
         }
 
         public IEnumerable<IStoreOrderDetail> GetStoreOrderDetails(DateTime sd, DateTime ed, int clientId = 0, string status = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IStoreOrder> GetStoreOrders(string status = null)
         {
             throw new NotImplementedException();
         }

@@ -14,12 +14,12 @@ namespace LNF.Scheduler
         IEnumerable<IReservationWithInvitees> GetReservationsWithInvitees(DateTime sd, DateTime ed, int clientId = 0, int resourceId = 0, int activityId = 0, bool? started = null, bool? active = null);
         IEnumerable<IClientAccount> AvailableAccounts(IReservationItem rsv);
         IReservation CreateReservation(int resourceId, int clientId, int accountId, int activityId, DateTime beginDateTime, DateTime endDateTime, double duration, string notes, bool autoEnd, bool hasProcessInfo, bool hasInvitees, int? recurrenceId, bool isActive, bool keepAlive, double maxReservedDuration, int? modifiedByClientId);
-        void CancelReservation(int reservationId, int? modifiedByClientId);
-        void CancelAndForgive(int reservationId, int? modifiedByClientId);
+        void CancelReservation(int reservationId, string note, int? modifiedByClientId);
+        void CancelAndForgive(int reservationId, string note, int? modifiedByClientId);
         int CancelByGroup(int groupId, int? modifiedByClientId);
         int CancelByRecurrence(int recurrenceId, int? modifiedByClientId);
         void EndReservation(EndReservationArgs args);
-        void EndForRepair(int reservationId, int? endedByClientId, int? modifiedByClientId);
+        void EndAndForgiveForRepair(int reservationId, string note, int? endedByClientId, int? modifiedByClientId);
         int EndPastUnstarted(int reservationId, DateTime endDate, int? endedByClientId);
         IEnumerable<ReservationHistoryFilterItem> FilterCancelledReservations(IEnumerable<IReservationItem> reservations, bool includeCanceledForModification);
         IEnumerable<IResourceClient> GetResourceClients(int resourceId);
@@ -55,7 +55,7 @@ namespace LNF.Scheduler
         IReservationItem UpdateReservation(UpdateReservationArgs args);
         void UpdateAccount(int reservationId, int accountId, int? modifiedByClientId);
         int UpdateByGroup(int groupId, DateTime sd, DateTime ed, string notes, int? modifiedByClientId);
-        void UpdateCharges(int reservationId, double chargeMultiplier, bool applyLateChargePenalty, int? modifiedByClientId);
+        void UpdateCharges(int reservationId, string note, double chargeMultiplier, bool applyLateChargePenalty, int? modifiedByClientId);
         IReservationItem UpdateFacilityDownTime(int reservationId, DateTime beginDateTime, DateTime endDateTime, int? modifiedByClientId);
         IReservation UpdateRepair(int reservationId, DateTime endDateTime, string notes, int? modifiedByClientId);
         void UpdateNotes(int reservationId, string notes);

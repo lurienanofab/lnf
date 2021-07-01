@@ -19,6 +19,7 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.RequireValue).Not.Nullable();
             Map(x => x.RequireSelection).Not.Nullable();
             Map(x => x.MaxAllowed).Not.Nullable();
+            Map(x => x.Deleted).Not.Nullable().Default("0");
         }
     }
 }

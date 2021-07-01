@@ -997,9 +997,69 @@ namespace LNF.Impl.Data
             return result;
         }
 
+        public IStaffDirectory GetStaffDirectory(int staffDirectoryId)
+        {
+            var sd = Session.Query<StaffDirectory>().FirstOrDefault(x => x.StaffDirectoryID == staffDirectoryId);
+            var staff = Session.Query<ClientInfo>().Where(x => x.ClientID == sd.Client.ClientID).ToList();
+            var result = sd.CreateModel(staff);
+            return result;
+        }
+
         public IStaffDirectory GetStaffDirectory(string userName)
         {
-            return Session.Query<StaffDirectory>().FirstOrDefault(x => x.Client.UserName == userName).CreateModel<IStaffDirectory>();
+            var staff = Session.Query<ClientInfo>().Where(x => x.UserName == userName).ToList();
+            return Session.Query<StaffDirectory>().FirstOrDefault(x => x.Client.UserName == userName).CreateModel(staff);
+        }
+
+        public IEnumerable<IStaffDirectory> GetStaffDirectories(bool? active = true, bool? deleted = false)
+        {
+            var query1 = Session.Query<StaffDirectory>()
+                .Where(x => x.Client.Active == active.GetValueOrDefault(x.Client.Active))
+                .ToArray();
+
+            IEnumerable<StaffDirectory> query2;
+
+            if (deleted.HasValue)
+                query2 = query1.Where(x => deleted.Value || !x.Deleted && x.Client.HasPriv(ClientPrivilege.Staff)).OrderBy(x => x.Client.DisplayName).ToList();
+            else
+                query2 = query1.ToList();
+
+            var clientIds = query2.Select(x => x.Client.ClientID).ToArray();
+            var staff = Session.Query<ClientInfo>().Where(x => clientIds.Contains(x.ClientID)).ToList();
+
+            var result = query2.CreateModels(staff);
+
+            return result;
+        }
+
+        public void SaveStaffDirectory(IStaffDirectory sd)
+        {
+            sd.LastUpdate = DateTime.Now;
+
+            StaffDirectory entity;
+
+            if (sd.StaffDirectoryID == 0)
+                entity = new StaffDirectory();
+            else
+                entity = Require<StaffDirectory>(sd.StaffDirectoryID);
+
+            entity.Client = Require<Client>(sd.ClientID);
+            entity.ContactPhone = sd.ContactPhone;
+            entity.Deleted = sd.Deleted;
+            entity.HoursXML = sd.HoursXML;
+            entity.LastUpdate = sd.LastUpdate;
+            entity.Office = sd.Office;
+            entity.LastUpdate = sd.LastUpdate;
+
+            if (sd.StaffDirectoryID == 0)
+            { 
+                Session.Save(entity);
+                sd.StaffDirectoryID = entity.StaffDirectoryID;
+            }
+            else
+            {
+                Session.Update(entity);
+            }
         }
 
         public IEnumerable<IClientManager> GetClientManagersByManager(int managerOrgId)

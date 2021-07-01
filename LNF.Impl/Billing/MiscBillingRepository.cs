@@ -102,6 +102,8 @@ namespace LNF.Impl.Billing
 
         public IEnumerable<IMiscBillingChargeItem> GetMiscBillingCharges(DateTime period, string[] types, int clientId = 0, int accountId = 0, bool? active = null)
         {
+            var ltypes = types.Select(x => x.ToLower()).ToArray();
+
             //EXEC sselData.dbo.MiscBillingCharge_Select @Action = 'Search', @Period = :Period, @ClientID = :ClientID, @AccountID = :AccountID, @Active = :Active
             using (var cmd = NewCommand("sselData.dbo.MiscBillingCharge_Select"))
             using (var adap = new SqlDataAdapter(cmd))
@@ -129,7 +131,7 @@ namespace LNF.Impl.Billing
                 {
                     var subType = dr.Field<string>("SUBType");
 
-                    if (types.Contains(subType))
+                    if (ltypes.Contains(subType.ToLower()))
                     {
                         result.Add(new MiscBillingChargeItem
                         {

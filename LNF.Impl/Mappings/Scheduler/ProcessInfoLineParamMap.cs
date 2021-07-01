@@ -9,8 +9,9 @@ namespace LNF.Impl.Mappings.Scheduler
         {
             Schema("sselScheduler.dbo");
             Id(x => x.ProcessInfoLineParamID);
-            References(x => x.Resource).Not.Nullable();
-            Map(x => x.ParameterName).Not.Nullable(); 
+            Map(x => x.ResourceID).Not.Nullable();
+            Map(x => x.ParameterName).Not.Nullable();
+            Map(x => x.ParameterUnit).Nullable();
             Map(x => x.ParameterType).Not.Nullable();
         }
     }

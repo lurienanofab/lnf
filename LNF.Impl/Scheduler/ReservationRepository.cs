@@ -115,7 +115,7 @@ namespace LNF.Impl.Scheduler
             return result;
         }
 
-        public void CancelReservation(int reservationId, int? modifiedByClientId)
+        public void CancelReservation(int reservationId, string note, int? modifiedByClientId)
         {
             var r = Require<Reservation>(reservationId);
 
@@ -123,6 +123,7 @@ namespace LNF.Impl.Scheduler
             r.IsActive = false;
             r.LastModifiedOn = DateTime.Now;
             r.CancelledDateTime = DateTime.Now;
+            r.AppendNotes(note);
 
             Session.SaveOrUpdate(r);
 
@@ -130,7 +131,7 @@ namespace LNF.Impl.Scheduler
             InsertReservationHistory("ByReservationID", "procReservationDelete", r, modifiedByClientId);
         }
 
-        public void CancelAndForgive(int reservationId, int? modifiedByClientId)
+        public void CancelAndForgive(int reservationId, string note, int? modifiedByClientId)
         {
             // This is all that happens in procReservationDelete @Action = 'WithForgive'
 
@@ -145,6 +146,7 @@ namespace LNF.Impl.Scheduler
             r.LastModifiedOn = DateTime.Now;
             r.CancelledDateTime = DateTime.Now;
             r.ChargeMultiplier = 0;
+            r.AppendNotes(note);
 
             //-- Delete Reservation ProcessInfos
             //DELETE FROM dbo.ReservationProcessInfo
@@ -238,7 +240,7 @@ namespace LNF.Impl.Scheduler
             InsertReservationHistory("End", "procReservationUpdate", rsv, args.EndedByClientID);
         }
 
-        public void EndForRepair(int reservationId, int? endedByClientId, int? modifiedByClientId)
+        public void EndAndForgiveForRepair(int reservationId, string note, int? endedByClientId, int? modifiedByClientId)
         {
             // This is all that happens in procReservationUpdate @Action = 'EndForRepair'
 
@@ -255,7 +257,7 @@ namespace LNF.Impl.Scheduler
             r.ChargeMultiplier = 0;
             r.ApplyLateChargePenalty = false;
             r.ClientIDEnd = endedByClientId.GetValueOrDefault(-1);
-            r.Notes = string.Format("{0} Ended and forgiven for repair.", r.Notes).Trim();
+            r.AppendNotes(note);
 
             Session.SaveOrUpdate(r);
 
@@ -1155,7 +1157,7 @@ namespace LNF.Impl.Scheduler
             return query.Count;
         }
 
-        public void UpdateCharges(int reservationId, double chargeMultiplier, bool applyLateChargePenalty, int? modifiedByClientId)
+        public void UpdateCharges(int reservationId, string note, double chargeMultiplier, bool applyLateChargePenalty, int? modifiedByClientId)
         {
             // procReservationUpdate @Action = 'UpdateCharges'
 
@@ -1168,6 +1170,7 @@ namespace LNF.Impl.Scheduler
 
             r.ChargeMultiplier = chargeMultiplier;
             r.ApplyLateChargePenalty = applyLateChargePenalty;
+            r.AppendNotes(note);
 
             Session.SaveOrUpdate(r);
 

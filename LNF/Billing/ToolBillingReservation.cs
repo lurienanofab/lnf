@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LNF.Data;
+using System;
 
 namespace LNF.Billing
 {
@@ -6,8 +7,16 @@ namespace LNF.Billing
     {
         public int ReservationID { get; set; }
         public int ResourceID { get; set; }
+        public string ResourceName { get; set; }
+        public int ProcessTechID { get; set; }
+        public string ProcessTechName { get; set; }
         public int ClientID { get; set; }
+        public string UserName { get; set; }
+        public string LName { get; set; }
+        public string FName { get; set; }
+        public string DisplayName => Clients.GetDisplayName(LName, FName);
         public int ActivityID { get; set; }
+        public string ActivityName { get; set; }
         public int AccountID { get; set; }
         public string AccountName { get; set; }
         public string ShortCode { get; set; }

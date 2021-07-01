@@ -18,7 +18,7 @@ namespace LNF.Tests
             using (var conn = NewConnection())
             {
                 conn.Open();
-                var proc = new WriteToolDataCleanProcess(conn, sd, ed, clientId);
+                var proc = new WriteToolDataCleanProcess(new WriteToolDataCleanConfig { Connection = conn, StartDate = sd, EndDate = ed, ClientID = clientId, Context = "LNF.Tests.WriteToolDataManagerTests.CanWriteToolDataClean" });
                 //var dtExtract = proc.Extract();
                 //var dtTransform = proc.Transform(dtExtract);
                 proc.Start();
@@ -35,7 +35,7 @@ namespace LNF.Tests
             using (var conn = NewConnection())
             {
                 conn.Open();
-                var proc = new WriteToolDataProcess(conn, period, clientId);
+                var proc = new WriteToolDataProcess(new WriteToolDataConfig { Connection = conn, Context = "LNF.Tests.WriteToolDataManagerTests.CanWriteToolData", Period = period, ClientID = clientId, ResourceID = 0 });
                 
                 //var dtExtract = proc.Extract();
                 //var dtTransform = proc.Transform(dtExtract);

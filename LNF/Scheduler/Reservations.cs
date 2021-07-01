@@ -155,7 +155,7 @@ namespace LNF.Scheduler
                 if (CreateForModification(rsv, data.Duration))
                 {
                     var args = GetInsertReservationArgs(data, rsv.ReservationID);
-                    Provider.Scheduler.Reservation.CancelReservation(rsv.ReservationID, args.ModifiedByClientID);
+                    Provider.Scheduler.Reservation.CancelReservation(rsv.ReservationID, string.Empty, args.ModifiedByClientID);
                     result = Provider.Scheduler.Reservation.InsertForModification(args);
                     Provider.Scheduler.Reservation.AppendNotes(rsv.ReservationID, $"Cancelled for modification. New ReservationID: {result.ReservationID}");
                     insert = true;
@@ -215,7 +215,7 @@ namespace LNF.Scheduler
 
         public void Delete(IReservationItem rsv, int? modifiedByClientId)
         {
-            Provider.Scheduler.Reservation.CancelReservation(rsv.ReservationID, modifiedByClientId);
+            Provider.Scheduler.Reservation.CancelReservation(rsv.ReservationID, string.Empty, modifiedByClientId);
 
             // Send email to reserver and invitees
             var invitees = ReservationInvitees.Create(Provider).SelectInvitees(rsv.ReservationID);
@@ -648,7 +648,7 @@ namespace LNF.Scheduler
                     // Only if the reservation has not begun
                     if (existing.ActualBeginDateTime == null)
                     {
-                        Provider.Scheduler.Reservation.CancelReservation(existing.ReservationID, modifiedByClientId);
+                        Provider.Scheduler.Reservation.CancelAndForgive(existing.ReservationID, "Cancelled and forgiven for facility down time.", modifiedByClientId);
                         Provider.Scheduler.Email.EmailOnCanceledByRepair(existing.ReservationID, true, "LNF Facility Down", "Facility is down, thus we have to disable the tool.", rsv.EndDateTime, modifiedByClientId);
                     }
                     else

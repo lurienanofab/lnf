@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LNF.Scheduler;
+using System;
 
 namespace LNF.Billing
 {
@@ -6,8 +7,16 @@ namespace LNF.Billing
     {
         int ReservationID { get; set; }
         int ResourceID { get; set; }
+        string ResourceName { get; set; }
+        int ProcessTechID { get; set; }
+        string ProcessTechName { get; set; }
         int ClientID { get; set; }
+        string UserName { get; set; }
+        string LName { get; set; }
+        string FName { get; set; }
+        string DisplayName { get; }
         int ActivityID { get; set; }
+        string ActivityName { get; set; }
         int AccountID { get; set; }
         string AccountName { get; set; }
         string ShortCode { get; set; }

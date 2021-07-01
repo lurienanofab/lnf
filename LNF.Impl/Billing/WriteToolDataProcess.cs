@@ -314,7 +314,7 @@ namespace LNF.Impl.Billing
             return dtOutput;
         }
 
-        private ReservationDurations GetReservationDurations(DataTable dtToolDataClean)
+        public ReservationDurations GetReservationDurations(DataTable dtToolDataClean)
         {
             var reservations = GetReservationDateRangeItems(dtToolDataClean);
             var range = new ReservationDateRange(reservations);
@@ -351,7 +351,7 @@ namespace LNF.Impl.Billing
             return dt;
         }
 
-        private void ProcessCleanData(DataTable dtToolDataClean)
+        public void ProcessCleanData(DataTable dtToolDataClean)
         {
             dtToolDataClean.Columns.Add("Uses", typeof(double));
             dtToolDataClean.Columns.Add("TransferredDuration", typeof(double));
@@ -587,7 +587,7 @@ namespace LNF.Impl.Billing
             }
         }
 
-        private void CalculateTransferTime(DataTable dtToolDataClean, ReservationDurations durations)
+        public void CalculateTransferTime(DataTable dtToolDataClean, ReservationDurations durations)
         {
             // [2016-05-17 jg] major refactoring to make things a lot more simple
 
@@ -723,33 +723,24 @@ namespace LNF.Impl.Billing
 
             var result = new List<ReservationDateRangeItem>();
 
-            DataTable dtAccounts;
-
-            using (var cmd = new SqlCommand("SELECT acct.AccountID, acct.Name AS AccountName, acct.ShortCode, org.OrgID, ot.ChargeTypeID FROM sselData.dbo.Account acct INNER JOIN sselData.dbo.Org org ON org.OrgID = acct.OrgID INNER JOIN sselData.dbo.OrgType ot ON ot.OrgTypeID = org.OrgTypeID", Connection) { CommandType = CommandType.Text })
-            using (var adap = new SqlDataAdapter(cmd))
-            {
-                dtAccounts = new DataTable();
-                adap.Fill(dtAccounts);
-                dtAccounts.PrimaryKey = new[] { dtAccounts.Columns["AccountID"] };
-            }
-
             foreach (DataRow dr in dtToolDataClean.Rows)
             {
-                var accountId = dr.Field<int>("AccountID");
-                var drAcct = dtAccounts.Rows.Find(accountId);
-
-                if (drAcct == null)
-                    throw new Exception($"No Account found for AccountID = {accountId}");
-
                 result.Add(ReservationDateRangeItem.Create(
                     dr.Field<int>("ReservationID"),
                     dr.Field<int>("ResourceID"),
+                    dr.Field<string>("ResourceName"),
+                    dr.Field<int>("ProcessTechID"),
+                    dr.Field<string>("ProcessTechName"),
                     dr.Field<int>("ClientID"),
+                    dr.Field<string>("UserName"),
+                    dr.Field<string>("LName"),
+                    dr.Field<string>("FName"),
                     dr.Field<int>("ActivityID"),
-                    accountId,
-                    drAcct.Field<string>("AccountName"),
-                    drAcct.Field<string>("ShortCode"),
-                    drAcct.Field<int>("ChargeTypeID"),
+                    dr.Field<string>("ActivityName"),
+                    dr.Field<int>("AccountID"),
+                    dr.Field<string>("AccountName"),
+                    dr.Field<string>("ShortCode"),
+                    dr.Field<int>("ChargeTypeID"),
                     dr.Field<bool>("IsActive"),
                     dr.Field<bool>("IsStarted"),
                     dr.Field<DateTime>("BeginDateTime"),
@@ -762,14 +753,6 @@ namespace LNF.Impl.Billing
                     costs));
             }
 
-            return result;
-        }
-
-        private IEnumerable<ReservationDateRangeItem> GetReservationDateRangeItems(DateRange range)
-        {
-            var costs = ServiceProvider.Current.Data.Cost.FindToolCosts(ResourceID, range.EndDate);
-            var reservations = ServiceProvider.Current.Billing.Tool.SelectReservations(range.StartDate, range.EndDate, ResourceID);
-            var result = ReservationDateRangeItem.GetReservationDateRangeItems(reservations, costs, range);
             return result;
         }
 

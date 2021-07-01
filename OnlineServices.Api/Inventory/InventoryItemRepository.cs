@@ -6,6 +6,11 @@ namespace OnlineServices.Api.Inventory
 {
     public class InventoryItemRepository : ApiClient, IInventoryItemRepository
     {
+        public IInventoryItem GetInventoryItem(int itemId)
+        {
+            throw new NotImplementedException();
+        }
+
         public IInventoryLocation GetInventoryLocation(int inventoryLocationId)
         {
             throw new NotImplementedException();

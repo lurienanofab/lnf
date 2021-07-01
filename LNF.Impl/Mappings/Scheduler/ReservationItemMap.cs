@@ -26,6 +26,7 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.AuthDuration);
             Map(x => x.AuthState);
             Map(x => x.ProcessTechID);
+            Map(x => x.ProcessTechName);
             Map(x => x.LabID);
             Map(x => x.BuildingID);
             Map(x => x.ActivityID);

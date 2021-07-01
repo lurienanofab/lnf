@@ -8,5 +8,6 @@
         double MinValue { get; set; }
         double MaxValue { get; set; }
         int ProcessInfoLineParamID { get; set; }
+        bool Deleted { get; set; }
     }
 }

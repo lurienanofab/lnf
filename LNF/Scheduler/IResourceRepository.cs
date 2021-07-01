@@ -6,15 +6,16 @@ namespace LNF.Scheduler
     public interface IResourceRepository
     {
         IResource GetResource(int resourceId);
-        IEnumerable<IResource> Select();
-        IEnumerable<IResource> SelectActive();
-        IEnumerable<IResource> SelectByLab(int? labId);
+        IEnumerable<IResource> GetResources();
+        IEnumerable<IResource> GetActiveResources();
+        IEnumerable<IResource> GetResourcesByLab(int? labId);
         string GetInterlockStatus(int resourceId);
         IEnumerable<IResourceActivityAuth> GetResourceActivityAuths(int resourceId);
         IResourceActivityAuth GetResourceActivityAuth(int resourceId, int activityId);
         IResourceActivityAuth AddResourceActivityAuth(int resourceId, int activityId, ClientAuthLevel userAuth, ClientAuthLevel inviteeAuth, ClientAuthLevel startEndAuth, ClientAuthLevel noReservFenceAuth, ClientAuthLevel noMaxSchedAuth);
         IEnumerable<IResourceClient> GetResourceClients(int resourceId = 0, int clientId = 0, ClientAuthLevel authLevel = 0);
         IEnumerable<IResourceClient> GetResourceClients(int[] resources);
+        IEnumerable<IProcessInfo> GetProcessInfo(int resourceId);
         IEnumerable<IProcessInfoLine> GetProcessInfoLines(int resourceId);
         IEnumerable<IResourceClient> GetActiveResourceClients(int resourceId = 0, int clientId = 0, ClientAuthLevel authLevel = 0);
         IEnumerable<IResourceClient> GetExpiringResourceClients(bool everyone = false);

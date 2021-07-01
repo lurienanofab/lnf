@@ -22,6 +22,7 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual bool AuthState { get; set; }
         public virtual int ResourceAutoEnd { get; set; }
         public virtual int ProcessTechID { get; set; }
+        public virtual string ProcessTechName { get; set; }
         public virtual int LabID { get; set; }
         public virtual int BuildingID { get; set; }
         public virtual int ActivityID { get; set; }

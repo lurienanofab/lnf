@@ -23,7 +23,7 @@ namespace LNF.Tests
             _container.Options.DefaultScopedLifestyle = new ThreadScopedLifestyle();
 
             var cfg = new ThreadStaticContainerConfiguration(_container);
-            cfg.Configure();
+            cfg.RegisterAllTypes();
 
             using (_container.GetInstance<IUnitOfWork>())
             {
@@ -73,7 +73,7 @@ namespace LNF.Tests
             container.Options.DefaultScopedLifestyle = new ThreadScopedLifestyle();
 
             var cfg = new ThreadStaticContainerConfiguration(container);
-            cfg.Configure();
+            cfg.RegisterAllTypes();
 
             using (container.GetInstance<IUnitOfWork>())
             {

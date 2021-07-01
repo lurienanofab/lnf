@@ -7,7 +7,7 @@ namespace LNF.Impl.Repository.Ordering
     /// <summary>
     /// A checkpoint used for tracking an IOF
     /// </summary>
-    public class TrackingCheckpoint : IDataItem
+    public class TrackingCheckpoint : ITrackingCheckpoint, IDataItem
     {
         /// <summary>
         /// The unique id of a TrackingCheckpoint

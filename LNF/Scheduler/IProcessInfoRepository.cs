@@ -18,5 +18,9 @@ namespace LNF.Scheduler
         void Update(IEnumerable<IReservationProcessInfo> insert, IEnumerable<IReservationProcessInfo> update, IEnumerable<IReservationProcessInfo> delete);
         IProcessInfo GetProcessInfo(int processInfoId);
         IProcessInfo Create(DataRow dr);
+        IEnumerable<IProcessInfoLineParam> GetProcessInfoParams(int resourceId);
+        IProcessInfoLineParam AddProcessInfoLineParam(int resourceId, string paramName, string paramUnit, int paramType);
+        void DeleteProcessInfo(int processInfoId);
+        void DeleteProcessInfoLine(int processInfoLineId);
     }
 }

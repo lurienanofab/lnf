@@ -16,19 +16,19 @@ namespace LNF.Billing
 
         public DateRange DateRange { get; }
 
-        //public ReservationDateRange(DateTime period) : this(0, period, period.AddMonths(1)) { }
+        public ReservationDateRange(DateTime period) : this(0, period, period.AddMonths(1)) { }
 
-        //public ReservationDateRange(DateTime sd, DateTime ed) : this(0, sd, ed) { }
+        public ReservationDateRange(DateTime sd, DateTime ed) : this(0, sd, ed) { }
 
-        //public ReservationDateRange(int resourceId, DateTime sd, DateTime ed) : this(resourceId, new DateRange(sd, ed)) { }
+        public ReservationDateRange(int resourceId, DateTime sd, DateTime ed) : this(resourceId, new DateRange(sd, ed)) { }
 
-        //public ReservationDateRange(DateRange range) : this(0, range) { }
+        public ReservationDateRange(DateRange range) : this(0, range) { }
 
-        //public ReservationDateRange(int resourceId, DateRange range) : this(GetReservations(resourceId, range), range) { }
+        public ReservationDateRange(int resourceId, DateRange range) : this(GetReservations(resourceId, range), range) { }
 
         public ReservationDateRange(IEnumerable<ReservationDateRangeItem> reservations) : this(reservations, DateRange.GetDateRange(reservations)) { }
 
-        //public ReservationDateRange(IEnumerable<ReservationDateRangeItem> reservations, DateTime period) : this(reservations, GetDateRange(period)) { }
+        public ReservationDateRange(IEnumerable<ReservationDateRangeItem> reservations, DateTime period) : this(reservations, DateRange.GetDateRange(period)) { }
 
         public ReservationDateRange(IEnumerable<ReservationDateRangeItem> reservations, DateRange range)
         {
@@ -168,9 +168,18 @@ namespace LNF.Billing
             {
                 ReservationID = rsv.ReservationID,
                 ResourceID = rsv.ResourceID,
+                ResourceName = rsv.ResourceName,
+                ProcessTechID = rsv.ProcessTechID,
+                ProcessTechName = rsv.ProcessTechName,
                 ClientID = rsv.ClientID,
+                UserName = rsv.UserName,
+                LName = rsv.LName,
+                FName = rsv.FName,
                 ActivityID = rsv.ActivityID,
+                ActivityName = rsv.ActivityName,
                 AccountID = rsv.AccountID,
+                AccountName = rsv.AccountName,
+                ShortCode = rsv.ShortCode,
                 ChargeTypeID = rsv.ChargeTypeID,
                 IsActive = rsv.IsActive,
                 IsStarted = rsv.IsStarted,
@@ -203,8 +212,16 @@ namespace LNF.Billing
         public int PriorityGroup { get; set; }
         public int ReservationID { get; set; }
         public int ResourceID { get; set; }
+        public string ResourceName { get; set; }
+        public int ProcessTechID { get; set; }
+        public string ProcessTechName { get; set; }
         public int ClientID { get; set; }
+        public string UserName { get; set; }
+        public string LName { get; set; }
+        public string FName { get; set; }
+        public string DisplayName => Clients.GetDisplayName(LName, FName);
         public int ActivityID { get; set; }
+        public string ActivityName { get; set; }
         public int AccountID { get; set; }
         public string AccountName { get; set; }
         public string ShortCode { get; set; }
@@ -233,8 +250,15 @@ namespace LNF.Billing
             var result = reservations.Select(r => Create(
                 r.ReservationID,
                 r.ResourceID,
+                r.ResourceName,
+                r.ProcessTechID,
+                r.ProcessTechName,
                 r.ClientID,
+                r.UserName,
+                r.LName,
+                r.FName,
                 r.ActivityID,
+                r.AccountName,
                 r.AccountID,
                 r.AccountName,
                 r.ShortCode,
@@ -261,8 +285,15 @@ namespace LNF.Billing
             var result = reservations.Select(r => Create(
                 r.ReservationID,
                 r.ResourceID,
+                r.ResourceName,
+                r.ProcessTechID,
+                r.ProcessTechName,
                 r.ClientID,
+                r.UserName,
+                r.LName,
+                r.FName,
                 r.ActivityID,
+                r.ActivityName,
                 r.AccountID,
                 r.AccountName,
                 r.ShortCode,
@@ -281,7 +312,7 @@ namespace LNF.Billing
             return result;
         }
 
-        public static ReservationDateRangeItem Create(int reservationId, int resourceId, int clientId, int activityId, int accountId, string accountName, string shortCode, int chargeTypeId, bool isActive, bool isStarted, DateTime beginDateTime, DateTime endDateTime, DateTime? actualBeginDateTime, DateTime? actualEndDateTime, DateTime lastModifiedOn, DateTime? cancelledDateTime, double chargeMultiplier, IEnumerable<ICost> costs)
+        public static ReservationDateRangeItem Create(int reservationId, int resourceId, string resourceName, int procTechId, string procTechName, int clientId, string username, string lname, string fname, int activityId, string activityName, int accountId, string accountName, string shortCode, int chargeTypeId, bool isActive, bool isStarted, DateTime beginDateTime, DateTime endDateTime, DateTime? actualBeginDateTime, DateTime? actualEndDateTime, DateTime lastModifiedOn, DateTime? cancelledDateTime, double chargeMultiplier, IEnumerable<ICost> costs)
         {
             // we need to truncate dates to remove milliseconds or else we end up with very small
             // transfer durations (the difference between charged and utilized durations)
@@ -302,10 +333,17 @@ namespace LNF.Billing
             {
                 ReservationID = reservationId,
                 ResourceID = resourceId,
+                ResourceName = resourceName,
+                ProcessTechID = procTechId,
+                ProcessTechName = procTechName,
                 ClientID = clientId,
+                UserName = username,
+                LName = lname,
+                FName = fname,
                 ActivityID = activityId,
+                ActivityName = activityName,
                 AccountID = accountId,
-                AccountName =accountName,
+                AccountName = accountName,
                 ShortCode = shortCode,
                 ChargeTypeID = chargeTypeId,
                 IsActive = isActive,

@@ -6,5 +6,6 @@
         public string KioskName { get; set; }
         public string KioskIP { get; set; }
         public int LabID { get; set; }
+        public override string ToString() => $"[{KioskID}]:{KioskName}/{KioskIP}";
     }
 }

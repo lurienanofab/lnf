@@ -11,5 +11,6 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual double MinValue { get; set; }
         public virtual double MaxValue { get; set; }
         public virtual int ProcessInfoLineParamID { get; set; }
+        public virtual bool Deleted { get; set; }
     }
 }

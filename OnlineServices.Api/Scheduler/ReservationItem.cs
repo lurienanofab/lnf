@@ -22,6 +22,7 @@ namespace OnlineServices.Api.Scheduler
         public int AuthDuration { get; set; }
         public bool AuthState { get; set; }
         public int ProcessTechID { get; set; }
+        public string ProcessTechName { get; set; }
         public int LabID { get; set; }
         public int BuildingID { get; set; }
         public int ActivityID { get; set; }

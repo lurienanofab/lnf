@@ -479,16 +479,23 @@ namespace LNF.Impl.Billing
                     .Param("ResourceID", resourceId > 0, resourceId)
                     .FillDataTable("Billing.dbo.ToolDataClean_Select");
 
-                var result = new List<ToolBillingReservation>();
+                var result = new List<IToolBillingReservation>();
 
                 foreach (DataRow dr in dt.Rows)
                 {
-                    var item = new ToolBillingReservation
+                    IToolBillingReservation item = new ToolBillingReservation
                     {
                         ReservationID = dr.Field<int>("ReservationID"),
                         ResourceID = dr.Field<int>("ResourceID"),
+                        ResourceName = dr.Field<string>("ResourceName"),
+                        ProcessTechID = dr.Field<int>("ProcessTechID"),
+                        ProcessTechName = dr.Field<string>("ProcessTechName"),
                         ClientID = dr.Field<int>("ClientID"),
+                        UserName = dr.Field<string>("UserName"),
+                        LName = dr.Field<string>("LName"),
+                        FName = dr.Field<string>("FName"),
                         ActivityID = dr.Field<int>("ActivityID"),
+                        ActivityName = dr.Field<string>("ActivityName"),
                         AccountID = dr.Field<int>("AccountID"),
                         AccountName = dr.Field<string>("AccountName"),
                         ShortCode = dr.Field<string>("ShortCode"),

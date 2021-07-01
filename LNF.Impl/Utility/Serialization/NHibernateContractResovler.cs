@@ -31,7 +31,11 @@ namespace LNF.Impl.Util.Serialization
 
             foreach (var memberInfo in members)
             {
-                var infos = memberInfo.DeclaringType.BaseType.GetMember(memberInfo.Name);
+                var infos = new MemberInfo[0];
+
+                if (memberInfo.DeclaringType.BaseType != null)
+                    infos = memberInfo.DeclaringType.BaseType.GetMember(memberInfo.Name);
+
                 actualMemberInfos.Add(infos.Length == 0 ? memberInfo : infos[0]);
             }
 

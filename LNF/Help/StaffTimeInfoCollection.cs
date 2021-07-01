@@ -4,168 +4,205 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace LNF.Help
 {
     public class StaffTimeInfoCollection : IEnumerable<KeyValuePair<DayOfWeek, StaffTimeInfo>>
     {
-        public StaffTimeInfoCollection()
-        {
-            Init();
-        }
+        private XDocument _xdoc;
+
+        public StaffTimeInfoCollection() : this(string.Empty) { }
 
         public StaffTimeInfoCollection(string xml)
         {
-            Init();
-            XmlDocument xdoc = new XmlDocument();
-            if (!string.IsNullOrEmpty(xml)) xdoc.LoadXml(xml);
-            Load(DayOfWeek.Monday, xdoc);
-            Load(DayOfWeek.Tuesday, xdoc);
-            Load(DayOfWeek.Wednesday, xdoc);
-            Load(DayOfWeek.Thursday, xdoc);
-            Load(DayOfWeek.Friday, xdoc);
-            Load(DayOfWeek.Saturday, xdoc);
-            Load(DayOfWeek.Sunday, xdoc);
+            Init(xml);
         }
-
-        private Dictionary<DayOfWeek, StaffTimeInfo> _Items;
 
         public StaffTimeInfo this[DayOfWeek index]
         {
-            get { return _Items[index]; }
-            set { _Items[index] = value; }
+            get
+            {
+                var result = new StaffTimeInfo(index);
+
+                string d = Enum.GetName(typeof(DayOfWeek), index).ToLower();
+                var node = _xdoc.Element("staff_time").Element(d);
+
+                if (node != null)
+                {
+                    result.Checked = node.Attribute("checked").Value == "1";
+                    var am = node.Element("am");
+                    result.AM.Start = new StaffTimeValue(am.Attribute("start").Value);
+                    result.AM.End = new StaffTimeValue(am.Attribute("end").Value);
+                    var pm = node.Element("pm");
+                    result.PM.Start = new StaffTimeValue(pm.Attribute("start").Value);
+                    result.PM.End = new StaffTimeValue(pm.Attribute("end").Value);
+                }
+                else
+                {
+                    result.Checked = false;
+                    result.AM.Start = new StaffTimeValue();
+                    result.AM.End = new StaffTimeValue();
+                    result.PM.Start = new StaffTimeValue();
+                    result.PM.End = new StaffTimeValue();
+                }
+
+                return result;
+            }
+            set
+            {
+                var node = GetItem(index);
+                node.Attribute("checked").Value = value.Checked ? "0" : "1";
+                node.Element("am").Attribute("start").Value = value.AM.Start.ToString();
+                node.Element("am").Attribute("end").Value = value.AM.End.ToString();
+                node.Element("pm").Attribute("start").Value = value.AM.Start.ToString();
+                node.Element("pm").Attribute("end").Value = value.AM.End.ToString();
+            }
         }
 
-        public int Count
+        /// <summary>
+        /// Gets the hours_text element value. A new element is created if it does not exist.
+        /// </summary>
+        public string[] GetHoursText()
         {
-            get { return _Items.Count; }
-        }
+            string[] result;
 
-        private void Init()
-        {
-            _Items = new Dictionary<DayOfWeek, StaffTimeInfo>();
-            AddItem(DayOfWeek.Sunday);
-            AddItem(DayOfWeek.Monday);
-            AddItem(DayOfWeek.Tuesday);
-            AddItem(DayOfWeek.Wednesday);
-            AddItem(DayOfWeek.Thursday);
-            AddItem(DayOfWeek.Friday);
-            AddItem(DayOfWeek.Saturday);
-        }
+            var node = _xdoc.Element("staff_time").Element("hours_text");
 
-        private void AddItem(DayOfWeek dow)
-        {
-            _Items.Add(dow, new StaffTimeInfo(dow));
-        }
-
-        public void Load(DayOfWeek dow, XmlDocument xdoc)
-        {
-            string d = Enum.GetName(typeof(DayOfWeek), dow).ToLower();
-            XmlNode node = xdoc.SelectSingleNode("/staff_time/" + d);
-            StaffTimeInfo info = _Items[dow];
             if (node != null)
             {
-                info.Checked = node.Attributes["checked"].Value == "1";
-                XmlNode am = node.SelectSingleNode("am");
-                info.AM.Start = new StaffTimeValue(am.Attributes["start"].Value);
-                info.AM.End = new StaffTimeValue(am.Attributes["end"].Value);
-                XmlNode pm = node.SelectSingleNode("pm");
-                info.PM.Start = new StaffTimeValue(pm.Attributes["start"].Value);
-                info.PM.End = new StaffTimeValue(pm.Attributes["end"].Value);
+                if (node.Elements("line").Any())
+                    result = node.Elements("line").Select(x => x.Value).ToArray();
+                else
+                    result = new[] { node.Value };
             }
             else
             {
-                info.Checked = false;
-                info.AM.Start = new StaffTimeValue();
-                info.AM.End = new StaffTimeValue();
-                info.PM.Start = new StaffTimeValue();
-                info.PM.End = new StaffTimeValue();
+                result = ConvertToHoursText();
             }
+
+            return result;
         }
 
-        public void Load(DayOfWeek dow, bool Checked, string StartAM, string EndAM, string StartPM, string EndPM)
+        /// <summary>
+        /// Sets the hours_text element value. A new element is created if it does not exist.
+        /// </summary>
+        public void SetHoursText(string[] lines)
         {
-            _Items[dow].Checked = Checked;
-            _Items[dow].AM.Start = new StaffTimeValue(StartAM);
-            _Items[dow].AM.End = new StaffTimeValue(EndAM);
-            _Items[dow].PM.Start = new StaffTimeValue(StartPM);
-            _Items[dow].PM.End = new StaffTimeValue(EndPM);
-        }
+            var node = _xdoc.Element("staff_time").Element("hours_text");
 
-        public XmlDocument ToXML()
-        {
-            XmlDocument xdoc = new XmlDocument();
-            xdoc.LoadXml("<staff_time></staff_time>");
-            AddNode(DayOfWeek.Monday, xdoc);
-            AddNode(DayOfWeek.Tuesday, xdoc);
-            AddNode(DayOfWeek.Wednesday, xdoc);
-            AddNode(DayOfWeek.Thursday, xdoc);
-            AddNode(DayOfWeek.Friday, xdoc);
-            AddNode(DayOfWeek.Saturday, xdoc);
-            AddNode(DayOfWeek.Sunday, xdoc);
-            return xdoc;
-        }
-
-        private XmlNode AddNode(DayOfWeek dow, XmlDocument xdoc)
-        {
-            XmlAttribute attr;
-
-            StaffTimeInfo info = _Items[dow];
-
-            XmlNode root = xdoc.SelectSingleNode("/staff_time");
-
-            bool is_checked = info.Checked;
-            if (is_checked)
+            if (node == null)
             {
-                if (string.IsNullOrEmpty(info.AM.Start.ToString()) && string.IsNullOrEmpty(info.AM.End.ToString()) && string.IsNullOrEmpty(info.PM.Start.ToString()) && string.IsNullOrEmpty(info.PM.End.ToString()))
+                node = new XElement("hours_text");
+                _xdoc.Element("staff_time").Add(node);
+            }
+
+            node.Value = string.Empty;
+            node.Elements("line").Remove();
+
+            bool skip = lines == null
+                || lines.Length == 0
+                || !lines.Any(x => !string.IsNullOrEmpty(x));
+          
+            if (!skip)
+            {
+                foreach (var line in lines)
                 {
-                    is_checked = false;
+                    node.Add(new XElement("line", line));
                 }
             }
 
-            XmlNode node = xdoc.CreateElement(Enum.GetName(typeof(DayOfWeek), dow).ToLower());
-            attr = xdoc.CreateAttribute("checked");
-            attr.Value = (is_checked) ? "1" : "0";
-            node.Attributes.Append(attr);
-            root.AppendChild(node);
+            // we are using a free text field now so clear these
+            Clear(DayOfWeek.Monday);
+            Clear(DayOfWeek.Tuesday);
+            Clear(DayOfWeek.Wednesday);
+            Clear(DayOfWeek.Thursday);
+            Clear(DayOfWeek.Friday);
+            Clear(DayOfWeek.Saturday);
+            Clear(DayOfWeek.Sunday);
+        }
 
-            XmlNode am = xdoc.CreateElement("am");
-            attr = xdoc.CreateAttribute("start");
-            attr.Value = info.AM.Start.ToString();
-            am.Attributes.Append(attr);
-            attr = xdoc.CreateAttribute("end");
-            attr.Value = info.AM.End.ToString();
-            am.Attributes.Append(attr);
-            node.AppendChild(am);
+        private void Init(string xml)
+        {
+            if (string.IsNullOrEmpty(xml))
+            {
+                _xdoc = XDocument.Parse("<staff_time></staff_time>");
+                GetItem(DayOfWeek.Sunday);
+                GetItem(DayOfWeek.Monday);
+                GetItem(DayOfWeek.Tuesday);
+                GetItem(DayOfWeek.Wednesday);
+                GetItem(DayOfWeek.Thursday);
+                GetItem(DayOfWeek.Friday);
+                GetItem(DayOfWeek.Saturday);
+                SetHoursText(new string[0]);
+            }
+            else
+            {
+                _xdoc = XDocument.Parse(xml);
+            }
+        }
 
-            XmlNode pm = xdoc.CreateElement("pm");
-            attr = xdoc.CreateAttribute("start");
-            attr.Value = info.PM.Start.ToString();
-            pm.Attributes.Append(attr);
-            attr = xdoc.CreateAttribute("end");
-            attr.Value = info.PM.End.ToString();
-            pm.Attributes.Append(attr);
-            node.AppendChild(pm);
+        /// <summary>
+        /// Returns the element for the given week day. A new element is created if it does not exist.
+        /// </summary>
+        private XElement GetItem(DayOfWeek dow)
+        {
+            string d = Enum.GetName(typeof(DayOfWeek), dow).ToLower();
+            var node = _xdoc.Element("staff_time").Element(d);
+
+            if (node == null)
+            {
+                node = new XElement(d,
+                        new XAttribute("checked", 0),
+                        new XElement("am", new XAttribute("start", string.Empty), new XAttribute("end", string.Empty)),
+                        new XElement("pm", new XAttribute("start", string.Empty), new XAttribute("end", string.Empty)));
+
+                _xdoc.Element("staff_time").Add(node);
+            }
 
             return node;
         }
 
+        public XDocument ToXML() => _xdoc;
+
+        public IList<StaffTimeInfo> ToList()
+        {
+            return new List<StaffTimeInfo>
+            {
+                this[DayOfWeek.Monday],
+                this[DayOfWeek.Tuesday],
+                this[DayOfWeek.Wednesday],
+                this[DayOfWeek.Thursday],
+                this[DayOfWeek.Friday],
+                this[DayOfWeek.Saturday],
+                this[DayOfWeek.Sunday]
+            };
+        }
+
+        public IDictionary<DayOfWeek, StaffTimeInfo> ToDictionary()
+        {
+            return ToList().ToDictionary(k => k.DayOfWeek, v => v);
+        }
+
         public IEnumerator<KeyValuePair<DayOfWeek, StaffTimeInfo>> GetEnumerator()
         {
-            return _Items.GetEnumerator();
+            return ToDictionary().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return (IEnumerator)GetEnumerator();
+            return GetEnumerator();
         }
 
-        public override string ToString()
+        private string[] ConvertToHoursText()
         {
-            string result = string.Empty;
+            string[] lines;
+
             Dictionary<string, List<StaffTimeInfo>> temp = new Dictionary<string, List<StaffTimeInfo>>();
-            var query = from StaffTimeInfo i in _Items.Values where i.Checked select i;
-            if (query.Count() > 0)
+
+            var query = ToList().Where(x => x.Checked).ToList();
+
+            if (query.Count > 0)
             {
                 foreach (StaffTimeInfo info in query)
                 {
@@ -175,16 +212,15 @@ namespace LNF.Help
                     temp[time].Add(info);
                 }
 
-                Dictionary<string, List<StaffTimeInfo>>.Enumerator en = temp.GetEnumerator();
-                while (en.MoveNext())
-                {
-                    result += "<div>";
-                    result += GetDays(en.Current.Value) + " ";
-                    result += en.Current.Key;
-                    result += "</div>";
-                }
+                lines = temp.Select(kvp => GetDays(kvp.Value) + " " + kvp.Key).ToArray();
             }
-            return result;
+            else
+            {
+                // this could happen if no days are checked
+                lines = new string[0];
+            }
+
+            return lines;
         }
 
         public string GetDays(List<StaffTimeInfo> infos)
@@ -214,6 +250,16 @@ namespace LNF.Help
                     result += prev.DayOfWeekToShortString();
 
             return result;
+        }
+
+        public void Clear(DayOfWeek dow)
+        {
+            var node = GetItem(dow);
+            node.Attribute("checked").Value = "0";
+            node.Element("am").Attribute("start").Value = string.Empty;
+            node.Element("am").Attribute("end").Value = string.Empty;
+            node.Element("pm").Attribute("start").Value = string.Empty;
+            node.Element("pm").Attribute("end").Value = string.Empty;
         }
     }
 }

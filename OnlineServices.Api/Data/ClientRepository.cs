@@ -414,5 +414,20 @@ namespace OnlineServices.Api.Data
         {
             throw new NotImplementedException();
         }
+
+        public IStaffDirectory GetStaffDirectory(int staffDirectoryId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IStaffDirectory> GetStaffDirectories(bool? active = true, bool? deleted = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SaveStaffDirectory(IStaffDirectory sd)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

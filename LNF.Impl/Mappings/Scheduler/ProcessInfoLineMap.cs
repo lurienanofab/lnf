@@ -14,6 +14,7 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.MinValue).Not.Nullable();
             Map(x => x.MaxValue).Not.Nullable();
             Map(x => x.ProcessInfoLineParamID).Not.Nullable();
+            Map(x => x.Deleted).Not.Nullable().Default("0");
         }
     }
 }

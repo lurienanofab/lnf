@@ -94,5 +94,10 @@ namespace LNF.Impl.Inventory
                 .OrderByDescending(x => x.DateActive)
                 .FirstOrDefault();
         }
+
+        public IInventoryItem GetInventoryItem(int itemId)
+        {
+            return Session.Get<InventoryItem>(itemId);
+        }
     }
 }

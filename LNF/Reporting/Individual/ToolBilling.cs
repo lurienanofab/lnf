@@ -22,7 +22,7 @@ namespace LNF.Reporting.Individual
         /// <summary>
         /// Used in User Usage Summary to get populate Tool Detail section.
         /// </summary>
-        public DataTable GetAggreateByTool(IEnumerable<IToolBilling> query, IEnumerable<IResource> resources)
+        public DataTable GetAggreateByTool(IEnumerable<IToolBilling> query, IEnumerable<IResource> resources, IEnumerable<IAccount> accounts)
         {
             // This method creates a view of ToolBilling data where totals are aggregated by resource and account.
             // In addition extra columns are added for activated used, activated unused, and unstarted unused durations - which depend on the IsStarted and IsCancelledBeforeAllowedTime
@@ -54,8 +54,6 @@ namespace LNF.Reporting.Individual
             dt.Columns.Add("ActivatedUnused", typeof(double));
             dt.Columns.Add("UnstartedUnused", typeof(double));
             dt.Columns.Add("LineCost", typeof(decimal));
-
-            var accounts = Provider.Data.Account.GetAccounts();
 
             foreach (var item in query.OrderBy(x => x.AccountID).ThenBy(x => x.ResourceID))
             {
@@ -135,6 +133,86 @@ namespace LNF.Reporting.Individual
                 AddToColumn(dr, "UnstartedUnused", unstartedUnused);
 
                 AddToColumn(dr, "LineCost", Provider.Billing.BillingType.GetLineCost(item));
+            }
+
+            dt.DefaultView.Sort = "RoomName ASC, ResourceName ASC";
+
+            return dt;
+        }
+
+        public DataTable GetToolCharges(DataTable dtAggByTool)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("ClientID", typeof(int));
+            dt.Columns.Add("AccountID", typeof(int));
+            dt.Columns.Add("AccountName", typeof(string));
+            dt.Columns.Add("ShortCode", typeof(string));
+            dt.Columns.Add("ResourceID", typeof(int));
+            dt.Columns.Add("ResourceName", typeof(string));
+            dt.Columns.Add("BillingTypeID", typeof(int));
+            dt.Columns.Add("RoomID", typeof(int));
+            dt.Columns.Add("RoomName", typeof(string));
+            dt.Columns.Add("PerUseRate", typeof(decimal));
+            dt.Columns.Add("HourlyRate", typeof(decimal));
+            //dt.Columns.Add("IsCancelledBeforeAllowedTime", typeof(bool));
+            //dt.Columns.Add("TotalUses", typeof(decimal));
+            //dt.Columns.Add("TotalSchedDuration", typeof(decimal));
+            //dt.Columns.Add("TotalActDuration", typeof(decimal));
+            //dt.Columns.Add("TotalChargeDuration", typeof(decimal));
+            //dt.Columns.Add("TotalTransferredDuration", typeof(decimal));
+            //dt.Columns.Add("TotalForgivenDuration", typeof(decimal));
+            //dt.Columns.Add("TotalOverTime", typeof(decimal));
+            //dt.Columns.Add("UsageFeeCharged", typeof(decimal));
+            //dt.Columns.Add("OverTimePenaltyFee", typeof(decimal));
+            //dt.Columns.Add("ActivatedUsed", typeof(double));
+            //dt.Columns.Add("ActivatedUnused", typeof(double));
+            //dt.Columns.Add("UnstartedUnused", typeof(double));
+            dt.Columns.Add("TotalDuration", typeof(double));
+            dt.Columns.Add("BookingFee", typeof(decimal));
+            dt.Columns.Add("PerUseCharge", typeof(decimal));
+            dt.Columns.Add("HourlyCharge", typeof(decimal));
+            dt.Columns.Add("LineTotal", typeof(decimal));
+
+            foreach (DataRow dr in dtAggByTool.Rows)
+            {
+                decimal transferredDuration = dr.Field<decimal>("TotalForgivenDuration");
+                decimal forgivenDuration = dr.Field<decimal>("TotalForgivenDuration");
+                decimal overtimeDuration = dr.Field<decimal>("TotalOverTime");
+                decimal chargeDuration = dr.Field<decimal>("TotalChargeDuration");
+
+                decimal totalDuration = chargeDuration + (1.5M * overtimeDuration);
+
+                var ndr = dt.NewRow();
+                ndr.SetField("ClientID", dr.Field<int>("ClientID"));
+                ndr.SetField("AccountID", dr.Field<int>("AccountID"));
+                ndr.SetField("AccountName", dr.Field<string>("AccountName"));
+                ndr.SetField("ShortCode", dr.Field<string>("ShortCode"));
+                ndr.SetField("ResourceID", dr.Field<int>("ResourceID"));
+                ndr.SetField("ResourceName", dr.Field<string>("ResourceName"));
+                ndr.SetField("BillingTypeID", dr.Field<int>("BillingTypeID"));
+                ndr.SetField("RoomID", dr.Field<int>("RoomID"));
+                ndr.SetField("RoomName", dr.Field<string>("RoomName"));
+                ndr.SetField("PerUseRate", dr.Field<decimal>("PerUseRate"));
+                ndr.SetField("HourlyRate", dr.Field<decimal>("ResourceRate"));
+                //dr.SetField("IsCancelledBeforeAllowedTime", item.IsCancelledBeforeAllowedTime);
+                //dr.SetField("TotalUses", 0M);
+                //dr.SetField("TotalSchedDuration", 0M);
+                //dr.SetField("TotalActDuration", 0M);
+                //dr.SetField("TotalChargeDuration", 0M);
+                //dr.SetField("TotalTransferredDuration", 0M);
+                //dr.SetField("TotalForgivenDuration", 0M);
+                //dr.SetField("TotalOverTime", 0M);
+                //dr.SetField("UsageFeeCharged", 0M);
+                //dr.SetField("OverTimePenaltyFee", 0M);
+                //dr.SetField("ActivatedUsed", 0D);
+                //dr.SetField("ActivatedUnused", 0D);
+                //dr.SetField("UnstartedUnused", 0D);
+                ndr.SetField("TotalDuration", totalDuration);
+                ndr.SetField("BookingFee", dr.Field<decimal>("BookingFee"));
+                ndr.SetField("PerUseCharge", 0M);
+                ndr.SetField("HourlyCharge", 0M);
+                ndr.SetField("LineTotal", dr.Field<decimal>("LineCost"));
+                dt.Rows.Add(ndr);
             }
 
             dt.DefaultView.Sort = "RoomName ASC, ResourceName ASC";

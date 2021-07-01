@@ -36,12 +36,12 @@ namespace LNF.Impl.Billing
 
         public DataSet ReadToolDataClean(DateTime sd, DateTime ed, int clientId = 0, int resourceId = 0)
         {
-            using (var cmd = new SqlCommand("dbo.ToolDataClean_Select", _conn) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = new SqlCommand("Billing.dbo.ToolDataClean_Select", _conn) { CommandType = CommandType.StoredProcedure })
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "ByDateRange");
-                cmd.Parameters.AddWithValue("sDate", sd);
-                cmd.Parameters.AddWithValue("eDate", ed);
+                cmd.Parameters.AddWithValue("StartDate", sd);
+                cmd.Parameters.AddWithValue("EndDate", ed);
 
                 if (clientId > 0)
                     cmd.Parameters.AddWithValue("ClientID", clientId);

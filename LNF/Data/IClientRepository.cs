@@ -47,6 +47,7 @@ namespace LNF.Data
         IEnumerable<IClientAccount> GetClientAccounts(int clientId);
         IEnumerable<IClientAccount> GetClientAccounts(IClient client);
         IEnumerable<IClientAccount> GetClientAccounts(int clientId, int[] accountIds);
+        
         IEnumerable<IClientAccount> GetActiveClientAccounts();
         IEnumerable<IClientAccount> GetActiveClientAccounts(int clientId);
         IEnumerable<IClientAccount> GetActiveClientAccounts(int[] clientIds);
@@ -82,7 +83,10 @@ namespace LNF.Data
         IEnumerable<ICommunity> GetCommunities();
         IEnumerable<IClientManager> GetClientManagersByManager(int managerOrgId);
         IEnumerable<IClientManager> GetClientManagersByManaged(int clientOrgId);
+        IStaffDirectory GetStaffDirectory(int staffDirectoryId);
         IStaffDirectory GetStaffDirectory(string userName);
+        IEnumerable<IStaffDirectory> GetStaffDirectories(bool? active = true, bool? deleted = false);
+        void SaveStaffDirectory(IStaffDirectory sd);
         IEnumerable<IAccount> GetActiveAccounts(int clientId);
         IEnumerable<IAccount> GetActiveAccounts(int clientId, DateTime sd, DateTime ed);
         IMessengerMessage CreateMessage(int clientId, string subject, string body, int parentId, bool disableReply, bool exclusive, bool acknowledgeRequired, bool blockAccess, int accessCutoff);

@@ -27,31 +27,22 @@ namespace LNF.Impl.Scheduler
             return Session.Get<ResourceInfo>(resourceId);
         }
 
+        public IEnumerable<IResource> GetResources()
+        {
+            return Session.Query<ResourceInfo>().DefaultResourceOrderBy().ToList();
+        }
+
+        public IEnumerable<IResource> GetActiveResources()
+        {
+            return Session.Query<ResourceInfo>().Where(x => x.ResourceIsActive).DefaultResourceOrderBy().ToList();
+        }
+
         public IEnumerable<IResource> GetResources(IEnumerable<int> ids)
         {
-            return Session.Query<ResourceInfo>().Where(x => ids.Contains(x.ResourceID));
+            return Session.Query<ResourceInfo>().Where(x => ids.Contains(x.ResourceID)).DefaultResourceOrderBy().ToList();
         }
 
-        public IEnumerable<IResource> Select()
-        {
-            return Session.Query<ResourceInfo>()
-                .OrderBy(x => x.BuildingName)
-                .ThenBy(x => x.LabName)
-                .ThenBy(x => x.ProcessTechName)
-                .ThenBy(x => x.ResourceName);
-        }
-
-        public IEnumerable<IResource> SelectActive()
-        {
-            return Session.Query<ResourceInfo>()
-                .Where(x => x.ResourceIsActive)
-                .OrderBy(x => x.BuildingName)
-                .ThenBy(x => x.LabName)
-                .ThenBy(x => x.ProcessTechName)
-                .ThenBy(x => x.ResourceName);
-        }
-
-        public IEnumerable<IResource> SelectByLab(int? labId)
+        public IEnumerable<IResource> GetResourcesByLab(int? labId)
         {
             // when labId is null use "default labs"
             // when labId is 0 use "all labs"
@@ -89,7 +80,7 @@ namespace LNF.Impl.Scheduler
                     query = Session.Query<ResourceInfo>().Where(x => x.ResourceIsActive && x.LabID == labId.Value);
             }
 
-            var result = query.OrderBy(x => x.BuildingName).ThenBy(x => x.LabDisplayName).ThenBy(x => x.ProcessTechName).ThenBy(x => x.ResourceName);
+            var result = query.DefaultResourceOrderBy().ToList();
 
             return result;
         }
@@ -469,14 +460,21 @@ namespace LNF.Impl.Scheduler
                 .ExecuteUpdate();
         }
 
+        public IEnumerable<IProcessInfo> GetProcessInfo(int resourceId)
+        {
+            return Session.Query<ProcessInfo>().Where(x => x.ResourceID == resourceId && !x.Deleted).ToList();
+        }
+
         public IEnumerable<IProcessInfoLine> GetProcessInfoLines(int resourceId)
         {
-            var query = Session.Query<ProcessInfo>().Where(x => x.ResourceID == resourceId);
+            var query = Session.Query<ProcessInfo>().Where(x => x.ResourceID == resourceId && !x.Deleted);
 
-            var result = query.Join(Session.Query<ProcessInfoLine>(),
+            var join = query.Join(Session.Query<ProcessInfoLine>(),
                 o => o.ProcessInfoID,
                 i => i.ProcessInfoID,
-                (o, i) => i).ToList();
+                (o, i) => i);
+
+            var result = join.Where(x => !x.Deleted).ToList();
 
             return result;
         }

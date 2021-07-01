@@ -12,7 +12,22 @@ namespace OnlineServices.Api.Scheduler
             return Get<ResourceItem>("webapi/scheduler/resource/{resourceId}", UrlSegments(new { resourceId }));
         }
 
+        public IEnumerable<IResource> GetResources()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IResource> GetActiveResources()
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<IResource> GetResources(IEnumerable<int> ids)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IResource> GetResourcesByLab(int? labId)
         {
             throw new NotImplementedException();
         }
@@ -48,21 +63,6 @@ namespace OnlineServices.Api.Scheduler
         }
 
         public IEnumerable<IResourceClient> GetToolEngineers(int resourceId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<IResource> Select()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<IResource> SelectActive()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<IResource> SelectByLab(int? labId)
         {
             throw new NotImplementedException();
         }
@@ -208,6 +208,11 @@ namespace OnlineServices.Api.Scheduler
         }
 
         public IEnumerable<IResourceCost> GetCurrentResourceCosts(int resourceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IProcessInfo> GetProcessInfo(int resourceId)
         {
             throw new NotImplementedException();
         }

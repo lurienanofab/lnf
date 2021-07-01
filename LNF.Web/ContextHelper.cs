@@ -93,7 +93,7 @@ namespace LNF.Web
         /// </summary>
         public bool IsOnKiosk()
         {
-            bool result = Kiosks.Create(Provider.Scheduler.Kiosk).IsOnKiosk(Context.CurrentIP()) || Context.Request.IsLocal;
+            bool result = Kiosks.Create(Provider.Scheduler.Kiosk).IsOnKiosk(Context.CurrentIP()); //|| Context.Request.IsLocal;
             return result;
         }
 

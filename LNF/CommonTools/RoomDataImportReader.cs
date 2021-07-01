@@ -20,6 +20,8 @@ namespace LNF.CommonTools
         private readonly SqlConnection _conn;
         private IList<RoomDataImportItem> _items;
 
+        private static readonly Dictionary<int, string> _altrooms = new Dictionary<int, string>() { [6] = "Entrance to service corridor" };
+
         public DateTime StartDate { get; }
         public DateTime EndDate { get; }
         public int ClientID { get; set; }
@@ -59,6 +61,15 @@ namespace LNF.CommonTools
             return room.RoomName;
         }
 
+        // this is to handle the new service aisle entrance, it should count as a Clean Room entry
+        public string GetAltRoomName()
+        {
+            if (_altrooms.ContainsKey(RoomID))
+                return _altrooms[RoomID];
+            else
+                return "n/a";
+        }
+
         public void ImportRoomData()
         {
             using (var cmd = new SqlCommand("Billing.dbo.ImportRoomData", _conn) { CommandType = CommandType.StoredProcedure, CommandTimeout = 300 })
@@ -71,7 +82,7 @@ namespace LNF.CommonTools
         {
             using (var cmd = new SqlCommand(string.Empty, _conn))
             {
-                cmd.CommandText = "SELECT rdi.* FROM Billing.dbo.RoomDataImport rdi WHERE rdi.ClientID = ISNULL(@ClientID, rdi.ClientID) AND rdi.RoomName = ISNULL(@RoomName, rdi.RoomName) AND rdi.EventDate >= @sd AND rdi.EventDate < @ed ORDER BY rdi.EventDate";
+                cmd.CommandText = "SELECT rdi.* FROM Billing.dbo.RoomDataImport rdi WHERE rdi.ClientID = ISNULL(@ClientID, rdi.ClientID) AND (rdi.RoomName = ISNULL(@RoomName, rdi.RoomName) OR rdi.RoomName = @AltRoomName) AND rdi.EventDate >= @sd AND rdi.EventDate < @ed ORDER BY rdi.EventDate";
                 cmd.Parameters.AddWithValue("sd", StartDate);
                 cmd.Parameters.AddWithValue("ed", EndDate);
 
@@ -81,9 +92,15 @@ namespace LNF.CommonTools
                     cmd.Parameters.AddWithValue("ClientID", DBNull.Value);
 
                 if (RoomID > 0)
+                {
                     cmd.Parameters.AddWithValue("RoomName", GetRoomName());
+                    cmd.Parameters.AddWithValue("AltRoomName", GetAltRoomName());
+                }
                 else
+                {
                     cmd.Parameters.AddWithValue("RoomName", DBNull.Value);
+                    cmd.Parameters.AddWithValue("AltRoomName", "n/a");
+                }
 
                 using (var adap = new SqlDataAdapter(cmd))
                 {
@@ -97,6 +114,7 @@ namespace LNF.CommonTools
                     DeleteInvalidRooms();
                     UpdateEventDescription("Host Grant - IN", "Local Grant - IN");
                     UpdateEventDescription("Host Grant - OUT", "Local Grant - OUT");
+                    UpdateAltRoomNames();
                     InsertPreviousInEvents();
                     InsertNextOutEvents();
                 }
@@ -161,12 +179,39 @@ namespace LNF.CommonTools
             return ds;
         }
 
+        // this is to handle the new service aisle entrance, it should count as a Clean Room entry
+        private RoomDataImportRoom GetRoom(string roomName)
+        {
+            int roomId = 0;
+
+            foreach (var kvp in _altrooms)
+            {
+                if (kvp.Value == roomName)
+                {
+                    roomId = kvp.Key;
+                    break;
+                }
+            }
+
+            RoomDataImportRoom room;
+
+            if (roomId == 0)
+                room = Rooms.FirstOrDefault(x => x.RoomName == roomName);
+            else
+                room = Rooms.FirstOrDefault(x => x.RoomID == roomId);
+
+            return room;
+        }
+
         private RoomDataImportItem CreateRoomDataImportItem(DataRow dr)
         {
-            var roomName = dr["RoomName"].ToString();
-            var room = Rooms.FirstOrDefault(x => x.RoomName == roomName);
+            var actualRoomName = dr["RoomName"].ToString();
+
+            // gets Clean Room if dr["RoomName"] is "Entrance to service corridor"
+            var room = GetRoom(actualRoomName);
 
             int roomId = 0;
+            string roomName = string.Empty;
             string roomDisplayName = string.Empty;
             bool passbackRoom = false;
             bool billable = false;
@@ -175,6 +220,7 @@ namespace LNF.CommonTools
             if (room != null)
             {
                 roomId = room.RoomID;
+                roomName = room.RoomName;
                 roomDisplayName = room.RoomDisplayName;
                 passbackRoom = room.PassbackRoom;
                 billable = room.Billable;
@@ -186,7 +232,7 @@ namespace LNF.CommonTools
                 RoomDataImportID = dr.Field<int>("RoomDataImportID"),
                 RID = dr.Field<byte[]>("RID"),
                 ClientID = dr.Field<int>("ClientID"),
-                RoomName = dr.Field<string>("RoomName"),
+                RoomName = roomName,
                 EventDate = dr.Field<DateTime>("EventDate"),
                 EventDescription = dr.Field<string>("EventDescription"),
                 RoomID = roomId,
@@ -233,6 +279,17 @@ namespace LNF.CommonTools
         {
             foreach (var i in _items.Where(x => x.EventDescription == current))
                 i.EventDescription = replace;
+        }
+
+        private void UpdateAltRoomNames()
+        {
+            foreach (var kvp in _altrooms)
+            {
+                foreach (var i in _items.Where(x => x.RoomID == kvp.Key))
+                {
+
+                }
+            }
         }
 
         private void InsertPreviousInEvents()

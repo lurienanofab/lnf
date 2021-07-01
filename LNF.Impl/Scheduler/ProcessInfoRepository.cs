@@ -14,7 +14,7 @@ namespace LNF.Impl.Scheduler
 
         public IEnumerable<IProcessInfo> GetProcessInfos(int resourceId)
         {
-            var result = Session.Query<ProcessInfo>().Where(x => x.ResourceID == resourceId).ToList();
+            var result = Session.Query<ProcessInfo>().Where(x => x.ResourceID == resourceId && !x.Deleted).ToList();
             return result;
         }
 
@@ -25,12 +25,14 @@ namespace LNF.Impl.Scheduler
 
         public IEnumerable<IProcessInfoLine> GetProcessInfoLines(int resourceId)
         {
-            var query = Session.Query<ProcessInfo>().Where(x => x.ResourceID == resourceId);
+            var query = Session.Query<ProcessInfo>().Where(x => x.ResourceID == resourceId && !x.Deleted);
 
-            var result = query.Join(Session.Query<ProcessInfoLine>(),
+            var join = query.Join(Session.Query<ProcessInfoLine>(),
                 o => o.ProcessInfoID,
                 i => i.ProcessInfoID,
-                (o, i) => i).ToList();
+                (o, i) => i);
+
+            var result = join.Where(x => !x.Deleted).ToList();
 
             return result;
         }
@@ -125,6 +127,8 @@ namespace LNF.Impl.Scheduler
             rpi.RunNumber = item.RunNumber;
             rpi.ChargeMultiplier = item.ChargeMultiplier;
             rpi.Active = item.Active;
+
+            Session.Update(rpi);
         }
 
         public IReservationProcessInfo AddReservationProcessInfo(int reservationId, int processInfoLineId, double value, bool special, int runNumber, double chargeMultiplier, bool active)
@@ -147,121 +151,167 @@ namespace LNF.Impl.Scheduler
 
         public void Update(IEnumerable<IProcessInfo> insert, IEnumerable<IProcessInfo> update, IEnumerable<IProcessInfo> delete)
         {
-            foreach (var item in insert)
+            if (insert != null)
             {
-                var processInfo = new ProcessInfo
+                foreach (var item in insert)
                 {
-                    ResourceID = item.ResourceID,
-                    ProcessInfoName = item.ProcessInfoName,
-                    ParamName = item.ParamName,
-                    ValueName = item.ValueName,
-                    Special = item.Special,
-                    AllowNone = item.AllowNone,
-                    RequireValue = item.RequireValue,
-                    RequireSelection = item.RequireSelection,
-                    Order = item.Order
-                };
+                    var pinfo = new ProcessInfo
+                    {
+                        ResourceID = item.ResourceID,
+                        ProcessInfoName = item.ProcessInfoName,
+                        ParamName = item.ParamName,
+                        ValueName = item.ValueName,
+                        Special = item.Special,
+                        AllowNone = item.AllowNone,
+                        RequireValue = item.RequireValue,
+                        RequireSelection = item.RequireSelection,
+                        Order = item.Order,
+                        Deleted = item.Deleted
+                    };
 
-                Session.Save(processInfo);
+                    Session.Save(pinfo);
+                }
             }
 
-            foreach (var item in update)
+            if (update != null)
             {
-                var processInfo = Require<ProcessInfo>(item.ProcessInfoID);
+                foreach (var item in update)
+                {
+                    var pinfo = Require<ProcessInfo>(item.ProcessInfoID);
 
-                processInfo.ResourceID = item.ResourceID;
-                processInfo.ProcessInfoName = item.ProcessInfoName;
-                processInfo.ParamName = item.ParamName;
-                processInfo.ValueName = item.ValueName;
-                processInfo.Special = item.Special;
-                processInfo.AllowNone = item.AllowNone;
-                processInfo.RequireValue = item.RequireValue;
-                processInfo.RequireSelection = item.RequireSelection;
-                processInfo.Order = item.Order;
+                    pinfo.ResourceID = item.ResourceID;
+                    pinfo.ProcessInfoName = item.ProcessInfoName;
+                    pinfo.ParamName = item.ParamName;
+                    pinfo.ValueName = item.ValueName;
+                    pinfo.Special = item.Special;
+                    pinfo.AllowNone = item.AllowNone;
+                    pinfo.Order = item.Order;
+                    pinfo.RequireValue = item.RequireValue;
+                    pinfo.RequireSelection = item.RequireSelection;
+                    pinfo.MaxAllowed = item.MaxAllowed;
+                    pinfo.Deleted = item.Deleted;
 
-                Session.Update(processInfo);
+                    Session.Update(pinfo);
+                }
             }
 
-            foreach (var item in delete)
+            if (delete != null)
             {
-                var processInfo = Require<ProcessInfo>(item.ProcessInfoID);
-                Session.Delete(processInfo);
+                foreach (var item in delete)
+                {
+                    var pinfo = Require<ProcessInfo>(item.ProcessInfoID);
+                    pinfo.Deleted = true;
+                    Session.Update(pinfo);
+                }
             }
+        }
+
+        public void DeleteProcessInfo(int processInfoId)
+        {
+            var pinfo = Require<ProcessInfo>(processInfoId);
+            Update(null, null, new[] { pinfo });
         }
 
         public void Update(IEnumerable<IProcessInfoLine> insert, IEnumerable<IProcessInfoLine> update, IEnumerable<IProcessInfoLine> delete)
         {
-            foreach (var item in insert)
+            if (insert != null)
             {
-                var pil = new ProcessInfoLine
+                foreach (var item in insert)
                 {
-                    MaxValue = item.MaxValue,
-                    MinValue = item.MinValue,
-                    Param = item.Param,
-                    ProcessInfoID = item.ProcessInfoID,
-                    ProcessInfoLineParamID = item.ProcessInfoLineParamID
-                };
+                    var pil = new ProcessInfoLine
+                    {
+                        MaxValue = item.MaxValue,
+                        MinValue = item.MinValue,
+                        Param = item.Param,
+                        ProcessInfoID = item.ProcessInfoID,
+                        ProcessInfoLineParamID = item.ProcessInfoLineParamID,
+                        Deleted = item.Deleted
+                    };
 
-                Session.Save(pil);
+                    Session.Save(pil);
+                }
             }
 
-            foreach (var item in update)
+            if (update != null)
             {
-                var pil = Require<ProcessInfoLine>(item.ProcessInfoLineID);
+                foreach (var item in update)
+                {
+                    var pil = Require<ProcessInfoLine>(item.ProcessInfoLineID);
 
-                pil.MaxValue = item.MaxValue;
-                pil.MinValue = item.MinValue;
-                pil.Param = item.Param;
-                pil.ProcessInfoID = item.ProcessInfoID;
-                pil.ProcessInfoLineParamID = item.ProcessInfoLineParamID;
+                    pil.MaxValue = item.MaxValue;
+                    pil.MinValue = item.MinValue;
+                    pil.Param = item.Param;
+                    pil.ProcessInfoID = item.ProcessInfoID;
+                    pil.ProcessInfoLineParamID = item.ProcessInfoLineParamID;
+                    pil.Deleted = item.Deleted;
 
-                Session.Update(pil);
+                    Session.Update(pil);
+                }
             }
 
-            foreach (var item in delete)
+            if (delete != null)
             {
-                var pil = Require<ProcessInfoLine>(item.ProcessInfoLineID);
-                Session.Delete(pil);
+                foreach (var item in delete)
+                {
+                    var pil = Require<ProcessInfoLine>(item.ProcessInfoLineID);
+                    pil.Deleted = true;
+                    Session.Update(pil);
+                }
             }
+        }
+
+        public void DeleteProcessInfoLine(int processInfoLineId)
+        {
+            var pil = Require<ProcessInfoLine>(processInfoLineId);
+            Update(null, null, new[] { pil });
         }
 
         public void Update(IEnumerable<IReservationProcessInfo> insert, IEnumerable<IReservationProcessInfo> update, IEnumerable<IReservationProcessInfo> delete)
         {
-            foreach (var item in insert)
+            if (insert != null)
             {
-                var rpi = new ReservationProcessInfo
+                foreach (var item in insert)
                 {
-                    Active = item.Active,
-                    ChargeMultiplier = item.ChargeMultiplier,
-                    ProcessInfoLineID = item.ProcessInfoLineID,
-                    ReservationID = item.ReservationID,
-                    RunNumber = item.RunNumber,
-                    Special = item.Special,
-                    Value = item.Value
-                };
+                    var rpi = new ReservationProcessInfo
+                    {
+                        Active = item.Active,
+                        ChargeMultiplier = item.ChargeMultiplier,
+                        ProcessInfoLineID = item.ProcessInfoLineID,
+                        ReservationID = item.ReservationID,
+                        RunNumber = item.RunNumber,
+                        Special = item.Special,
+                        Value = item.Value
+                    };
 
-                Session.Save(rpi);
+                    Session.Save(rpi);
+                }
             }
 
-            foreach (var item in update)
+            if (update != null)
             {
-                var rpi = Require<ReservationProcessInfo>(item.ReservationProcessInfoID);
+                foreach (var item in update)
+                {
+                    var rpi = Require<ReservationProcessInfo>(item.ReservationProcessInfoID);
 
-                rpi.Active = item.Active;
-                rpi.ChargeMultiplier = item.ChargeMultiplier;
-                rpi.ProcessInfoLineID = item.ProcessInfoLineID;
-                rpi.ReservationID = item.ReservationID;
-                rpi.RunNumber = item.RunNumber;
-                rpi.Special = item.Special;
-                rpi.Value = item.Value;
+                    rpi.Active = item.Active;
+                    rpi.ChargeMultiplier = item.ChargeMultiplier;
+                    rpi.ProcessInfoLineID = item.ProcessInfoLineID;
+                    rpi.ReservationID = item.ReservationID;
+                    rpi.RunNumber = item.RunNumber;
+                    rpi.Special = item.Special;
+                    rpi.Value = item.Value;
 
-                Session.Update(rpi);
+                    Session.Update(rpi);
+                }
             }
 
-            foreach (var item in delete)
+            if (delete != null)
             {
-                var rpi = Require<ReservationProcessInfo>(item.ReservationProcessInfoID);
-                Session.Delete(rpi);
+                foreach (var item in delete)
+                {
+                    var rpi = Require<ReservationProcessInfo>(item.ReservationProcessInfoID);
+                    Session.Delete(rpi);
+                }
             }
         }
 
@@ -284,8 +334,30 @@ namespace LNF.Impl.Scheduler
                 Order = dr.Field<int>("Order"),
                 RequireValue = dr.Field<bool>("RequireValue"),
                 RequireSelection = dr.Field<bool>("RequireSelection"),
-                MaxAllowed = dr.Field<int>("MaxAllowed")
+                MaxAllowed = dr.Field<int>("MaxAllowed"),
+                Deleted = dr.Field<bool>("Deleted")
             };
+        }
+
+        public IEnumerable<IProcessInfoLineParam> GetProcessInfoParams(int resourceId)
+        {
+            return Session.Query<ProcessInfoLineParam>().Where(x => x.ResourceID == resourceId).ToList();
+        }
+
+        public IProcessInfoLineParam AddProcessInfoLineParam(int resourceId, string paramName, string paramUnit, int paramType)
+        {
+            var result = new ProcessInfoLineParam
+            {
+                ProcessInfoLineParamID = 0,
+                ResourceID = resourceId,
+                ParameterName = paramName,
+                ParameterUnit = paramUnit,
+                ParameterType = paramType,
+            };
+
+            Session.Save(result);
+
+            return result;
         }
     }
 }

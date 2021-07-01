@@ -47,20 +47,6 @@ namespace LNF.Impl.DataAccess.ModelFactory
             return result;
         }
 
-        private IStaffDirectory MapStaffDirectory(StaffDirectory source)
-        {
-            var result = MapFrom<StaffDirectoryItem>(source);
-
-            var client = Session.Get<ClientInfo>(source.Client.ClientID);
-
-            result.ClientID = client.ClientID;
-            result.LName = client.LName;
-            result.FName = client.FName;
-            result.ContactEmail = client.Email;
-
-            return result;
-        }
-
         public override void AddMaps()
         {
             Map<Account, IAccount>(MapAccount);
@@ -84,7 +70,6 @@ namespace LNF.Impl.DataAccess.ModelFactory
             Map<News, INews>(MapNews);
             Map<Holiday, HolidayItem, IHoliday>();
             Map<InvalidEmailList, InvalidEmailItem, IInvalidEmail>();
-            Map<StaffDirectory, IStaffDirectory>(MapStaffDirectory);
         }
     }
 }

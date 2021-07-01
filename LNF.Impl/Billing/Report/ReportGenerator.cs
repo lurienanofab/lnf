@@ -95,7 +95,7 @@ namespace LNF.Impl.Billing.Report
             if (period.Day != 1 || period.Hour != 0 || period.Minute != 0 || period.Second != 0)
             {
                 SendEmail.SendDeveloperEmail("LNF.Impl.Billing.Report.ReportGenerator<T>.ValidPeriodCheck", $"Invalid period detected in {Report.ReportName} [run at {DateTime.Now:yyyy-MM-dd HH:mm:ss}]", $"Invalid period used - not midnight or 1st of month. Period = '{period:yyyy-MM-dd HH:mm:ss}', ClientID = {clientId}");
-                throw new Exception($"Period is not midnight on the 1st of the month. Report: {Report.ReportName}, Period: {period:yyyy-MM-dd HH:mm:ss}, ClientID: {clientId}");
+                //throw new Exception($"Period is not midnight on the 1st of the month. Report: {Report.ReportName}, Period: {period:yyyy-MM-dd HH:mm:ss}, ClientID: {clientId}");
             }
         }
 

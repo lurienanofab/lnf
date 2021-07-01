@@ -22,7 +22,7 @@ namespace LNF.Tests
             _container.Options.DefaultScopedLifestyle = new ThreadScopedLifestyle();
 
             var cfg = new ThreadStaticContainerConfiguration(_container);
-            cfg.Configure();
+            cfg.RegisterAllTypes();
             
             _provider = _container.GetInstance<IProvider>();
             ServiceProvider.Setup(_provider);

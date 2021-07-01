@@ -13,5 +13,6 @@
         bool RequireValue { get; set; }
         bool RequireSelection { get; set; }
         int MaxAllowed { get; set; }
+        bool Deleted { get; set; }
     }
 }

@@ -1,8 +1,9 @@
 ﻿using LNF.Impl;
-using SimpleInjector;
-using SimpleInjector.Integration.Web;
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Web;
+using System.Web.Compilation;
 
 namespace LNF.Web
 {
@@ -13,14 +14,17 @@ namespace LNF.Web
 
         public void Init(HttpApplication app)
         {
-            var container = new Container();
-            container.Options.DefaultScopedLifestyle = new WebRequestLifestyle();
+            Assembly[] assemblies = BuildManager.GetReferencedAssemblies().Cast<Assembly>().ToArray();
 
-            var config = new WebContainerConfiguration(container);
-            config.RegisterAllTypes();
+            var webapp = new WebApp();
 
-            _provider = container.GetInstance<IProvider>();
-            ServiceProvider.Setup(_provider);
+            var wcc = new WebContainerConfiguration(webapp.Container);
+            wcc.EnablePropertyInjection();
+            wcc.RegisterAllTypes();
+
+            webapp.Bootstrap(assemblies);
+
+            _provider = webapp.GetInstance<IProvider>();
 
             app.BeginRequest += App_BeginRequest;
             app.EndRequest += App_EndRequest;

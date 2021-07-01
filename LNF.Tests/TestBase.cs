@@ -29,7 +29,7 @@ namespace LNF.Tests
             _container.Options.DefaultScopedLifestyle = new ThreadScopedLifestyle();
 
             var cfg = new ThreadStaticContainerConfiguration(_container);
-            cfg.Configure();
+            cfg.RegisterAllTypes();
 
             ServiceProvider.Setup(Provider);
             _uow = StartUnitOfWork();
@@ -92,10 +92,7 @@ namespace LNF.Tests
             return new SqlConnection(ConfigurationManager.ConnectionStrings["cnSselData"].ConnectionString);
         }
 
-        public IUnitOfWork StartUnitOfWork()
-        {
-            return _container.GetInstance<IUnitOfWork>();
-        }
+        public IUnitOfWork StartUnitOfWork() => Provider.DataAccess.StartUnitOfWork();
     }
 
     public abstract class Comparer<T1, T2>

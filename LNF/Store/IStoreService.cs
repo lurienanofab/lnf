@@ -9,5 +9,7 @@ namespace LNF.Store
         IEnumerable<IPrice> GetPrices(int itemId);
         IEnumerable<IStoreOrderDetail> GetStoreOrderDetails(int soid);
         IEnumerable<IStoreOrderDetail> GetStoreOrderDetails(DateTime sd, DateTime ed, int clientId = 0, string status = null);
+        IStoreOrder GetStoreOrder(int soid);
+        IEnumerable<IStoreOrder> GetStoreOrders(string status = null);
     }
 }

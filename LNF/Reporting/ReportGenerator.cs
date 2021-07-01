@@ -9,19 +9,26 @@ using System.Xml.Linq;
 
 namespace LNF.Reporting
 {
-    public static class ReportGenerator
+    public class ReportGenerator
     {
-        private static readonly ClientPrivilege _includeInmanagerUsageSummaryPriv = ClientPrivilege.LabUser | ClientPrivilege.RemoteUser;
+        private readonly ClientPrivilege _includeInmanagerUsageSummaryPriv = ClientPrivilege.LabUser | ClientPrivilege.RemoteUser;
 
-        public static AggregateByOrg CreateAggregateByOrg(int clientId, DateTime period)
+        private readonly IProvider _provider;
+
+        public ReportGenerator(IProvider provider)
+        {
+            _provider = provider;
+        }
+
+        public AggregateByOrg CreateAggregateByOrg(int clientId, DateTime period)
         {
             var result = new AggregateByOrg();
 
-            var miscUsage = ServiceProvider.Current.Billing.Misc.GetMiscBillingCharges(period, new[] { "Tool", "Room", "Store" }, clientId: clientId, active: true);
-            var roomUsage = ServiceProvider.Current.Billing.Room.GetRoomBilling(period, clientId);
-            var toolUsage = ServiceProvider.Current.Billing.Tool.GetToolBilling(period, clientId);
+            var miscUsage = _provider.Billing.Misc.GetMiscBillingCharges(period, new[] { "Tool", "Room", "Store" }, clientId: clientId, active: true);
+            var roomUsage = _provider.Billing.Room.GetRoomBilling(period, clientId);
+            var toolUsage = _provider.Billing.Tool.GetToolBilling(period, clientId);
 
-            var accounts = ServiceProvider.Current.Data.Account.GetAccounts();
+            var accounts = _provider.Data.Account.GetAccounts();
 
             result.RoomByOrg = roomUsage.Select(x => new RoomByOrgItem()
             {
@@ -40,23 +47,23 @@ namespace LNF.Reporting
             return result;
         }
 
-        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, IReportingClient manager, bool includeRemote)
+        public ManagerUsageSummary CreateManagerUsageSummary(DateTime period, IReportingClient manager, bool includeRemote)
         {
             return CreateManagerUsageSummary(period, manager.ClientID, manager.UserName, manager.LName, manager.FName, includeRemote);
         }
 
-        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, int clientId, string username, string lname, string fname, bool includeRemote)
+        public ManagerUsageSummary CreateManagerUsageSummary(DateTime period, int clientId, string username, string lname, string fname, bool includeRemote)
         {
             var items = GetManagerUsageSummaryItems(clientId, period, includeRemote);
             return CreateManagerUsageSummary(period, clientId, username, lname, fname, items);
         }
 
-        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, IReportingClient manager, IEnumerable<ManagerUsageSummaryItem> items)
+        public ManagerUsageSummary CreateManagerUsageSummary(DateTime period, IReportingClient manager, IEnumerable<ManagerUsageSummaryItem> items)
         {
             return CreateManagerUsageSummary(period, manager.ClientID, manager.UserName, manager.LName, manager.FName, items);
         }
 
-        public static ManagerUsageSummary CreateManagerUsageSummary(DateTime period, int clientId, string username, string lname, string fname, IEnumerable<ManagerUsageSummaryItem> items)
+        public ManagerUsageSummary CreateManagerUsageSummary(DateTime period, int clientId, string username, string lname, string fname, IEnumerable<ManagerUsageSummaryItem> items)
         {
             var result = new ManagerUsageSummary
             {
@@ -123,7 +130,7 @@ namespace LNF.Reporting
             return result;
         }
 
-        public static ManagerUsageSummaryClient CreateManagerUsageSummaryClient(ManagerUsageSummaryClientItem args, IEnumerable<ManagerUsageSummaryItem> items)
+        public ManagerUsageSummaryClient CreateManagerUsageSummaryClient(ManagerUsageSummaryClientItem args, IEnumerable<ManagerUsageSummaryItem> items)
         {
             int clientId = args.ClientID;
             string name = GetClientName(args.LName, args.FName);
@@ -150,11 +157,11 @@ namespace LNF.Reporting
             };
         }
 
-        public static IEnumerable<ManagerUsageSummaryItem> GetManagerUsageSummaryItems(int clientId, DateTime period, bool includeRemote)
+        public IEnumerable<ManagerUsageSummaryItem> GetManagerUsageSummaryItems(int clientId, DateTime period, bool includeRemote)
         {
-            var logs = ServiceProvider.Current.Reporting.ClientManagerLog.SelectByManager(clientId, period, period.AddMonths(1));
+            var logs = _provider.Reporting.ClientManagerLog.SelectByManager(clientId, period, period.AddMonths(1));
 
-            IEnumerable<IManagerUsageCharge> charges = ServiceProvider.Current.Reporting.ManagerUsageCharge.SelectByManager(clientId, period, includeRemote).ToList();
+            IEnumerable<IManagerUsageCharge> charges = _provider.Reporting.ManagerUsageCharge.SelectByManager(clientId, period, includeRemote).ToList();
 
             var join = logs.LeftJoin(
                 inner: charges,
@@ -165,17 +172,17 @@ namespace LNF.Reporting
             return join;
         }
 
-        public static string GetClientName(string lname, string fname)
+        public string GetClientName(string lname, string fname)
         {
             return Clients.GetDisplayName(lname, fname);
         }
 
-        public static string GetClientSort(string lname, string fname)
+        public string GetClientSort(string lname, string fname)
         {
             return Clients.GetDisplayName(lname, fname);
         }
 
-        public static ManagerUsageSummaryAccount CreateManagerUsageSummaryAccount(ManagerUsageSummaryAccountItem item, IEnumerable<ManagerUsageSummaryItem> items)
+        public ManagerUsageSummaryAccount CreateManagerUsageSummaryAccount(ManagerUsageSummaryAccountItem item, IEnumerable<ManagerUsageSummaryItem> items)
         {
             int accountId = item.AccountID;
             string name = GetAccountName(item.ShortCode, item.AccountNumber, item.AccountName, item.OrgName);
@@ -200,7 +207,7 @@ namespace LNF.Reporting
             };
         }
 
-        public static string GetAccountName(string shortCode, string accountNumber, string accountName, string orgName)
+        public string GetAccountName(string shortCode, string accountNumber, string accountName, string orgName)
         {
             string name;
 
@@ -217,7 +224,7 @@ namespace LNF.Reporting
             return name;
         }
 
-        public static string GetAccountSort(string shortCode, string accountNumber, string accountName, string orgName)
+        public string GetAccountSort(string shortCode, string accountNumber, string accountName, string orgName)
         {
             string sort;
 
@@ -233,11 +240,11 @@ namespace LNF.Reporting
             return sort;
         }
 
-        public static UserUsageSummary CreateUserUsageSummary(DateTime period, IReportingClient client)
+        public UserUsageSummary CreateUserUsageSummary(DateTime period, IReportingClient client)
         {
             bool showDisclaimer = false;
 
-            var gs = ServiceProvider.Current.Data.GlobalSetting.GetGlobalSetting("ShowUserUsageSummaryDisclaimer");
+            var gs = _provider.Data.GlobalSetting.GetGlobalSetting("ShowUserUsageSummaryDisclaimer");
 
             if (gs != null)
                 showDisclaimer = bool.Parse(gs.SettingValue);
@@ -261,7 +268,7 @@ namespace LNF.Reporting
             return result;
         }
 
-        public static string GetManagerUsageDetailJson(IEnumerable<ManagerUsageDetailItem> items)
+        public string GetManagerUsageDetailJson(IEnumerable<ManagerUsageDetailItem> items)
         {
             var result = items.Select(x =>
             new
@@ -279,10 +286,10 @@ namespace LNF.Reporting
                 x.SubsidyOrg
             });
 
-            return ServiceProvider.Current.Utility.Serialization.Json.SerializeObject(result);
+            return _provider.Utility.Serialization.Json.SerializeObject(result);
         }
 
-        public static XElement GetManagerUsageDetailXml(IEnumerable<ManagerUsageDetailItem> items)
+        public XElement GetManagerUsageDetailXml(IEnumerable<ManagerUsageDetailItem> items)
         {
             var xdoc = new XElement("table",
                 items.Select(x => new XElement("row",
@@ -303,14 +310,14 @@ namespace LNF.Reporting
             return xdoc;
         }
 
-        public static IEnumerable<ManagerUsageDetailItem> GetManagerUsageDetailItems(DateTime sd, DateTime ed, IClient mgr, bool remote = false)
+        public IEnumerable<ManagerUsageDetailItem> GetManagerUsageDetailItems(DateTime sd, DateTime ed, IClient mgr, bool remote = false)
         {
             IEnumerable<IManagerUsageCharge> charges;
 
             if (mgr == null)
-                charges = ServiceProvider.Current.Reporting.ManagerUsageCharge.GetManagerUsageCharges(sd, ed, remote);
+                charges = _provider.Reporting.ManagerUsageCharge.GetManagerUsageCharges(sd, ed, remote);
             else
-                charges = ServiceProvider.Current.Reporting.ManagerUsageCharge.GetManagerUsageCharges(mgr.ClientID, sd, ed, remote);
+                charges = _provider.Reporting.ManagerUsageCharge.GetManagerUsageCharges(mgr.ClientID, sd, ed, remote);
 
             List<ManagerUsageDetailItem> result = new List<ManagerUsageDetailItem>();
 
@@ -321,7 +328,7 @@ namespace LNF.Reporting
             return result;
         }
 
-        private static IEnumerable<ManagerUsageDetailItem> GetManagerUsageDetailItemsByCategory(IEnumerable<IManagerUsageCharge> charges, BillingCategory billingCategory, bool aggregate)
+        private IEnumerable<ManagerUsageDetailItem> GetManagerUsageDetailItemsByCategory(IEnumerable<IManagerUsageCharge> charges, BillingCategory billingCategory, bool aggregate)
         {
             IEnumerable<ManagerUsageDetailItem> result;
 

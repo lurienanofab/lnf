@@ -16,13 +16,7 @@ namespace LNF.Web
 {
     public class WebApp
     {
-        public static WebApp Current { get; private set; }
-
-        static WebApp()
-        {
-            Current = new WebApp();
-        }
-        private WebApp()
+        public WebApp()
         {
             Container = new Container();
 
@@ -31,6 +25,9 @@ namespace LNF.Web
             Container.Options.ResolveUnregisteredConcreteTypes = true;
 
             Container.Options.DefaultScopedLifestyle = new WebRequestLifestyle();
+
+            if (Container.IsLocked)
+                throw new Exception("Container is locked");
         }
 
         public Container Container { get; }
@@ -96,13 +93,8 @@ namespace LNF.Web
         }
     }
 
-    public class PageInitializerModule : IHttpModule
+    public abstract class PageInitializerModule : IHttpModule
     {
-        public static void Initialize()
-        {
-            DynamicModuleUtility.RegisterModule(typeof(PageInitializerModule));
-        }
-
         public void Init(HttpApplication context)
         {
             context.PreRequestHandlerExecute += (sender, e) =>
@@ -112,10 +104,14 @@ namespace LNF.Web
                 {
                     var name = handler.GetType().Assembly.FullName;
                     if (!name.StartsWith("System.Web") && !name.StartsWith("Microsoft"))
-                        WebApp.Current.InitializeHandler(handler);
+                        InitializeHandler(handler);
                 }
             };
         }
+
+        // This should be overridden and call a static method in Global.asax
+        // (see https://docs.simpleinjector.org/en/latest/webformsintegration.html)
+        protected abstract void InitializeHandler(IHttpHandler handler);
 
         public void Dispose() { }
     }
