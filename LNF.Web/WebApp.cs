@@ -51,12 +51,6 @@ namespace LNF.Web
             }
         }
 
-        public void InitializeHandler(IHttpHandler handler)
-        {
-            var handlerType = handler is Page ? handler.GetType().BaseType : handler.GetType();
-            Container.GetRegistration(handlerType, true).Registration.InitializeInstance(handler);
-        }
-
         public T GetInstance<T>() where T : class
         {
             return Container.GetInstance<T>();
@@ -109,9 +103,20 @@ namespace LNF.Web
             };
         }
 
+        public static void RegisterModule(Type pageInitializerType)
+        {
+            DynamicModuleUtility.RegisterModule(pageInitializerType);
+        }
+
         // This should be overridden and call a static method in Global.asax
         // (see https://docs.simpleinjector.org/en/latest/webformsintegration.html)
         protected abstract void InitializeHandler(IHttpHandler handler);
+
+        protected void ConfigureHandler(IHttpHandler handler, Container container)
+        {
+            var handlerType = handler is Page ? handler.GetType().BaseType : handler.GetType();
+            container.GetRegistration(handlerType, true).Registration.InitializeInstance(handler);
+        }
 
         public void Dispose() { }
     }
