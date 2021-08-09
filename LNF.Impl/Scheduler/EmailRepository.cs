@@ -313,10 +313,11 @@ namespace LNF.Impl.Scheduler
             List<string> toAddr = new List<string>();
             fromAddr = Properties.Current.SchedulerEmail;
             subject = $"{SendEmail.CompanyName} - Open reservation slot for {rsv.ResourceName}";
-            body = string.Format("{0} just became available for reservation from {1} to {2}.{3}{3}If you wish to reserve this resource, please sign up quickly.",
+            body = string.Format("{0} just became available for reservation from {1} to {2}.{4}{4}If you wish to reserve this resource, please sign up quickly.{4}{4}--------------------{4}{4}{3}",
                 rsv.ResourceName,
                 beginDateTime.ToString(Reservation.DateFormat),
                 endDateTime.ToString(Reservation.DateFormat),
+                footer,
                 Environment.NewLine
             );
 

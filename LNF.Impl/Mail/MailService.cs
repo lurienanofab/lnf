@@ -12,6 +12,8 @@ namespace LNF.Impl.Mail
         public IAttachmentUtility Attachment { get; }
         public IClientRepository Client { get; }
 
+        public MailRepo MailRepo { get; } = MailRepo.Create();
+
         public MailService(IMassEmailRepository massEmail, IAttachmentUtility attachment, IClientRepository client)
         {
             MassEmail = massEmail;

@@ -175,10 +175,13 @@ namespace LNF.Reporting.Individual
 
             foreach (DataRow dr in dtAggByTool.Rows)
             {
-                decimal transferredDuration = dr.Field<decimal>("TotalForgivenDuration");
-                decimal forgivenDuration = dr.Field<decimal>("TotalForgivenDuration");
-                decimal overtimeDuration = dr.Field<decimal>("TotalOverTime");
                 decimal chargeDuration = dr.Field<decimal>("TotalChargeDuration");
+                decimal transferredDuration = dr.Field<decimal>("TotalForgivenDuration");
+                decimal overtimeDuration = dr.Field<decimal>("TotalOverTime");
+
+                //decimal forgivenDuration = dr.Field<decimal>("TotalForgivenDuration");
+                
+                
 
                 decimal totalDuration = chargeDuration + (1.5M * overtimeDuration);
 

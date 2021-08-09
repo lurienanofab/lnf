@@ -1,4 +1,5 @@
-﻿using LNF.Billing.Process;
+﻿using LNF.Repository;
+using LNF.Billing.Process;
 using LNF.CommonTools;
 using LNF.Data;
 using LNF.Impl.DataAccess;
@@ -49,20 +50,22 @@ namespace LNF.Impl.Scheduler
             return result;
         }
 
-        public IEnumerable<IClientAccount> AvailableAccounts(IReservationItem rsv)
+        public IEnumerable<IClientAccount> AvailableAccounts(int reservationId, ActivityAccountType accountType)
         {
             IList<IClientAccount> result = null;
+
+            var rsv = GetReservation(reservationId);
 
             DateTime sd = rsv.CreatedOn.Date;
             DateTime ed = sd.AddDays(1);
 
-            if (rsv.ActivityAccountType == ActivityAccountType.Reserver || rsv.ActivityAccountType == ActivityAccountType.Both)
+            if (accountType == ActivityAccountType.Reserver || accountType == ActivityAccountType.Both)
             {
                 //Load reserver's accounts
                 result = Client.GetActiveClientAccounts(rsv.ClientID, sd, ed).ToList();
             }
 
-            if (rsv.ActivityAccountType == ActivityAccountType.Invitee || rsv.ActivityAccountType == ActivityAccountType.Both)
+            if (accountType == ActivityAccountType.Invitee || accountType == ActivityAccountType.Both)
             {
                 //Loads each of the invitee's accounts
                 foreach (var ri in GetInvitees(rsv.ReservationID))
@@ -240,8 +243,17 @@ namespace LNF.Impl.Scheduler
             InsertReservationHistory("End", "procReservationUpdate", rsv, args.EndedByClientID);
         }
 
-        public void EndAndForgiveForRepair(int reservationId, string note, int? endedByClientId, int? modifiedByClientId)
+        public void EndAndForgiveForRepair(int reservationId, string notes, int? endedByClientId, int? modifiedByClientId)
         {
+            //thinking about switching back to this
+            //DataCommand()
+            //    .Param("Action", "EndForRepair")
+            //    .Param("ReservationID", reservationId)
+            //    .Param("Notes", notes)
+            //    .Param("ClientID", endedByClientId)
+            //    .Param("ModifiedByClientID", modifiedByClientId)
+            //    .ExecuteNonQuery("sselScheduler.dbo.procReservationUpdate");
+
             // This is all that happens in procReservationUpdate @Action = 'EndForRepair'
 
             //UPDATE dbo.Reservation
@@ -257,7 +269,7 @@ namespace LNF.Impl.Scheduler
             r.ChargeMultiplier = 0;
             r.ApplyLateChargePenalty = false;
             r.ClientIDEnd = endedByClientId.GetValueOrDefault(-1);
-            r.AppendNotes(note);
+            r.AppendNotes(notes);
 
             Session.SaveOrUpdate(r);
 
@@ -742,7 +754,7 @@ namespace LNF.Impl.Scheduler
             return result;
         }
 
-        public IEnumerable<IReservation> SelectHistoryToForgiveForRepair(int resourceId, DateTime sd, DateTime ed)
+        public IEnumerable<ReservationToForgiveForRepair> SelectHistoryToForgiveForRepair(int resourceId, DateTime sd, DateTime ed)
         {
             // [2013-05-20 jg] We no longer care if the reservation was canceled or not, all need to be forgiven
             //      because of the booking fee on uncancelled reservations.
@@ -752,10 +764,16 @@ namespace LNF.Impl.Scheduler
 
             int repairActivityId = 14;
 
-            var result = Session.Query<ReservationInfo>().Where(x =>
-                x.ResourceID == resourceId
+            var query = Session.Query<Reservation>().Where(x =>
+                x.Resource.ResourceID == resourceId
                 && ((x.BeginDateTime < ed && x.EndDateTime > sd) || (x.ActualBeginDateTime < ed && x.ActualEndDateTime > sd)) //will include all overlapping reservations
-                && x.ActivityID != repairActivityId).OrderBy(x => x.BeginDateTime).ToList();
+                && x.Activity.ActivityID != repairActivityId).OrderBy(x => x.BeginDateTime).ToList();
+
+            var result = query.Select(x => new ReservationToForgiveForRepair
+            {
+                ReservationID = x.ReservationID,
+                ChargeMultiplier = x.ChargeMultiplier
+            }).ToList();
 
             return result;
         }
@@ -1157,7 +1175,7 @@ namespace LNF.Impl.Scheduler
             return query.Count;
         }
 
-        public void UpdateCharges(int reservationId, string note, double chargeMultiplier, bool applyLateChargePenalty, int? modifiedByClientId)
+        public void UpdateCharges(int reservationId, string notes, double chargeMultiplier, bool applyLateChargePenalty, int? modifiedByClientId)
         {
             // procReservationUpdate @Action = 'UpdateCharges'
 
@@ -1170,7 +1188,7 @@ namespace LNF.Impl.Scheduler
 
             r.ChargeMultiplier = chargeMultiplier;
             r.ApplyLateChargePenalty = applyLateChargePenalty;
-            r.AppendNotes(note);
+            r.AppendNotes(notes);
 
             Session.SaveOrUpdate(r);
 
@@ -1258,6 +1276,18 @@ namespace LNF.Impl.Scheduler
                 .Value;
 
             var result = TimeSpan.FromMinutes(timeUntilNext);
+
+            return result;
+        }
+
+        public IReservation GetNextReservation(int resourceId, int reservationId)
+        {
+            var result = Session.Query<ReservationInfo>().FirstOrDefault(x => x.ResourceID == resourceId
+                && x.IsActive
+                && !x.IsStarted
+                && x.BeginDateTime > DateTime.Now
+                && x.ActualBeginDateTime == null
+                && x.ReservationID != reservationId);
 
             return result;
         }
@@ -2111,15 +2141,17 @@ namespace LNF.Impl.Scheduler
             return CreateReservationGroupModel(rg);
         }
 
-        public IAutoEndLog AddAutoEndLog(IReservationItem rsv, string action)
+        public IAutoEndLog AddAutoEndLog(int reservationId, string action)
         {
+            IReservation rsv = GetReservation(reservationId);
+
             var entry = new AutoEndLog()
             {
                 ReservationID = rsv.ReservationID,
                 ResourceID = rsv.ResourceID,
                 ResourceName = rsv.ResourceName,
                 ClientID = rsv.ClientID,
-                DisplayName = Clients.GetDisplayName(rsv.LName, rsv.FName),
+                DisplayName = rsv.DisplayName,
                 Timestamp = DateTime.Now,
                 Action = action
             };

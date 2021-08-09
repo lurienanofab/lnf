@@ -9,80 +9,89 @@ using System.Linq;
 
 namespace LNF.Impl.Mail
 {
-    public static class MailRepo
+    public class MailRepo
     {
-        public static int InsertMessage(int clientId, string caller, string from, string subject, string body)
+        private readonly SqlConnection _conn;
+        private readonly SqlTransaction _tx;
+
+        private static SqlConnection NewConnection()
         {
-            using (var conn = GetConnection())
-            using (var adap = new SqlDataAdapter("INSERT Email.dbo.Message (ClientID, FromAddress, Subject, Body, Caller, CreatedOn) VALUES (@ClientID, @FromAddress, @Subject, @Body, @Caller, GETDATE()); SELECT SCOPE_IDENTITY()", conn))
+            var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["cnSselData"].ConnectionString);
+            return conn;
+        }
+
+        public static MailRepo Create() => Create(NewConnection());
+
+        public static MailRepo Create(SqlConnection conn, SqlTransaction tx = null)
+        {
+            return new MailRepo(conn, tx);
+        }
+
+        private MailRepo(SqlConnection conn, SqlTransaction tx)
+        {
+            _conn = conn;
+            _tx = tx;
+        }
+
+        public int InsertMessage(int clientId, string caller, string from, string subject, string body)
+        {
+            using (var cmd = GetCommand("INSERT Email.dbo.Message (ClientID, FromAddress, Subject, Body, Caller, CreatedOn) VALUES (@ClientID, @FromAddress, @Subject, @Body, @Caller, GETDATE()); SELECT SCOPE_IDENTITY()", CommandType.Text))
+            using (var adap = new SqlDataAdapter(cmd))
             {
-                conn.Open();
-                adap.SelectCommand.CommandType = CommandType.Text;
-                adap.SelectCommand.Parameters.AddWithValue("ClientID", clientId);
-                adap.SelectCommand.Parameters.AddWithValue("FromAddress", from);
-                adap.SelectCommand.Parameters.AddWithValue("Subject", subject);
-                adap.SelectCommand.Parameters.AddWithValue("Body", body);
-                adap.SelectCommand.Parameters.AddWithValue("Caller", caller);
-                object scalar = adap.SelectCommand.ExecuteScalar();
+                cmd.Parameters.AddWithValue("ClientID", clientId);
+                cmd.Parameters.AddWithValue("FromAddress", from);
+                cmd.Parameters.AddWithValue("Subject", subject);
+                cmd.Parameters.AddWithValue("Body", body);
+                cmd.Parameters.AddWithValue("Caller", caller);
+                object scalar = cmd.ExecuteScalar();
                 int result = Convert.ToInt32(scalar);
-                conn.Close();
                 return result;
             }
         }
 
-        public static IEnumerable<IRecipient> SelectRecipients(int messageId)
+        public IEnumerable<IRecipient> SelectRecipients(int messageId)
         {
             throw new NotImplementedException();
         }
 
-        public static int SetMessageSent(int messageId)
+        public int SetMessageSent(int messageId)
         {
-            using (var conn = GetConnection())
-            using (var adap = new SqlDataAdapter("UPDATE Email.dbo.Message SET SentOn = GETDATE() WHERE MessageID = @MessageID", conn))
+            using (var cmd = GetCommand("UPDATE Email.dbo.Message SET SentOn = GETDATE() WHERE MessageID = @MessageID", CommandType.Text))
             {
-                conn.Open();
-                adap.SelectCommand.CommandType = CommandType.Text;
-                adap.SelectCommand.Parameters.AddWithValue("MessageID", messageId);
-                int result = adap.SelectCommand.ExecuteNonQuery();
-                conn.Close();
+                cmd.Parameters.AddWithValue("MessageID", messageId);
+                int result = cmd.ExecuteNonQuery();
                 return result;
             }
         }
 
-        public static IMessage SelectMessage(int messageId)
+        public IMessage SelectMessage(int messageId)
         {
-            using (var conn = GetConnection())
-            using (var adap = new SqlDataAdapter("SELECT MessageID, ClientID, Caller, FromAddress, Subject, Body, Error, CreatedOn, SentOn FROM Email.dbo.Message WHERE @MessageID = MessageID", conn))
+            using (var cmd = GetCommand("SELECT MessageID, ClientID, Caller, FromAddress, Subject, Body, Error, CreatedOn, SentOn FROM Email.dbo.Message WHERE @MessageID = MessageID", CommandType.Text))
+            using (var adap = new SqlDataAdapter(cmd))
             {
-                conn.Open();
-
-                adap.SelectCommand.CommandType = CommandType.Text;
-                adap.SelectCommand.Parameters.AddWithValue("MessageID", messageId);
+                cmd.Parameters.AddWithValue("MessageID", messageId);
 
                 DataTable dt = new DataTable();
                 adap.Fill(dt);
 
                 var result = CreateMessageItems(dt);
-
-                conn.Close();
 
                 return result.FirstOrDefault();
             }
         }
 
-        public static IEnumerable<IMessage> SelectMessages(DateTime sd, DateTime ed, int clientId)
+        public IEnumerable<IMessage> SelectMessages(DateTime sd, DateTime ed, int clientId)
         {
-            using (var conn = GetConnection())
-            using (var adap = new SqlDataAdapter("SELECT MessageID, ClientID, Caller, FromAddress, Subject, Body, Error, CreatedOn, SentOn FROM Email.dbo.Message WHERE CreatedOn >= @StartDate AND CreatedOn < @EndDate AND ISNULL(@ClientID, ClientID) = ClientID", conn))
+            using (var cmd = GetCommand("SELECT MessageID, ClientID, Caller, FromAddress, Subject, Body, Error, CreatedOn, SentOn FROM Email.dbo.Message WHERE CreatedOn >= @StartDate AND CreatedOn < @EndDate AND ISNULL(@ClientID, ClientID) = ClientID", CommandType.Text))
+            using (var adap = new SqlDataAdapter(cmd))
             {
-                adap.SelectCommand.CommandType = CommandType.Text;
-                adap.SelectCommand.Parameters.AddWithValue("StartDate", sd);
-                adap.SelectCommand.Parameters.AddWithValue("EndDate", ed);
+                cmd.Parameters.AddWithValue("StartDate", sd);
+                cmd.Parameters.AddWithValue("EndDate", ed);
 
                 if (clientId == 0)
-                    adap.SelectCommand.Parameters.AddWithValue("ClientID", DBNull.Value);
+                    cmd.Parameters.AddWithValue("ClientID", DBNull.Value);
                 else
-                    adap.SelectCommand.Parameters.AddWithValue("ClientID", clientId);
+                    cmd.Parameters.AddWithValue("ClientID", clientId);
 
                 DataTable dt = new DataTable();
                 adap.Fill(dt);
@@ -93,22 +102,18 @@ namespace LNF.Impl.Mail
             }
         }
 
-        public static int SetMessageError(int messageId, string error)
+        public int SetMessageError(int messageId, string error)
         {
-            using (var conn = GetConnection())
-            using (var adap = new SqlDataAdapter("UPDATE Email.dbo.Message SET Error = @Error WHERE MessageID = @MessageID", conn))
+            using (var cmd = GetCommand("UPDATE Email.dbo.Message SET Error = @Error WHERE MessageID = @MessageID", CommandType.Text))
             {
-                conn.Open();
-                adap.SelectCommand.CommandType = CommandType.Text;
-                adap.SelectCommand.Parameters.AddWithValue("MessageID", messageId);
-                adap.SelectCommand.Parameters.AddWithValue("Error", error);
-                int result = adap.SelectCommand.ExecuteNonQuery();
-                conn.Close();
+                cmd.Parameters.AddWithValue("MessageID", messageId);
+                cmd.Parameters.AddWithValue("Error", error);
+                int result = cmd.ExecuteNonQuery();
                 return result;
             }
         }
 
-        public static int InsertRecipients(int messageId, AddressType addressType, IEnumerable<string> addresses)
+        public int InsertRecipients(int messageId, AddressType addressType, IEnumerable<string> addresses)
         {
             if (addresses == null || addresses.Count() == 0)
                 return 0;
@@ -130,21 +135,19 @@ namespace LNF.Impl.Mail
                 dt.Rows.Add(ndr);
             }
 
-            using (var conn = GetConnection())
-            using (var cmd = new SqlCommand("INSERT Email.dbo.Recipient (MessageID, ClientID, AddressType, AddressText, AddressTimestamp) VALUES (@MessageID, @ClientID, @AddressType, @AddressText, GETDATE())", conn))
+            using (var cmd = GetCommand("INSERT Email.dbo.Recipient (MessageID, ClientID, AddressType, AddressText, AddressTimestamp) VALUES (@MessageID, @ClientID, @AddressType, @AddressText, GETDATE())", CommandType.Text))
             using (var adap = new SqlDataAdapter { InsertCommand = cmd })
             {
-                adap.InsertCommand.CommandType = CommandType.Text;
-                adap.InsertCommand.Parameters.Add("MessageID", SqlDbType.Int).SourceColumn = "MessageID";
-                adap.InsertCommand.Parameters.Add("ClientID", SqlDbType.Int).SourceColumn = "ClientID";
-                adap.InsertCommand.Parameters.Add("AddressType", SqlDbType.Int).SourceColumn = "AddressType";
-                adap.InsertCommand.Parameters.Add("AddressText", SqlDbType.NVarChar, 100).SourceColumn = "AddressText";
+                cmd.Parameters.Add("MessageID", SqlDbType.Int).SourceColumn = "MessageID";
+                cmd.Parameters.Add("ClientID", SqlDbType.Int).SourceColumn = "ClientID";
+                cmd.Parameters.Add("AddressType", SqlDbType.Int).SourceColumn = "AddressType";
+                cmd.Parameters.Add("AddressText", SqlDbType.NVarChar, 100).SourceColumn = "AddressText";
                 int result = adap.Update(dt);
                 return result;
             }
         }
 
-        private static IEnumerable<IMessage> CreateMessageItems(DataTable dt)
+        private IEnumerable<IMessage> CreateMessageItems(DataTable dt)
         {
             return dt.AsEnumerable().Select(x => new Message
             {
@@ -160,10 +163,8 @@ namespace LNF.Impl.Mail
             });
         }
 
-        private static SqlConnection GetConnection()
-        {
-            var result = new SqlConnection(ConfigurationManager.ConnectionStrings["cnSselData"].ConnectionString);
-            return result;
-        }
+        private SqlConnection GetConnection() => _conn;
+
+        private SqlCommand GetCommand(string sql, CommandType commandType = CommandType.StoredProcedure) => new SqlCommand(sql, GetConnection(), _tx) { CommandType = commandType };
     }
 }

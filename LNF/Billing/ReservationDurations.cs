@@ -97,7 +97,15 @@ namespace LNF.Billing
                 else if (count > totalCount)
                     throw new InvalidOperationException(string.Format("ReservationDuration: Reservation count validation falied. Some reservations selected more than once. [ResourceID = {0}, StartDate = {1:yyyy-MM-dd HH:mm:ss}, EndDate = {2:yyyy-MM-dd HH:mm:ss}, count = {3}, totalCount = {4}]", resourceId, _range.DateRange.StartDate, _range.DateRange.EndDate, count, totalCount));
 
-                var items = include.OrderBy(x => x.ChargeBeginDateTime).ThenBy(x => x.ChargeEndDateTime).ThenBy(x => x.ReservationID).Select(x => new ReservationDurationItem(x, _range.GetUtilizedDuration(x.ReservationID))).ToList();
+                var items = new List<ReservationDurationItem>();
+                var ordered = include.OrderBy(x => x.ChargeBeginDateTime).ThenBy(x => x.ChargeEndDateTime).ThenBy(x => x.ReservationID).ToList();
+
+                foreach (ReservationDateRangeItem i in ordered)
+                {
+                    var utilized = _range.GetUtilizedDuration(i.ReservationID);
+                    items.Add(new ReservationDurationItem(i, utilized));
+                }
+
                 _items.Add(resourceId, items);
             }
         }

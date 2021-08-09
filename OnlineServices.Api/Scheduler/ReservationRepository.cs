@@ -511,5 +511,25 @@ namespace OnlineServices.Api.Scheduler
         {
             throw new NotImplementedException();
         }
+
+        IEnumerable<ReservationToForgiveForRepair> IReservationRepository.SelectHistoryToForgiveForRepair(int resourceId, DateTime sd, DateTime ed)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IReservation GetNextReservation(int resourceId, int reservationId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<IClientAccount> AvailableAccounts(int reservationId, ActivityAccountType accountType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IAutoEndLog AddAutoEndLog(int reservationId, string autoEndLogAction)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

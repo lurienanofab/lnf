@@ -16,7 +16,10 @@ namespace LNF.Impl.DataAccess
         {
             SessionManager = sessionManager;
             SessionManager.OpenSession();
-            _transaction = SessionManager.Session.BeginTransaction(IsolationLevel.ReadCommitted);
+            IsolationLevel isolationLevel;
+            //isolationLevel = IsolationLevel.ReadUncommitted;
+            isolationLevel = IsolationLevel.ReadCommitted;
+            _transaction = SessionManager.Session.BeginTransaction(isolationLevel);
         }
 
         public void Commit()

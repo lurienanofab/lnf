@@ -1,5 +1,4 @@
-﻿using LNF.Impl;
-using SimpleInjector;
+﻿using LNF.DependencyInjection;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -19,20 +18,20 @@ namespace LNF.Web.Mvc
 
             var webapp = new WebApp();
 
-            var wcc = new WebContainerConfiguration(webapp.Container);
+            var wcc = webapp.GetConfiguration();
             wcc.RegisterAllTypes();
 
-            RegisterTypes(webapp.Container);
+            RegisterTypes(webapp.Context);
 
             webapp.BootstrapMvc(assemblies);
 
-            _provider = webapp.GetInstance<IProvider>();
+            _provider = webapp.Context.GetInstance<IProvider>();
 
             app.BeginRequest += App_BeginRequest;
             app.EndRequest += App_EndRequest;
         }
 
-        protected virtual void RegisterTypes(Container container)
+        protected virtual void RegisterTypes(IContainerContext context)
         {
             // Override to register application specific types.
         }

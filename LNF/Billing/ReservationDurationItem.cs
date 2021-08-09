@@ -22,7 +22,10 @@ namespace LNF.Billing
         /// </summary>
         public TimeSpan ScheduledDuration
         {
-            get { return Reservation.EndDateTime - Reservation.BeginDateTime; }
+            get
+            {
+                return Reservation.EndDateTime - Reservation.BeginDateTime;
+            }
         }
 
         /// <summary>
@@ -33,9 +36,11 @@ namespace LNF.Billing
             get
             {
                 if (Reservation.ActualEndDateTime.HasValue && Reservation.ActualBeginDateTime.HasValue)
-                    return Reservation.ActualEndDateTime.Value - Reservation.ActualBeginDateTime.Value;
-                else
-                    return TimeSpan.Zero;
+                {
+                    return GetTimeSpan(Reservation.ActualBeginDateTime.Value, Reservation.ActualEndDateTime.Value);
+                }
+
+                return TimeSpan.Zero;
             }
         }
 
@@ -44,7 +49,14 @@ namespace LNF.Billing
         /// </summary>
         public TimeSpan ChargeDuration
         {
-            get { return Reservation.ChargeEndDateTime - Reservation.ChargeBeginDateTime; }
+            get
+            {
+                return GetTimeSpan(Reservation.ChargeBeginDateTime, Reservation.ChargeEndDateTime);
+                //var span = Reservation.ChargeEndDateTime - Reservation.ChargeBeginDateTime;
+                //var totalSeconds = Convert.ToInt32(span.TotalSeconds);
+                //var result = TimeSpan.FromSeconds(totalSeconds);
+                //return result;
+            }
         }
 
         public virtual TimeSpan ActivatedUsedDuration
@@ -87,9 +99,16 @@ namespace LNF.Billing
                 // overtime is calculated in whole minutes (using floor)
                 if (Reservation.ActualEndDateTime.HasValue && Reservation.ActualEndDateTime.Value > Reservation.EndDateTime)
                 {
-                    var ts = Reservation.ActualEndDateTime.Value - Reservation.EndDateTime;
-                    var minutes = Math.Floor(ts.TotalMinutes);
-                    return TimeSpan.FromMinutes(minutes);
+                    return GetTimeSpan(Reservation.EndDateTime, Reservation.ActualEndDateTime.Value);
+
+                    //var sd = DateTime.Parse(Reservation.EndDateTime.ToString("yyyy-MM-dd HH:mm:ss"));
+                    //var ed = DateTime.Parse(Reservation.ActualEndDateTime.Value.ToString("yyyy-MM-dd HH:mm:ss"));
+                    //var result = ed - sd;
+                    //return result;
+
+                    //var span = Reservation.ActualEndDateTime.Value - Reservation.EndDateTime;
+                    //var minutes = Math.Floor(span.TotalMinutes);
+                    //return TimeSpan.FromMinutes(minutes);
                 }
                 else
                     return TimeSpan.Zero;
@@ -115,6 +134,19 @@ namespace LNF.Billing
         public double GetForgivenPercentage()
         {
             return 1 - Reservation.ChargeMultiplier;
+        }
+
+        private TimeSpan GetTimeSpan(DateTime sd, DateTime ed)
+        {
+            var start = DateTime.Parse(sd.ToString("yyyy-MM-dd HH:mm:ss"));
+            var end = DateTime.Parse(ed.ToString("yyyy-MM-dd HH:mm:ss"));
+            var result = end - start;
+            return result;
+
+            //var span = ed - sd;
+            //var totalSeconds = Convert.ToInt32(span.TotalSeconds);
+            //var result = TimeSpan.FromSeconds(totalSeconds);
+            //return result;
         }
     }
 }

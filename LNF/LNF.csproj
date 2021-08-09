@@ -11,7 +11,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>LNF</RootNamespace>
     <AssemblyName>LNF</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Nonshipping>true</Nonshipping>
     <TargetFrameworkProfile />
@@ -166,6 +166,7 @@
     <Compile Include="Data\IMessengerMessage.cs" />
     <Compile Include="Data\IMessengerRecipient.cs" />
     <Compile Include="Data\IPasswordResetRequest.cs" />
+    <Compile Include="DependencyInjection\IContainerContext.cs" />
     <Compile Include="DynamicDictionary.cs" />
     <Compile Include="Extentions.cs" />
     <Compile Include="Feedback\Enums.cs" />
@@ -175,7 +176,10 @@
     <Compile Include="Feedback\IPositiveIssue.cs" />
     <Compile Include="Feedback\NegativeIssueItem.cs" />
     <Compile Include="Feedback\PositiveIssueItem.cs" />
+    <Compile Include="Help\FeeLink.cs" />
+    <Compile Include="Help\FeeSection.cs" />
     <Compile Include="IContext.cs" />
+    <Compile Include="IDateRange.cs" />
     <Compile Include="InjectAttribute.cs" />
     <Compile Include="Inventory\ICategory.cs" />
     <Compile Include="Inventory\ICategoryRepository.cs" />
@@ -618,6 +622,7 @@
     <Compile Include="Scheduler\ReservationStateItem.cs" />
     <Compile Include="Scheduler\ReservationStateUtility.cs" />
     <Compile Include="Scheduler\ReservationTime.cs" />
+    <Compile Include="Scheduler\ReservationToForgiveForRepair.cs" />
     <Compile Include="Scheduler\ResourceClients.cs" />
     <Compile Include="Scheduler\OnTheFlyUtility.cs" />
     <Compile Include="Data\AddressItem.cs" />

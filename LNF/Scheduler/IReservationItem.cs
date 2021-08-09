@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace LNF.Scheduler
 {
-    public interface IReservationItem : IResourceItem
+    public interface IReservationItem : IResourceItem, IPrivileged
     {
         int ReservationID { get; set; }
         int ActivityID { get; set; }
@@ -14,9 +14,6 @@ namespace LNF.Scheduler
         ActivityAccountType ActivityAccountType { get; set; }
         ClientAuthLevel StartEndAuth { get; set; }
         bool IsFacilityDownTime { get; set; }
-        int ClientID { get; set; }
-        string UserName { get; set; }
-        ClientPrivilege Privs { get; set; }
         string LName { get; set; }
         string MName { get; set; }
         string FName { get; set; }

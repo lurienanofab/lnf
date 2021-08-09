@@ -1,4 +1,5 @@
 ﻿using LNF.DataAccess;
+using LNF.DependencyInjection;
 using LNF.Repository;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin;
@@ -74,11 +75,11 @@ namespace LNF.Web
 
     public class DataAccessMiddleware : OwinMiddleware
     {
-        private readonly Container _container;
+        private readonly IContainerContext _context;
 
-        public DataAccessMiddleware(OwinMiddleware next, Container container) : base(next)
+        public DataAccessMiddleware(OwinMiddleware next, IContainerContext context) : base(next)
         {
-            _container = container;
+            _context = context;
         }
 
         private static bool IsStaticContent(Uri uri)
@@ -97,7 +98,7 @@ namespace LNF.Web
 
             if (!IsStaticContent(uri))
             {
-                uow = _container.GetInstance<IDataAccessService>().StartUnitOfWork();
+                uow = _context.GetInstance<IDataAccessService>().StartUnitOfWork();
             }
 
             await Next.Invoke(context);
@@ -110,10 +111,10 @@ namespace LNF.Web
 
     public static class DataAccessMiddlewareExtensions
     {
-        public static void UseDataAccess(this IAppBuilder app, Container container)
+        public static void UseDataAccess(this IAppBuilder app, IContainerContext context)
         {
-            if (container == null) throw new ArgumentNullException("container");
-            app.Use(typeof(DataAccessMiddleware), container);
+            if (context == null) throw new ArgumentNullException("context");
+            app.Use(typeof(DataAccessMiddleware), context);
         }
     }
 }

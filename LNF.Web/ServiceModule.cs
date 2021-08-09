@@ -18,13 +18,13 @@ namespace LNF.Web
 
             var webapp = new WebApp();
 
-            var wcc = new WebContainerConfiguration(webapp.Container);
+            var wcc = webapp.GetConfiguration();
             wcc.EnablePropertyInjection();
             wcc.RegisterAllTypes();
 
             webapp.Bootstrap(assemblies);
 
-            _provider = webapp.GetInstance<IProvider>();
+            _provider = webapp.Context.GetInstance<IProvider>();
 
             app.BeginRequest += App_BeginRequest;
             app.EndRequest += App_EndRequest;

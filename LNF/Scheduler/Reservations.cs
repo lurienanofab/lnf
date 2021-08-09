@@ -272,7 +272,7 @@ namespace LNF.Scheduler
                         throw new Exception($"Not eligible for auto-end: Reservation.AutoEnd = {rsv.ReservationAutoEnd}, Resource.AutoEnd = {rsv.ResourceAutoEnd}");
 
                     End(rsv, actualEndDateTime, -1, -1);
-                    Provider.Scheduler.Reservation.AddAutoEndLog(rsv, "autoend");
+                    Provider.Scheduler.Reservation.AddAutoEndLog(rsv.ReservationID, "autoend");
                     result.Data.Add($"Ended auto-end reservation {rsv.ReservationID} for resource {rsv.ResourceID}");
                 }
                 catch (Exception ex)
@@ -305,7 +305,7 @@ namespace LNF.Scheduler
 
                 //Reset resource state
                 Resources.UpdateState(rsv.ResourceID, ResourceState.Online, string.Empty);
-                Provider.Scheduler.Reservation.AddAutoEndLog(rsv, "repair");
+                Provider.Scheduler.Reservation.AddAutoEndLog(rsv.ReservationID, "repair");
                 result.Data.Add($"Set ResourceID {rsv.ResourceID} online");
             }
 
@@ -362,7 +362,7 @@ namespace LNF.Scheduler
                 if (endReservation)
                 {
                     Provider.Scheduler.Reservation.EndPastUnstarted(rsv.ReservationID, newEndDateTime, -1);
-                    Provider.Scheduler.Reservation.AddAutoEndLog(rsv, "unstarted");
+                    Provider.Scheduler.Reservation.AddAutoEndLog(rsv.ReservationID, "unstarted");
                     result.Data.Add($"Unstarted reservation {rsv.ReservationID} was ended, KeepAlive = {rsv.KeepAlive}, Reservation.AutoEnd = {rsv.ReservationAutoEnd}, Resource.AutoEnd = {rsv.ResourceAutoEnd}, ed = '{ed}'");
 
                     DateTime? nextBeginDateTime = OpenResSlot(rsv.ResourceID, TimeSpan.FromMinutes(rsv.ReservFence), TimeSpan.FromMinutes(rsv.MinReservTime), oldEndDateTime);

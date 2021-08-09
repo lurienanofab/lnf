@@ -1,4 +1,5 @@
-﻿using SimpleInjector;
+﻿using LNF.DependencyInjection;
+using SimpleInjector;
 using SimpleInjector.Integration.WebApi;
 using SimpleInjector.Lifestyles;
 using System.Web.Http;
@@ -7,12 +8,7 @@ namespace LNF.WebApi
 {
     public class WebApp
     {
-        public static WebApp Current { get; private set; }
-
-        static WebApp()
-        {
-            Current = new WebApp();
-        }
+        public Container Container { get; }
 
         private WebApp()
         {
@@ -20,25 +16,13 @@ namespace LNF.WebApi
             Container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
         }
 
-        public Container Container { get; }
-
-        public T GetInstance<T>() where T : class
-        {
-            return Container.GetInstance<T>();
-        }
-
-        public void Register<TService, TImplementation>()
-            where TService : class
-            where TImplementation : class, TService
-        {
-            Container.Register<TService, TImplementation>();
-        }
+        public IContainerContext Context { get; }
 
         /// <summary>
         /// Sets up dependency injection including constructor injection on WebApi Controllers and initializes ServiceProvider.
         /// Applications should register any additional types before calling this method.
         /// </summary>
-        public void Bootstrap(HttpConfiguration config)
+        public void BootstrapWebApi(HttpConfiguration config)
         {
             Container.RegisterWebApiControllers(config);
             Container.Verify();

@@ -1,5 +1,6 @@
-﻿using LNF.DataAccess;
+﻿using LNF.DependencyInjection;
 using LNF.Impl;
+using LNF.Impl.DependencyInjection;
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
 using SimpleInjector;
 using SimpleInjector.Diagnostics;
@@ -14,23 +15,36 @@ using System.Web.UI;
 
 namespace LNF.Web
 {
+    public static class IOC
+    {
+        public static Container Container { get; set; }
+    }
+
     public class WebApp
     {
+        private readonly SimpleInjectorContainerContext _context;
+
         public WebApp()
         {
-            Container = new Container();
+            var container = new Container();
 
             // Needed for SimpleInjector v5
             // See https://simpleinjector.readthedocs.io/en/latest/resolving-unregistered-concrete-types-Is-disallowed-by-default.html
-            Container.Options.ResolveUnregisteredConcreteTypes = true;
+            container.Options.ResolveUnregisteredConcreteTypes = true;
 
-            Container.Options.DefaultScopedLifestyle = new WebRequestLifestyle();
+            container.Options.DefaultScopedLifestyle = new WebRequestLifestyle();
 
-            if (Container.IsLocked)
-                throw new Exception("Container is locked");
+            _context = new SimpleInjectorContainerContext(container);
+
+            IOC.Container = container;
         }
 
-        public Container Container { get; }
+        public IContainerContext Context => _context;
+
+        public WebContainerConfiguration GetConfiguration()
+        {
+            return new WebContainerConfiguration(IOC.Container);
+        }
 
         public void RegisterWebPages(Assembly[] assemblies)
         {
@@ -45,22 +59,10 @@ namespace LNF.Web
 
             foreach (Type type in pageTypes)
             {
-                var reg = Lifestyle.Transient.CreateRegistration(type, Container);
+                var reg = Lifestyle.Transient.CreateRegistration(type, IOC.Container);
                 reg.SuppressDiagnosticWarning(DiagnosticType.DisposableTransientComponent, "ASP.NET creates and disposes page classes for us.");
-                Container.AddRegistration(type, reg);
+                IOC.Container.AddRegistration(type, reg);
             }
-        }
-
-        public T GetInstance<T>() where T : class
-        {
-            return Container.GetInstance<T>();
-        }
-
-        public void Register<TService, TImplementation>()
-            where TService : class
-            where TImplementation : class, TService
-        {
-            Container.Register<TService, TImplementation>();
         }
 
         /// <summary>
@@ -70,8 +72,8 @@ namespace LNF.Web
         public void Bootstrap(params Assembly[] assemblies)
         {
             RegisterWebPages(assemblies);
-            Container.Verify();
-            ServiceProvider.Setup(Container.GetInstance<IProvider>());
+            IOC.Container.Verify();
+            ServiceProvider.Setup(IOC.Container.GetInstance<IProvider>());
         }
 
         /// <summary>
@@ -80,10 +82,10 @@ namespace LNF.Web
         /// </summary>
         public void BootstrapMvc(params Assembly[] assemblies)
         {
-            Container.RegisterMvcControllers(assemblies);
-            Container.Verify();
-            ServiceProvider.Setup(Container.GetInstance<IProvider>());
-            DependencyResolver.SetResolver(new SimpleInjectorDependencyResolver(Container));
+            IOC.Container.RegisterMvcControllers(assemblies);
+            IOC.Container.Verify();
+            ServiceProvider.Setup(IOC.Container.GetInstance<IProvider>());
+            DependencyResolver.SetResolver(new SimpleInjectorDependencyResolver(IOC.Container));
         }
     }
 
@@ -98,7 +100,9 @@ namespace LNF.Web
                 {
                     var name = handler.GetType().Assembly.FullName;
                     if (!name.StartsWith("System.Web") && !name.StartsWith("Microsoft"))
+                    {
                         InitializeHandler(handler);
+                    }
                 }
             };
         }
@@ -110,12 +114,10 @@ namespace LNF.Web
 
         // This should be overridden and call a static method in Global.asax
         // (see https://docs.simpleinjector.org/en/latest/webformsintegration.html)
-        protected abstract void InitializeHandler(IHttpHandler handler);
-
-        protected void ConfigureHandler(IHttpHandler handler, Container container)
+        protected virtual void InitializeHandler(IHttpHandler handler)
         {
             var handlerType = handler is Page ? handler.GetType().BaseType : handler.GetType();
-            container.GetRegistration(handlerType, true).Registration.InitializeInstance(handler);
+            IOC.Container.GetRegistration(handlerType, true).Registration.InitializeInstance(handler);
         }
 
         public void Dispose() { }

@@ -5,7 +5,7 @@ namespace LNF.Scheduler
 {
     // Based on v_ReservationInfo
 
-    public interface IReservation : IReservationItem, IResource, IPrivileged, IClientOrg
+    public interface IReservation : IReservationItem, IResource, IClientOrg
     {
         bool IsUnloaded { get; set; }
         double MaxReservedDuration { get; set; }

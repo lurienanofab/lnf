@@ -12,14 +12,14 @@ namespace LNF.Scheduler
         IEnumerable<IReservation> GetReservations(DateTime sd, DateTime ed, int clientId = 0, int resourceId = 0, int activityId = 0, bool? started = null, bool? active = null);
         IReservationWithInvitees GetReservationWithInvitees(int reservationId);
         IEnumerable<IReservationWithInvitees> GetReservationsWithInvitees(DateTime sd, DateTime ed, int clientId = 0, int resourceId = 0, int activityId = 0, bool? started = null, bool? active = null);
-        IEnumerable<IClientAccount> AvailableAccounts(IReservationItem rsv);
+        IEnumerable<IClientAccount> AvailableAccounts(int reservationId, ActivityAccountType accountType);
         IReservation CreateReservation(int resourceId, int clientId, int accountId, int activityId, DateTime beginDateTime, DateTime endDateTime, double duration, string notes, bool autoEnd, bool hasProcessInfo, bool hasInvitees, int? recurrenceId, bool isActive, bool keepAlive, double maxReservedDuration, int? modifiedByClientId);
         void CancelReservation(int reservationId, string note, int? modifiedByClientId);
         void CancelAndForgive(int reservationId, string note, int? modifiedByClientId);
         int CancelByGroup(int groupId, int? modifiedByClientId);
         int CancelByRecurrence(int recurrenceId, int? modifiedByClientId);
         void EndReservation(EndReservationArgs args);
-        void EndAndForgiveForRepair(int reservationId, string note, int? endedByClientId, int? modifiedByClientId);
+        void EndAndForgiveForRepair(int reservationId, string notes, int? endedByClientId, int? modifiedByClientId);
         int EndPastUnstarted(int reservationId, DateTime endDate, int? endedByClientId);
         IEnumerable<ReservationHistoryFilterItem> FilterCancelledReservations(IEnumerable<IReservationItem> reservations, bool includeCanceledForModification);
         IEnumerable<IResourceClient> GetResourceClients(int resourceId);
@@ -43,7 +43,7 @@ namespace LNF.Scheduler
         IEnumerable<IReservation> SelectEndableReservations(int resourceId);
         IEnumerable<IReservation> SelectExisting(int resourceId);
         IEnumerable<IReservation> SelectHistory(int clientId, DateTime sd, DateTime ed);
-        IEnumerable<IReservation> SelectHistoryToForgiveForRepair(int resourceId, DateTime sd, DateTime ed);
+        IEnumerable<ReservationToForgiveForRepair> SelectHistoryToForgiveForRepair(int resourceId, DateTime sd, DateTime ed);
         IEnumerable<IReservation> SelectOverwritable(int resourceId, DateTime sd, DateTime ed);
         IEnumerable<IReservation> SelectPastEndableRepair();
         IEnumerable<IReservation> SelectPastUnstarted();
@@ -55,13 +55,14 @@ namespace LNF.Scheduler
         IReservationItem UpdateReservation(UpdateReservationArgs args);
         void UpdateAccount(int reservationId, int accountId, int? modifiedByClientId);
         int UpdateByGroup(int groupId, DateTime sd, DateTime ed, string notes, int? modifiedByClientId);
-        void UpdateCharges(int reservationId, string note, double chargeMultiplier, bool applyLateChargePenalty, int? modifiedByClientId);
+        void UpdateCharges(int reservationId, string notes, double chargeMultiplier, bool applyLateChargePenalty, int? modifiedByClientId);
         IReservationItem UpdateFacilityDownTime(int reservationId, DateTime beginDateTime, DateTime endDateTime, int? modifiedByClientId);
         IReservation UpdateRepair(int reservationId, DateTime endDateTime, string notes, int? modifiedByClientId);
         void UpdateNotes(int reservationId, string notes);
         bool UpdateReservationHistory(ReservationHistoryUpdate model);
         IReservation FromDataRow(DataRow dr);
         TimeSpan GetTimeUntilNextReservation(IResource res, int reservationId, int clientId, DateTime beginDateTime);
+        IReservation GetNextReservation(int resourceId, int reservationId);
         IEnumerable<IResource> GetResources(IEnumerable<IReservationItem> reservations);
 
         /// <summary>
@@ -135,7 +136,7 @@ namespace LNF.Scheduler
         void ExtendReservation(int reservationId, int totalMinutes, int? modifiedByClientId);
         IEnumerable<RecentReservation> SelectRecentReservations(int resourceId);
         IReservationGroup UpdateReservationGroup(int groupId, DateTime beginDateTime, DateTime endDateTime);
-        IAutoEndLog AddAutoEndLog(IReservationItem rsv, string action);
+        IAutoEndLog AddAutoEndLog(int reservationId, string autoEndLogAction);
         int InsertReservationRecurrence(int resourceId, int clientId, int accountId, int activityId, int patternId, int param1, int? param2, DateTime beginDate, DateTime? endDate, DateTime beginTime, double duration, bool autoEnd, bool keepAlive, string notes);
     }
 }

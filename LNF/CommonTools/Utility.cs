@@ -590,6 +590,25 @@ namespace LNF.CommonTools
                 return value.Value;
         }
 
+        public static DateTime? StringToNullableDate(string val)
+        {
+            if (string.IsNullOrEmpty(val))
+                return null;
+
+            if (DateTime.TryParse(val, out DateTime d))
+                return d;
+            
+            throw new Exception($"Invalid date value: {val}");
+        }
+
+        public static DateTime? AddDays(DateTime? d, double value)
+        {
+            if (d.HasValue)
+                return d.Value.AddDays(value);
+            else
+                return null;
+        }
+
         public static DateTime? ConvertToNullableDateTime(object obj)
         {
             if (obj == DBNull.Value)
@@ -824,6 +843,12 @@ namespace LNF.CommonTools
             if (item != null) list.Add(item);
             var result = list.AsQueryable();
             return result;
+        }
+
+        public static DateTime Round(DateTime date, TimeSpan span)
+        {
+            long ticks = (date.Ticks + (span.Ticks / 2) + 1) / span.Ticks;
+            return new DateTime(ticks * span.Ticks, date.Kind);
         }
 
         public static DateTime Truncate(DateTime date)
