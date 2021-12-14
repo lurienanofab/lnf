@@ -1,4 +1,5 @@
 ﻿using LNF.Billing;
+using RestSharp;
 using System;
 using System.Data;
 
@@ -6,6 +7,8 @@ namespace OnlineServices.Api.Billing
 {
     public class StoreDataRepository : ApiClient, IStoreDataRepository
     {
+        internal StoreDataRepository(IRestClient rc) : base(rc) { }
+
         public int DeleteStoreDataClean(DateTime sd, DateTime ed, int clientId = 0, int itemId = 0, int catId = 0)
         {
             throw new NotImplementedException();

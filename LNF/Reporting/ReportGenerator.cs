@@ -230,7 +230,8 @@ namespace LNF.Reporting
 
             if (string.IsNullOrEmpty(shortCode.Trim()))
             {
-                sort = string.Format("2:{0}:{1}", orgName, accountName);
+                //accountNumber is not used at this time
+                sort = string.Format("2:{2}:{1}", accountNumber, accountName, orgName);
             }
             else
             {
@@ -274,7 +275,7 @@ namespace LNF.Reporting
             new
             {
                 x.Period,
-                BillingCategory = Enum.GetName(typeof(BillingCategory), x.BillingCategory),
+                BillingCategory = Utility.EnumToString(x.BillingCategory),
                 x.ResourceID,
                 x.ResourceName,
                 x.UserName,

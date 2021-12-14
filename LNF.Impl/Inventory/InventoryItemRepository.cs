@@ -99,5 +99,10 @@ namespace LNF.Impl.Inventory
         {
             return Session.Get<InventoryItem>(itemId);
         }
+
+        public void CheckOut(int itemId, int itemInventoryLocationId, int qty)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -42,7 +42,7 @@ namespace LNF.Impl.Billing
     {
         protected IToolBillingRepository ToolBilling { get; }
 
-        private Step1Config _config;
+        private readonly Step1Config _config;
 
         public BillingDataProcessStep1(Step1Config cfg) : base(cfg.Connection)
         {
@@ -65,7 +65,7 @@ namespace LNF.Impl.Billing
         {
             var result = new PopulateRoomBillingResult
             {
-                UseParentRooms = bool.Parse(Utility.GetRequiredGlobalSetting("UseParentRooms")),
+                UseParentRooms = GlobalSettings.Current.UseParentRooms,
 
                 //Before saving to DB, we have to delete the old data in the same period
                 //This must be done first because PopulateRoomBilling is now a two step process
@@ -86,9 +86,22 @@ namespace LNF.Impl.Billing
                 dt = LoadRoomBilling(ds);
                 result.RowsExtractedForParentRooms = dt.Rows.Count;
                 result.RowsLoadedForParentRooms = SaveRoomBillingData(dt);
+                UpdateEntries(ds.Tables[1]);
             }
 
             return result;
+        }
+
+        private void UpdateEntries(DataTable dt)
+        {
+            // This is the same code that is called when apportionment is saved (step1).
+            // Call it here to set intial values.
+            var repo = new LNF.Billing.Apportionment.Repository(Connection);
+            foreach(DataRow dr in dt.Rows)
+            {
+                var roomId = dr.Field<int>("RoomID");
+                repo.UpdateChildRoomEntryApportionment(Period, ClientID, roomId);
+            }
         }
 
         public DataTable LoadRoomBilling(DataSet dsSource)
@@ -352,6 +365,7 @@ namespace LNF.Impl.Billing
 
                             //temporary column
                             newRow["Percentage"] = defaultPercentage;
+
                             dtResult.Rows.Add(newRow);
 
                         } //end of account table loop (drowsAccountWithRemote)
@@ -551,26 +565,6 @@ namespace LNF.Impl.Billing
             }
         }
 
-        /// <summary>
-        /// Get the schema of Apportionment table, we don't want any data
-        /// </summary>
-        private DataTable GetApportionmentTableSchema()
-        {
-            using (var cmd = new SqlCommand("dbo.RoomApportionmentInDaysMonthly_Select", Connection) { CommandType = CommandType.StoredProcedure })
-            using (var adap = new SqlDataAdapter(cmd))
-            {
-                cmd.Parameters.AddWithValue("Action", "ForApportion");
-                cmd.Parameters.AddWithValue("Period", Period);
-                cmd.Parameters.AddWithValue("ClientID", -1);
-                cmd.Parameters.AddWithValue("RoomID", -1);
-
-                var dt = new DataTable();
-                adap.Fill(dt);
-
-                return dt;
-            }
-        }
-
         public int DeleteRoomBillingData()
         {
             string proc = (IsTemp) ? "dbo.RoomBillingTemp_Delete" : "dbo.RoomApportionmentInDaysMonthly_Delete";
@@ -620,7 +614,7 @@ namespace LNF.Impl.Billing
                     count = adap.Update(dtIn);
                 }
 
-                bool debug = !string.IsNullOrEmpty(ConfigurationManager.AppSettings["Debug"]) ? Convert.ToBoolean(ConfigurationManager.AppSettings["Debug"]) : false;
+                bool debug = !string.IsNullOrEmpty(ConfigurationManager.AppSettings["Debug"]) && Convert.ToBoolean(ConfigurationManager.AppSettings["Debug"]);
 
                 if (debug)
                 {
@@ -812,7 +806,7 @@ namespace LNF.Impl.Billing
 
                 int count = adap.Update(dtIn);
 
-                bool debug = !string.IsNullOrEmpty(ConfigurationManager.AppSettings["Debug"]) ? Convert.ToBoolean(ConfigurationManager.AppSettings["Debug"]) : false;
+                bool debug = !string.IsNullOrEmpty(ConfigurationManager.AppSettings["Debug"]) && Convert.ToBoolean(ConfigurationManager.AppSettings["Debug"]);
 
                 if (debug)
                 {

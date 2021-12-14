@@ -1,4 +1,5 @@
 ﻿using LNF.Data;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -7,6 +8,8 @@ namespace OnlineServices.Api.Data
 {
     public class AccountRepository : ApiClient, IAccountRepository
     {
+        internal AccountRepository(IRestClient rc) : base(rc) { }
+
         public IAccount GetAccount(int accountId)
         {
             return Get<Account>("webapi/data/account/{accountId}", UrlSegments(new { accountId }));

@@ -11,6 +11,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace LNF.CommonTools
 {
@@ -18,7 +19,7 @@ namespace LNF.CommonTools
     {
         public static string Version()
         {
-            return "79";
+            return "80";
         }
 
         public static string TableDump(DataTable dt)
@@ -115,8 +116,6 @@ namespace LNF.CommonTools
                     return sb.ToString();
                 case "csv":
                     List<string> cols = new List<string>();
-                    List<string> items = null;
-
                     foreach (DataColumn dc in columns)
                         cols.Add(dc.ColumnName);
 
@@ -126,7 +125,7 @@ namespace LNF.CommonTools
                     //items
                     foreach (DataRow dr in rows)
                     {
-                        items = new List<string>();
+                        List<string> items = new List<string>();
                         foreach (string c in columns)
                             items.Add(dr[c].ToString());
                         sb.AppendLine(string.Join(",", items));
@@ -180,7 +179,7 @@ namespace LNF.CommonTools
             if (obj == DBNull.Value)
                 return defval;
 
-            T result = default(T);
+            T result;
 
             try
             {
@@ -311,7 +310,7 @@ namespace LNF.CommonTools
         {
             DateTime d = ((rsv.ActualEndDateTime == null) ? rsv.EndDateTime : rsv.ActualEndDateTime.Value).Date;
             DateTime period = new DateTime(d.Year, d.Month, 1);
-            return Utility.IsCurrentPeriod(period);
+            return IsCurrentPeriod(period);
         }
 
         /// <summary>
@@ -562,18 +561,18 @@ namespace LNF.CommonTools
         public static TKey PropertyValue<TSource, TKey>(TSource source, Expression<Func<TSource, TKey>> exp)
         {
             string propName = PropertyName(exp);
-            return ConvertTo<TKey>(source.GetType().GetProperty(propName).GetValue(source, null), default(TKey));
+            return ConvertTo(source.GetType().GetProperty(propName).GetValue(source, null), default(TKey));
         }
 
-        public static string Clip(string s, int length)
+        public static string Clip(string text, int length)
         {
-            if (string.IsNullOrEmpty(s))
-                return s;
+            if (string.IsNullOrEmpty(text))
+                return text;
 
-            if (s.Length > length)
-                return s.Substring(0, length);
+            if (text.Length > length)
+                return text.Substring(0, length);
             else
-                return s;
+                return text;
         }
 
         public static object DBNullIf(object value, bool test)
@@ -597,7 +596,7 @@ namespace LNF.CommonTools
 
             if (DateTime.TryParse(val, out DateTime d))
                 return d;
-            
+
             throw new Exception($"Invalid date value: {val}");
         }
 
@@ -670,6 +669,42 @@ namespace LNF.CommonTools
                 return null;
         }
 
+        public static string ToHumanReadableTimeString(TimeSpan ts, bool includeMillis = false)
+        {
+            var input = ts.ToString(@"dd\.hh\:mm\:ss\.fff");
+            var match = Regex.Match(input, @"^(\d\d)\.(\d\d):(\d\d):(\d\d)\.(\d\d\d)$");
+
+            if (match.Success)
+            {
+                var d = match.Groups[1].Success ? Convert.ToInt32(match.Groups[1].Value) : 0;
+                var h = match.Groups[2].Success ? Convert.ToInt32(match.Groups[2].Value) : 0;
+                var m = match.Groups[3].Success ? Convert.ToInt32(match.Groups[3].Value) : 0;
+                var s = match.Groups[4].Success ? Convert.ToInt32(match.Groups[4].Value) : 0;
+                var ms = match.Groups[5].Success ? Convert.ToInt32(match.Groups[5].Value) : 0;
+
+                var parts = new List<string>();
+
+                if (d > 0)
+                    parts.Add($"{d} day{(d != 1 ? "s" : string.Empty)}");
+                if (h > 0)
+                    parts.Add($"{h} hour{(h != 1 ? "s" : string.Empty)}");
+                if (m > 0)
+                    parts.Add($"{m} minute{(m != 1 ? "s" : string.Empty)}");
+                if (s > 0)
+                    parts.Add($"{s} second{(s != 1 ? "s" : string.Empty)}");
+                if (includeMillis && ms > 0)
+                    parts.Add($"{ms} millisecond{(ms != 1 ? "s" : string.Empty)}");
+
+                var result = parts.Count > 0 ? string.Join(", ", parts) : "no time";
+
+                return result;
+            }
+            else
+            {
+                return ts.ToString();
+            }
+        }
+
         public static int[] ConvertStringToIntArray(string s)
         {
             int[] result = null;
@@ -701,20 +736,6 @@ namespace LNF.CommonTools
             return result;
         }
 
-        public static T ParseEnum<T>(string value) where T : struct, IConvertible
-        {
-            // this works for flag enums - e.g. value = "val1,val2,val4,..." returns "Val1, Val2, Val4, ..."
-            if (!typeof(T).IsEnum)
-                throw new ArgumentException("T must be an enum");
-
-            return (T)Enum.Parse(typeof(T), value, true);
-        }
-
-        public static string EnumName(Enum value)
-        {
-            return Enum.GetName(value.GetType(), value);
-        }
-
         public static string EnumToString(Enum value, string separator = "|")
         {
             // The normal enum ToString() method returns "Value1, Value2, Value3, ..."
@@ -722,7 +743,15 @@ namespace LNF.CommonTools
             return string.Join(separator, value.ToString().Split(',').Select(x => x.Trim()));
         }
 
-        public static TResult GetValueOrDefault<TSource, TResult>(TSource source, Func<TSource, TResult> result, TResult defval = default(TResult))
+        public static T StringToEnum<T>(string value)
+        {
+            if (typeof(T).IsEnum)
+                return (T)Enum.Parse(typeof(T), value, true);
+            else
+                throw new ArgumentException("T must be an enum type");
+        }
+
+        public static TResult GetValueOrDefault<TSource, TResult>(TSource source, Func<TSource, TResult> result, TResult defval = default)
         {
             if (source == null)
                 return defval;
@@ -748,7 +777,7 @@ namespace LNF.CommonTools
             if (typeof(T).GetConstructor(Type.EmptyTypes) != null)
                 result = Activator.CreateInstance<T>(); // type has a parameterless constructor so use Activator
             else
-                result = default(T); // the best we can do
+                result = default; // the best we can do
 
             return result;
         }
@@ -820,23 +849,6 @@ namespace LNF.CommonTools
             return result;
         }
 
-        public static string GetGlobalSetting(string name)
-        {
-            var gs = ServiceProvider.Current.Data.GlobalSetting.GetGlobalSetting(name);
-            if (gs == null) return null;
-            return gs.SettingValue;
-        }
-
-        public static string GetRequiredGlobalSetting(string name)
-        {
-            var result = GetGlobalSetting(name);
-
-            if (string.IsNullOrEmpty(result))
-                throw new Exception($"Missing required GlobalSetting: {name}");
-
-            return result;
-        }
-
         public static IQueryable<T> ToQueryable<T>(T item)
         {
             var list = new List<T>();
@@ -892,6 +904,12 @@ namespace LNF.CommonTools
             }
 
             return result.ToArray();
+        }
+
+        public static bool StringContains(string s1, string s2)
+        {
+            if (s1 == null) return false;
+            return s1.ToLower().Contains(s2);
         }
     }
 }

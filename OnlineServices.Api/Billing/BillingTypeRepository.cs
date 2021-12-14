@@ -1,5 +1,6 @@
 ﻿using LNF.Billing;
 using LNF.Data;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,6 +9,8 @@ namespace OnlineServices.Api.Billing
 {
     public class BillingTypeRepository : ApiClient, IBillingTypeRepository
     {
+        internal BillingTypeRepository(IRestClient rc) : base(rc) { }
+
         public IEnumerable<IBillingType> GetBillingTypes()
         {
             throw new NotImplementedException();

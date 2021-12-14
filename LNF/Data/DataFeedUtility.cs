@@ -225,7 +225,7 @@ namespace LNF.Data
 
             child = xdoc.CreateElement("description");
             if (string.IsNullOrEmpty(feed.Description))
-                child.InnerText = "LNF On-Line Services Data Feed";
+                child.InnerText = $"{GlobalSettings.Current.CompanyName} On-Line Services Data Feed";
             else
                 child.InnerText = feed.Description;
             channel.AppendChild(child);
@@ -306,7 +306,7 @@ namespace LNF.Data
                 sb.AppendLine("<!DOCTYPE html>");
                 sb.AppendLine("<html>");
                 sb.AppendLine("<head>");
-                sb.AppendLine("<title>LNF Feed</title>");
+                sb.AppendLine($"<title>{GlobalSettings.Current.CompanyName} Feed</title>");
                 sb.AppendLine("<style>");
                 sb.AppendLine(".lnf-feed-container {margin: 10px;}");
                 sb.AppendLine(".grid.lnf-feed {margin-bottom: 10px;}");
@@ -407,10 +407,10 @@ namespace LNF.Data
             DateTime buildTime = DateTime.UtcNow;
             sb.AppendLine("BEGIN:VCALENDAR");
             sb.AppendLine("METHOD:PUBLISH");
-            sb.AppendLine("PRODID:-//" + serverIP + "//NONSGML LNF-ICAL 1.0//");
+            sb.AppendLine($"PRODID:-//{serverIP}//NONSGML {GlobalSettings.Current.CompanyName}-ICAL 1.0//");
             sb.AppendLine("VERSION:2.0");
             sb.AppendLine("X-WR-CALNAME:" + feed.Name);
-            sb.AppendLine("X-WR-CALDESC:LNF On-Line Services Data Feed");
+            sb.AppendLine($"X-WR-CALDESC:{GlobalSettings.Current.CompanyName} Online Services Data Feed");
             sb.AppendLine("X-WR-TIMEZONE:US-Eastern");
             int i = 0;
             foreach (var dr in dt)

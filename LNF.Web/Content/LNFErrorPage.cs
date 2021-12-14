@@ -6,7 +6,7 @@ using System.Web.UI.WebControls;
 
 namespace LNF.Web.Content
 {
-    public abstract class LNFErrorPage : LNFPage
+    public abstract class LNFErrorPage : OnlineServicesPage
     {
         public override ClientPrivilege AuthTypes
         {
@@ -19,7 +19,7 @@ namespace LNF.Web.Content
         protected abstract Literal ErrorMessageLiteral { get; }
         protected abstract HyperLink ReloadPageHyperlink { get; }
 
-        private void LoadError()
+        protected void LoadError()
         {
             Exception ex = Server.GetLastError();
             if (ex != null)
@@ -47,14 +47,13 @@ namespace LNF.Web.Content
         {
             ClearErrorID();
             if (ex == null) return;
-            Guid errorId = Guid.Empty;
             string errorMsg = GetErrorMessage(ex);
             int clientId = GetClientID();
             string clientName = GetDisplayName();
             string filePath = Request.Url.ToString();
 
 
-            errorId = ServiceProvider.Current.Log.SetPassError(errorMsg, clientId, clientName, filePath);
+            Guid errorId = Provider.Log.SetPassError(errorMsg, clientId, clientName, filePath);
 
             var msgId = errorId == Guid.Empty ? Guid.NewGuid() : errorId;
 
@@ -67,8 +66,7 @@ namespace LNF.Web.Content
         private string GetErrorMessage(Exception ex)
         {
             if (ex == null) return string.Empty;
-            string result = string.Empty;
-            result = Request.Url.ToString();
+            string result = Request.Url.ToString();
             result += Environment.NewLine + ex.Message;
             if (ex.InnerException != null)
                 result += Environment.NewLine + ex.InnerException.Message;
@@ -152,7 +150,7 @@ namespace LNF.Web.Content
             {
                 Guid errorId = new Guid(GetErrorID().ToString());
 
-                IPassError err = ServiceProvider.Current.Log.GetPassError(errorId);
+                IPassError err = Provider.Log.GetPassError(errorId);
 
                 if (err != null)
                 {
@@ -192,7 +190,7 @@ namespace LNF.Web.Content
 
                 if (!string.IsNullOrEmpty(emails))
                 {
-                    SendEmail.Email("lnf-it@umich.edu", emails, false, EmailSubject, emailMsg);
+                    SendEmail.Email(GlobalSettings.Current.DeveoperEmails[0], emails, false, EmailSubject, emailMsg);
                     DoneMessageLabel.Text = "Your message has been sent to the application developers.";
                 }
                 else

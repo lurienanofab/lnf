@@ -1,4 +1,5 @@
 ﻿using LNF.Data;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -6,7 +7,7 @@ namespace OnlineServices.Api.Data
 {
     public class FeedRepository : ApiClient, IFeedRepository
     {
-        public FeedRepository() : base(GetApiBaseUrl()) { }
+        internal FeedRepository(IRestClient rc) : base(rc) { }
 
         public IScriptEngine ScriptEngine => throw new NotImplementedException();
 

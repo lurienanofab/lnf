@@ -14,10 +14,6 @@ namespace LNF.Scheduler
         ActivityAccountType ActivityAccountType { get; set; }
         ClientAuthLevel StartEndAuth { get; set; }
         bool IsFacilityDownTime { get; set; }
-        string LName { get; set; }
-        string MName { get; set; }
-        string FName { get; set; }
-        string DisplayName { get; }
         string Email { get; set; }
         string Phone { get; set; }
         int AccountID { get; set; }

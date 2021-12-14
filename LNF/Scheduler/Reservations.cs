@@ -649,7 +649,7 @@ namespace LNF.Scheduler
                     if (existing.ActualBeginDateTime == null)
                     {
                         Provider.Scheduler.Reservation.CancelAndForgive(existing.ReservationID, "Cancelled and forgiven for facility down time.", modifiedByClientId);
-                        Provider.Scheduler.Email.EmailOnCanceledByRepair(existing.ReservationID, true, "LNF Facility Down", "Facility is down, thus we have to disable the tool.", rsv.EndDateTime, modifiedByClientId);
+                        Provider.Scheduler.Email.EmailOnCanceledByRepair(existing.ReservationID, true, $"{SendEmail.CompanyName} Facility Down", "Facility is down, thus we have to disable the tool.", rsv.EndDateTime, modifiedByClientId);
                     }
                     else
                     {

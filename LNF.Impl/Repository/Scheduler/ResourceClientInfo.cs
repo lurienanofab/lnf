@@ -12,7 +12,7 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual string ResourceName { get; set; }
         public virtual int AuthDuration { get; set; }
         public virtual bool ResourceIsActive { get; set; }
-        public virtual string DisplayName { get; set; }
+        public virtual string DisplayName => Clients.GetDisplayName(LName, FName);
         public virtual string Email { get; set; }
         public virtual string Phone { get; set; }
         public virtual bool ClientActive { get; set; }
@@ -22,6 +22,9 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual ClientAuthLevel AuthLevel { get; set; }
         public virtual int ClientID { get; set; }
         public virtual string UserName { get; set; }
+        public virtual string LName { get; set; }
+        public virtual string MName { get; set; }
+        public virtual string FName { get; set; }
         public virtual ClientPrivilege Privs { get; set; }
         public virtual bool HasAuth(ClientAuthLevel auths) => ResourceClients.HasAuth(AuthLevel, auths);
         public virtual bool IsEveryone() => ResourceClients.IsEveryone(ClientID);

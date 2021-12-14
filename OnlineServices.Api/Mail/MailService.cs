@@ -1,6 +1,7 @@
 ﻿using LNF.Data;
 using LNF.Mail;
 using Newtonsoft.Json;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -11,10 +12,10 @@ namespace OnlineServices.Api.Mail
         public IMassEmailRepository MassEmail { get; }
         public IAttachmentUtility Attachment { get; }
 
-        public MailService(IMassEmailRepository massEmail, IAttachmentUtility attachment)
+        internal MailService(IRestClient rc) : base(rc)
         {
-            MassEmail = massEmail;
-            Attachment = attachment;
+            MassEmail = new MassEmailRepository(rc);
+            Attachment = new AttachmentUtility(rc);
         }
 
         public IMessage GetMessage(int messageId)

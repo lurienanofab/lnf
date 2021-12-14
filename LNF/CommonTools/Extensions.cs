@@ -112,7 +112,7 @@ namespace LNF.CommonTools
         /// <summary>
         /// Same as dr.Field&lt;T&gt;(columnName) except this handles DBNulls and invalid 
         /// </summary>
-        public static T Value<T>(this DataRow dr, string columnName, T defval)
+        public static T FieldOrDefault<T>(this DataRow dr, string columnName, T defval)
         {
             if (dr[columnName] == DBNull.Value)
                 return defval;
@@ -123,7 +123,7 @@ namespace LNF.CommonTools
         ///<summary>
         /// Sets a DataRow value if the column exists.
         ///</summary>
-        public static void SetValue<T>(this DataRow dr, string column, T value)
+        public static void SetFieldIfExists<T>(this DataRow dr, string column, T value)
         {
             if (dr != null && dr.Table.Columns.Contains(column))
                 dr[column] = value;

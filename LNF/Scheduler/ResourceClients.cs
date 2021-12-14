@@ -135,7 +135,7 @@ namespace LNF.Scheduler
                     if (daysTillExpire > 0 && daysTillExpire <= 1)
                     {
                         string recipient = item.Email;
-                        string subject = "LNF tool authorization is about to expire!";
+                        string subject = $"{SendEmail.CompanyName} tool authorization is about to expire!";
                         string body = "Your authorization for the " + resourceName
                             + string.Format(" will expire on {0}.<br /><br />", expiration.ToLongDateString())
                             + string.Format("Please <a href=\"{0}\">create a ticket on the tool</a>", HelpdeskUtility.GetSchedulerHelpdeskUrl("ssel-sched.eecs.umich.edu", item.ResourceID))
@@ -183,7 +183,7 @@ namespace LNF.Scheduler
 
                         IList<IResourceClient> engineers = GetToolEngineers(item.ResourceID).ToList();
                         recipient.AddRange(engineers.Select(x => x.Email));
-                        subject = "LNF tool authorization is about to expire!";
+                        subject = $"{SendEmail.CompanyName} tool authorization is about to expire!";
 
                         string body = "Everyone authorization for the " + resourceName
                             + " will expire on " + expiration.ToLongDateString() + ".<br /><br />"

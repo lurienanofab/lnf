@@ -13,7 +13,7 @@ namespace LNF.CommonTools
         public static void WriteToWindowsEvent(string Message)
         {
             string Log = "Application";
-            string Source = "LNF Application";
+            string Source = $"{GlobalSettings.Current.CompanyName} Application";
 
             EventLog objEventLog = new EventLog();
 

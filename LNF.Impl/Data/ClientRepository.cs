@@ -312,18 +312,28 @@ namespace LNF.Impl.Data
             return result;
         }
 
-        ///// <summary>
-        ///// Returns the number of currently active accounts for a given client.
-        ///// </summary>
+        /// <summary>
+        /// Returns the number of currently active accounts for a given client.
+        /// </summary>
         public int GetActiveAccountCount(int clientId)
         {
             int result = Session.Query<ActiveLogClientAccount>().Count(x => x.ClientID == clientId && !x.DisableDate.HasValue);
             return result;
         }
 
-        public IEnumerable<IClient> GetClients()
+        /// <summary>
+        /// Returns all clients.
+        /// </summary>
+        public IEnumerable<ClientListItem> GetClients()
         {
-            return Session.Query<ClientInfo>().ToList();
+            var result =  Session.Query<ClientInfo>()
+                .Select(x => new ClientListItem
+                {
+                    ClientID = x.ClientID,
+                    DisplayName = x.DisplayName
+                }).ToList();
+
+            return result;
         }
 
         public IEnumerable<IClient> GetClients(int limit, int skip = 0)
@@ -462,7 +472,7 @@ namespace LNF.Impl.Data
             return result;
         }
 
-        public IClient StoreClientInfo(ref int clientId, string lname, string fname, string mname, string username, IClientDemographics demographics, IEnumerable<IPriv> privs, IEnumerable<ICommunity> communities, int technicalInterestId, int orgId, int roleId, int deptId, string email, string phone, bool isManager, bool isFinManager, DateTime? subsidyStart, DateTime? newFacultyStart, int[] addedAddressIds, int[] deletedAddressIds, int[] clientManagerIds, int[] clientAccountIds, out string alert)
+        public IClient StoreClientInfo(ref int clientId, string lname, string fname, string mname, string username, ClientDemographics demographics, IEnumerable<IPriv> privs, IEnumerable<ICommunity> communities, int technicalInterestId, int orgId, int roleId, int deptId, string email, string phone, bool isManager, bool isFinManager, DateTime? subsidyStart, DateTime? newFacultyStart, int[] addedAddressIds, int[] deletedAddressIds, int[] clientManagerIds, int[] clientAccountIds, out string alert)
         {
             //add rows to Client, ClientSite and ClientOrg for new entries
 
@@ -610,11 +620,6 @@ namespace LNF.Impl.Data
             c.MName = client.MName;
             c.LName = client.LName;
             c.UserName = client.UserName;
-            c.DemCitizenID = client.DemCitizenID;
-            c.DemGenderID = client.DemGenderID;
-            c.DemRaceID = client.DemRaceID;
-            c.DemEthnicID = client.DemEthnicID;
-            c.DemDisabilityID = client.DemDisabilityID;
             c.Privs = client.Privs;
             c.Communities = client.Communities;
             c.TechnicalInterestID = client.TechnicalInterestID;
@@ -689,7 +694,6 @@ namespace LNF.Impl.Data
                 {
                     check.RemoveStoreUserPriv();
                     temp += reason + " The Store User privilege has been removed.";
-                    reason = string.Empty;
                 }
 
                 alert = temp.Trim();
@@ -705,55 +709,25 @@ namespace LNF.Impl.Data
             return result;
         }
 
-        public IClientDemographics GetClientDemographics(int clientId)
+        public ClientDemographics GetClientDemographics(int clientId)
         {
-            var client = Session.Get<Client>(clientId);
-
-            if (client == null) return null;
-
-            var citizen = Session.Get<DemCitizen>(client.DemCitizenID);
-            var disability = Session.Get<DemDisability>(client.DemDisabilityID);
-            var ethnic = Session.Get<DemEthnic>(client.DemEthnicID);
-            var gender = Session.Get<DemGender>(client.DemGenderID);
-            var race = Session.Get<DemRace>(client.DemRaceID);
-
-            return new ClientDemographics
-            {
-                ClientID = client.ClientID,
-                UserName = client.UserName,
-                FName = client.FName,
-                LName = client.LName,
-                DemCitizenID = citizen.DemCitizenID,
-                DemCitizenValue = citizen.DemCitizenValue,
-                DemDisabilityID = disability.DemDisabilityID,
-                DemDisabilityValue = disability.DemDisabilityValue,
-                DemEthnicID = ethnic.DemEthnicID,
-                DemEthnicValue = ethnic.DemEthnicValue,
-                DemGenderID = gender.DemGenderID,
-                DemGenderValue = gender.DemGenderValue,
-                DemRaceID = race.DemRaceID,
-                DemRaceValue = race.DemRaceValue
-            };
+            return Session.Get<ClientDemographics>(clientId);
         }
 
-        public bool UpdateClientDemographics(IClientDemographics value)
+        public int UpdateClientDemographics(ClientDemographics value)
         {
-            var client = Session.Get<Client>(value.ClientID);
-
-            if (client == null)
-                return false;
-
-            client.DemCitizenID = value.DemCitizenID;
-            client.DemEthnicID = value.DemEthnicID;
-            client.DemRaceID = value.DemRaceID;
-            client.DemGenderID = value.DemGenderID;
-            client.DemDisabilityID = value.DemDisabilityID;
-
-            Session.SaveOrUpdate(client);
+            var updates = Session.GetNamedQuery("UpdateClientDemographics")
+                .SetParameter("ClientID", value.ClientID)
+                .SetParameter("DemCitizenID", value.DemCitizenID)
+                .SetParameter("DemGenderID", value.DemGenderID)
+                .SetParameter("DemRaceID", value.DemRaceID)
+                .SetParameter("DemEthnicID", value.DemEthnicID)
+                .SetParameter("DemDisabilityID", value.DemDisabilityID)
+                .ExecuteUpdate();
 
             ClearClientCache();
 
-            return true;
+            return updates;
         }
 
         public string AccountEmail(int clientId, int accountId)
@@ -1052,7 +1026,7 @@ namespace LNF.Impl.Data
             entity.LastUpdate = sd.LastUpdate;
 
             if (sd.StaffDirectoryID == 0)
-            { 
+            {
                 Session.Save(entity);
                 sd.StaffDirectoryID = entity.StaffDirectoryID;
             }

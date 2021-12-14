@@ -1,5 +1,6 @@
 ﻿using LNF.Data;
 using LNF.DataAccess;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -7,6 +8,8 @@ namespace OnlineServices.Api.Data
 {
     public class ActiveLogRepository : ApiClient, IActiveLogRepository
     {
+        internal ActiveLogRepository(IRestClient rc) : base(rc) { }
+
         public IEnumerable<IActiveLog> ActiveLogs(string tableName, int record)
         {
             throw new NotImplementedException();

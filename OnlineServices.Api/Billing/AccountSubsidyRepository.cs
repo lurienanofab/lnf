@@ -1,4 +1,5 @@
 ﻿using LNF.Billing;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -6,6 +7,8 @@ namespace OnlineServices.Api.Billing
 {
     public class AccountSubsidyRepository : ApiClient, ISubsidyRepository
     {
+        internal AccountSubsidyRepository(IRestClient rc) : base(rc) { }
+
         public IEnumerable<IAccountSubsidy> GetAccountSubsidy(int? accountId = null)
         {
             return Get<List<AccountSubsidy>>("webapi/billing/account-subsidy", QueryStrings(new { accountId }));

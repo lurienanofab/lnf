@@ -340,16 +340,6 @@ namespace LNF.Tests
             Assert.AreEqual(false, c.IsChecked);
             Assert.AreEqual(true, c.IsSafetyTest);
             Assert.AreEqual(true, c.ClientActive);
-            Assert.AreEqual(1, c.DemCitizenID);
-            Assert.AreEqual("No data", c.DemCitizenName);
-            Assert.AreEqual(1, c.DemGenderID);
-            Assert.AreEqual("No data", c.DemGenderName);
-            Assert.AreEqual(1, c.DemRaceID);
-            Assert.AreEqual("No data", c.DemRaceName);
-            Assert.AreEqual(1, c.DemEthnicID);
-            Assert.AreEqual("No data", c.DemEthnicName);
-            Assert.AreEqual(1, c.DemDisabilityID);
-            Assert.AreEqual("No data", c.DemDisabilityName);
             Assert.AreEqual(1, c.TechnicalInterestID);
             Assert.AreEqual("Electronics", c.TechnicalInterestName);
             Assert.AreEqual(1373, c.ClientOrgID);

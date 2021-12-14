@@ -1,20 +1,5 @@
 ﻿using LNF;
-using LNF.Authorization;
-using LNF.Billing;
-using LNF.Control;
-using LNF.Data;
-using LNF.DataAccess;
-using LNF.Feedback;
-using LNF.Inventory;
-using LNF.Logging;
-using LNF.Mail;
-using LNF.Ordering;
-using LNF.PhysicalAccess;
-using LNF.Reporting;
-using LNF.Scheduler;
-using LNF.Store;
-using LNF.Util;
-using LNF.Worker;
+using RestSharp;
 using System;
 using System.Configuration;
 
@@ -22,72 +7,55 @@ namespace OnlineServices.Api
 {
     public class Provider : IProvider
     {
-        public IAuthorizationService Authorization { get; }
+        public LNF.Authorization.IAuthorizationService Authorization { get; }
 
-        public ILoggingService Log { get; }
+        public LNF.Logging.ILoggingService Log { get; }
 
-        public IControlService Control { get; }
+        public LNF.Control.IControlService Control { get; }
 
-        public IDataService Data { get; }
+        public LNF.Data.IDataService Data { get; }
 
-        public IBillingService Billing { get; }
+        public LNF.Billing.IBillingService Billing { get; }
 
-        public IInventoryService Inventory { get; }
+        public LNF.Inventory.IInventoryService Inventory { get; }
 
-        public IOrderingService Ordering { get; }
+        public LNF.Ordering.IOrderingService Ordering { get; }
 
-        public IStoreService Store { get; }
+        public LNF.Store.IStoreService Store { get; }
 
-        public IMailService Mail { get; }
+        public LNF.Mail.IMailService Mail { get; }
 
-        public IPhysicalAccessService PhysicalAccess { get; }
+        public LNF.PhysicalAccess.IPhysicalAccessService PhysicalAccess { get; }
 
-        public ISchedulerService Scheduler { get; }
+        public LNF.Scheduler.ISchedulerService Scheduler { get; }
 
-        public IFeedbackService Feedback { get; }
+        public LNF.Feedback.IFeedbackService Feedback { get; }
 
-        public IReportingService Reporting { get; }
+        public LNF.Reporting.IReportingService Reporting { get; }
 
-        public IWorkerService Worker { get; }
+        public LNF.Worker.IWorkerService Worker { get; }
 
-        public IProviderUtility Utility { get; }
+        public LNF.Util.IProviderUtility Utility { get; }
 
-        public IDataAccessService DataAccess { get; }
+        public LNF.DataAccess.IDataAccessService DataAccess => throw new Exception("This implementation does not use DataAccess.");
 
-        public Provider(
-            IAuthorizationService authorization,
-            ILoggingService log,
-            IControlService control,
-            IDataService data,
-            IBillingService billing,
-            IInventoryService inventory,
-            IOrderingService ordering,
-            IStoreService store,
-            IMailService mail,
-            IPhysicalAccessService physicalAccess,
-            ISchedulerService scheduler,
-            IFeedbackService feedback,
-            IReportingService reporting,
-            IWorkerService worker,
-            IProviderUtility utility,
-            IDataAccessService dataAccess)
+        public Provider(IRestClient rc)
         {
-            Authorization = authorization;
-            Log = log;
-            Control = control;
-            Data = data;
-            Billing = billing;
-            Inventory = inventory;
-            Ordering = ordering;
-            Store = store;
-            Mail = mail;
-            PhysicalAccess = physicalAccess;
-            Scheduler = scheduler;
-            Feedback = feedback;
-            Reporting = reporting;
-            Worker = worker;
-            Utility = utility;
-            DataAccess = dataAccess;
+            Authorization = new Authorization.AuthorizationService(rc);
+            Log = new Logging.LoggingService(rc);
+            Control = new Control.ControlService(rc);
+            Data = new Data.DataService(rc);
+            Billing = new Billing.BillingService(rc);
+            Inventory = new Inventory.InventoryService(rc);
+            Ordering = new Ordering.OrderingService(rc);
+            Store = new Store.StoreService(rc);
+            Mail = new Mail.MailService(rc);
+            PhysicalAccess = new PhysicalAccess.PhysicalAccessService(rc);
+            Scheduler = new Scheduler.SchedulerService(rc);
+            Feedback = new Feedback.FeedbackService(rc);
+            Reporting = new Reporting.ReportingService(rc);
+            Worker = new Worker.WorkerService(rc);
+            Utility = new Utility.ProviderUtility(rc);
         }
 
         public bool IsProduction() => Convert.ToBoolean(ConfigurationManager.AppSettings["IsProduction"]);

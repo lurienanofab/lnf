@@ -6,7 +6,7 @@ namespace LNF.WebApi
 {
     public static class DependencyInjectionExtensions
     {
-        public static void Bootstrap(this HttpConfiguration config, Container container)
+        public static void Bootstrap(this HttpConfiguration config, SimpleInjector.Container container)
         {
             config.DependencyResolver = new SimpleInjectorWebApiDependencyResolver(container);
         }

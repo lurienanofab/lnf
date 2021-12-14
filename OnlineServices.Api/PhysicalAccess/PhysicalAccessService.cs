@@ -8,7 +8,7 @@ namespace OnlineServices.Api.PhysicalAccess
 {
     public class PhysicalAccessService : ApiClient, IPhysicalAccessService
     {
-        public PhysicalAccessService() : base(GetApiBaseUrl()) { }
+        internal PhysicalAccessService(IRestClient rc) : base(rc) { }
 
         public IEnumerable<Badge> GetBadge(int clientId = 0)
         {

@@ -1,6 +1,7 @@
 ﻿using LNF;
 using LNF.Billing;
 using LNF.Data;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -8,6 +9,10 @@ namespace OnlineServices.Api.Data
 {
     public class ClientRepository : ApiClient, IClientRepository
     {
+        internal ClientRepository(IRestClient rc) : base(rc) { }
+
+        public static ClientRepository Create(IRestClient rc) => new ClientRepository(rc);
+
         public string[] ActiveEmails(int clientId)
         {
             throw new NotImplementedException();
@@ -118,7 +123,7 @@ namespace OnlineServices.Api.Data
             throw new NotImplementedException();
         }
 
-        public IClient StoreClientInfo(ref int clientId, string lname, string fname, string mname, string username, IClientDemographics demographics, IEnumerable<IPriv> privs, IEnumerable<ICommunity> communities, int technicalFieldId, int orgId, int roleId, int deptId, string email, string phone, bool isManager, bool isFinManager, DateTime? subsidyStart, DateTime? newFacultyStart, int[] addedAddressIds, int[] deletedAddressIds, int[] clientManagerIds, int[] clientAccountIds, out string alert)
+        public IClient StoreClientInfo(ref int clientId, string lname, string fname, string mname, string username, ClientDemographics demographics, IEnumerable<IPriv> privs, IEnumerable<ICommunity> communities, int technicalFieldId, int orgId, int roleId, int deptId, string email, string phone, bool isManager, bool isFinManager, DateTime? subsidyStart, DateTime? newFacultyStart, int[] addedAddressIds, int[] deletedAddressIds, int[] clientManagerIds, int[] clientAccountIds, out string alert)
         {
             throw new NotImplementedException();
         }
@@ -155,12 +160,12 @@ namespace OnlineServices.Api.Data
             throw new NotImplementedException();
         }
 
-        public IClientDemographics GetClientDemographics(int clientId)
+        public ClientDemographics GetClientDemographics(int clientId)
         {
             throw new NotImplementedException();
         }
 
-        public bool UpdateClientDemographics(IClientDemographics value)
+        public int UpdateClientDemographics(ClientDemographics value)
         {
             throw new NotImplementedException();
         }
@@ -172,7 +177,8 @@ namespace OnlineServices.Api.Data
 
         public IEnumerable<IClientAccount> GetActiveClientAccounts(int clientId)
         {
-            return Get<List<ClientAccountItem>>("webapi/data/client/{clientId}/accounts/active", UrlSegments(new { clientId }));
+            var result = Get<List<ClientAccountItem>>("webapi/data/client/{clientId}/accounts/active", UrlSegments(new { clientId }));
+            return result;
         }
 
         public IEnumerable<IClientAccount> GetActiveClientAccounts(int clientId, DateTime sd, DateTime ed)
@@ -370,9 +376,9 @@ namespace OnlineServices.Api.Data
             throw new NotImplementedException();
         }
 
-        public IEnumerable<IClient> GetClients()
+        public IEnumerable<ClientListItem> GetClients()
         {
-            throw new NotImplementedException();
+            return Get<List<ClientListItem>>("webapi/data/client");
         }
 
         public bool GetRequirePasswordReset(int clientId)

@@ -1,4 +1,4 @@
-﻿using LNF.Impl;
+﻿using LNF.Impl.DependencyInjection;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -17,10 +17,9 @@ namespace LNF.Web
             Assembly[] assemblies = BuildManager.GetReferencedAssemblies().Cast<Assembly>().ToArray();
 
             var webapp = new WebApp();
-
-            var wcc = webapp.GetConfiguration();
-            wcc.EnablePropertyInjection();
-            wcc.RegisterAllTypes();
+            
+            webapp.Context.EnablePropertyInjection();
+            webapp.GetConfiguration().RegisterAllTypes();
 
             webapp.Bootstrap(assemblies);
 

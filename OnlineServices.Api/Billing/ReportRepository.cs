@@ -8,6 +8,8 @@ namespace OnlineServices.Api.Billing
 {
     public class ReportRepository : ApiClient, IReportRepository
     {
+        internal ReportRepository(IRestClient rc) : base(rc) { }
+
         public IEnumerable<IBillingSummary> GetBillingSummary(DateTime sd, DateTime ed, bool includeRemote = false, int clientId = 0)
         {
             return Get<List<BillingSummaryItem>>("webapi/billing/report/billing-summary", QueryStrings(new { sd, ed, includeRemote, clientId }));

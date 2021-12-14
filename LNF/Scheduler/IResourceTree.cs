@@ -15,7 +15,6 @@ namespace LNF.Scheduler
         DateTime? CurrentEndDateTime { get; set; }
         string CurrentNotes { get; set; }
         int Communities { get; set; }
-        string DisplayName { get; set; }
         bool ClientActive { get; set; }
         int OrgID { get; set; }
         string Email { get; set; }

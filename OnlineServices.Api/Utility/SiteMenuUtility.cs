@@ -1,10 +1,13 @@
 ﻿using LNF.Util.SiteMenu;
+using RestSharp;
 using System;
 
 namespace OnlineServices.Api.Utility
 {
     public class SiteMenuUtility : ApiClient, ISiteMenuUtility
     {
+        internal SiteMenuUtility(IRestClient rc) : base(rc) { }
+
         public string GetSiteMenu(int clientId, string target = null)
         {
             if (clientId <= 0)

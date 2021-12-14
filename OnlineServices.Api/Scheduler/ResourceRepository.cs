@@ -1,5 +1,6 @@
 ﻿using LNF;
 using LNF.Scheduler;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -7,6 +8,8 @@ namespace OnlineServices.Api.Scheduler
 {
     public class ResourceRepository : ApiClient, IResourceRepository
     {
+        internal ResourceRepository(IRestClient rc) : base(rc) { }
+
         public IResource GetResource(int resourceId)
         {
             return Get<ResourceItem>("webapi/scheduler/resource/{resourceId}", UrlSegments(new { resourceId }));

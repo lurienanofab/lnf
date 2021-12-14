@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Caching;
 
 namespace LNF.Scheduler
@@ -77,6 +78,7 @@ namespace LNF.Scheduler
 
         public static string KioskRedirectUrl(string ip)
         {
+            var path = Assembly.GetExecutingAssembly().Location;
             string json = File.ReadAllText("kiosks.json");
 
             Dictionary<string, string> table = new Dictionary<string, string>

@@ -1,6 +1,7 @@
 ﻿using LNF.Billing;
 using LNF.Data;
 using LNF.Scheduler;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -8,6 +9,8 @@ namespace OnlineServices.Api.Billing
 {
     public class ToolBillingRepository : ApiClient, IToolBillingRepository
     {
+        internal ToolBillingRepository(IRestClient rc) : base(rc) { }
+
         public void CalculateBookingFee(IToolBilling item)
         {
             throw new NotImplementedException();

@@ -1,10 +1,13 @@
 ﻿using LNF.Logging;
+using RestSharp;
 using System;
 
 namespace OnlineServices.Api.Logging
 {
-    public class LoggingService : ILoggingService
+    public class LoggingService : ApiClient, ILoggingService
     {
+        internal LoggingService(IRestClient rc) : base(rc) { }
+
         public string Name => throw new NotImplementedException();
 
         public bool Enabled => throw new NotImplementedException();

@@ -1,4 +1,5 @@
 ﻿using LNF.Ordering;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -6,6 +7,8 @@ namespace OnlineServices.Api.Ordering
 {
     public class PurchaseOrderRepository : ApiClient, IPurchaseOrderRepository
     {
+        internal PurchaseOrderRepository(IRestClient rc) : base(rc) { }
+
         public IPurchaseOrderAccount AddAccount(int clientId, int accountId)
         {
             throw new NotImplementedException();

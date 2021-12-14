@@ -1,5 +1,6 @@
 ﻿using LNF.Data;
 using LNF.Scheduler;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -7,6 +8,8 @@ namespace OnlineServices.Api.Scheduler
 {
     public class EmailRepository : ApiClient, IEmailRepository
     {
+        internal EmailRepository(IRestClient rc) : base(rc) { }
+
         public void EmailOnCanceledByRepair(int reservationId, bool isRemoved, string state, string notes, DateTime repairEndDateTime, int clientId)
         {
             throw new NotImplementedException();

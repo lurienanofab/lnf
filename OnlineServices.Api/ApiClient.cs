@@ -15,29 +15,48 @@ namespace OnlineServices.Api
 
         // Using Newtonsoft.Json serializer instead of RestSharp default because it's better (handles enums for example).
 
-        public ApiClient() : this(GetApiBaseUrl()) { }
+        internal ApiClient(IRestClient rc)
+        {
+            HttpClient = rc;
+        }
 
-        public ApiClient(string host)
+        private ApiClient() : this(GetApiBaseUrl()) { }
+
+        private ApiClient(string host) : this(NewRestClient(host)) { }
+
+        public static string GetApiBaseUrl(bool optional = false)
+        {
+            return GetSetting("ApiBaseUrl", optional);
+        }
+
+        public static IRestClient NewRestClient()
+        {
+            return NewRestClient(GetApiBaseUrl());
+        }
+
+        public static IRestClient NewRestClient(string host)
         {
             if (string.IsNullOrEmpty(host))
                 throw new ArgumentNullException("host");
 
-            HttpClient = new RestClient(host) { Timeout = 10 * 60 * 1000 };
+            var rc = new RestClient(host) { Timeout = 10 * 60 * 1000 };
 
             // Override with Newtonsoft JSON Handler
-            HttpClient.AddHandler("application/json", () => JsonNetDeserializer.Default);
-            HttpClient.AddHandler("text/json", () => JsonNetDeserializer.Default);
-            HttpClient.AddHandler("text/x-json", () => JsonNetDeserializer.Default);
-            HttpClient.AddHandler("text/javascript", () => JsonNetDeserializer.Default);
-            HttpClient.AddHandler("*+json", () => JsonNetDeserializer.Default);
+            rc.AddHandler("application/json", () => JsonNetDeserializer.Default);
+            rc.AddHandler("text/json", () => JsonNetDeserializer.Default);
+            rc.AddHandler("text/x-json", () => JsonNetDeserializer.Default);
+            rc.AddHandler("text/javascript", () => JsonNetDeserializer.Default);
+            rc.AddHandler("*+json", () => JsonNetDeserializer.Default);
 
             string username = ConfigurationManager.AppSettings["BasicAuthUsername"];
             string password = ConfigurationManager.AppSettings["BasicAuthPassword"];
 
             if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
             {
-                HttpClient.Authenticator = new RestSharp.Authenticators.HttpBasicAuthenticator(username, password);
+                rc.Authenticator = new RestSharp.Authenticators.HttpBasicAuthenticator(username, password);
             }
+
+            return rc;
         }
 
         protected string Result(IRestResponse resp)
@@ -67,11 +86,6 @@ namespace OnlineServices.Api
                 foreach (var p in parameters)
                     req.AddParameter(p.Name, p.Value, p.Type);
             }
-        }
-
-        protected static string GetApiBaseUrl(bool optional = false)
-        {
-            return GetSetting("ApiBaseUrl", optional);
         }
 
         protected static string GetSetting(string key, bool optional = false)
@@ -325,6 +339,31 @@ namespace OnlineServices.Api
             return Result(resp);
         }
 
+        protected T Put<T>(string path, object model)
+        {
+            var req = CreateRestRequest(path, Method.PUT);
+            SetJsonContent(req, model);
+            var resp = HttpClient.Execute<T>(req);
+            return Result(resp);
+        }
+
+        protected T Put<T>(string path, ParameterCollection parameters)
+        {
+            var req = CreateRestRequest(path, Method.PUT);
+            ApplyParameters(req, parameters);
+            var resp = HttpClient.Execute<T>(req);
+            return Result(resp);
+        }
+
+        protected T Put<T>(string path, object model, ParameterCollection parameters)
+        {
+            var req = CreateRestRequest(path, Method.PUT);
+            SetJsonContent(req, model);
+            ApplyParameters(req, parameters);
+            var resp = HttpClient.Execute<T>(req);
+            return Result(resp);
+        }
+
         protected async Task<bool> PutAsync(string path, object model)
         {
             var req = CreateRestRequest(path, Method.PUT);
@@ -501,7 +540,7 @@ namespace OnlineServices.Api
 
     public class ParameterCollection : IEnumerable<ParameterItem>
     {
-        private List<ParameterItem> _items = new List<ParameterItem>();
+        private readonly List<ParameterItem> _items = new List<ParameterItem>();
 
         public ParameterCollection() { }
 

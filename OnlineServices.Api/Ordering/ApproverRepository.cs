@@ -1,4 +1,5 @@
 ﻿using LNF.Ordering;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -6,6 +7,8 @@ namespace OnlineServices.Api.Ordering
 {
     public class ApproverRepository : ApiClient, IApproverRepository
     {
+        internal ApproverRepository(IRestClient rc) : base(rc) { }
+
         public IApprover AddApprover(int clientId, int approverId, bool isPrimary)
         {
             throw new NotImplementedException();

@@ -1,10 +1,11 @@
 ﻿using LNF.Worker;
+using RestSharp;
 
 namespace OnlineServices.Api.Worker
 {
     public class WorkerService : ApiClient, IWorkerService
     {
-        public WorkerService() : base(GetApiBaseUrl()) { }
+        internal WorkerService(IRestClient rc) : base(rc) { }
 
         public string Execute(WorkerRequest req)
         {

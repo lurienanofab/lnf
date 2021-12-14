@@ -1,5 +1,6 @@
 ﻿using LNF.Billing;
 using LNF.Billing.Process;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -7,6 +8,8 @@ namespace OnlineServices.Api.Billing
 {
     public class ProcessRepository : ApiClient, IProcessRepository
     {
+        internal ProcessRepository(IRestClient rc) : base(rc) { }
+
         public DataCleanResult DataClean(DataCleanCommand command)
         {
             return Post<DataCleanResult>("webapi/billing/process/data/clean", command);

@@ -1,4 +1,5 @@
 ﻿using LNF.Billing;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -6,6 +7,8 @@ namespace OnlineServices.Api.Billing
 {
     public class StoreBillingRepository : ApiClient, IStoreBillingRepository
     {
+        internal StoreBillingRepository(IRestClient rc) : base(rc) { }
+
         public IEnumerable<StoreBillingItem> CreateStoreBilling(DateTime period, int clientId = 0)
         {
             return Get<List<StoreBillingItem>>("webapi/billing/store/create", QueryStrings(new { period, clientId }));

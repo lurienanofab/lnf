@@ -19,16 +19,6 @@ namespace LNF.Impl.Mappings.Data
             Map(x => x.IsSafetyTest);
             Map(x => x.RequirePasswordReset);
             Map(x => x.ClientActive);
-            Map(x => x.DemCitizenID);
-            Map(x => x.DemCitizenName);
-            Map(x => x.DemGenderID);
-            Map(x => x.DemGenderName);
-            Map(x => x.DemRaceID);
-            Map(x => x.DemRaceName);
-            Map(x => x.DemEthnicID);
-            Map(x => x.DemEthnicName);
-            Map(x => x.DemDisabilityID);
-            Map(x => x.DemDisabilityName);
             Map(x => x.TechnicalInterestID);
             Map(x => x.TechnicalInterestName);
             Map(x => x.Phone);

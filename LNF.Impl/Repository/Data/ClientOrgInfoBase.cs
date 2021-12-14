@@ -69,56 +69,6 @@ namespace LNF.Impl.Repository.Data
         public virtual bool ClientActive { get; set; }
 
         /// <summary>
-        /// Id used to indicate citizenship demographic data
-        /// </summary>
-        public virtual int DemCitizenID { get; set; }
-
-        /// <summary>
-        /// The assigned citizenship demographic value
-        /// </summary>
-        public virtual string DemCitizenName { get; set; }
-
-        /// <summary>
-        /// Id used to indicate gender demographic data
-        /// </summary>
-        public virtual int DemGenderID { get; set; }
-
-        /// <summary>
-        /// The assigned gender demographic value
-        /// </summary>
-        public virtual string DemGenderName { get; set; }
-
-        /// <summary>
-        /// Id used to indicate racial demographic data
-        /// </summary>
-        public virtual int DemRaceID { get; set; }
-
-        /// <summary>
-        /// The assigned racial demographic value
-        /// </summary>
-        public virtual string DemRaceName { get; set; }
-
-        /// <summary>
-        /// Id used to indicate ethnicity demographic data
-        /// </summary>
-        public virtual int DemEthnicID { get; set; }
-
-        /// <summary>
-        /// The assigned ethnicity demographic value
-        /// </summary>
-        public virtual string DemEthnicName { get; set; }
-
-        /// <summary>
-        /// Id used to indicate disability demographic data
-        /// </summary>
-        public virtual int DemDisabilityID { get; set; }
-
-        /// <summary>
-        /// The assigned disability demographic value
-        /// </summary>
-        public virtual string DemDisabilityName { get; set; }
-
-        /// <summary>
         /// Id used to indicate a technical interest to which a Client is associated
         /// </summary>
         public virtual int TechnicalInterestID { get; set; }

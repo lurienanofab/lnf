@@ -1,9 +1,8 @@
 ﻿using LNF.DataAccess;
-using LNF.Impl;
+using LNF.DependencyInjection;
+using LNF.Impl.DependencyInjection;
 using LNF.Scheduler;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SimpleInjector;
-using SimpleInjector.Lifestyles;
 using System;
 using System.Linq;
 
@@ -13,18 +12,17 @@ namespace LNF.Tests
     public class ReservationUtilityTests
     {
         private IProvider _provider;
-        private Container _container;
+        private IContainerContext _context;
 
         [TestInitialize]
         public void Setup()
         {
-            _container = new Container();
-            _container.Options.DefaultScopedLifestyle = new ThreadScopedLifestyle();
+            _context = ContainerContextFactory.Current.NewThreadScopedContext();
 
-            var cfg = new ThreadStaticContainerConfiguration(_container);
+            var cfg = new ThreadStaticContainerConfiguration(_context);
             cfg.RegisterAllTypes();
             
-            _provider = _container.GetInstance<IProvider>();
+            _provider = _context.GetInstance<IProvider>();
             ServiceProvider.Setup(_provider);
         }
 
@@ -63,7 +61,7 @@ namespace LNF.Tests
 
         public IUnitOfWork StartUnitOfWork()
         {
-            return _container.GetInstance<IUnitOfWork>();
+            return _context.GetInstance<IUnitOfWork>();
         }
     }
 }

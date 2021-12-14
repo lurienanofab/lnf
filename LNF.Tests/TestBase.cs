@@ -1,9 +1,8 @@
 ﻿using LNF.DataAccess;
-using LNF.Impl;
+using LNF.DependencyInjection;
 using LNF.Impl.DataAccess;
+using LNF.Impl.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SimpleInjector;
-using SimpleInjector.Lifestyles;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -15,20 +14,19 @@ namespace LNF.Tests
     [TestClass]
     public abstract class TestBase
     {
-        private Container _container;
+        private IContainerContext _context;
         private IDisposable _uow;
 
-        public ISessionManager SessionManager => _container.GetInstance<ISessionManager>();
+        public ISessionManager SessionManager => _context.GetInstance<ISessionManager>();
         public NHibernate.ISession Session => SessionManager.Session;
-        public IProvider Provider => _container.GetInstance<IProvider>();
+        public IProvider Provider => _context.GetInstance<IProvider>();
 
         [TestInitialize]
         public void TestInitialize()
         {
-            _container = new Container();
-            _container.Options.DefaultScopedLifestyle = new ThreadScopedLifestyle();
+            _context = ContainerContextFactory.Current.NewThreadScopedContext();
 
-            var cfg = new ThreadStaticContainerConfiguration(_container);
+            var cfg = new ThreadStaticContainerConfiguration(_context);
             cfg.RegisterAllTypes();
 
             ServiceProvider.Setup(Provider);

@@ -1,4 +1,5 @@
 ﻿using LNF.Util.AutoEnd;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -6,6 +7,8 @@ namespace OnlineServices.Api.Utility
 {
     public class AutoEndUtility : ApiClient, IAutoEndUtility
     {
+        internal AutoEndUtility(IRestClient rc) : base(rc) { }
+
         public IEnumerable<AutoEndProblem> GetAutoEndProblems(DateTime period)
         {
             var result = Get<List<AutoEndProblem>>("webapi/data/utility/billing-checks/auto-end-problems", QueryStrings(new { period = period.ToString("yyyy-MM-dd") }));

@@ -17,6 +17,7 @@ namespace LNF.Impl.Mail
         private static SqlConnection NewConnection()
         {
             var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["cnSselData"].ConnectionString);
+            conn.Open();
             return conn;
         }
 
@@ -36,8 +37,8 @@ namespace LNF.Impl.Mail
         public int InsertMessage(int clientId, string caller, string from, string subject, string body)
         {
             using (var cmd = GetCommand("INSERT Email.dbo.Message (ClientID, FromAddress, Subject, Body, Caller, CreatedOn) VALUES (@ClientID, @FromAddress, @Subject, @Body, @Caller, GETDATE()); SELECT SCOPE_IDENTITY()", CommandType.Text))
-            using (var adap = new SqlDataAdapter(cmd))
             {
+                
                 cmd.Parameters.AddWithValue("ClientID", clientId);
                 cmd.Parameters.AddWithValue("FromAddress", from);
                 cmd.Parameters.AddWithValue("Subject", subject);
@@ -165,6 +166,17 @@ namespace LNF.Impl.Mail
 
         private SqlConnection GetConnection() => _conn;
 
-        private SqlCommand GetCommand(string sql, CommandType commandType = CommandType.StoredProcedure) => new SqlCommand(sql, GetConnection(), _tx) { CommandType = commandType };
+        private SqlCommand GetCommand(string sql, CommandType commandType = CommandType.StoredProcedure)
+        {
+            var conn = GetConnection();
+
+            if (conn.State != ConnectionState.Open)
+                conn.Open();
+
+            var cmd = new SqlCommand(sql, conn, _tx) { CommandType = commandType };
+
+            return cmd;
+        }
+
     }
 }

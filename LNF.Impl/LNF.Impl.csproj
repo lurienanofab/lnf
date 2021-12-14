@@ -43,11 +43,14 @@
     <Reference Include="FluentNHibernate, Version=3.1.0.0, Culture=neutral, PublicKeyToken=8aa435e3cb308880, processorArchitecture=MSIL">
       <HintPath>..\packages\FluentNHibernate.3.1.0\lib\net461\FluentNHibernate.dll</HintPath>
     </Reference>
+    <Reference Include="Handlebars, Version=2.0.9.0, Culture=neutral, PublicKeyToken=22225d0bf33cd661, processorArchitecture=MSIL">
+      <HintPath>..\packages\Handlebars.Net.2.0.9\lib\net46\Handlebars.dll</HintPath>
+    </Reference>
     <Reference Include="Iesi.Collections, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
       <HintPath>..\packages\Iesi.Collections.4.0.4\lib\net461\Iesi.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.5.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.6.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
@@ -68,10 +71,10 @@
       <HintPath>..\packages\Moq.4.16.1\lib\net45\Moq.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\worker\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NHibernate, Version=5.3.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
-      <HintPath>..\packages\NHibernate.5.3.9\lib\net461\NHibernate.dll</HintPath>
+      <HintPath>..\packages\NHibernate.5.3.10\lib\net461\NHibernate.dll</HintPath>
     </Reference>
     <Reference Include="Omu.ValueInjecter, Version=3.2.0.0, Culture=neutral, PublicKeyToken=5692a4ecdffbe736, processorArchitecture=MSIL">
       <HintPath>..\packages\ValueInjecter.3.2.0\lib\net45\Omu.ValueInjecter.dll</HintPath>
@@ -82,8 +85,8 @@
     <Reference Include="Remotion.Linq.EagerFetching, Version=2.2.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
       <HintPath>..\packages\Remotion.Linq.EagerFetching.2.2.0\lib\net45\Remotion.Linq.EagerFetching.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp, Version=106.12.0.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
-      <HintPath>..\packages\RestSharp.106.12.0\lib\net452\RestSharp.dll</HintPath>
+    <Reference Include="RestSharp, Version=106.15.0.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.106.15.0\lib\net452\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="SimpleInjector, Version=5.0.0.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
       <HintPath>..\packages\SimpleInjector.5.3.2\lib\net461\SimpleInjector.dll</HintPath>
@@ -99,11 +102,17 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Messaging" />
     <Reference Include="System.Runtime.Caching" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
-    <Reference Include="System.Security.AccessControl, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.AccessControl.5.0.0\lib\net461\System.Security.AccessControl.dll</HintPath>
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security.AccessControl, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.AccessControl.6.0.0\lib\net461\System.Security.AccessControl.dll</HintPath>
     </Reference>
     <Reference Include="System.Security.Principal.Windows, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.Principal.Windows.5.0.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
@@ -157,10 +166,16 @@
     <Compile Include="Data\GlobalSettingRepository.cs" />
     <Compile Include="Data\HelpRepository.cs" />
     <Compile Include="Data\MenuRepository.cs" />
-    <Compile Include="ContainerConfiguration.cs" />
+    <Compile Include="DependencyInjection\ContainerConfiguration.cs" />
+    <Compile Include="DependencyInjection\ContainerConfigurationExtensions.cs" />
+    <Compile Include="DependencyInjection\ContainerContextFactory.cs" />
+    <Compile Include="DependencyInjection\InjectPropertySelectionBehavior.cs" />
     <Compile Include="DependencyInjection\SimpleInjectorContainerContext.cs" />
+    <Compile Include="DependencyInjection\ThreadStaticContainerConfiguration.cs" />
+    <Compile Include="DependencyInjection\WebContainerConfiguration.cs" />
     <Compile Include="ExceptionManager.cs" />
     <Compile Include="Feedback\FeedbackService.cs" />
+    <Compile Include="HandlebarsUtility.cs" />
     <Compile Include="Inventory\CategoryRepository.cs" />
     <Compile Include="Inventory\InventoryItemRepository.cs" />
     <Compile Include="Mail\Criteria\ByCommunity.cs" />
@@ -172,7 +187,10 @@
     <Compile Include="Mail\GroupEmailManager.cs" />
     <Compile Include="Mail\InvalidEmailManager.cs" />
     <Compile Include="Mappings\Billing\MiscBillingChargeItemMap.cs" />
+    <Compile Include="Mappings\Data\ClientDemographicsMap.cs" />
     <Compile Include="Mappings\Data\CurrentCostMap.cs" />
+    <Compile Include="Mappings\Data\DryBoxAssignmentInfoMap.cs" />
+    <Compile Include="Mappings\Data\DryBoxHistoryMap.cs" />
     <Compile Include="Mappings\Data\PasswordResetRequestMap.cs" />
     <Compile Include="Mappings\Scheduler\LabLocationMap.cs" />
     <Compile Include="Mappings\Scheduler\ReservationInfoBaseMap.cs" />
@@ -204,7 +222,6 @@
     <Compile Include="Billing\ToolBillingRepository.cs" />
     <Compile Include="Cache\Cache.cs" />
     <Compile Include="Cache\SessionKeys.cs" />
-    <Compile Include="Configuration.cs" />
     <Compile Include="Context\ContextBase.cs" />
     <Compile Include="Context\DefaultContext.cs" />
     <Compile Include="Context\IHttpContextFactory.cs" />
@@ -319,8 +336,6 @@
     <Compile Include="Repository\Data\DemGender.cs" />
     <Compile Include="Repository\Data\DemRace.cs" />
     <Compile Include="Repository\Data\Department.cs" />
-    <Compile Include="Repository\Data\DryBox.cs" />
-    <Compile Include="Repository\Data\DryBoxAssignment.cs" />
     <Compile Include="Repository\Data\DryBoxAssignmentLog.cs" />
     <Compile Include="Repository\Data\DryBoxClient.cs" />
     <Compile Include="Repository\Data\ErrorLog.cs" />
@@ -481,6 +496,9 @@
     <Compile Include="Repository\Store\VendorPackage.cs" />
     <Compile Include="Rest.cs" />
     <Compile Include="Scheduler\ActivityRepository.cs" />
+    <Compile Include="Scheduler\KioskConfig.cs" />
+    <Compile Include="Scheduler\KioskRedirectItem.cs" />
+    <Compile Include="Scheduler\KioskRedirects.cs" />
     <Compile Include="Scheduler\KioskRepository.cs" />
     <Compile Include="Scheduler\LabLocationRepository.cs" />
     <Compile Include="Scheduler\ReservationExtensions.cs" />

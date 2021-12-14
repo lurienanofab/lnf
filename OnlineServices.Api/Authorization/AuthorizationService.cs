@@ -6,7 +6,7 @@ namespace OnlineServices.Api.Authorization
 {
     public class AuthorizationService : ApiClient, IAuthorizationService
     {
-        public AuthorizationService() : base(GetApiBaseUrl()) { }
+        public AuthorizationService(IRestClient rc) : base(rc) { }
 
         public IAuthorizationAccess Authorize(ICredentials credentials)
         {

@@ -93,7 +93,7 @@ namespace LNF.Cache
 
         public bool WagoEnabled => GetBooleanOptionalAppSetting("WagoEnabled");
 
-        public bool IsProduction() => ServiceProvider.Current.IsProduction();
+        public bool IsProduction() => Configuration.Current.Production;
 
         private bool GetBooleanOptionalAppSetting(string key)
         {

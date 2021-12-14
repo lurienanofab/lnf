@@ -61,7 +61,7 @@ namespace LNF.Scheduler
         void UpdateNotes(int reservationId, string notes);
         bool UpdateReservationHistory(ReservationHistoryUpdate model);
         IReservation FromDataRow(DataRow dr);
-        TimeSpan GetTimeUntilNextReservation(IResource res, int reservationId, int clientId, DateTime beginDateTime);
+        AvailableReservationMinutesResult GetAvailableReservationMinutes(IResource res, int reservationId, int clientId, DateTime beginDateTime);
         IReservation GetNextReservation(int resourceId, int reservationId);
         IEnumerable<IResource> GetResources(IEnumerable<IReservationItem> reservations);
 

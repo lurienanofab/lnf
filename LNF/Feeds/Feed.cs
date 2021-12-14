@@ -47,10 +47,10 @@ namespace LNF.Feeds
 
                     sb.AppendLine("BEGIN:VCALENDAR");
                     sb.AppendLine("METHOD:PUBLISH");
-                    sb.AppendLine("PRODID:-//" + serverIp + "//NONSGML LNF-ICAL 1.0//");
+                    sb.AppendLine($"PRODID:-//{serverIp}//NONSGML {GlobalSettings.Current.CompanyName}-ICAL 1.0//");
                     sb.AppendLine("VERSION:2.0");
                     sb.AppendLine("X-WR-CALNAME:" + feedName);
-                    sb.AppendLine("X-WR-CALDESC:LNF OnLine Services Data Feed");
+                    sb.AppendLine($"X-WR-CALDESC:{GlobalSettings.Current.CompanyName} Online Services Data Feed");
                     sb.AppendLine("X-WR-TIMEZONE:US-Eastern");
                     int i = 0;
                     foreach (DataRow dr in _Data.Rows)
@@ -60,24 +60,6 @@ namespace LNF.Feeds
                             dr["DTSTAMP"] = utc_build_time.ToString("yyyyMMdd'T'HHmmss'Z'");
                         if (dr["LOCATION"] == DBNull.Value)
                             dr["LOCATION"] = "Lurie Nanofabrication Facility";
-
-                        /*
-                        BEGIN:VEVENT
-                        DTSTART;TZID=America/New_York:20120130T083000s
-                        DTEND;TZID=America/New_York:20120130T093000
-                        RRULE:FREQ=WEEKLY;BYDAY=MO,TH
-                        DTSTAMP:20120321T175213Z
-                        UID:q995t2lechpmlojm87ag3pbf58@google.com
-                        CREATED:20120320T042349Z
-                        DESCRIPTION:
-                        LAST-MODIFIED:20120320T042616Z
-                        LOCATION:LNF Cleanroom
-                        SEQUENCE:1
-                        STATUS:CONFIRMED
-                        SUMMARY:Lab Clean
-                        TRANSP:OPAQUE
-                        END:VEVENT
-                        */
 
                         sb.AppendLine("BEGIN:VEVENT");
                         AddCalendarProperty(sb, dr, "DTSTART");

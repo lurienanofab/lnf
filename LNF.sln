@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31424.327
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LNF", "LNF\LNF.csproj", "{E3B73410-869B-4BA2-99AC-AD6708A27ADE}"
 EndProject
@@ -18,6 +18,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LNF.Impl", "LNF.Impl\LNF.Impl.csproj", "{F490B789-B824-4A8C-90FC-AC447C3277F0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LNF.Tests", "LNF.Tests\LNF.Tests.csproj", "{BBA0AC44-1ED8-4A40-94A5-F01CDCE8C4CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LNF.Mongo", "LNF.Mongo\LNF.Mongo.csproj", "{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -185,6 +187,26 @@ Global
 		{BBA0AC44-1ED8-4A40-94A5-F01CDCE8C4CE}.Release|x64.Build.0 = Release|Any CPU
 		{BBA0AC44-1ED8-4A40-94A5-F01CDCE8C4CE}.Release|x86.ActiveCfg = Release|Any CPU
 		{BBA0AC44-1ED8-4A40-94A5-F01CDCE8C4CE}.Release|x86.Build.0 = Release|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Debug|ARM.Build.0 = Debug|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Debug|x64.Build.0 = Debug|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Debug|x86.Build.0 = Debug|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Release|ARM.ActiveCfg = Release|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Release|ARM.Build.0 = Release|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Release|x64.ActiveCfg = Release|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Release|x64.Build.0 = Release|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Release|x86.ActiveCfg = Release|Any CPU
+		{B2C390A2-3F60-42A9-9275-CE44B5AADB3A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,6 +1,7 @@
 ﻿using LNF.Billing;
 using LNF.Data;
 using LNF.Scheduler;
+using RestSharp;
 using System;
 using System.Data;
 
@@ -8,6 +9,8 @@ namespace OnlineServices.Api.Billing
 {
     public class ToolDataRepository : ApiClient, IToolDataRepository
     {
+        internal ToolDataRepository(IRestClient rc) : base(rc) { }
+
         public IBillingType GetBillingType(IToolData item)
         {
             throw new NotImplementedException();

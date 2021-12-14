@@ -1,15 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <hibernate-mapping assembly="LNF.Impl" namespace="LNF.Impl.Repository.Data" xmlns="urn:nhibernate-mapping-2.2">
-    <sql-query name="SelectClientSessionInfo">
-        <return class="ClientSessionInfo"/>
-        <![CDATA[EXEC sselData.dbo.Client_CheckAuth @Action = 'GetSessionInfo', @UserName = :UserName]]>
-    </sql-query>
-    <sql-query name="CheckPassword">
-        <return-scalar column="IsValid" type="Boolean"/>
-        <![CDATA[EXEC sselData.dbo.Client_Password @Action = 'CheckPassword', @ClientID = :ClientID, @Password = :Password, @PasswordHash = :PasswordHash]]>
-    </sql-query>
-    <sql-query name="SetPassword">
-        <return-scalar column="RowCount" type="Int32"/>
-        <![CDATA[EXEC sselData.dbo.Client_Password @Action = 'SetPassword', @ClientID = :ClientID, @Password = :Password, @PasswordHash = :PasswordHash]]>
-    </sql-query>
+  <sql-query name="SelectClientSessionInfo">
+    <return class="ClientSessionInfo"/>
+    <![CDATA[EXEC sselData.dbo.Client_CheckAuth @Action = 'GetSessionInfo', @UserName = :UserName]]>
+  </sql-query>
+  <sql-query name="CheckPassword">
+    <return-scalar column="IsValid" type="Boolean"/>
+    <![CDATA[EXEC sselData.dbo.Client_Password @Action = 'CheckPassword', @ClientID = :ClientID, @Password = :Password, @PasswordHash = :PasswordHash]]>
+  </sql-query>
+  <sql-query name="SetPassword">
+    <return-scalar column="RowCount" type="Int32"/>
+    <![CDATA[EXEC sselData.dbo.Client_Password @Action = 'SetPassword', @ClientID = :ClientID, @Password = :Password, @PasswordHash = :PasswordHash]]>
+  </sql-query>
+  <sql-query name="UpdateClientDemographics">
+    <![CDATA[EXEC sselData.dbo.Client_Update @Action = 'UpdateClientDemographics', @ClientID = :ClientID, @DemCitizenID = :DemCitizenID, @DemGenderID = :DemGenderID, @DemRaceID = :DemRaceID, @DemEthnicID = :DemEthnicID, @DemDisabilityID = :DemDisabilityID]]>
+  </sql-query>
 </hibernate-mapping>

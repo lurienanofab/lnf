@@ -82,7 +82,7 @@ namespace LNF.CommonTools
                 }
 
                 if (ConfigurationManager.AppSettings["CommitError.SendEmail"] == "true")
-                    SendEmail.Send(0, "SQLDBAccess.Dispose", $"Transaction commit exception [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", ex.ToString(), SendEmail.SystemEmail, new[] { "lnf-debug@umich.edu" }, isHtml: false);
+                    SendEmail.Send(0, "SQLDBAccess.Dispose", $"Transaction commit exception [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]", ex.ToString(), SendEmail.SystemEmail, new[] { GlobalSettings.Current.DebugEmail }, isHtml: false);
 
                 if (ConfigurationManager.AppSettings["CommitError.ThrowException"] == "true")
                     throw ex;

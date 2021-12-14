@@ -8,6 +8,8 @@ namespace OnlineServices.Api.Data
 {
     public class ServiceLogRepository : ApiClient, IServiceLogRepository
     {
+        internal ServiceLogRepository(IRestClient rc) : base(rc) { }
+
         public IEnumerable<IServiceLog> GetServiceLogs(int limit, int skip = 0, Guid? id = null, string service = null, string subject = null)
         {
             string url = "webapi/data/servicelog";

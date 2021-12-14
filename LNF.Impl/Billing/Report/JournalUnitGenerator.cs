@@ -30,9 +30,9 @@ namespace LNF.Impl.Billing.Report
         {
             DataTable dtReport = InitTable();
 
-            double chargeAmount = 0;
+            double chargeAmount;
             string journalLineRef = string.Empty;
-            double subsidyDiscount = 0;
+            double subsidyDiscount;
             double total = 0;
 
             //for loop each record in clientID and AccountID aggregate
@@ -54,7 +54,7 @@ namespace LNF.Impl.Billing.Report
                             ReportAccount dai = new ReportAccount(debitAccount);
 
                             //get manager's name
-                            journalLineRef = ReportUtility.ClipText(ManagerName(drBilling), 10);
+                            journalLineRef = Utility.Clip(ManagerName(drBilling), 10);
 
                             switch (Report.JournalUnitType)
                             {
@@ -80,35 +80,62 @@ namespace LNF.Impl.Billing.Report
             //Summary row
             ReportAccount cai = new ReportAccount(CreditAccount);
 
+            DateTime period = Report.EndPeriod.AddMonths(-1);
+
+            string account = (Report.JournalUnitType == JournalUnitTypes.C) ? "613280" : cai.Account;
+
+            /*
+            [2021-11-22 jg] Add the JournalUnitType next to BillingCategory in the ItemDescription
+
+            Excerpt from email from Dave DeWeerd Oct 27, 2021:
+
+            2) I’d add the case type so for instance rather than
+                08/21 LNF Room Subsidy;SUB662
+            enter
+                08/21 LNF RoomA Subsidy;SUB662
+            or 
+                08/21 LNF Tool Subsidy;SUB663
+            enter
+                08/21 LNF ToolC Subsidy;SUB663
+            (this line I believe comes through on subsidy funds, so when we review the non-943 activity super clear which case it is if we ever need to reference it)
+            Other than those two items, seems a nice update, consistent with how we have been submitting the billing and probably takes out a few steps in the process, adds more consistency to the data
+            */
+
             Report.CreditEntry = new CreditEntry
             {
-                Account = cai.Account,
+                Account = account,
                 FundCode = cai.FundCode,
                 DeptID = cai.DeptID,
                 ProgramCode = cai.ProgramCode,
                 ClassName = cai.Class,
                 ProjectGrant = cai.ProjectGrant,
-                DepartmentalReferenceNumber = journalLineRef,
-                ItemDescription = "doscar",
-                MerchandiseAmount = Math.Round(-total, 2)
+                DepartmentalReferenceNumber = ReportSettings.FinancialManagerUserName,
+                // CreditEntryItemDescription example: {0:MM/yy} {1} {2}{3} Subsidy;SUB{4}
+                ItemDescription = string.Format(
+                    Utility.GetRequiredAppSetting("CreditEntryItemDescription"),
+                    /*0*/ period,
+                    /*1*/ ReportSettings.CompanyName,
+                    /*2*/ Utility.EnumToString(Report.BillingCategory),
+                    /*3*/ Utility.EnumToString(Report.JournalUnitType),
+                    /*4*/ ReportSettings.GetServiceUnitBillingNumber(period, Report.BillingCategory)
+                ),
+                MerchandiseAmount = Math.Round(-total, 2),
+                CreditAccount = CreditAccount
             };
 
-            Report.CreditEntry.DepartmentalReferenceNumber = string.Empty;
-            Report.CreditEntry.CreditAccount = CreditAccount;
-
             DataRow totalrow = dtReport.NewRow();
-            totalrow["ReportType"] = ReportUtility.EnumToString(Report.ReportType);
-            totalrow["ChargeType"] = ReportUtility.EnumToString(Report.BillingCategory);
+            totalrow["ReportType"] = Utility.EnumToString(Report.ReportType);
+            totalrow["ChargeType"] = Utility.EnumToString(Report.BillingCategory);
             totalrow["JournalUnitType"] = Report.JournalUnitType;
-            totalrow["Period"] = Report.EndPeriod.AddMonths(-1);
-            totalrow["Account"] = (Report.JournalUnitType == JournalUnitTypes.C) ? "613280" : cai.Account;
+            totalrow["Period"] = period;
+            totalrow["Account"] = account;
             totalrow["FundCode"] = cai.FundCode;
             totalrow["DeptID"] = cai.DeptID;
             totalrow["ProgramCode"] = cai.ProgramCode;
             totalrow["Class"] = cai.Class;
             totalrow["ProjectGrant"] = cai.ProjectGrant;
             totalrow["DepartmentalReferenceNumber"] = string.Empty;
-            totalrow["ItemDescription"] = "zzdoscar";
+            totalrow["ItemDescription"] = $"zz{ReportSettings.FinancialManagerUserName}";
             totalrow["MerchandiseAmount"] = Math.Round(-total, 2).ToString("0.00");
             dtReport.Rows.Add(totalrow);
         }
@@ -140,8 +167,8 @@ namespace LNF.Impl.Billing.Report
             if (debit_acct.FundCode == "20000" || debit_acct.FundCode == "25000")
             {
                 DataRow newdr = dtReport.NewRow();
-                newdr["ReportType"] = ReportUtility.EnumToString(Report.ReportType);
-                newdr["ChargeType"] = ReportUtility.EnumToString(Report.BillingCategory);
+                newdr["ReportType"] = Utility.EnumToString(Report.ReportType);
+                newdr["ChargeType"] = Utility.EnumToString(Report.BillingCategory);
                 newdr["JournalUnitType"] = Report.JournalUnitType;
                 newdr["Period"] = drBilling["Period"];
                 newdr["Account"] = debit_acct.Account;
@@ -151,7 +178,7 @@ namespace LNF.Impl.Billing.Report
                 newdr["Class"] = debit_acct.Class;
                 newdr["ProjectGrant"] = debit_acct.ProjectGrant;
                 newdr["DepartmentalReferenceNumber"] = JournalLineRef;
-                newdr["ItemDescription"] = GetItemDescription(drBilling, $"LNF{ChargeTypeAbbreviation()}A");
+                newdr["ItemDescription"] = GetItemDescription(drBilling, $"{ReportSettings.CompanyName}{ChargeTypeAbbreviation()}A");
                 newdr["MerchandiseAmount"] = (Math.Round(SubsidyDiscount, 2) * -1).ToString("0.00");
 
                 //Used to calculate the total credit amount
@@ -161,8 +188,8 @@ namespace LNF.Impl.Billing.Report
 
                 //2nd record of JU
                 newdr = dtReport.NewRow();
-                newdr["ReportType"] = ReportUtility.EnumToString(Report.ReportType);
-                newdr["ChargeType"] = ReportUtility.EnumToString(Report.BillingCategory);
+                newdr["ReportType"] = Utility.EnumToString(Report.ReportType);
+                newdr["ChargeType"] = Utility.EnumToString(Report.BillingCategory);
                 newdr["JournalUnitType"] = Report.JournalUnitType;
                 newdr["Period"] = Utility.ConvertTo(drBilling["Period"], DateTime.MinValue);
                 newdr["Account"] = debit_acct.Account;
@@ -172,15 +199,15 @@ namespace LNF.Impl.Billing.Report
                 newdr["Class"] = debit_acct.Class;
                 newdr["ProjectGrant"] = debit_acct.ProjectGrant;
                 newdr["DepartmentalReferenceNumber"] = JournalLineRef;
-                newdr["ItemDescription"] = GetItemDescription(drBilling, $"LNF{ChargeTypeAbbreviation()}A");
+                newdr["ItemDescription"] = GetItemDescription(drBilling, $"{ReportSettings.CompanyName}{ChargeTypeAbbreviation()}A");
                 newdr["MerchandiseAmount"] = Math.Round(SubsidyDiscount, 2).ToString("0.00");
 
                 dtReport.Rows.Add(newdr);
 
                 //3rd record of JU A
                 newdr = dtReport.NewRow();
-                newdr["ReportType"] = ReportUtility.EnumToString(Report.ReportType);
-                newdr["ChargeType"] = ReportUtility.EnumToString(Report.BillingCategory);
+                newdr["ReportType"] = Utility.EnumToString(Report.ReportType);
+                newdr["ChargeType"] = Utility.EnumToString(Report.BillingCategory);
                 newdr["JournalUnitType"] = Report.JournalUnitType;
                 newdr["Period"] = Utility.ConvertTo(drBilling["Period"], DateTime.MinValue);
                 newdr["Account"] = "450600";
@@ -190,7 +217,7 @@ namespace LNF.Impl.Billing.Report
                 newdr["Class"] = debit_acct.Class;
                 newdr["ProjectGrant"] = debit_acct.ProjectGrant;
                 newdr["DepartmentalReferenceNumber"] = JournalLineRef;
-                newdr["ItemDescription"] = GetItemDescription(drBilling, $"LNF{ChargeTypeAbbreviation()}A");
+                newdr["ItemDescription"] = GetItemDescription(drBilling, $"{ReportSettings.CompanyName}{ChargeTypeAbbreviation()}A");
                 newdr["MerchandiseAmount"] = (Math.Round(SubsidyDiscount, 2) * -1).ToString("0.00");
 
                 dtReport.Rows.Add(newdr);
@@ -202,8 +229,8 @@ namespace LNF.Impl.Billing.Report
             if (debit_acct.FundCode == "10000" && debit_acct.ProgramCode == "CSTSH")
             {
                 DataRow newdr = dtReport.NewRow();
-                newdr["ReportType"] = ReportUtility.EnumToString(Report.ReportType);
-                newdr["ChargeType"] = ReportUtility.EnumToString(Report.BillingCategory);
+                newdr["ReportType"] = Utility.EnumToString(Report.ReportType);
+                newdr["ChargeType"] = Utility.EnumToString(Report.BillingCategory);
                 newdr["JournalUnitType"] = Report.JournalUnitType;
                 newdr["Period"] = drBilling["Period"];
                 newdr["Account"] = "450600";
@@ -213,7 +240,7 @@ namespace LNF.Impl.Billing.Report
                 newdr["Class"] = debit_acct.Class;
                 newdr["ProjectGrant"] = debit_acct.ProjectGrant;
                 newdr["DepartmentalReferenceNumber"] = JournalLineRef;
-                newdr["ItemDescription"] = GetItemDescription(drBilling, $"LNF{ChargeTypeAbbreviation()}B");
+                newdr["ItemDescription"] = GetItemDescription(drBilling, $"{ReportSettings.CompanyName}{ChargeTypeAbbreviation()}B");
                 newdr["MerchandiseAmount"] = (Math.Round(SubsidyDiscount, 2) * -1).ToString("0.00");
 
                 //Used to calculate the total credit amount
@@ -228,8 +255,8 @@ namespace LNF.Impl.Billing.Report
             if (debitAcct.FundCode != "20000" && debitAcct.FundCode != "25000" && !(debitAcct.FundCode == "10000" && debitAcct.ProgramCode == "CSTSH"))
             {
                 DataRow newdr = dtReport.NewRow();
-                newdr["ReportType"] = ReportUtility.EnumToString(Report.ReportType);
-                newdr["ChargeType"] = ReportUtility.EnumToString(Report.BillingCategory);
+                newdr["ReportType"] = Utility.EnumToString(Report.ReportType);
+                newdr["ChargeType"] = Utility.EnumToString(Report.BillingCategory);
                 newdr["JournalUnitType"] = Report.JournalUnitType;
                 newdr["Period"] = drBilling["Period"];
                 newdr["Account"] = debitAcct.Account;
@@ -239,7 +266,7 @@ namespace LNF.Impl.Billing.Report
                 newdr["Class"] = debitAcct.Class;
                 newdr["ProjectGrant"] = debitAcct.ProjectGrant;
                 newdr["DepartmentalReferenceNumber"] = journalLineRef;
-                newdr["ItemDescription"] = GetItemDescription(drBilling, $"LNF{ChargeTypeAbbreviation()}C");
+                newdr["ItemDescription"] = GetItemDescription(drBilling, $"{ReportSettings.CompanyName}{ChargeTypeAbbreviation()}C");
                 newdr["MerchandiseAmount"] = (Math.Round(subsidyDiscount, 2) * -1).ToString("0.00");
 
                 //Used to calculate the total credit amount

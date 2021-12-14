@@ -16,5 +16,6 @@ namespace LNF.Inventory
         IInventoryItem UpdateItem(int itemId, string description, int stockQty, int? minStockQty, int? maxStockQty);
         IItemPriceHistory GetItemPriceHistory(int itemId, DateTime cutoff);
         IInventoryItem GetInventoryItem(int itemId);
+        void CheckOut(int itemId, int itemInventoryLocationId, int qty);
     }
 }

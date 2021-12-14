@@ -40,7 +40,8 @@ namespace OnlineServices.Api
 
         public T Deserialize<T>(IRestResponse response)
         {
-            return JsonConvert.DeserializeObject<T>(response.Content);
+            var result =  JsonConvert.DeserializeObject<T>(response.Content);
+            return result;
         }
     }
 }

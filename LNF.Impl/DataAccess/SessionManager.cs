@@ -102,12 +102,20 @@ namespace LNF.Impl.DataAccess
             catch (Exception ex)
             {
                 var securePath = Utility.GetRequiredAppSetting("SecurePath");
-                var path = Path.Combine(securePath, "logs", "SesisonManagerError.log");
-
-                using (var writer = File.AppendText(path))
+                if (Directory.Exists(securePath))
                 {
-                    writer.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}]");
-                    writer.WriteLine(ex.ToString());
+                    var logsPath = Path.Combine(securePath, "logs");
+
+                    if (!Directory.Exists(logsPath))
+                        Directory.CreateDirectory(logsPath);
+
+                    var filePath = Path.Combine(logsPath, "SessionManagerError.log");
+
+                    using (var writer = File.AppendText(filePath))
+                    {
+                        writer.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}]");
+                        writer.WriteLine(ex.ToString());
+                    }
                 }
 
                 throw ex;

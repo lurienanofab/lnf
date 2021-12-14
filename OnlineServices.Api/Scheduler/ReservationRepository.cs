@@ -9,6 +9,8 @@ namespace OnlineServices.Api.Scheduler
 {
     public class ReservationRepository : ApiClient, IReservationRepository
     {
+        internal ReservationRepository(IRestClient rc) : base(rc) { }
+
         public IEnumerable<IReservationInvitee> GetInvitees(int reservationId)
         {
             return Get<List<ReservationInvitee>>("webapi/scheduler/reservation/{reservationId}/invitees", UrlSegments(new { reservationId }));
@@ -327,7 +329,7 @@ namespace OnlineServices.Api.Scheduler
             throw new NotImplementedException();
         }
 
-        public TimeSpan GetTimeUntilNextReservation(IResource res, int reservationId, int clientId, DateTime beginDateTime)
+        public AvailableReservationMinutesResult GetAvailableReservationMinutes(IResource res, int reservationId, int clientId, DateTime beginDateTime)
         {
             throw new NotImplementedException();
         }

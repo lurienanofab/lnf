@@ -1,4 +1,5 @@
 ﻿using LNF.Store;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -6,6 +7,8 @@ namespace OnlineServices.Api.Store
 {
     public class StoreService : ApiClient, IStoreService
     {
+        internal StoreService(IRestClient rc) : base(rc) { }
+
         public IPrice GetPrice(int priceId)
         {
             throw new NotImplementedException();

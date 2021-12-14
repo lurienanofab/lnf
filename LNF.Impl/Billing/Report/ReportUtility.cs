@@ -229,29 +229,5 @@ namespace LNF.Impl.Billing.Report
                 dt.Rows.Add(ndr);
             }
         }
-
-        public static string ClipText(string text, int length)
-        {
-            if (string.IsNullOrEmpty(text))
-                return string.Empty;
-
-            return (text.Length > length) ? text.Substring(0, length) : text;
-        }
-
-        public static T StringToEnum<T>(string value)
-        {
-            if (typeof(T).IsEnum)
-                return (T)Enum.Parse(typeof(T), value, true);
-            else
-                throw new ArgumentException("T must be an enum type");
-        }
-
-        public static string EnumToString<T>(T value)
-        {
-            if (typeof(T).IsEnum)
-                return Enum.GetName(typeof(T), value);
-            else
-                throw new ArgumentException("T must be an enum type");
-        }
     }
 }

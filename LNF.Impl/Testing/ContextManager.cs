@@ -1,4 +1,5 @@
-﻿using LNF.Repository;
+﻿using LNF.Impl.DependencyInjection;
+using LNF.Repository;
 using Moq;
 using SimpleInjector;
 using System;
@@ -45,11 +46,11 @@ namespace LNF.Impl.Testing
 
             ContextBase = CreateHttpContext();
 
-            var container = new Container();
-            ContainerConfiguration = new ThreadStaticContainerConfiguration(container);
+            var context = ContainerContextFactory.Current.NewThreadScopedContext();
+            ContainerConfiguration = new ThreadStaticContainerConfiguration(context);
             ContainerConfiguration.RegisterAllTypes();
 
-            var provider = container.GetInstance<IProvider>();
+            var provider = context.GetInstance<IProvider>();
             ServiceProvider.Setup(provider);
 
             Login(username);

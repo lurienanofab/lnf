@@ -29,12 +29,5 @@ namespace LNF.Web
                 .Select(x => x.GetValue(null).ToString())
                 .ToArray();
         }
-
-        [Obsolete("Use HttpContextBase.RemoveAllSessionValues() extension instead.")]
-        public static void RemoveAll() => throw new NotImplementedException();
-        //{
-        //    foreach (string key in AllKeys())
-        //        ServiceProvider.Current.Context.RemoveSessionValue(key);
-        //}
     }
 }

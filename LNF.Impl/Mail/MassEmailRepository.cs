@@ -158,7 +158,7 @@ namespace LNF.Impl.Mail
                 AddRecipient(to, args.From);
 
                 string footer = "\n\n--------------------------------------------------\nThis email has been sent to the following group(s) : " + GetGroup(args) + ".";
-                footer += "\nYou are receiving this email message because you are associated with the LNF.\nTo unsubscribe, please go to:\nhttp://ssel-sched.eecs.umich.edu/sselonline/Unsubscribe.aspx";
+                footer += $"\nYou are receiving this email message because you are associated with the {GlobalSettings.Current.CompanyName}.\nTo unsubscribe, please go to:\nhttp://ssel-sched.eecs.umich.edu/sselonline/Unsubscribe.aspx";
 
                 // an array of file paths
                 var attachments = GetAttachments(args.Attachments);

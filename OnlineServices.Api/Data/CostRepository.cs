@@ -1,4 +1,5 @@
 ﻿using LNF.Data;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -6,6 +7,8 @@ namespace OnlineServices.Api.Data
 {
     public class CostRepository : ApiClient, ICostRepository
     {
+        internal CostRepository(IRestClient rc) : base(rc) { }
+
         public ICost GetCost(int costId)
         {
             return Get<Cost>("webapi/data/cost/{costId}", UrlSegments(new { costId }));

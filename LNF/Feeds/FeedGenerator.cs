@@ -89,10 +89,15 @@ namespace LNF.Feeds
                                 DateTime[] week = WeekArray(sd.LastUpdate);
                                 StaffTimeInfoCollection staffTime = new StaffTimeInfoCollection(sd.HoursXML);
                                 IClient c = ServiceProvider.Current.Data.Client.GetClient(sd.ClientID);
-                                StaffDirectoryEntry sdi = new StaffDirectoryEntry()
+                                _ = new StaffDirectoryEntry()
                                 {
                                     StaffDirectoryID = sd.StaffDirectoryID,
-                                    Name = sd.DisplayName,
+                                    ClientID = sd.ClientID,
+                                    UserName = c.UserName,
+                                    Privs = c.Privs,
+                                    LName = c.LName,
+                                    MName = c.MName,
+                                    FName = c.FName,
                                     Hours = staffTime.ToString(),
                                     Email = c.Email,
                                     Phone = c.Phone,

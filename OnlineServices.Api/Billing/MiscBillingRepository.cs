@@ -1,4 +1,5 @@
 ﻿using LNF.Billing;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -6,6 +7,8 @@ namespace OnlineServices.Api.Billing
 {
     public class MiscBillingRepository : ApiClient, IMiscBillingRepository
     {
+        internal MiscBillingRepository(IRestClient rc) : base(rc) { }
+
         public IMiscBillingCharge GetMiscBillingCharge(int expId)
         {
             return Get<MiscBillingCharge>("webapi/billing/{expId}", UrlSegments(new { expId }));

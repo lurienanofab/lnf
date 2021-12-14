@@ -1,4 +1,5 @@
-﻿using LNF.Billing;
+﻿using HandlebarsDotNet;
+using LNF.Billing;
 using LNF.Billing.Reports;
 using LNF.Billing.Reports.ServiceUnitBilling;
 using LNF.CommonTools;
@@ -8,7 +9,9 @@ using LNF.Impl.Repository.Billing;
 using LNF.Impl.Repository.Data;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -80,7 +83,7 @@ namespace LNF.Impl.Billing.Report
 
         public RoomJU GetRoomJU(DateTime sd, DateTime ed, string type, int id = 0)
         {
-            RoomJU report = new RoomJU { StartPeriod = sd, EndPeriod = ed, ClientID = id, JournalUnitType = ReportUtility.StringToEnum<JournalUnitTypes>(type) };
+            RoomJU report = new RoomJU { StartPeriod = sd, EndPeriod = ed, ClientID = id, JournalUnitType = Utility.StringToEnum<JournalUnitTypes>(type) };
             RoomJournalUnitGenerator.Create(Session, report).Generate();
             return report;
         }
@@ -106,7 +109,7 @@ namespace LNF.Impl.Billing.Report
 
         public ToolJU GetToolJU(DateTime sd, DateTime ed, string type, int id = 0)
         {
-            ToolJU report = new ToolJU { StartPeriod = sd, EndPeriod = ed, ClientID = id, JournalUnitType = ReportUtility.StringToEnum<JournalUnitTypes>(type) };
+            ToolJU report = new ToolJU { StartPeriod = sd, EndPeriod = ed, ClientID = id, JournalUnitType = Utility.StringToEnum<JournalUnitTypes>(type) };
             ToolJournalUnitGenerator.Create(Session, report).Generate();
             return report;
         }
@@ -134,55 +137,31 @@ namespace LNF.Impl.Billing.Report
             var managerOrgIds = dt.AsEnumerable()
                 .Where(x => !string.IsNullOrEmpty(x.Field<string>("Accounts")))
                 .Select(x => x.Field<int>("ManagerOrgID"))
-                .Distinct().ToList();
+                .Distinct().ToArray();
 
-            StringBuilder bodyHtml;
+            var tpl = GetTemplate("financial-manager-email.handlebars");
 
-            string companyName = Utility.GetGlobalSetting("CompanyName");
+            var companyName = GlobalSettings.Current.CompanyName;
+            var period = options.Period;
+            var message = string.IsNullOrEmpty(options.Message) ? null : options.Message;
 
             foreach (int moid in managerOrgIds)
             {
-                bodyHtml = new StringBuilder();
+                var rows = dt.Select($"ManagerOrgID = {moid}");
 
-                var rows = dt.AsEnumerable().Where(x => x.Field<int>("ManagerOrgID") == moid).ToList();
+                // there is at least one row becuase managerOrgIds is created from the same DataTable
 
-                string[] toAddr = new string[] { rows[0].Field<string>("ManagerEmail") };
-                string managerName = rows[0].Field<string>("ManagerName");
-
-                bodyHtml.AppendLine("<html>");
-                bodyHtml.AppendLine("<body>");
-                bodyHtml.AppendLine($"Dear {managerName},<br /><br />");
-
-                if (!string.IsNullOrEmpty(options.Message))
-                    bodyHtml.AppendLine($"<p>{options.Message}</p>");
-
-                bodyHtml.AppendLine($"<p>Below are a list of {companyName} lab users who have incurred charges during {options.Period:M/yyyy} and the active accounts for that user (shortcode / P/G). You are receiving this email because our records indicate that you are associated with these accounts.</p>");
-                bodyHtml.AppendLine("<p>Exact charges are still pending and may depend on data entries from the lab users themselves.</p>");
-                bodyHtml.AppendLine("<ol>");
-                bodyHtml.AppendLine("<li>If the person in charge of, or reconciling the account is not copied to this email, please send me his/her contact information.</li>");
-                bodyHtml.AppendLine("<li>Please review users and accounts and let me know if any change is needed.</li>");
-                bodyHtml.AppendLine("<li>If a user has access to multiple accounts, please let me know how charges should be distributed between these accounts.</li>");
-                bodyHtml.AppendLine($"<li>As a reminder, there is more detailed information about the charging system in {companyName} Online Services (<a href=\"http://ssel-sched.eecs.umich.edu/sselonline\">http://ssel-sched.eecs.umich.edu/sselonline</a>).</li>");
-                bodyHtml.AppendLine("</ol>");
-
-                StringBuilder table = new StringBuilder();
-                string tr;
-
-                table.AppendLine("<table border=\"1\" bgcolor=\"lightblue\">");
-
-                foreach (var row in rows)
+                var managerName = rows[0].Field<string>("ManagerName");
+                var clients = rows.Select(x => new
                 {
-                    tr = $"<tr><td>{row["ClientName"]}</td><td>{row["Accounts"]}</td></tr>";
-                    table.AppendLine(tr);
-                }
+                    clientName = x.Field<string>("ClientName"),
+                    accounts = x.Field<string>("Accounts")
+                }).ToArray();
 
-                table.Append("</table>");
+                var body = tpl(new { companyName, period, message, managerName, clients });
 
-                bodyHtml.AppendLine(table.ToString());
-                bodyHtml.AppendLine("</body>");
-                bodyHtml.AppendLine("</html>");
-
-                string subj = $"{companyName} Charges - {options.Period:M/yyyy} [Manager: {managerName}]";
+                var toAddr = new string[] { rows[0].Field<string>("ManagerEmail") };
+                var subj = $"{companyName} Charges - {options.Period:M/yyyy} [Manager: {managerName}]";
 
                 result.Add(new FinancialManagerReportEmail
                 {
@@ -193,7 +172,7 @@ namespace LNF.Impl.Billing.Report
                     ToAddress = toAddr,
                     CcAddress = ccAddr,
                     Subject = subj,
-                    Body = bodyHtml.ToString(),
+                    Body = body,
                     IsHtml = true
                 });
             }
@@ -214,24 +193,20 @@ namespace LNF.Impl.Billing.Report
 
             var query = Apportionment.SelectApportionmentClients(options.Period, options.Period.AddMonths(1));
 
-            StringBuilder bodyHtml;
+            var tpl = GetTemplate("user-apportionment-email.handlebars");
 
-            var companyName = Utility.GetGlobalSetting("CompanyName");
+            var companyName = GlobalSettings.Current.CompanyName;
+            var message = options.Message;
+
+            var subj = $"Please apportion your {companyName} lab usage time";
 
             foreach (IApportionmentClient ac in query)
             {
-                string subj = $"Please apportion your {companyName} lab usage time";
+                var displayName = ac.DisplayName;
 
-                bodyHtml = new StringBuilder();
-                bodyHtml.AppendLine($"{ac.DisplayName}:<br /><br />");
+                var body = tpl(new { companyName, message, displayName });
 
-                if (!string.IsNullOrEmpty(options.Message))
-                    bodyHtml.AppendLine($"<p>{options.Message}</p>");
-
-                bodyHtml.AppendLine($"As can best be determined, you need to apportion your {companyName} lab time. This is necessary because you had access to multiple accounts and have entered one or more {companyName} rooms this billing period.<br /><br />");
-                bodyHtml.AppendLine("This matter must be resolved by the close of the third business day of this month.");
-                bodyHtml.AppendLine("For more information about how to apportion your time, please check the “Apportionment Instructions” file in the LNF Online Services > Help > User Fees section.");
-                string[] toAddr = ac.Emails.Split(',');
+                var toAddr = ac.Emails.Split(',');
 
                 result.Add(new UserApportionmentReportEmail
                 {
@@ -241,14 +216,12 @@ namespace LNF.Impl.Billing.Report
                     ToAddress = toAddr,
                     CcAddress = ccAddr,
                     Subject = subj,
-                    Body = bodyHtml.ToString(),
+                    Body = body,
                     IsHtml = true
                 });
             }
 
             return result;
-
-            //return Provider.Billing.Apportionment.GetMonthlyApportionmentEmails(options);
         }
 
         public SendMonthlyApportionmentEmailsProcessResult SendUserApportionmentReport(UserApportionmentReportOptions options)
@@ -283,7 +256,7 @@ namespace LNF.Impl.Billing.Report
 
         private string[] GetApportionmentReminderRecipients()
         {
-            var gs = Session.Query<GlobalSettings>().FirstOrDefault(x => x.SettingName == "ApportionmentReminder_MonthlyEmailRecipients");
+            var gs = Session.Query<Repository.Data.GlobalSettings>().FirstOrDefault(x => x.SettingName == "ApportionmentReminder_MonthlyEmailRecipients");
 
             if (gs == null || string.IsNullOrEmpty(gs.SettingValue))
                 return null;
@@ -293,12 +266,20 @@ namespace LNF.Impl.Billing.Report
 
         private string[] GetFinancialManagerReportRecipients()
         {
-            var gs = Session.Query<GlobalSettings>().FirstOrDefault(x => x.SettingName == "FinancialManagerReport_MonthlyEmailRecipients");
+            var gs = Session.Query<Repository.Data.GlobalSettings>().FirstOrDefault(x => x.SettingName == "FinancialManagerReport_MonthlyEmailRecipients");
 
             if (gs == null || string.IsNullOrEmpty(gs.SettingValue))
                 return null;
 
             return gs.SettingValue.Split(',');
+        }
+
+        private HandlebarsTemplate<object, object> GetTemplate(string fileName)
+        {
+            var securePath = ConfigurationManager.AppSettings["SecurePath"];
+            var templatePath = Path.Combine(securePath, "billing", "templates", fileName);
+            var result = HandlebarsUtility.GetTemplate(templatePath);
+            return result;
         }
     }
 }

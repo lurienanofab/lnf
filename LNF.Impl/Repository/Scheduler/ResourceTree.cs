@@ -60,9 +60,12 @@ namespace LNF.Impl.Repository.Scheduler
         public virtual DateTime? CurrentEndDateTime { get; set; }
         public virtual string CurrentNotes { get; set; }
         public virtual string UserName { get; set; }
+        public virtual string LName { get; set; }
+        public virtual string MName { get; set; }
+        public virtual string FName { get; set; }
         public virtual ClientPrivilege Privs { get; set; }
         public virtual int Communities { get; set; }
-        public virtual string DisplayName { get; set; }
+        public virtual string DisplayName => Clients.GetDisplayName(LName, FName);
         public virtual bool ClientActive { get; set; }
         public virtual int OrgID { get; set; }
         public virtual string Email { get; set; }

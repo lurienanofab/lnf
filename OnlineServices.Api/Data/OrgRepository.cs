@@ -1,4 +1,5 @@
 ﻿using LNF.Data;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -6,6 +7,8 @@ namespace OnlineServices.Api.Data
 {
     public class OrgRepository : ApiClient, IOrgRepository
     {
+        internal OrgRepository(IRestClient rc) : base(rc) { }
+
         public IEnumerable<IAccount> GetAccounts(int orgId)
         {
             throw new NotImplementedException();

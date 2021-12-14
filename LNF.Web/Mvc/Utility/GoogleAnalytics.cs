@@ -6,7 +6,7 @@ namespace LNF.Web.Mvc.Utility
 {
     public class GoogleAnalytics
     {
-        public bool IsProduction() => ServiceProvider.Current.IsProduction();
+        public bool IsProduction() => Configuration.Current.Production;
 
         public string GetTrackingID() => ConfigurationManager.AppSettings["GoogleAnalyticsTrackingID"];
 

@@ -1,5 +1,6 @@
 ﻿using LNF.Billing;
 using LNF.Data;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -7,6 +8,8 @@ namespace OnlineServices.Api.Billing
 {
     public class ApportionmentRepository : ApiClient, IApportionmentRepository
     {
+        internal ApportionmentRepository(IRestClient rc) : base(rc) { }
+
         public void CheckClientIssues()
         {
             throw new NotImplementedException();

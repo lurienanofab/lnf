@@ -65,9 +65,11 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.CurrentEndDateTime);
             Map(x => x.CurrentNotes);
             Map(x => x.UserName);
+            Map(x => x.LName);
+            Map(x => x.MName);
+            Map(x => x.FName);
             Map(x => x.Privs).CustomType<ClientPrivilege>();
             Map(x => x.Communities);
-            Map(x => x.DisplayName);
             Map(x => x.ClientActive);
             Map(x => x.OrgID);
             Map(x => x.Email);

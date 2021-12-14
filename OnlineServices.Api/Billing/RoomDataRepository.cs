@@ -1,4 +1,5 @@
 ﻿using LNF.Billing;
+using RestSharp;
 using System;
 using System.Data;
 
@@ -6,6 +7,8 @@ namespace OnlineServices.Api.Billing
 {
     public class RoomDataRepository : ApiClient, IRoomDataRepository
     {
+        internal RoomDataRepository(IRestClient rc) : base(rc) { }
+
         public IRoomData AddRoomData(IRoomDataClean rdc)
         {
             throw new NotImplementedException();

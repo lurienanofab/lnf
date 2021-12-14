@@ -184,9 +184,9 @@ namespace LNF.Impl.Billing.Report
             if (dr.Table.Columns.Contains("BillingTypeName"))
                 billingTypeName = "--" + Utility.ConvertTo(dr["BillingTypeName"], string.Empty);
 
-            string result = ReportUtility.ClipText(prefix, 6) + " "
-                + ReportUtility.ClipText(displayName, 18)
-                + ReportUtility.ClipText(billingTypeName, 5);
+            string result = Utility.Clip(prefix, 6) + " "
+                + Utility.Clip(displayName, 18)
+                + Utility.Clip(billingTypeName, 5);
 
             return result.Trim();
         }

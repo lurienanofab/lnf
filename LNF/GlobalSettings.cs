@@ -1,53 +1,54 @@
-﻿using LNF.Data;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using LNF.Repository;
+using System;
+using System.Data;
 
 namespace LNF
 {
-    public static class GlobalSettingsUtility
+    public class GlobalSettings
     {
-        public static GlobalSettingsItemCollection Items
+        public static GlobalSettings Current { get; }
+
+        private DataTable _table;
+
+        private GlobalSettings() 
         {
-            get
-            {
-                GlobalSettingsItemCollection items = new GlobalSettingsItemCollection();
-                return items;
-            }
-        }
-    }
-
-    public class GlobalSettingsItemCollection : IEnumerable
-    {
-        private Dictionary<string, string> _Items;
-
-        public GlobalSettingsItemCollection()
-        {
-            IGlobalSetting[] query = ServiceProvider.Current.Data.GlobalSetting.GetGlobalSettings().ToArray();
-
-            _Items = new Dictionary<string, string>();
-            if (query != null && query.Length > 0)
-            {
-                foreach (var gs in query)
-                {
-                    _Items.Add(gs.SettingName, gs.SettingValue);
-                }
-            }
+            LoadTable();
         }
 
-        public string this[string key]
+        static GlobalSettings()
         {
-            get
-            {
-                if (_Items.ContainsKey(key))
-                    return _Items[key];
-                return null;
-            }
+            Current = new GlobalSettings();
         }
 
-        public IEnumerator GetEnumerator()
+        public string CompanyName => GetRequiredGlobalSetting("CompanyName");
+        public string SystemEmail => GetRequiredGlobalSetting("SystemEmail");
+        public string[] DeveoperEmails => GetRequiredGlobalSetting("DeveloperEmails").Split(',');
+        public string DebugEmail => GetRequiredGlobalSetting("DebugEmail");
+        public bool UseParentRooms => bool.Parse(GetRequiredGlobalSetting("UseParentRooms"));
+        public string FinancialManagerUserName => GetRequiredGlobalSetting("FinancialManagerUserName");
+
+        private void LoadTable()
         {
-            return _Items.Values.GetEnumerator();
+            string sql = "SELECT * FROM sselData.dbo.GlobalSettings";
+            _table = DataCommand.Create(CommandType.Text).FillDataTable(sql);
+        }
+
+        public string GetGlobalSetting(string name)
+        {
+            var rows = _table.Select($"SettingName = '{name}'");
+            if (rows.Length == 0) return null;
+            var result = rows[0].Field<string>("SettingValue");
+            return result;
+        }
+
+        private string GetRequiredGlobalSetting(string name)
+        {
+            var result = GetGlobalSetting(name);
+
+            if (string.IsNullOrEmpty(result))
+                throw new Exception($"Missing required GlobalSetting: {name}");
+
+            return result;
         }
     }
 }

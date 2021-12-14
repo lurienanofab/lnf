@@ -1,9 +1,8 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Impl.Repository.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
-    internal class GlobalSettingsMap : ClassMap<GlobalSettings>
+    internal class GlobalSettingsMap : ClassMap<Repository.Data.GlobalSettings>
     {
         internal GlobalSettingsMap()
         {

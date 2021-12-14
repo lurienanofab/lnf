@@ -1,5 +1,7 @@
 ﻿using LNF.DependencyInjection;
 using SimpleInjector;
+using SimpleInjector.Diagnostics;
+using System;
 
 namespace LNF.Impl.DependencyInjection
 {
@@ -23,5 +25,32 @@ namespace LNF.Impl.DependencyInjection
         {
             Container.Register<TService, TImplementation>();
         }
+
+        public void RegisterSingleton<TService, TImplementation>()
+            where TService : class
+            where TImplementation : class, TService
+        {
+            Container.Register<TService, TImplementation>(Lifestyle.Singleton);
+        }
+
+        public void RegisterSingleton<TService>(Func<TService> instanceCreator)
+            where TService : class
+        {
+            Container.Register(instanceCreator, Lifestyle.Singleton);
+        }
+
+        public void RegisterDisposableTransient(Type type, string justification)
+        {
+            var registration = Lifestyle.Transient.CreateRegistration(type, Container);
+            Container.AddRegistration(type, registration);
+            registration.SuppressDiagnosticWarning(DiagnosticType.DisposableTransientComponent, justification);
+        }
+
+        public void EnablePropertyInjection()
+        {
+            Container.Options.PropertySelectionBehavior = new InjectPropertySelectionBehavior();
+        }
+
+        public bool IsLocked() => Container.IsLocked;
     }
 }

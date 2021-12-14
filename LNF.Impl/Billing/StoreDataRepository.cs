@@ -57,7 +57,7 @@ namespace LNF.Impl.Billing
 
             double daysInPeriod = (ed - sd).TotalDays;
 
-            var activeAssignments = ServiceProvider.Current.Data.DryBox.GetActiveAssignments(sd, ed).ToList();
+            var activeAssignments = ServiceProvider.Current.Data.DryBox.GetActiveDryBoxAssignments(sd, ed).ToList();
 
             if (activeAssignments.Count > 0)
             {

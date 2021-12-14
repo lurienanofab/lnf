@@ -1264,30 +1264,44 @@ namespace LNF.Impl.Scheduler
             // because notes are not tracked in the ReservationHistory table
         }
 
-        public TimeSpan GetTimeUntilNextReservation(IResource res, int reservationId, int clientId, DateTime beginDateTime)
+        // fka GetTimeUntilNextReservaton
+        public AvailableReservationMinutesResult GetAvailableReservationMinutes(IResource res, int reservationId, int clientId, DateTime beginDateTime)
         {
-            int timeUntilNext = DataCommand()
+            var dt = DataCommand()
                 .Param("Action", "TimeTillNextReservation")
                 .Param("ReservationID", reservationId)
                 .Param("ResourceID", res.ResourceID)
                 .Param("ClientID", clientId)
                 .Param("BeginDateTime", beginDateTime)
-                .ExecuteScalar<int>("sselScheduler.dbo.procReservationSelect")
-                .Value;
+                .FillDataTable("sselScheduler.dbo.procReservationSelect");
 
-            var result = TimeSpan.FromMinutes(timeUntilNext);
+            if (dt.Rows.Count == 0)
+                return null;
+
+            var dr = dt.Rows[0];
+
+            var result = new AvailableReservationMinutesResult
+            {
+                AvailableReservationMinutes = dr.Field<int>("AvailableReservationMinutes"),
+                ReservableMinutes = dr.Field<int>("ReservableMinutes"),
+                ReservedMinutes = dr.Field<int>("ReservedMinutes"),
+                TimeUntilNext = dr.Field<int>("TimeUntilNext"),
+                Reason = dr.Field<string>("Reason")
+            };
 
             return result;
         }
 
         public IReservation GetNextReservation(int resourceId, int reservationId)
         {
-            var result = Session.Query<ReservationInfo>().FirstOrDefault(x => x.ResourceID == resourceId
-                && x.IsActive
-                && !x.IsStarted
-                && x.BeginDateTime > DateTime.Now
-                && x.ActualBeginDateTime == null
-                && x.ReservationID != reservationId);
+            var result = Session.Query<ReservationInfo>()
+                .OrderBy(x => x.BeginDateTime)
+                .FirstOrDefault(x => x.ResourceID == resourceId
+                    && x.IsActive
+                    && !x.IsStarted
+                    && x.BeginDateTime > DateTime.Now
+                    && x.ActualBeginDateTime == null
+                    && x.ReservationID != reservationId);
 
             return result;
         }

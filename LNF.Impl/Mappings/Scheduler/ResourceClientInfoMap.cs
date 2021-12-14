@@ -22,7 +22,9 @@ namespace LNF.Impl.Mappings.Scheduler
             Map(x => x.ResourceName);
             Map(x => x.AuthDuration);
             Map(x => x.ResourceIsActive);
-            Map(x => x.DisplayName);
+            Map(x => x.LName);
+            Map(x => x.MName);
+            Map(x => x.FName);
             Map(x => x.Email);
             Map(x => x.ClientActive);
         }

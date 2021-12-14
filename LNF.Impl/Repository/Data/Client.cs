@@ -33,31 +33,6 @@ namespace LNF.Impl.Repository.Data
         public virtual string UserName { get; set; }
 
         /// <summary>
-        /// Id used to indicate citizenship demographic data
-        /// </summary>
-        public virtual int DemCitizenID { get; set; }
-
-        /// <summary>
-        /// Id used to indicate gender demographic data
-        /// </summary>
-        public virtual int DemGenderID { get; set; }
-
-        /// <summary>
-        /// Id used to indicate racial demographic data
-        /// </summary>
-        public virtual int DemRaceID { get; set; }
-
-        /// <summary>
-        /// Id used to indicate ethnicity demographic data
-        /// </summary>
-        public virtual int DemEthnicID { get; set; }
-
-        /// <summary>
-        /// Id used to indicate disability demographic data
-        /// </summary>
-        public virtual int DemDisabilityID { get; set; }
-
-        /// <summary>
         /// The privilges granted to a Client
         /// </summary>
         public virtual ClientPrivilege Privs { get; set; }

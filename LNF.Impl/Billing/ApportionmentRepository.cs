@@ -59,7 +59,7 @@ namespace LNF.Impl.Billing
                 string subj = "Lab access data anomaly - please check!";
                 string body = client.DisplayName + ":<br /><br />"
                  + "There appears to have been an error with your record of entrances/exists from "
-                 + "one or more of the LNF laboratories. Please check the system to ensure that the time "
+                 + $"one or more of the {GlobalSettings.Current.CompanyName} laboratories. Please check the system to ensure that the time "
                  + "recorded is correct.<br /><br />"
                  + "This matter must be resolved by the close of the third business day of this month.";
 

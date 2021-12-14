@@ -1,4 +1,5 @@
 ﻿using LNF.Inventory;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -6,6 +7,13 @@ namespace OnlineServices.Api.Inventory
 {
     public class InventoryItemRepository : ApiClient, IInventoryItemRepository
     {
+        internal InventoryItemRepository(IRestClient rc) : base(rc) { }
+
+        public void CheckOut(int itemId, int itemInventoryLocationId, int qty)
+        {
+            throw new NotImplementedException();
+        }
+
         public IInventoryItem GetInventoryItem(int itemId)
         {
             throw new NotImplementedException();

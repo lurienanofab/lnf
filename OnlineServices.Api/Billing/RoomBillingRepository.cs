@@ -1,4 +1,5 @@
 ﻿using LNF.Billing;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -6,6 +7,8 @@ namespace OnlineServices.Api.Billing
 {
     public class RoomBillingRepository : ApiClient, IRoomBillingRepository
     {
+        internal RoomBillingRepository(IRestClient rc) : base(rc) { }
+
         public IEnumerable<IRoomBilling> CreateRoomBilling(DateTime period, int clientId = 0)
         {
             return Get<List<RoomBillingItem>>("webapi/billing/room/create", QueryStrings(new { period, clientId }));

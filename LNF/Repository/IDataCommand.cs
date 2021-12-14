@@ -26,37 +26,37 @@ namespace LNF.Repository
         ParameterDefinition GetParam(string name);
 
         /// <summary>
-        /// Adds parameters to the select command.
+        /// Adds or updates select command parameters.
         /// </summary>
         IDataCommand Param(object parameters);
 
         /// <summary>
-        /// Adds parameters to the select command.
+        /// Adds or updates select command parameters.
         /// </summary>
         IDataCommand Param(IDictionary<string, object> parameters);
 
         /// <summary>
-        /// Adds a parameter to the select command.
+        /// Adds or updates a select command parameter.
         /// </summary>
         IDataCommand Param(string name, object value);
 
         /// <summary>
-        /// Adds a parameter to the select command with the specified parameter direction.
+        /// Adds or updates a select command parameter with the specified parameter direction.
         /// </summary>
         IDataCommand Param(string name, object value, ParameterDirection direction);
 
         /// <summary>
-        /// Adds a parameter to the select command if the condition is true.
+        /// Adds or updates a select command parameter if the condition is true.
         /// </summary>
         IDataCommand Param(string name, bool test, object value);
 
         /// <summary>
-        /// Adds a parameter to the select command using v1 if the condition is true, or v2 if the condition is false.
+        /// Adds or updates a select command parameter using v1 if the condition is true, or v2 if the condition is false.
         /// </summary>
         IDataCommand Param(string name, bool test, object v1, object v2);
 
         /// <summary>
-        /// Adds parameters to the select command as IN (p1, p2, ...)
+        /// Adds or updates a select command parameter as IN (p1, p2, ...)
         /// </summary>
         IDataCommand ParamList(string prefix, IEnumerable values);
 

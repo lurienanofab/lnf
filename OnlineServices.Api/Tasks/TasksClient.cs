@@ -6,7 +6,7 @@ namespace OnlineServices.Api.Tasks
 {
     public class TasksClient : ApiClient
     {
-        public TasksClient() : base(GetApiBaseUrl()) { }
+        internal TasksClient(IRestClient rc) : base(rc) { }
 
         public T RunJob<T>(Dictionary<string, string> args, T result)
         {

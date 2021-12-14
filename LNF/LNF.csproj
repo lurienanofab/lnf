@@ -76,6 +76,15 @@
     <Compile Include="Authorization\IAuthorizationAccess.cs" />
     <Compile Include="Authorization\IAuthorizationService.cs" />
     <Compile Include="Authorization\IRequest.cs" />
+    <Compile Include="Billing\Apportionment\Models\ApportionmentAccount.cs" />
+    <Compile Include="Billing\Apportionment\Models\ApportionmentClient.cs" />
+    <Compile Include="Billing\Apportionment\Models\ApportionmentEntry.cs" />
+    <Compile Include="Billing\Apportionment\Models\ApportionmentRoom.cs" />
+    <Compile Include="Billing\Apportionment\Models\ApportionmentRoomData.cs" />
+    <Compile Include="Billing\Apportionment\Models\DefaultApportionment.cs" />
+    <Compile Include="Billing\Apportionment\Models\RoomEntryApportionment.cs" />
+    <Compile Include="Billing\Apportionment\Models\RoomEntryApportionmentAccount.cs" />
+    <Compile Include="Billing\Apportionment\Repository.cs" />
     <Compile Include="Billing\BillingService.cs" />
     <Compile Include="Billing\BillingTypes.cs" />
     <Compile Include="Billing\CheckPassbackViolationsProcessResult.cs" />
@@ -90,6 +99,7 @@
     <Compile Include="Billing\IApportionment.cs" />
     <Compile Include="Billing\IApportionmentAccount.cs" />
     <Compile Include="Billing\IApportionmentClient.cs" />
+    <Compile Include="Billing\IApportionmentDefault.cs" />
     <Compile Include="Billing\IApportionmentOrg.cs" />
     <Compile Include="Billing\IApportionmentRepository.cs" />
     <Compile Include="Billing\IBillingService.cs" />
@@ -136,6 +146,9 @@
     <Compile Include="Billing\Process\PopulateStoreBillingResult.cs" />
     <Compile Include="Billing\Process\PopulateSubsidyBillingResult.cs" />
     <Compile Include="Billing\Process\PopulateToolBillingResult.cs" />
+    <Compile Include="Billing\Reports\ServiceUnitBilling\ReportSettings.cs" />
+    <Compile Include="Billing\Reports\ToolDetailResult.cs" />
+    <Compile Include="Configuration.cs" />
     <Compile Include="Control\AnalogPointState.cs" />
     <Compile Include="Control\BlockResponse.cs" />
     <Compile Include="Control\BlockState.cs" />
@@ -162,7 +175,12 @@
     <Compile Include="DataAccess\IUnitOfWorkAdapter.cs" />
     <Compile Include="DataAccess\SimpleRepository.cs" />
     <Compile Include="Data\Clients.cs" />
+    <Compile Include="Data\DryBoxAssignmentInfo.cs" />
+    <Compile Include="Data\DryBoxAssignmentUpdate.cs" />
+    <Compile Include="Data\DryBoxHistory.cs" />
+    <Compile Include="Data\DryBoxRequest.cs" />
     <Compile Include="Data\IClientOrg.cs" />
+    <Compile Include="Data\IDryBoxAssignment.cs" />
     <Compile Include="Data\IMessengerMessage.cs" />
     <Compile Include="Data\IMessengerRecipient.cs" />
     <Compile Include="Data\IPasswordResetRequest.cs" />
@@ -318,8 +336,8 @@
     <Compile Include="Data\DataFeedItem.cs" />
     <Compile Include="Data\DataFeedResult.cs" />
     <Compile Include="Data\DataService.cs" />
-    <Compile Include="Data\DryBoxAssignmentItem.cs" />
-    <Compile Include="Data\DryBoxItem.cs" />
+    <Compile Include="Data\DryBoxAssignment.cs" />
+    <Compile Include="Data\DryBox.cs" />
     <Compile Include="Data\Enums.cs" />
     <Compile Include="Data\FeedsLogItem.cs" />
     <Compile Include="Data\GlobalCostItem.cs" />
@@ -337,7 +355,6 @@
     <Compile Include="Data\IClientAccount.cs" />
     <Compile Include="Data\IClientAccountAssignment.cs" />
     <Compile Include="Data\IClientClient.cs" />
-    <Compile Include="Data\IClientDemographics.cs" />
     <Compile Include="Data\IClientManager.cs" />
     <Compile Include="Data\IClientPreference.cs" />
     <Compile Include="Data\IClientRemote.cs" />
@@ -350,8 +367,6 @@
     <Compile Include="Data\IDataService.cs" />
     <Compile Include="Data\IDefaultClient.cs" />
     <Compile Include="Data\IDepartment.cs" />
-    <Compile Include="Data\IDryBox.cs" />
-    <Compile Include="Data\IDryBoxAssignment.cs" />
     <Compile Include="Data\IDryBoxRepository.cs" />
     <Compile Include="Data\IFeedRepository.cs" />
     <Compile Include="Data\IFeedsLog.cs" />
@@ -372,7 +387,7 @@
     <Compile Include="Data\IPassbackRoom.cs" />
     <Compile Include="Data\IPriv.cs" />
     <Compile Include="Data\IPrivileged.cs" />
-    <Compile Include="Data\IPrivilegedExtensions.cs" />
+    <Compile Include="Data\PrivilegedExtensions.cs" />
     <Compile Include="Data\IReservationFeed.cs" />
     <Compile Include="Data\IRole.cs" />
     <Compile Include="Data\IRoom.cs" />
@@ -589,7 +604,10 @@
     <Compile Include="Scheduler\ISchedulerProperty.cs" />
     <Compile Include="Scheduler\ISchedulerPropertyRepository.cs" />
     <Compile Include="Scheduler\ISchedulerService.cs" />
+    <Compile Include="Scheduler\IKioskConfig.cs" />
     <Compile Include="Scheduler\KioskItem.cs" />
+    <Compile Include="Scheduler\IKioskRedirectItem.cs" />
+    <Compile Include="Scheduler\IKioskRedirects.cs" />
     <Compile Include="Scheduler\LabItem.cs" />
     <Compile Include="Scheduler\OnTheFlyResourceItem.cs" />
     <Compile Include="Scheduler\ProcessInfoLineModel.cs" />
@@ -688,6 +706,7 @@
     <Compile Include="Scheduler\Service\DailyTaskResult.cs" />
     <Compile Include="Scheduler\Service\FiveMinuteTaskResult.cs" />
     <Compile Include="Scheduler\Service\MonthlyTaskResult.cs" />
+    <Compile Include="Scheduler\AvailableReservationMinutesResult.cs" />
     <Compile Include="Scheduler\UpdateReservationArgs.cs" />
     <Compile Include="ServiceProvider.cs" />
     <Compile Include="Reporting\CriteriaWriter.cs" />

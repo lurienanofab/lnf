@@ -1,4 +1,5 @@
 ﻿using LNF.Control;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -6,6 +7,8 @@ namespace OnlineServices.Api.Control
 {
     public class ControlService : ApiClient, IControlService
     {
+        internal ControlService(IRestClient rc) : base(rc) { }
+
         public BlockResponse GetBlockState(IBlock block)
         {
             throw new NotImplementedException();

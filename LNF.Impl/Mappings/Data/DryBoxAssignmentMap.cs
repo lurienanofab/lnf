@@ -1,5 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Impl.Repository.Data;
+using LNF.Data;
 
 namespace LNF.Impl.Mappings.Data
 {
@@ -9,8 +9,8 @@ namespace LNF.Impl.Mappings.Data
         {
             Schema("sselData.dbo");
             Id(x => x.DryBoxAssignmentID);
-            References(x => x.DryBox);
-            References(x => x.ClientAccount);
+            Map(x => x.DryBoxID);
+            Map(x => x.ClientAccountID);
             Map(x => x.ReservedDate);
             Map(x => x.ApprovedDate);
             Map(x => x.RemovedDate);

@@ -1,11 +1,12 @@
 ﻿using LNF.Inventory;
+using RestSharp;
 using System.Collections.Generic;
 
 namespace OnlineServices.Api.Inventory
 {
     public class InventoryClient : ApiClient
     {
-        internal InventoryClient() : base(GetApiBaseUrl()) { }
+        internal InventoryClient(IRestClient rc) : base(rc) { }
 
         public IEnumerable<Category> GetCategories()
         {

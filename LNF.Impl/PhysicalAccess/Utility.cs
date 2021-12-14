@@ -1,4 +1,5 @@
-﻿using LNF.Data;
+﻿using LNF.CommonTools;
+using LNF.Data;
 using LNF.PhysicalAccess;
 using System;
 using System.Collections.Generic;
@@ -87,20 +88,33 @@ namespace LNF.Impl.PhysicalAccess
 
             foreach (DataRow dr in dt.Rows)
             {
+                string id = BytesToString(dr["ID"]);
+                int clientId = dr.Field<int>("BADGE_CLIENTID");
+                string userName = dr.Field<string>("BADGE_SSEL_UNAME");
+                string lastName = dr.Field<string>("LNAME");
+                string firstName = dr.Field<string>("FNAME");
+                int cardNumber = dr["CARDNO"] == DBNull.Value ? 0 : Convert.ToInt32(dr["CARDNO"]);
+                DateTime? lastAccess = dr.Field<DateTime?>("LAST_ACC");
+                DateTime cardIssueDate = dr.Field<DateTime>("CARD_ISSUE_DATE");
+                DateTime cardExpireDate = dr.Field<DateTime>("CARD_EXPIRE_DATE");
+                DateTime badgeIssueDate = dr.Field<DateTime>("BADGE_ISSUE_DATE");
+                DateTime badgeExpireDate = dr.Field<DateTime>("BADGE_EXPIRE_DATE");
+                Status cardStatus = GetCardStatus(dr.Field<string>("STAT_COD"));
+                
                 result.Add(new Card()
                 {
-                    ID = BytesToString(dr["ID"]),
-                    ClientID = dr.Field<int>("BADGE_CLIENTID"),
-                    UserName = dr.Field<string>("BADGE_SSEL_UNAME"),
-                    LastName = dr.Field<string>("LNAME"),
-                    FirstName = dr.Field<string>("FNAME"),
-                    Number = dr.Field<int>("CARDNO"),
-                    LastAccess = dr.Field<DateTime?>("LAST_ACC"),
-                    CardIssueDate = dr.Field<DateTime>("CARD_ISSUE_DATE"),
-                    CardExpireDate = dr.Field<DateTime>("CARD_EXPIRE_DATE"),
-                    BadgeIssueDate = dr.Field<DateTime>("BADGE_ISSUE_DATE"),
-                    BadgeExpireDate = dr.Field<DateTime>("BADGE_EXPIRE_DATE"),
-                    Status = GetCardStatus(dr.Field<string>("STAT_COD"))
+                    ID = id,
+                    ClientID = clientId,
+                    UserName = userName,
+                    LastName = lastName,
+                    FirstName = firstName,
+                    Number = cardNumber,
+                    LastAccess = lastAccess,
+                    CardIssueDate = cardIssueDate,
+                    CardExpireDate = cardExpireDate,
+                    BadgeIssueDate = badgeIssueDate,
+                    BadgeExpireDate = badgeExpireDate,
+                    Status = cardStatus
                 });
             }
 

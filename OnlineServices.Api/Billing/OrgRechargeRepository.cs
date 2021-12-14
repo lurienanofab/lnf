@@ -1,4 +1,5 @@
 ﻿using LNF.Billing;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 
@@ -6,6 +7,8 @@ namespace OnlineServices.Api.Billing
 {
     public class OrgRechargeRepository : ApiClient, IOrgRechargeRepository
     {
+        internal OrgRechargeRepository(IRestClient rc) : base(rc) { }
+
         public IOrgRecharge AddOrgRecharge(int orgId, int accountId, DateTime createdDate, DateTime endabledDate)
         {
             throw new NotImplementedException();

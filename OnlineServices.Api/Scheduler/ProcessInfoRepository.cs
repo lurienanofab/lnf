@@ -1,4 +1,5 @@
 ﻿using LNF.Scheduler;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -7,6 +8,8 @@ namespace OnlineServices.Api.Scheduler
 {
     public class ProcessInfoRepository : ApiClient, IProcessInfoRepository
     {
+        internal ProcessInfoRepository(IRestClient rc) : base(rc) { }
+
         public IProcessInfoLineParam AddProcessInfoLineParam(int resourceId, string paramName, string paramUnit, int paramType)
         {
             throw new NotImplementedException();

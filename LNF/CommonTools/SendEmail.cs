@@ -42,12 +42,12 @@ namespace LNF.CommonTools
             SendSystemEmail(caller, subject, body, DeveloperEmails, false);
         }
 
-        public static void SendErrorEmail(Exception ex, string msg, IClient client, string app, string ip, Uri url)
+        public static void SendErrorEmail(Exception ex, string msg, IPrivileged client, string app, string ip, Uri url)
         {
             SendErrorEmail(new[] { ex }, msg, client, app, ip, url);
         }
 
-        public static void SendErrorEmail(IEnumerable<Exception> exceptions, string msg, IClient client, string app, string ip, Uri url)
+        public static void SendErrorEmail(IEnumerable<Exception> exceptions, string msg, IPrivileged client, string app, string ip, Uri url)
         {
             var now = DateTime.Now;
             var body = new StringBuilder();
@@ -100,15 +100,15 @@ namespace LNF.CommonTools
             SendDebugEmail(clientId, caller, subj, body);
         }
 
-        public static string GetClientName(IClient client) => client == null ? "unknown" : $"{client.DisplayName} [{client.UserName}] [{client.ClientID}]";
+        public static string GetClientName(IPrivileged client) => client == null ? "unknown" : $"{client.DisplayName} [{client.UserName}] [{client.ClientID}]";
 
-        public static string SystemEmail => Utility.GetGlobalSetting("SystemEmail");
+        public static string SystemEmail => GlobalSettings.Current.SystemEmail;
 
-        public static string[] DeveloperEmails => Utility.GetGlobalSetting("DeveloperEmails").Split(',');
+        public static string[] DeveloperEmails => GlobalSettings.Current.DeveoperEmails;
 
-        public static string DebugEmail => Utility.GetGlobalSetting("DebugEmail");
+        public static string DebugEmail => GlobalSettings.Current.DebugEmail;
 
-        public static string CompanyName => Utility.GetGlobalSetting("CompanyName");
+        public static string CompanyName => GlobalSettings.Current.CompanyName;
 
         public static bool ValidateEmail(string addr)
         {

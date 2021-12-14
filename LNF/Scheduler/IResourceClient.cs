@@ -9,7 +9,6 @@ namespace LNF.Scheduler
         string ResourceName { get; set; }
         int AuthDuration { get; set; }
         bool ResourceIsActive { get; set; }
-        string DisplayName { get; set; }
         string Email { get; set; }
         string Phone { get; set; }
         bool ClientActive { get; set; }

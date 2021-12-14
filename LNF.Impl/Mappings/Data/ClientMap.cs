@@ -13,11 +13,6 @@ namespace LNF.Impl.Mappings.Data
             Map(x => x.MName);
             Map(x => x.LName);
             Map(x => x.UserName).Not.Nullable();
-            Map(x => x.DemCitizenID);
-            Map(x => x.DemGenderID);
-            Map(x => x.DemRaceID);
-            Map(x => x.DemEthnicID);
-            Map(x => x.DemDisabilityID);
             Map(x => x.Privs);
             Map(x => x.Communities);
             Map(x => x.TechnicalInterestID);

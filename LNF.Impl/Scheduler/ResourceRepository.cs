@@ -507,7 +507,9 @@ namespace LNF.Impl.Scheduler
             x.CurrentEndDateTime = dr.Field<DateTime?>("CurrentEndDateTime");
             x.CurrentNotes = dr.Field<string>("CurrentNotes");
             x.Communities = dr.Field<int>("Communities");
-            x.DisplayName = dr.Field<string>("DisplayName");
+            x.LName = dr.Field<string>("LName");
+            x.MName = dr.Field<string>("MName");
+            x.FName = dr.Field<string>("FName");
             x.ClientActive = dr.Field<bool>("ClientActive");
             x.OrgID = dr.Field<int>("OrgID");
             x.Email = dr.Field<string>("Email");

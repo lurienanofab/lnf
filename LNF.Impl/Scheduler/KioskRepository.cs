@@ -4,13 +4,24 @@ using LNF.Scheduler;
 using NHibernate.Transform;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Runtime.Caching;
+using Newtonsoft.Json;
 
 namespace LNF.Impl.Scheduler
 {
     public class KioskRepository : RepositoryBase, IKioskRepository
     {
         public KioskRepository(ISessionManager mgr) : base(mgr) { }
+
+        public IKioskConfig GetKioskConfig()
+        {
+            var filePath = Path.Combine(ConfigurationManager.AppSettings["SecurePath"], "kiosks", "kiosks.json");
+            var json = File.ReadAllText(filePath);
+            var result = JsonConvert.DeserializeObject<KioskConfig>(json);
+            return result;
+        }
 
         public IEnumerable<IKiosk> GetKiosks()
         {

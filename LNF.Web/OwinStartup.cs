@@ -1,11 +1,9 @@
 ﻿using LNF.DataAccess;
 using LNF.DependencyInjection;
-using LNF.Repository;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
 using Owin;
-using SimpleInjector;
 using System;
 using System.IO;
 using System.Linq;
@@ -46,6 +44,8 @@ namespace LNF.Web
             // do nothing unless overridden
         }
 
+        public virtual string LoginUrl() => LNF.Configuration.Current.Context.LoginUrl;
+
         public virtual void ConfigureAuth(IAppBuilder app)
         {
             if (UseCookieAuthentication)
@@ -59,12 +59,12 @@ namespace LNF.Web
                     CookiePath = "/",
                     ReturnUrlParameter = "ReturnUrl",
                     ExpireTimeSpan = TimeSpan.FromHours(8),
-                    LoginPath = new PathString(ServiceProvider.Current.LoginUrl()),
+                    LoginPath = new PathString(LoginUrl()),
                     Provider = new CookieAuthenticationProvider()
                     {
                         OnApplyRedirect = context =>
                         {
-                            context.RedirectUri = ServiceProvider.Current.LoginUrl() + new QueryString(context.Options.ReturnUrlParameter, context.Request.Uri.PathAndQuery);
+                            context.RedirectUri = LoginUrl() + new QueryString(context.Options.ReturnUrlParameter, context.Request.Uri.PathAndQuery);
                             context.Response.Redirect(context.RedirectUri);
                         }
                     }

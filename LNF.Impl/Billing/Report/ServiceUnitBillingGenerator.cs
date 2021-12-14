@@ -33,7 +33,6 @@ namespace LNF.Impl.Billing.Report
             DataTable dtReport = InitTable();
 
             string deptRefNum = string.Empty;
-            double chargeAmount = 0;
             double subsidyDiscount = 0;
             double total = 0;
 
@@ -46,7 +45,7 @@ namespace LNF.Impl.Billing.Report
                 {
                     ValidPeriodCheck(cadr);
 
-                    chargeAmount = Math.Round(Utility.ConvertTo(dtBilling.Compute("SUM(LineCost)", DataRowFilter(cadr)), 0D), 2);
+                    double chargeAmount = Math.Round(Utility.ConvertTo(dtBilling.Compute("SUM(LineCost)", DataRowFilter(cadr)), 0D), 2);
                     if (dtBilling.Columns.Contains("SubsidyDiscount"))
                         subsidyDiscount = Utility.ConvertTo(dtBilling.Compute("SUM(SubsidyDiscount)", DataRowFilter(cadr)), 0D);
 
@@ -69,8 +68,8 @@ namespace LNF.Impl.Billing.Report
                                 DateTime invoiceDate = (p.Equals(DateTime.MinValue)) ? Report.EndPeriod.AddMonths(-1) : p;
 
                                 DataRow newdr = dtReport.NewRow();
-                                newdr["ReportType"] = ReportUtility.EnumToString(Report.ReportType);
-                                newdr["ChargeType"] = ReportUtility.EnumToString(Report.BillingCategory);
+                                newdr["ReportType"] = Utility.EnumToString(Report.ReportType);
+                                newdr["ChargeType"] = Utility.EnumToString(Report.BillingCategory);
                                 newdr["Period"] = dr["Period"];
                                 newdr["CardType"] = 1;
                                 newdr["ShortCode"] = dr["ShortCode"];
@@ -120,9 +119,9 @@ namespace LNF.Impl.Billing.Report
             summary.ClassName = credit_acct.Class;
             summary.ProjectGrant = credit_acct.ProjectGrant;
             summary.InvoiceDate = Report.EndPeriod.AddMonths(-1).ToString("yyyy/MM/dd");
-            summary.Uniqname = "doscar"; //wtf?
+            summary.Uniqname = ReportSettings.FinancialManagerUserName;
             summary.DepartmentalReferenceNumber = deptRefNum;
-            summary.ItemDescription = "doscar"; //wtf?
+            summary.ItemDescription = ReportSettings.FinancialManagerUserName;
             summary.MerchandiseAmount = -total;
             summary.CreditAccount = CreditAccount;
             summary.QuantityVouchered = "1.0000";
@@ -145,8 +144,8 @@ namespace LNF.Impl.Billing.Report
             }
 
             DataRow totalrow = dtReport.NewRow();
-            totalrow["ReportType"] = ReportUtility.EnumToString(Report.ReportType);
-            totalrow["ChargeType"] = ReportUtility.EnumToString(Report.BillingCategory);
+            totalrow["ReportType"] = Utility.EnumToString(Report.ReportType);
+            totalrow["ChargeType"] = Utility.EnumToString(Report.BillingCategory);
             totalrow["Period"] = Report.EndPeriod.AddMonths(-1);
             totalrow["ShortCode"] = dtReport.Rows.Count - 1;
             totalrow["UsageCharge"] = (Report.BillingCategory == BillingCategory.Store) ? string.Empty : SumUsageCharge.ToString("0.00");
@@ -243,29 +242,14 @@ namespace LNF.Impl.Billing.Report
 
         private string GetInvoiceID()
         {
-            return string.Format("SUB {0} {1} LNF {2}"
-                , GetServiceUnitBillingNumber()
-                , Report.EndPeriod.AddMonths(-1).ToString("MM/yy")
-                , ReportUtility.EnumToString(Report.BillingCategory).ToLower()
+            DateTime period = Report.EndPeriod.AddMonths(-1);
+
+            return string.Format("SUB {0} {1:MM/yy} {2} {3}"
+                , ReportSettings.GetServiceUnitBillingNumber(period, Report.BillingCategory)
+                , period
+                , ReportSettings.CompanyName
+                , Utility.EnumToString(Report.BillingCategory).ToLower()
             );
-        }
-
-        private int GetServiceUnitBillingNumber()
-        {
-            DateTime Period = Report.EndPeriod.AddMonths(-1);
-            DateTime July2010 = new DateTime(2010, 7, 1);
-            int yearoff = Period.Year - July2010.Year;
-            int monthoff = Period.Month - July2010.Month;
-
-            int increment = (yearoff * 12 + monthoff) * 3;
-
-            //263 is the starting number for room sub in July 2010
-            if (Report.BillingCategory == BillingCategory.Tool)
-                return 263 + increment + 1;
-            else if (Report.BillingCategory == BillingCategory.Store)
-                return 263 + increment + 2;
-            else
-                return 263 + increment;
         }
 
         private ServiceUnitBillingReportItem CreateServiceUnitBillingReportItem(DataRowView drv)

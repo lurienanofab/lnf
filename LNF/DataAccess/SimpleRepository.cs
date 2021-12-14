@@ -1,7 +1,6 @@
 ﻿using LNF.Data;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -9,20 +8,20 @@ using System.Runtime.Caching;
 
 namespace LNF.DataAccess
 {
-    public abstract class SimpleRepository : IDisposable
+    public abstract class SimpleRepository
     {
-        private static ObjectCache _cache;
+        private static readonly ObjectCache _cache;
 
         static SimpleRepository()
         {
             _cache = new MemoryCache("SimpleRepositoryCache");
         }
 
-        private SqlConnection _conn;
+        private readonly SqlConnection _conn;
 
-        public SimpleRepository()
+        public SimpleRepository(SqlConnection conn)
         {
-            _conn = NewConnection();
+            _conn = conn;
         }
 
         public IClient GetUser<T>(string username) where T : IClient, new()
@@ -152,18 +151,17 @@ namespace LNF.DataAccess
             return allAccounts;
         }
 
-        private SqlConnection NewConnection()
-        {
-            var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["cnSselData"].ConnectionString);
-            return conn;
-        }
+        protected SqlCommand NewCommand() => NewCommand(string.Empty);
 
-        protected SqlCommand NewCommand()
+        protected SqlCommand NewCommand(string sql)
         {
             if (_conn.State != ConnectionState.Open)
                 _conn.Open();
 
-            return _conn.CreateCommand();
+            var result = _conn.CreateCommand();
+            result.CommandText = sql;
+
+            return result;
         }
 
         protected DataTable ExecuteQuery(SqlCommand cmd)
@@ -173,16 +171,6 @@ namespace LNF.DataAccess
                 DataTable dt = new DataTable();
                 adap.Fill(dt);
                 return dt;
-            }
-        }
-
-        public void Dispose()
-        {
-            if (_conn != null)
-            {
-                if (_conn.State == ConnectionState.Open)
-                    _conn.Close();
-                _conn.Dispose();
             }
         }
 
@@ -230,9 +218,9 @@ namespace LNF.DataAccess
             return result;
         }
 
-        protected void SetCache(string key, object value, TimeSpan expires = default(TimeSpan))
+        protected void SetCache(string key, object value, TimeSpan expires = default)
         {
-            if (expires == default(TimeSpan))
+            if (expires == default)
                 expires = TimeSpan.FromHours(24);
 
             DateTimeOffset absoluteExpiration = DateTimeOffset.Now.Add(expires);

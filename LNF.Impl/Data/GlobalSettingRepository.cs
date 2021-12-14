@@ -1,7 +1,6 @@
 ﻿using LNF.Data;
 using LNF.Impl.DataAccess;
 using LNF.Impl.Repository;
-using LNF.Impl.Repository.Data;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,12 +12,12 @@ namespace LNF.Impl.Data
 
         public IEnumerable<IGlobalSetting> GetGlobalSettings()
         {
-            return Session.Query<GlobalSettings>().ToList();
+            return Session.Query<Repository.Data.GlobalSettings>().ToList();
         }
 
         public IGlobalSetting GetGlobalSetting(string name)
         {
-            return Session.Query<GlobalSettings>().FirstOrDefault(x => x.SettingName == name);
+            return Session.Query<Repository.Data.GlobalSettings>().FirstOrDefault(x => x.SettingName == name);
         }
     }
 }
