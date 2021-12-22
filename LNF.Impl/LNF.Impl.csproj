@@ -399,7 +399,6 @@
     <Compile Include="Repository\Inventory\LabelRoom.cs" />
     <Compile Include="Repository\Inventory\PrivateChemical.cs" />
     <Compile Include="Repository\Inventory\ResourceInventoryLocation.cs" />
-    <Compile Include="Repository\Mail\MassEmail.cs" />
     <Compile Include="Repository\Mail\Message.cs" />
     <Compile Include="Repository\Mail\Recipient.cs" />
     <Compile Include="Repository\Meter\FileImport.cs" />
@@ -524,7 +523,7 @@
     <Compile Include="Logging\LoggingServiceBase.cs" />
     <Compile Include="Logging\TextLoggingService.cs" />
     <Compile Include="Logging\XmlLoggingService.cs" />
-    <Compile Include="Mail\AttachmentManager.cs" />
+    <Compile Include="Mail\AttachmentUtility.cs" />
     <Compile Include="Mail\MailService.cs" />
     <Compile Include="Mail\MailUtility.cs" />
     <Compile Include="Mail\MailRepo.cs" />

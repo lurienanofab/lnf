@@ -33,9 +33,14 @@ namespace OnlineServices.Api.Mail
             return Get<List<Recipient>>("webapi/mail/message/{messageId}/recipient", UrlSegments(new { messageId }));
         }
 
+        public int SendMassEmail(MassEmailSendArgs args)
+        {
+            return Post<int>("webapi/mail/send/mass-email", args);
+        }
+
         public void SendMessage(SendMessageArgs args)
         {
-            var content = Post("webapi/mail/message", args);
+            var content = Post("webapi/mail/send/message", args);
             var errmsg = JsonConvert.DeserializeObject(content).ToString();
             if (!string.IsNullOrEmpty(errmsg))
                 throw new Exception(errmsg);
@@ -43,7 +48,7 @@ namespace OnlineServices.Api.Mail
 
         public IEnumerable<string> GetEmailListByPrivilege(ClientPrivilege privs)
         {
-            throw new NotImplementedException();
+            return Get<List<string>>("webapi/mail/message/recipient", QueryStrings(new { privs = Convert.ToInt32(privs) }));
         }
     }
 }

@@ -8,13 +8,13 @@ namespace LNF.Impl.Mail.Criteria
     {
         public int SelectedManagerClientID { get; set; }
 
-        public override IEnumerable<MassEmailRecipient> GetRecipients()
+        protected override IEnumerable<MassEmailRecipient> GetRecipients()
         {
             var mgr = new GroupEmailManager(Session);
             return mgr.GetEmailListByManagerID(SelectedManagerClientID);
         }
 
-        public override string GetGroupName()
+        protected override string GetGroupName()
         {
             return Session.Get<Client>(SelectedManagerClientID).DisplayName;
         }

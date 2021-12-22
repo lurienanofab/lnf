@@ -43,7 +43,7 @@ namespace LNF.Impl.DataAccess.ModelFactory
         private INews MapNews(News source)
         {
             var result = MapFrom<NewsItem>(source);
-            result.NewsCreatedByClient = MapFrom<ClientItem>(source.NewsCreatedByClient);
+            result.NewsCreatedByClientID = source.NewsCreatedByClient.ClientID;
             return result;
         }
 

@@ -86,6 +86,7 @@ namespace LNF.Impl.DependencyInjection
             config.Context.RegisterSingleton<IHelpRepository, HelpRepository>();
             config.Context.RegisterSingleton<IGlobalSettingRepository, GlobalSettingRepository>();
             config.Context.RegisterSingleton<IMenuRepository, MenuRepository>();
+            config.Context.RegisterSingleton<INewsRepository, NewsRepository>();
 
             // Billing API
             config.Context.RegisterSingleton<IBillingService, BillingService>();
@@ -126,7 +127,7 @@ namespace LNF.Impl.DependencyInjection
             // Mail API
             config.Context.RegisterSingleton<IMailService, MailService>();
             config.Context.RegisterSingleton<IMassEmailRepository, MassEmailRepository>();
-            config.Context.RegisterSingleton<IAttachmentUtility, AttachmentManager>();
+            config.Context.RegisterSingleton<IAttachmentUtility, AttachmentUtility>();
 
             // PhysicalAccess API
             config.Context.RegisterSingleton<IPhysicalAccessService, PhysicalAccessService>();

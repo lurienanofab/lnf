@@ -5,7 +5,7 @@ namespace LNF.Data
     public interface INews
     {
         bool NewsActive { get; set; }
-        IClient NewsCreatedByClient { get; set; }
+        int NewsCreatedByClientID { get; set; }
         DateTime NewsCreatedDate { get; set; }
         bool NewsDefault { get; set; }
         bool NewsDeleted { get; set; }

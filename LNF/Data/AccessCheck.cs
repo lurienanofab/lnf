@@ -100,12 +100,12 @@ namespace LNF.Data
 
         public void EnablePhysicalAccess()
         {
-            PhysicalAccess.EnableAccess(Client);
+            PhysicalAccess.EnableAccess(new UpdateClientRequest { ClientID = Client.ClientID, ExpireOn = null });
         }
 
         public void DisablePhysicalAccess()
         {
-            PhysicalAccess.DisableAccess(Client, DateTime.Now);
+            PhysicalAccess.DisableAccess(new UpdateClientRequest { ClientID = Client.ClientID, ExpireOn = DateTime.Now });
         }
     }
 }

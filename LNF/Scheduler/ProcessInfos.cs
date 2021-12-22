@@ -39,7 +39,7 @@ namespace LNF.Scheduler
             };
         }
 
-        public IEnumerable<ProcessInfoModel> AddProcessInfo(IProcessInfo model)
+        public IEnumerable<ProcessInfoItem> AddProcessInfo(IProcessInfo model)
         {
             int resourceId = model.ResourceID;
             var pinfos = _provider.Scheduler.ProcessInfo.GetProcessInfos(resourceId).OrderBy(x => x.Order).ToList();
@@ -51,7 +51,7 @@ namespace LNF.Scheduler
             return GetProcessInfos(resourceId);
         }
 
-        public IEnumerable<ProcessInfoModel> UpdateProcessInfo(IProcessInfo model)
+        public IEnumerable<ProcessInfoItem> UpdateProcessInfo(IProcessInfo model)
         {
             _provider.Scheduler.ProcessInfo.Update(null, new[] { model }, null);
             return GetProcessInfos(model.ResourceID);
@@ -75,21 +75,21 @@ namespace LNF.Scheduler
             return GetProcessInfos(resourceId);
         }
 
-        public IEnumerable<ProcessInfoModel> DeleteProcessInfo(int resourceId, int processInfoId)
+        public IEnumerable<ProcessInfoItem> DeleteProcessInfo(int resourceId, int processInfoId)
         {
             _provider.Scheduler.ProcessInfo.DeleteProcessInfo(processInfoId);
             return GetProcessInfos(resourceId);
         }
 
-        public IEnumerable<ProcessInfoModel> GetProcessInfos(int resourceId)
+        public IEnumerable<ProcessInfoItem> GetProcessInfos(int resourceId)
         {
-            var result = new List<ProcessInfoModel>();
+            var result = new List<ProcessInfoItem>();
             var infos = _provider.Scheduler.Resource.GetProcessInfo(resourceId).OrderBy(x => x.Order).ToList();
             var lines = _provider.Scheduler.Resource.GetProcessInfoLines(resourceId);
 
             foreach (var pinfo in infos)
             {
-                result.Add(new ProcessInfoModel
+                result.Add(new ProcessInfoItem
                 {
                     ProcessInfoID = pinfo.ProcessInfoID,
                     ResourceID = pinfo.ResourceID,

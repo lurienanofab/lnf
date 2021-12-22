@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Configuration;
-using System.Xml;
+using System.Linq;
+using System.Web.Hosting;
 
 namespace LNF.WebApi.Swagger
 {
@@ -11,90 +11,53 @@ namespace LNF.WebApi.Swagger
         {
             var result = ConfigurationManager.GetSection("lnf/swagger");
             if (result == null) return null;
-            else return (SwaggerConfigurationSection)result;
+            else return result as SwaggerConfigurationSection;
         }
 
         [ConfigurationProperty("title", IsRequired = true)]
-        public string Title
-        {
-            get { return this["title"].ToString(); }
-            set { this["title"] = value; }
-        }
+        public string Title => this["title"] as string;
 
         [ConfigurationProperty("version", IsRequired = true)]
-        public string Version
-        {
-            get { return this["version"].ToString(); }
-            set { this["version"] = value; }
-        }
+        public string Version => this["version"] as string;
 
         [ConfigurationProperty("xmlCommentsFiles", IsRequired = false)]
-        public XmlCommentFileElementCollection XmlCommentsFiles
-        {
-            get { return (XmlCommentFileElementCollection)base["xmlCommentsFiles"]; }
-            set { base["xmlCommentsFiles"] = value; }
-        }
+        public XmlCommentFileElementCollection XmlCommentsFiles => base["xmlCommentsFiles"] as XmlCommentFileElementCollection;
 
-        public IEnumerable<string> GetXmlCommentsPaths()
+        public string[] GetXmlCommentsPaths()
         {
             if (XmlCommentsFiles == null)
                 return new string[] { };
             else
-                return XmlCommentsFiles;
+                return XmlCommentsFiles.Select(MapPath).ToArray();
         }
+
+        private string MapPath(XmlFileElement e) => HostingEnvironment.MapPath(e.Path);
     }
 
-    [ConfigurationCollection(typeof(StringElement))]
-    public class XmlCommentFileElementCollection : ConfigurationElementCollection, IEnumerable<string>
+    [ConfigurationCollection(typeof(XmlFileElement))]
+    public class XmlCommentFileElementCollection : ConfigurationElementCollection, IEnumerable<XmlFileElement>
     {
-        public StringElement this[int index]
-        {
-            get
-            {
-                return (StringElement)BaseGet(index);
-            }
-            set
-            {
-                if (BaseGet(index) != null)
-                    BaseRemoveAt(index);
-                BaseAdd(index, value);
-            }
-        }
+        public XmlFileElement this[int index] => BaseGet(index) as XmlFileElement;
 
-        public new StringElement this[string key]
-        {
-            get { return (StringElement)BaseGet(key); }
-        }
+        public new XmlFileElement this[string key] => BaseGet(key) as XmlFileElement;
 
-        protected override ConfigurationElement CreateNewElement()
-        {
-            return new StringElement();
-        }
+        protected override ConfigurationElement CreateNewElement() => new XmlFileElement();
 
-        protected override object GetElementKey(ConfigurationElement element)
-        {
-            return ((StringElement)element).Value;
-        }
+        protected override object GetElementKey(ConfigurationElement element) => (element as XmlFileElement).Path;
 
-        IEnumerator<string> IEnumerable<string>.GetEnumerator()
+        IEnumerator<XmlFileElement> IEnumerable<XmlFileElement>.GetEnumerator()
         {
             var enumerator = base.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                yield return ((StringElement)enumerator.Current).Value;
+                yield return enumerator.Current as XmlFileElement;
             }
         }
     }
 
-    public class StringElement : ConfigurationElement
+    public class XmlFileElement : ConfigurationElement
     {
-        private string _Value;
-
-        public string Value { get { return _Value; } }
-
-        protected override void DeserializeElement(XmlReader reader, bool serializeCollectionKey)
-        {
-            _Value = (string)reader.ReadElementContentAs(typeof(string), null);
-        }
+        [ConfigurationProperty("path")]
+        public string Path => base["path"] as string;
     }
 }

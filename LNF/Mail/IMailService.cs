@@ -8,6 +8,7 @@ namespace LNF.Mail
     {
         IMassEmailRepository MassEmail { get; }
         IAttachmentUtility Attachment { get; }
+        int SendMassEmail(MassEmailSendArgs args);
         void SendMessage(SendMessageArgs args);
         IEnumerable<IMessage> GetMessages(DateTime sd, DateTime ed, int clientId);
         IMessage GetMessage(int messageId);

@@ -16,5 +16,11 @@ namespace OnlineServices.Api.Mail
             var result = Post<Guid>("webapi/mail/attachment", files);
             return result;
         }
+
+        public int Delete(Guid guid)
+        {
+            int result = Delete("webapi/mail/attachment/{guid}", UrlSegments(new { guid }));
+            return result;
+        }
     }
 }

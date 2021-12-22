@@ -6,7 +6,7 @@ using System.IO;
 
 namespace LNF.Impl.Mail
 {
-    public class AttachmentManager : IAttachmentUtility
+    public class AttachmentUtility : IAttachmentUtility
     {
         public static string GetSecurePath()
         {
@@ -36,7 +36,7 @@ namespace LNF.Impl.Mail
             return Path.Combine(p2, guid.ToString("n"));
         }
 
-        public static bool DeleteAttachments(Guid guid)
+        public int Delete(Guid guid)
         {
             if (guid != Guid.Empty)
             {
@@ -45,11 +45,11 @@ namespace LNF.Impl.Mail
                 if (Directory.Exists(dir))
                 {
                     Directory.Delete(dir, true);
-                    return true;
+                    return 1;
                 }
             }
             
-            return false;
+            return 0;
         }
 
         public Guid Attach(IEnumerable<Attachment> attachments)

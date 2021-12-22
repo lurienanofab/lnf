@@ -15,5 +15,6 @@
         IHelpRepository Help { get; }
         IMenuRepository Menu { get; }
         IGlobalSettingRepository GlobalSetting { get; }
-    }
+        INewsRepository News {get;}
+}
 }

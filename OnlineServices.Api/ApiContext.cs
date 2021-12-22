@@ -84,7 +84,7 @@ namespace OnlineServices.Api
         public void SetContextItem(string key, object value)
         {
             HttpContext.Items[key] = value;
-        }        
+        }
 
         public string GetAppSetting(string key)
         {
@@ -106,21 +106,16 @@ namespace OnlineServices.Api
             _cache[key] = value;
         }
 
-
         public CurrentDryBoxAssignmentCollection GetCurrentDryBoxAssignments()
         {
             IEnumerable<DryBoxAssignmentInfo> source;
 
-            var obj = GetCacheItem("CurrentDryBoxAssignments");
+            source = GetContextItem<IEnumerable<DryBoxAssignmentInfo>>("CurrentDryBoxAssignments");
 
-            if (obj == null)
+            if (source == null)
             {
-                source  = Provider.Data.DryBox.GetCurrentDryBoxAssignments();
-                SetCacheItem("CurrentDryBoxAssignments", source);
-            }
-            else
-            {
-                source = (IEnumerable<DryBoxAssignmentInfo>)obj;
+                source = Provider.Data.DryBox.GetCurrentDryBoxAssignments();
+                SetContextItem("CurrentDryBoxAssignments", source);
             }
 
             var result = new CurrentDryBoxAssignmentCollection(source);

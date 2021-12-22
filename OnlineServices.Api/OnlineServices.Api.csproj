@@ -105,6 +105,7 @@
     <Compile Include="Data\HelpRepository.cs" />
     <Compile Include="Data\HolidayRepository.cs" />
     <Compile Include="Data\MenuRepository.cs" />
+    <Compile Include="Data\NewsRepository.cs" />
     <Compile Include="EncryptionUtility.cs" />
     <Compile Include="Feedback\FeedbackService.cs" />
     <Compile Include="Inventory\Category.cs" />

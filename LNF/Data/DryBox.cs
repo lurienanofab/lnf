@@ -2,7 +2,7 @@
 
 namespace LNF.Data
 {
-    public class DryBox : IDataItem
+    public class DryBox : IDryBox, IDataItem
     {
         public virtual int DryBoxID { get; set; }
         public virtual string DryBoxName { get; set; }

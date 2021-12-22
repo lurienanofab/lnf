@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace LNF.Data
 {
-    public class DryBoxAssignmentInfo : IDryBoxAssignment, IDataItem
+    public class DryBoxAssignmentInfo : IDryBox, IDryBoxAssignment, IDataItem
     {
         public virtual string DryBoxName { get; set; }
         public virtual bool Active { get; set; }

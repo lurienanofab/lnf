@@ -73,7 +73,7 @@ namespace LNF.Data
         public DataSet ExecuteQuery(IDataFeed feed, ScriptParameters parameters)
         {
             DataSet ds = new DataSet();
-            DataTable dt = null;
+            DataTable dt;
 
             string sql = feed.FeedQuery;
             string name = feed.FeedName;
@@ -164,7 +164,7 @@ namespace LNF.Data
             return sb.ToString();
         }
 
-        public string XmlFeedContent(DataFeedResult feed, string key)
+        public string XmlFeedContent(DataFeedResult feed)
         {
             XmlDocument xdoc = new XmlDocument();
 
@@ -293,9 +293,9 @@ namespace LNF.Data
             return sw.GetStringBuilder().ToString();
         }
 
-        public string HtmlFeedContent(DataFeedResult feed, string key, string format = null)
+        public string HtmlFeedContent(DataFeedResult feed, string format = null)
         {
-            bool fullPage = (format == "table") ? false : true;
+            bool fullPage = format != "table";
 
             //DataSet ds = ExecuteQuery(feed, parameters);
             //IList<DataTable> tables = GetTables(ds, key);
@@ -351,7 +351,7 @@ namespace LNF.Data
 
         public string JsonFeedContent(DataFeedResult feed, string key, string format = null)
         {
-            object obj = null;
+            object obj;
 
             Hashtable data = new Hashtable();
 

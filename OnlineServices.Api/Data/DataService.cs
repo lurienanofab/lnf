@@ -29,6 +29,8 @@ namespace OnlineServices.Api.Data
 
         public IMenuRepository Menu { get; }
 
+        public INewsRepository News { get; }
+
         public IGlobalSettingRepository GlobalSetting { get; }
 
         internal DataService(IRestClient rc)
@@ -45,6 +47,7 @@ namespace OnlineServices.Api.Data
             Feed = new FeedRepository(rc);
             Help = new HelpRepository(rc);
             Menu = new MenuRepository(rc);
+            News = new NewsRepository(rc);
             GlobalSetting = new GlobalSettingRepository(rc);
         }
     }

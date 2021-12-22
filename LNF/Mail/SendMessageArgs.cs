@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace LNF.Mail
 {
@@ -15,5 +16,23 @@ namespace LNF.Mail
         public IEnumerable<string> Bcc { get; set; }
         public IEnumerable<string> Attachments { get; set; }
         public bool IsHtml { get; set; }
+
+        public string[] GetDistinctEmails()
+        {
+            var list = new List<string>();
+
+            if (To != null && To.Count() > 0)
+                list.AddRange(To);
+
+            if (Cc != null && Cc.Count() > 0)
+                list.AddRange(Cc);
+
+            if (Bcc != null && Bcc.Count() > 0)
+                list.AddRange(Bcc);
+
+            var result = list.Distinct().ToArray();
+
+            return result;
+        }
     }
 }

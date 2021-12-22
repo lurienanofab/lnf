@@ -29,11 +29,11 @@ namespace LNF.Impl.Mail
         protected IRoomRepository Room { get; }
         protected IResourceRepository Resource { get; }
 
-        public MassEmailRepository(ISessionManager mgr, IClientRepository client, IRoomRepository room, IResourceRepository resoure) : base(mgr)
+        public MassEmailRepository(ISessionManager mgr, IClientRepository client, IRoomRepository room, IResourceRepository resource) : base(mgr)
         {
             Client = client;
             Room = room;
-            Resource = Resource;
+            Resource = resource;
         }
 
         public IEnumerable<MassEmailRecipient> GetRecipients(MassEmailRecipientArgs args)
@@ -66,7 +66,83 @@ namespace LNF.Impl.Mail
             return result;
         }
 
-        public int Send(IMailService svc, MassEmailSendArgs args)
+        public IEnumerable<IInvalidEmail> GetInvalidEmails(bool? active = null)
+        {
+            var query = Session.Query<InvalidEmailList>();
+
+            if (active.HasValue)
+                return query.Where(x => x.IsActive == active.Value).CreateModels<IInvalidEmail>();
+            else
+                return query.CreateModels<IInvalidEmail>();
+        }
+
+        public IInvalidEmail GetInvalidEmail(int emailId)
+        {
+            var item = Session.Get<InvalidEmailList>(emailId);
+            return item.CreateModel<IInvalidEmail>();
+        }
+
+        public int AddInvalidEmail(IInvalidEmail model)
+        {
+            var item = new InvalidEmailList
+            {
+                DisplayName = model.DisplayName,
+                EmailAddress = model.EmailAddress,
+                IsActive = model.IsActive
+            };
+
+            Session.Save(item);
+
+            return item.EmailID;
+        }
+
+        public bool ModifyInvalidEmail(IInvalidEmail model)
+        {
+            var item = Session.Get<InvalidEmailList>(model.EmailID);
+
+            if (item != null)
+            {
+                item.DisplayName = model.DisplayName;
+                item.EmailAddress = model.EmailAddress;
+                item.IsActive = model.IsActive;
+                Session.SaveOrUpdate(item);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool SetInvalidEmailActive(int emailId, bool value)
+        {
+            var item = Session.Get<InvalidEmailList>(emailId);
+
+            if (item != null)
+            {
+                item.IsActive = value;
+                Session.SaveOrUpdate(item);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool DeleteInvalidEmail(int emailId)
+        {
+            var item = Session.Get<InvalidEmailList>(emailId);
+            
+            if (item == null)
+                return false;
+
+            Session.Delete(item);
+
+            return true;
+        }
+
+        public SendMessageArgs CreateSendMessageArgs(MassEmailSendArgs args)
         {
             if (string.IsNullOrEmpty(args.Group))
                 throw new Exception("Group must not be null or empty.");
@@ -88,6 +164,26 @@ namespace LNF.Impl.Mail
 
             if (string.IsNullOrEmpty(args.Body))
                 throw new Exception("Body is required.");
+
+            // an array of file paths
+            var attachments = GetAttachments(args.Attachments);
+
+            var gs = GlobalSettings.Current;
+
+            string footer = "\n\n--------------------------------------------------\nThis email has been sent to the following group(s) : " + GetGroup(args) + ".";
+            footer += $"\nYou are receiving this email message because you are associated with the {gs.CompanyName}.\nTo unsubscribe, please go to:\nhttp://ssel-sched.eecs.umich.edu/sselonline/Unsubscribe.aspx";
+
+            SendMessageArgs sma = new SendMessageArgs
+            {
+                ClientID = args.ClientID,
+                Caller = args.Caller,
+                Subject = args.Subject,
+                Body = args.Body + footer,
+                From = args.From,
+                DisplayName = args.DisplayName,
+                Attachments = attachments,
+                IsHtml = false
+            };
 
             var recipients = new List<MassEmailRecipient>();
 
@@ -157,97 +253,12 @@ namespace LNF.Impl.Mail
                 // apparently we always send to the from address also
                 AddRecipient(to, args.From);
 
-                string footer = "\n\n--------------------------------------------------\nThis email has been sent to the following group(s) : " + GetGroup(args) + ".";
-                footer += $"\nYou are receiving this email message because you are associated with the {GlobalSettings.Current.CompanyName}.\nTo unsubscribe, please go to:\nhttp://ssel-sched.eecs.umich.edu/sselonline/Unsubscribe.aspx";
-
-                // an array of file paths
-                var attachments = GetAttachments(args.Attachments);
-
-                var sma = new SendMessageArgs
-                {
-                    ClientID = args.ClientID,
-                    Caller = args.Caller,
-                    Subject = args.Subject,
-                    Body = args.Body + footer,
-                    From = args.From,
-                    DisplayName = args.DisplayName,
-                    To = to.Count == 0 ? null : to,
-                    Bcc = bcc.Count == 0 ? null : bcc,
-                    Cc = cc.Count == 0 ? null : cc,
-                    Attachments = attachments,
-                    IsHtml = false
-                };
-
-                svc.SendMessage(sma);
-
-                AttachmentManager.DeleteAttachments(args.Attachments);
+                sma.To = to.Count == 0 ? null : to;
+                sma.Bcc = bcc.Count == 0 ? null : bcc;
+                sma.Cc = cc.Count == 0 ? null : cc;
             }
 
-            return recipients.Count;
-        }
-
-        public IEnumerable<IInvalidEmail> GetInvalidEmails(bool? active = null)
-        {
-            var query = Session.Query<InvalidEmailList>();
-
-            if (active.HasValue)
-                return query.Where(x => x.IsActive == active.Value).CreateModels<IInvalidEmail>();
-            else
-                return query.CreateModels<IInvalidEmail>();
-        }
-
-        public IInvalidEmail GetInvalidEmail(int emailId)
-        {
-            var item = Session.Get<InvalidEmailList>(emailId);
-            return item.CreateModel<IInvalidEmail>();
-        }
-
-        public int AddInvalidEmail(IInvalidEmail model)
-        {
-            var item = new InvalidEmailList
-            {
-                DisplayName = model.DisplayName,
-                EmailAddress = model.EmailAddress,
-                IsActive = model.IsActive
-            };
-
-            Session.Save(item);
-
-            return item.EmailID;
-        }
-
-        public bool ModifyInvalidEmail(IInvalidEmail model)
-        {
-            var item = Session.Get<InvalidEmailList>(model.EmailID);
-
-            if (item != null)
-            {
-                item.DisplayName = model.DisplayName;
-                item.EmailAddress = model.EmailAddress;
-                item.IsActive = model.IsActive;
-                Session.SaveOrUpdate(item);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public bool SetInvalidEmailActive(int emailId, bool value)
-        {
-            var item = Session.Get<InvalidEmailList>(emailId);
-
-            if (item != null)
-            {
-                item.IsActive = value;
-                Session.SaveOrUpdate(item);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return sma;
         }
 
         private string GetGroup(MassEmailSendArgs args)
@@ -310,11 +321,11 @@ namespace LNF.Impl.Mail
 
         private string[] GetAttachments(Guid guid)
         {
-            string dir = string.Empty;
+            string dir;
 
             if (guid != Guid.Empty)
             {
-                dir = AttachmentManager.GetAttachmentsPath(guid);
+                dir = AttachmentUtility.GetAttachmentsPath(guid);
 
                 if (Directory.Exists(dir))
                 {
@@ -329,7 +340,7 @@ namespace LNF.Impl.Mail
             return null;
         }
 
-        public IRecipientCriteria GetCriteria(IMassEmail massEmail)
+        public IRecipientCriteria CreateCriteria(IMassEmail massEmail)
         {
             switch (massEmail.RecipientGroup)
             {

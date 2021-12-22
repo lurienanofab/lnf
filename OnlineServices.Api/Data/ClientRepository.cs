@@ -85,12 +85,12 @@ namespace OnlineServices.Api.Data
 
         public IClient GetClient(string username)
         {
-            return Get<ClientItem>("webapi/data/client", QueryStrings(new { username }));
+            return Get<ClientItem>("webapi/data/client/username/{username}", UrlSegments(new { username }));
         }
 
         public IClient GetClient(int clientId)
         {
-            return Get<ClientItem>("webapi/data/client", QueryStrings(new { clientId }));
+            return Get<ClientItem>("webapi/data/client/id/{clientId}", UrlSegments(new { clientId }));
         }
 
         public IClient GetClient(int clientId, int rank)
@@ -356,11 +356,6 @@ namespace OnlineServices.Api.Data
             throw new NotImplementedException();
         }
 
-        IEnumerable<GenericListItem> IClientRepository.AllActiveManagers()
-        {
-            throw new NotImplementedException();
-        }
-
         public IMessengerMessage CreateMessage(int clientId, string subject, string body, int parentId, bool disableReply, bool exclusive, bool acknowledgeRequired, bool blockAccess, int accessCutoff)
         {
             throw new NotImplementedException();
@@ -378,7 +373,7 @@ namespace OnlineServices.Api.Data
 
         public IEnumerable<ClientListItem> GetClients()
         {
-            return Get<List<ClientListItem>>("webapi/data/client");
+            return Get<List<ClientListItem>>("webapi/data/client/list");
         }
 
         public bool GetRequirePasswordReset(int clientId)

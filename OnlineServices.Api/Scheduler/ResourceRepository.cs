@@ -17,7 +17,7 @@ namespace OnlineServices.Api.Scheduler
 
         public IEnumerable<IResource> GetResources()
         {
-            throw new NotImplementedException();
+            return Get<List<ResourceItem>>("webapi/scheduler/resource");
         }
 
         public IEnumerable<IResource> GetActiveResources()
@@ -27,7 +27,7 @@ namespace OnlineServices.Api.Scheduler
 
         public IEnumerable<IResource> GetResources(IEnumerable<int> ids)
         {
-            throw new NotImplementedException();
+            return Post<List<ResourceItem>>("webapi/scheduler/resource", ids);
         }
 
         public IEnumerable<IResource> GetResourcesByLab(int? labId)

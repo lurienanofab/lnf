@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace LNF.Impl.PhysicalAccess
 {
@@ -11,54 +12,53 @@ namespace LNF.Impl.PhysicalAccess
     {
         private IEnumerable<IRoom> _rooms = null;
 
-        public int AddClient(IClient c)
+        public int AddClient(AddClientRequest request)
         {
             return Repository.Prowatch.ExecuteNonQuery("LNF.dbo.ClientUpdate", new Dictionary<string, object>
             {
                 ["Action"] = "AddClient",
-                ["UserName"] = c.UserName,
-                ["FName"] = c.FName,
-                ["MName"] = c.MName,
-                ["LName"] = c.LName,
-                ["ClientID"] = c.ClientID
+                ["UserName"] = request.UserName,
+                ["FName"] = request.FName,
+                ["MName"] = request.MName,
+                ["LName"] = request.LName,
+                ["ClientID"] = request.ClientID
             }, CommandType.StoredProcedure);
         }
 
-        public int DisableAccess(IClient c, DateTime? expireOn = null)
+        public int DisableAccess(UpdateClientRequest request)
         {
             return Repository.Prowatch.ExecuteNonQuery("LNF.dbo.ClientUpdate", new Dictionary<string, object>
             {
                 ["Action"] = "DisableAccess",
-                ["ClientID"] = c.ClientID,
-                ["ExpireOn"] = Utility.DBNullIf(expireOn, !expireOn.HasValue)
+                ["ClientID"] = request.ClientID,
+                ["ExpireOn"] = Utility.DBNullIf(request.ExpireOn)
             }, CommandType.StoredProcedure);
         }
 
-        public int EnableAccess(IClient c, DateTime? expireOn = null)
+        public int EnableAccess(UpdateClientRequest request)
         {
             return Repository.Prowatch.ExecuteNonQuery("LNF.dbo.ClientUpdate", new Dictionary<string, object>
             {
                 ["Action"] = "EnableAccess",
-                ["ClientID"] = c.ClientID,
-                ["ExpireOn"] = Utility.DBNullIf(expireOn, !expireOn.HasValue)
+                ["ClientID"] = request.ClientID,
+                ["ExpireOn"] = Utility.DBNullIf(request.ExpireOn)
             }, CommandType.StoredProcedure);
         }
 
-        public Event FindNextOut(Event e, DateTime ed)
+        public Event FindNextOut(FindNextOutRequest request)
         {
             var rooms = GetRooms();
+            var sd = request.EndDate.AddMonths(-1);
+            var ed = request.EndDate;
+            var e = GetEvent(request.EventID, sd, ed, rooms);
+            return FindNextOut(e, request.EndDate, rooms);
+        }
 
+        private Event FindNextOut(Event e, DateTime ed, IEnumerable<IRoom> rooms)
+        {
             string eventDescription = "Local Grant - OUT";
 
-            string sql = "SELECT TOP 1 * FROM LNF.dbo.RawData WHERE BADGE_CLIENTID = @ClientID AND LOGDEVADESCRP = @AreaName AND EVNT_DAT > @EndDate AND EVNT_DESCRP = @EventDescription ORDER BY EVNT_DAT ASC";
-
-            var dt = Repository.Prowatch.FillDataTable(sql, new Dictionary<string, object>
-            {
-                ["ClientID"] = e.ClientID,
-                ["AreaName"] = e.DeviceDescription,
-                ["EndDate"] = ed,
-                ["EventDescription"] = eventDescription
-            });
+            var dt = SelectRawData(ed.AddMonths(-1), ed, e.ClientID, e.DeviceDescription, eventDescription, null);
 
             if (dt == null || dt.Rows.Count == 0)
             {
@@ -92,21 +92,20 @@ namespace LNF.Impl.PhysicalAccess
             }
         }
 
-        public Event FindPreviousIn(Event e, DateTime sd)
+        public Event FindPreviousIn(FindPreviousInRequest request)
         {
             var rooms = GetRooms();
+            var sd = request.StartDate;
+            var ed = request.StartDate.AddMonths(1);
+            var e = GetEvent(request.EventID, sd, ed, rooms);
+            return FindPreviousIn(e, request.StartDate, rooms);
+        }
 
+        private Event FindPreviousIn(Event e, DateTime sd, IEnumerable<IRoom> rooms)
+        {
             string eventDescription = "Local Grant - IN";
 
-            string sql = "SELECT TOP 1 * FROM LNF.dbo.RawData WHERE BADGE_CLIENTID = @ClientID AND LOGDEVADESCRP = @AreaName AND EVNT_DAT < @StartDate AND EVNT_DESCRP = @EventDescription ORDER BY EVNT_DAT DESC";
-
-            var dt = Repository.Prowatch.FillDataTable(sql, new Dictionary<string, object>
-            {
-                ["ClientID"] = e.ClientID,
-                ["AreaName"] = e.DeviceDescription,
-                ["StartDate"] = sd,
-                ["EventDescription"] = eventDescription
-            });
+            var dt = SelectRawData(sd, sd.AddMonths(1), e.ClientID, e.DeviceDescription, eventDescription, null);
 
             if (dt == null || dt.Rows.Count == 0)
             {
@@ -139,6 +138,7 @@ namespace LNF.Impl.PhysicalAccess
                 return Utility.CreateEvents(dt, rooms).First();
             }
         }
+
 
         public bool GetAllowReenable(int clientId, int days)
         {
@@ -241,11 +241,16 @@ namespace LNF.Impl.PhysicalAccess
             return Repository.Prowatch.GetCurrentlyInArea(alias);
         }
 
+        public IEnumerable<BadgeInArea> GetBadgeInAreas(string alias)
+        {
+            return Repository.Prowatch.GetBadgeInAreas(alias);
+        }
+
         public IEnumerable<Event> GetEvents(DateTime sd, DateTime ed, int clientId = 0, int roomId = 0)
         {
             var rooms = GetRooms();
 
-            var result = GetRawData(sd, ed, clientId, roomId).ToList();
+            var result = GetRawData(sd, ed, clientId, roomId, rooms).ToList();
 
             //remove rows with bad data
             string[] badEvents = { "Local Grant", "Host Grant", "Local Grant - APB Error - Used", "Local Grant - Door not used" };
@@ -269,7 +274,7 @@ namespace LNF.Impl.PhysicalAccess
                 (o, i) => o).ToArray();
 
             if (minOUT.Length > 0)
-                result.AddRange(minOUT.Select(x => FindPreviousIn(x, sd)));
+                result.AddRange(minOUT.Select(x => FindPreviousIn(x, sd, rooms)));
 
             //the max event for each client/room should always be an OUT, so get the events for each client/room where the max event in an IN and find the OUT
             var maxIN = result.Where(x => x.EventType == EventType.In).Join(
@@ -279,13 +284,27 @@ namespace LNF.Impl.PhysicalAccess
                  (o, i) => o).ToArray();
 
             if (maxIN.Length > 0)
-                result.AddRange(maxIN.Select(x => FindNextOut(x, ed)));
+                result.AddRange(maxIN.Select(x => FindNextOut(x, ed, rooms)));
 
             return result
                 .OrderBy(x => x.ClientID)
                 .ThenBy(x => x.RoomID)
                 .ThenBy(x => x.EventDateTime)
                 .ToArray();
+        }
+
+        public IEnumerable<Event> GetRawData(DateTime sd, DateTime ed, int clientId, int roomId)
+        {
+            var rooms = GetRooms();
+            return GetRawData(sd, ed, clientId, roomId, rooms);
+        }
+
+        private IEnumerable<Event> GetRawData(DateTime sd, DateTime ed, int clientId, int roomId, IEnumerable<IRoom> rooms)
+        {
+            var areaName = Utility.GetRoomName(roomId, rooms);
+            var dt = SelectRawData(sd, ed, clientId, areaName, null, null);
+            var result = Utility.CreateEvents(dt, rooms);
+            return result;
         }
 
         public IEnumerable<Card> GetExpiringCards(DateTime cutoff)
@@ -310,21 +329,23 @@ namespace LNF.Impl.PhysicalAccess
             return result;
         }
 
-        public IEnumerable<Event> GetRawData(DateTime sd, DateTime ed, int clientId, int roomId)
+        public Event GetEvent(string eventId, DateTime sd, DateTime ed, IEnumerable<IRoom> rooms)
         {
-            var rooms = GetRooms();
-            var roomName = Utility.GetRoomName(roomId, rooms);
+            // eventId should be a hex 18 byte hex number e.g. 0071C975F91B61744AE5A16D8FED80D6CE75 (no leading 0x)
 
-            string sql = "SELECT * FROM LNF.dbo.RawData WHERE ISNULL(@ClientID, BADGE_CLIENTID) = BADGE_CLIENTID AND ISNULL(@AreaName, LOGDEVADESCRP) = LOGDEVADESCRP AND (EVNT_DAT >= @StartDate AND EVNT_DAT < @EndDate)";
-            var dtRaw = Repository.Prowatch.FillDataTable(sql, new Dictionary<string, object>
-            {
-                ["ClientID"] = Utility.DBNullIf(clientId, clientId == 0),
-                ["AreaName"] = Utility.DBNullIf(roomName, string.IsNullOrEmpty(roomName)),
-                ["StartDate"] = sd,
-                ["EndDate"] = ed
-            });
+            var rid = eventId.ToUpper();
 
-            var result = Utility.CreateEvents(dtRaw, rooms);
+            if (!Regex.IsMatch(rid, "^[0-9A-F]{36}$"))
+                throw new Exception("Invalid eventId. Expecting an 18 byte hex string: two characters per byte for a total length of 36 characters.");
+
+            var dt = SelectRawData(sd, ed, 0, null, null, rid);
+
+            var events = Utility.CreateEvents(dt, rooms);
+
+            var result = events.FirstOrDefault();
+
+            if (result == null)
+                throw new Exception($"Cannot find event with EventID: {eventId}");
 
             return result;
         }
@@ -338,6 +359,20 @@ namespace LNF.Impl.PhysicalAccess
             }
 
             return _rooms;
+        }
+
+        private DataTable SelectRawData(DateTime sd, DateTime ed, int clientId, string areaName, string eventDesc, string rid)
+        {
+            return Repository.Prowatch.FillDataTable("LNF.dbo.EventLog_Select", new Dictionary<string, object>
+            {
+                ["Action"] = "RawData",
+                ["StartDate"] = sd,
+                ["EndDate"] = ed,
+                ["ClientID"] = Utility.DBNullIf(clientId, clientId == 0),
+                ["AreaName"] = Utility.DBNullIf(areaName, string.IsNullOrEmpty(areaName)),
+                ["EventDescription"] = Utility.DBNullIf(eventDesc, string.IsNullOrEmpty(eventDesc)),
+                ["RID"] = Utility.DBNullIf(rid, string.IsNullOrEmpty(rid))
+            }, CommandType.StoredProcedure);
         }
     }
 }

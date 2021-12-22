@@ -9,13 +9,13 @@ namespace LNF.Impl.Mail.Criteria
     {
         public int[] SelectedResourceIDs { get; set; }
 
-        public override IEnumerable<MassEmailRecipient> GetRecipients()
+        protected override IEnumerable<MassEmailRecipient> GetRecipients()
         {
             var mgr = new GroupEmailManager(Session);
             return mgr.GetEmailListByTools(SelectedResourceIDs);
         }
 
-        public override string GetGroupName()
+        protected override string GetGroupName()
         {
             return string.Join(", ", Session.Query<Resource>().Where(x => SelectedResourceIDs.Contains(x.ResourceID)).ToList().Select(x => x.ResourceName));
         }

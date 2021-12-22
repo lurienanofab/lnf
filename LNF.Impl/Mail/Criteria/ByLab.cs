@@ -8,15 +8,15 @@ namespace LNF.Impl.Mail.Criteria
     {
         public int[] SelectedLabs { get; set; }
 
-        public override IEnumerable<MassEmailRecipient> GetRecipients()
+        protected override IEnumerable<MassEmailRecipient> GetRecipients()
         {
             var mgr = new GroupEmailManager(Session);
             return mgr.GetEmailListByInLab(SelectedLabs);
         }
 
-        public override string GetGroupName()
+        protected override string GetGroupName()
         {
-            return string.Join(", ", Provider.PhysicalAccess.GetAreas(SelectedLabs).Select(x => x.Name));
+            return string.Join(", ", base.Provider.PhysicalAccess.GetAreas(SelectedLabs).Select(x => x.Name));
         }
     }
 }

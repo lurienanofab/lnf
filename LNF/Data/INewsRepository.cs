@@ -10,5 +10,6 @@ namespace LNF.Data
         void SetDefault(int newsId, int currentUserClientId);
         void Undelete(int newsId, int currentUserClientId);
         int UploadImage(int newsId, byte[] image, string fileName, string contentType, int currentUserClientId);
+        IEnumerable<NewsListItem> GetActive();
     }
 }

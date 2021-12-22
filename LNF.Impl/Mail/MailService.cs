@@ -36,6 +36,15 @@ namespace LNF.Impl.Mail
             return MailRepo.SelectRecipients(messageId);
         }
 
+        public int SendMassEmail(MassEmailSendArgs args)
+        {
+            var sma = MassEmail.CreateSendMessageArgs(args);
+            SendMessage(sma);
+            Attachment.Delete(args.Attachments);
+            var result = sma.GetDistinctEmails().Length;
+            return result;
+        }
+
         public void SendMessage(SendMessageArgs args)
         {
             int messageId = MailRepo.InsertMessage(args.ClientID, args.Caller, args.From, args.Subject, args.Body);

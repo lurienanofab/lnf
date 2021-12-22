@@ -12,12 +12,20 @@ namespace LNF.Impl.Data
     {
         public NewsRepository(ISessionManager mgr) : base(mgr) { }
 
+        public IEnumerable<NewsListItem> GetActive()
+        {
+            var now = DateTime.Now;
+            var query = Session.Query<News>().Where(x => x.NewsPublishDate <= now && (x.NewsExpirationDate == null || x.NewsExpirationDate > now) && x.NewsActive && !x.NewsDeleted).ToList();
+            var result = query.Select(CreateNewsListItem).ToList();
+            return result;
+        }
+
         /// <summary>
         /// Deletes a News item
         /// </summary>
         public void Delete(int newsId, int currentUserClientId)
         {
-            var n = GetNews(newsId);
+            var n = Require<News>(newsId);
 
             n.NewsUpdatedByClientID = currentUserClientId;
             n.NewsLastUpdate = DateTime.Now;
@@ -31,7 +39,7 @@ namespace LNF.Impl.Data
         /// </summary>
         public void Undelete(int newsId, int currentUserClientId)
         {
-            var n = GetNews(newsId);
+            var n = Require<News>(newsId);
 
             n.NewsUpdatedByClientID = currentUserClientId;
             n.NewsLastUpdate = DateTime.Now;
@@ -50,7 +58,7 @@ namespace LNF.Impl.Data
                 Session.SaveOrUpdate(d);
             }
 
-            var n = GetNews(newsId);
+            var n = Require<News>(newsId);
 
             n.NewsUpdatedByClientID = currentUserClientId;
             n.NewsLastUpdate = DateTime.Now;
@@ -115,14 +123,47 @@ namespace LNF.Impl.Data
             return 0;
         }
 
-        private News GetNews(int newsId)
+        private NewsListItem CreateNewsListItem(News x)
         {
-            var result = Session.Get<News>(newsId);
+            return new NewsListItem
+            {
+                NewsID = x.NewsID,
+                Text = x.NewsDescription,
+                ImageUrl = GetImageUrl(x),
+                IsTicker = x.NewsTicker
+            };
+        }
 
-            if (result == null)
-                throw new ItemNotFoundException<News>(x => x.NewsID, newsId);
+        private string GetImageUrl(News x)
+        {
+            if (!x.NewsTicker && x.NewsImage != null && x.NewsImage.Count() > 0)
+                return $"news/image/{x.NewsID}";
+            else
+                return string.Empty;
+        }
 
-            return result;
+        protected NewsItem CreateNewsItem(News x)
+        {
+            return new NewsItem
+            {
+                NewsID = x.NewsID,
+                NewsCreatedByClientID = x.NewsCreatedByClient.ClientID,
+                NewsUpdatedByClientID = x.NewsUpdatedByClientID,
+                NewsImage = x.NewsImage,
+                NewsImageFileName = x.NewsImageFileName,
+                NewsImageContentType = x.NewsImageContentType,
+                NewsTitle = x.NewsTitle,
+                NewsDescription = x.NewsDescription,
+                NewsCreatedDate = x.NewsCreatedDate,
+                NewsLastUpdate = x.NewsLastUpdate,
+                NewsPublishDate = x.NewsPublishDate,
+                NewsExpirationDate = x.NewsExpirationDate,
+                NewsSortOrder = x.NewsSortOrder,
+                NewsTicker = x.NewsTicker,
+                NewsDefault = x.NewsDefault,
+                NewsActive = x.NewsActive,
+                NewsDeleted = x.NewsDeleted
+            };
         }
     }
 }

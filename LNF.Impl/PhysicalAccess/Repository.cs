@@ -73,11 +73,29 @@ namespace LNF.Impl.PhysicalAccess
         private void ApplyParameters(SqlCommand cmd, IDictionary<string, object> parameters)
         {
             if (parameters != null)
+            {
+                cmd.Parameters.Clear();
+
                 foreach (var kvp in parameters)
                     cmd.Parameters.AddWithValue(kvp.Key, kvp.Value);
+            }
         }
 
         public IEnumerable<Badge> GetCurrentlyInArea(string alias)
+        {
+            var dt = SelectAreaOccupants(alias);
+            var result = Utility.CreateBadges(dt);
+            return result;
+        }
+
+        public IEnumerable<BadgeInArea> GetBadgeInAreas(string alias)
+        {
+            var dt = SelectAreaOccupants(alias);
+            var result = Utility.CreateBadgeInAreas(dt);
+            return result;
+        }
+
+        private DataTable SelectAreaOccupants(string alias)
         {
             string sql = "SELECT ID, BADGE_CLIENTID" +
                 ", BADGE_SSEL_UNAME, LNAME" +
@@ -96,9 +114,7 @@ namespace LNF.Impl.PhysicalAccess
                 ["AreaName"] = Utility.DBNullIf(area, string.IsNullOrEmpty(area))
             });
 
-            IList<Badge> result = Utility.CreateBadges(dt);
-
-            return result;
+            return dt;
         }
     }
 }

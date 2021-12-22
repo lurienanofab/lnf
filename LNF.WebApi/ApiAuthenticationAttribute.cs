@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Principal;
 using System.Text;
 using System.Web;
@@ -12,10 +13,10 @@ namespace LNF.WebApi
 {
     public class ApiAuthenticationAttribute : AuthorizeAttribute
     {
-        public AuthHandler Handler { get; private set; } = null;
-
         protected override bool IsAuthorized(HttpActionContext actionContext)
         {
+            AuthHandler handler;
+
             if (actionContext.Request.Headers.Authorization != null)
             {
                 string scheme = actionContext.Request.Headers.Authorization.Scheme.ToLower();
@@ -23,20 +24,27 @@ namespace LNF.WebApi
                 switch (scheme)
                 {
                     case "basic":
-                        Handler = new BasicAuthHandler();
+                        handler = new BasicAuthHandler();
                         break;
                     case "forms":
-                        Handler = new FormsAuthHandler();
-                        break;
-                    case "apikey":
-                        Handler = new ApiKeyAuthHandler();
+                        handler = new FormsAuthHandler();
                         break;
                     default:
                         return false;
                 }
 
-                return Handler.Authenticate(actionContext);
+                return handler.Authenticate(actionContext);
             }
+             
+            handler = new ApiKeyAuthHandler();
+
+            if (handler.Authenticate(actionContext))
+                return true;
+
+            TryFormsAuth(actionContext);
+
+            if (IsAuthenticated(actionContext))
+                return true;
 
             return false;
         }
@@ -57,6 +65,23 @@ namespace LNF.WebApi
                     return actionContext.RequestContext.Principal.Identity.IsAuthenticated;
 
             return false;
+        }
+
+        private void TryFormsAuth(HttpActionContext actionContext)
+        {
+            var cookieName = FormsAuthentication.FormsCookieName;
+            var cookieHeaderValue = actionContext.Request.Headers.GetCookies(cookieName).FirstOrDefault();
+            if (cookieHeaderValue != null)
+            {
+                var cookieState = cookieHeaderValue.Cookies.FirstOrDefault(x => x.Name == cookieName);
+                if (cookieState != null)
+                {
+                    var ticket = FormsAuthentication.Decrypt(cookieState.Value);
+                    var roles = ticket.UserData.Split('|');
+                    var ident = new FormsIdentity(ticket);
+                    actionContext.RequestContext.Principal = new GenericPrincipal(ident, roles);
+                }
+            }
         }
     }
 
@@ -145,7 +170,7 @@ namespace LNF.WebApi
         {
             var headers = actionContext.Request.Headers.Where(x => x.Key == "apikey").ToList();
 
-            var apikey = ConfigurationManager.AppSettings["ApiKey"];
+            var apikey = GetApiKey();
 
             if (!string.IsNullOrEmpty(apikey))
             {
@@ -165,6 +190,17 @@ namespace LNF.WebApi
             }
 
             return false;
+        }
+
+        private string GetApiKey()
+        {
+            if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["ApiKey"]))
+                return ConfigurationManager.AppSettings["ApiKey"];
+
+            if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["BasicAuthPassword"]))
+                return ConfigurationManager.AppSettings["BasicAuthPassword"];
+
+            return null;
         }
     }
 

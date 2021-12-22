@@ -13,16 +13,10 @@ namespace OnlineServices.Api.Mail
             return Post<List<MassEmailRecipient>>("webapi/mail/mass-email/recipient", args);
         }
 
-        public int Send(MassEmailSendArgs args)
+        public SendMessageArgs CreateSendMessageArgs(MassEmailSendArgs args)
         {
             //var files = new FileCollection("attachments", attachments);
-            return Post<int>("webapi/mail/mass-email/send", args);
-        }
-
-
-        public int Send(IMailService svc, MassEmailSendArgs args)
-        {
-            return Send(args);
+            return Post<SendMessageArgs>("webapi/mail/mass-email/send-message-args", args);
         }
 
         public IEnumerable<IInvalidEmail> GetInvalidEmails(bool? active = null)
@@ -52,9 +46,15 @@ namespace OnlineServices.Api.Mail
             return Put("webapi/mail/mass-email/invalid-email/{emailId}/active", UrlSegments(new { emailId }) & QueryStrings(new { value }));
         }
 
-        public IRecipientCriteria GetCriteria(IMassEmail massEmail)
+        public bool DeleteInvalidEmail(int emailId)
         {
-            throw new System.NotImplementedException();
+            int delete = Delete("webapi/mail/mass-email/invalid-email/{emailId}", UrlSegments(new { emailId }));
+            return delete == 1;
+        }
+
+        public IRecipientCriteria CreateCriteria(IMassEmail massEmail)
+        {
+            return Post<RecipientCriteria>("webapi/mail/mass-email/criteria", massEmail);
         }
     }
 }

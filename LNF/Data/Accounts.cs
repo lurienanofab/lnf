@@ -108,8 +108,11 @@ namespace LNF.Data
         {
             string result = accountName;
 
-            if (!string.IsNullOrEmpty(shortCode.Trim()))
+            if (!string.IsNullOrEmpty(shortCode))
                 result = "[" + shortCode.Trim() + "] " + result;
+
+            if (string.IsNullOrEmpty(result))
+                return string.Empty;
 
             return result.Trim();
         }

@@ -12,7 +12,6 @@ namespace LNF.CommonTools
     {
         private DataTableManager(IProvider provider)
         {
-            _provider = provider;
             _wd = new WriteData(provider);
         }
 
@@ -21,7 +20,6 @@ namespace LNF.CommonTools
             return new DataTableManager(provider);
         }
 
-        private readonly IProvider _provider;
         private readonly WriteData _wd;
 
         public UpdateTablesResult Update(BillingCategory types)

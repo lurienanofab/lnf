@@ -6,7 +6,7 @@ namespace LNF.Scheduler.Service
     {
         public CheckExpiringClientsProcessResult CheckExpiringClientsProcessResult { get; set; }
         public CheckExpiredClientsProcessResult CheckExpiredClientsProcessResult { get; set; }
-        public UpdateTablesResult DataUpdateProcessResult { get; set; }
+        public UpdateResult DataUpdateProcessResult { get; set; }
         public Step1Result BillingProcessStep1Result { get; set; }
     }
 }

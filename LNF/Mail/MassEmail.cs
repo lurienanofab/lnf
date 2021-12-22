@@ -1,8 +1,7 @@
 using LNF.DataAccess;
-using LNF.Mail;
 using System;
 
-namespace LNF.Impl.Repository.Mail
+namespace LNF.Mail
 {
     public class MassEmail : IMassEmail, IDataItem
     {

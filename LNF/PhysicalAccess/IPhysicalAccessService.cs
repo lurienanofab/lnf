@@ -1,5 +1,4 @@
-﻿using LNF.Data;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace LNF.PhysicalAccess
@@ -12,15 +11,16 @@ namespace LNF.PhysicalAccess
         IEnumerable<Area> GetAreas();
         IEnumerable<Area> GetAreas(int[] areaIds);
         IEnumerable<Badge> GetCurrentlyInArea(string alias);
+        IEnumerable<BadgeInArea> GetBadgeInAreas(string alias);
         IEnumerable<Card> GetExpiringCards(DateTime cutoff);
         IEnumerable<Event> GetEvents(DateTime sd, DateTime ed, int clientId = 0, int roomId = 0);
         bool GetAllowReenable(int clientId, int days);
         int[] GetPassbackViolations(DateTime sd, DateTime ed);
-        int AddClient(IClient c);
-        int EnableAccess(IClient c, DateTime? expireOn = null);
-        int DisableAccess(IClient c, DateTime? expireOn = null);
+        int AddClient(AddClientRequest request);
+        int EnableAccess(UpdateClientRequest request);
+        int DisableAccess(UpdateClientRequest request);
         IEnumerable<Event> GetRawData(DateTime sd, DateTime ed, int clientId, int roomId);
-        Event FindPreviousIn(Event e, DateTime sd);
-        Event FindNextOut(Event e, DateTime ed);
+        Event FindPreviousIn(FindPreviousInRequest request);
+        Event FindNextOut(FindNextOutRequest request);
     }
 }

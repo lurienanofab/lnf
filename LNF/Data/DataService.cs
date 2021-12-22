@@ -15,6 +15,7 @@
         public IHelpRepository Help { get; }
         public IGlobalSettingRepository GlobalSetting { get; }
         public IMenuRepository Menu { get; }
+        public INewsRepository News { get; }
 
         public DataService(
             IClientRepository client,
@@ -29,7 +30,8 @@
             IFeedRepository feed,
             IHelpRepository help,
             IGlobalSettingRepository globalSetting,
-            IMenuRepository menu)
+            IMenuRepository menu,
+            INewsRepository news)
         {
             Client = client;
             Org = org;
@@ -44,6 +46,7 @@
             Help = help;
             GlobalSetting = globalSetting;
             Menu = menu;
+            News = news;
         }
     }
 }

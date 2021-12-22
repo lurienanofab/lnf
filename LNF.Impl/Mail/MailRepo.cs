@@ -38,7 +38,7 @@ namespace LNF.Impl.Mail
         {
             using (var cmd = GetCommand("INSERT Email.dbo.Message (ClientID, FromAddress, Subject, Body, Caller, CreatedOn) VALUES (@ClientID, @FromAddress, @Subject, @Body, @Caller, GETDATE()); SELECT SCOPE_IDENTITY()", CommandType.Text))
             {
-                
+
                 cmd.Parameters.AddWithValue("ClientID", clientId);
                 cmd.Parameters.AddWithValue("FromAddress", from);
                 cmd.Parameters.AddWithValue("Subject", subject);
@@ -52,7 +52,30 @@ namespace LNF.Impl.Mail
 
         public IEnumerable<IRecipient> SelectRecipients(int messageId)
         {
-            throw new NotImplementedException();
+            using (var cmd = GetCommand("SELECT * FROM Email.dbo.Recipient WHERE MessageID = @MessageID", CommandType.Text))
+            using (var adap = new SqlDataAdapter(cmd))
+            {
+                cmd.Parameters.AddWithValue("MessageID", messageId);
+                var dt = new DataTable();
+                adap.Fill(dt);
+
+                var result = new List<IRecipient>();
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    result.Add(new Recipient
+                    {
+                        RecipientID = dr.Field<int>("RecipientID"),
+                        MessageID = dr.Field<int>("MessageID"),
+                        ClientID = dr.Field<int>("ClientID"),
+                        AddressType = dr.Field<AddressType>("AddressType"),
+                        AddressText = dr.Field<string>("AddressText"),
+                        AddressTimestamp = dr.Field<DateTime>("AddressTimestamp")
+                    });
+                }
+
+                return result;
+            }
         }
 
         public int SetMessageSent(int messageId)

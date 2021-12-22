@@ -56,14 +56,14 @@ namespace OnlineServices.Api.PhysicalAccess
             return Get<List<Event>>("webapi/physical-access/events/raw", QueryStrings(new { sd = sd.ToString("yyyy-MM-dd"), ed = ed.ToString("yyyy-MM-dd"), clientId, roomId }));
         }
 
-        public Event FindPreviousIn(Event e, DateTime sd)
+        public Event FindPreviousIn(FindPreviousInRequest request)
         {
-            return Post<Event>("webapi/physical-access/events/find-previous-in", e, QueryStrings(new { sd = sd.ToString("yyyy-MM-dd") }));
+            return Post<Event>("webapi/physical-access/events/find-previous-in", request);
         }
 
-        public Event FindNextOut(Event e, DateTime ed)
+        public Event FindNextOut(FindNextOutRequest request)
         {
-            return Post<Event>("webapi/physical-access/events/find-next-out", e, QueryStrings(new { ed = ed.ToString("yyyy-MM-dd") }));
+            return Post<Event>("webapi/physical-access/events/find-next-out", request);
         }
 
         public bool GetAllowReenable(int clientId, int days)
@@ -76,29 +76,24 @@ namespace OnlineServices.Api.PhysicalAccess
             return Get<List<int>>("webapi/physical-access/passback-violations", QueryStrings(new { sd = sd.ToString("yyyy-MM-dd"), ed = ed.ToString("yyyy-MM-dd") })).ToArray();
         }
 
-        public int AddClient(IClient c)
+        public int AddClient(AddClientRequest request)
         {
-            return Post<int>("webapi/physical-access/client/add", c);
+            return Post<int>("webapi/physical-access/client/add", request);
         }
 
-        public int EnableAccess(IClient c, DateTime? expireOn = null)
+        public int EnableAccess(UpdateClientRequest request)
         {
-            ParameterCollection parameters = null;
-
-            if (expireOn.HasValue)
-                parameters = new ParameterCollection { new ParameterItem("expireOn", expireOn.Value.ToString("yyyy-MM-dd"), ParameterType.QueryString) };
-
-            return Post<int>("webapi/physical-access/client/enable", c, parameters);
+            return Post<int>("webapi/physical-access/client/enable", request);
         }
 
-        public int DisableAccess(IClient c, DateTime? expireOn = null)
+        public int DisableAccess(UpdateClientRequest request)
         {
-            ParameterCollection parameters = null;
+            return Post<int>("webapi/physical-access/client/disable", request);
+        }
 
-            if (expireOn.HasValue)
-                parameters = new ParameterCollection { new ParameterItem("expireOn", expireOn.Value.ToString("yyyy-MM-dd"), ParameterType.QueryString) };
-
-            return Post<int>("webapi/physical-access/client/disable", c, parameters);
+        public IEnumerable<BadgeInArea> GetBadgeInAreas(string alias)
+        {
+            return Get<List<BadgeInArea>>("webapi/physical-access/badge-in-area", UrlSegments(new { alias }));
         }
     }
 }

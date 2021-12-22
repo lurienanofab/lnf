@@ -1,6 +1,6 @@
 ﻿namespace LNF.Scheduler
 {
-    public class ProcessInfoLineModel : IProcessInfoLine
+    public class ProcessInfoLineItem : IProcessInfoLine
     {
         public int ProcessInfoLineID { get; set; }
         public int ProcessInfoID { get; set; }

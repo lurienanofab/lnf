@@ -14,7 +14,7 @@ namespace LNF.Web.Mvc
         public ClientPrivilege RequiredPrivilege { get; set; }
         public int[] AllowedClientIDs { get; set; }
         public string AccessDeniedViewName { get; }
-        public IProvider Provider { get; }
+        public IProvider Provider => ServiceProvider.Current;
 
         /// <summary>
         /// Authorizes requests using LNF privileges and/or a list of LNF ClientIDs.
@@ -23,10 +23,8 @@ namespace LNF.Web.Mvc
         /// <param name="allowedClientIDs">An array of ClientID integers that are allowed access.</param>
         /// <param name="modelType">The model that will be passed to the view if access is denied. Defaults to LNF.Web.Mvc.AccessDeniedModel. The class must a have public contstructor that takes a single LNF.Data.ClientItem parameter.</param>
         /// <param name="accessDeniedViewName">The name of the view to display for unauthorized requests. Defaults to "AccessDenied". If null the request will redirect to the login page.</param>
-        public LNFAuthorizeAttribute(IProvider provider, ClientPrivilege requiredPrivilege = 0, int[] allowedClientIDs = null, Type modelType = null, string accessDeniedViewName = "AccessDenied")
+        public LNFAuthorizeAttribute(ClientPrivilege requiredPrivilege = 0, int[] allowedClientIDs = null, Type modelType = null, string accessDeniedViewName = "AccessDenied")
         {
-            Provider = provider;
-
             if (modelType != null && !modelType.IsSubclassOf(typeof(BaseModel)))
                 throw new ArgumentException("The type must inherit LNF.Web.Mvc.BaseModel.", "modelType");
 

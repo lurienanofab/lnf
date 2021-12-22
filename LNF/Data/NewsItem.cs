@@ -5,7 +5,7 @@ namespace LNF.Data
     public class NewsItem : INews
     {
         public int NewsID { get; set; }
-        public IClient NewsCreatedByClient { get; set; }
+        public int NewsCreatedByClientID { get; set; }
         public int? NewsUpdatedByClientID { get; set; }
         public byte[] NewsImage { get; set; }
         public string NewsImageFileName { get; set; }

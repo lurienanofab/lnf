@@ -22,6 +22,7 @@ namespace LNF.Impl.PhysicalAccess
 
         private static readonly IDictionary<string, EventType> EventTypeLookup = new Dictionary<string, EventType>()
         {
+            {"Host Grant", EventType.Grant},
             {"Local Grant", EventType.Grant},
             {"Local Grant - Door not used", EventType.Grant},
             {"Local Grant - IN", EventType.In},
@@ -79,6 +80,46 @@ namespace LNF.Impl.PhysicalAccess
             return result;
         }
 
+        public static IList<BadgeInArea> CreateBadgeInAreas(DataTable dt)
+        {
+            var result = new List<BadgeInArea>();
+
+            if (dt == null) return result;
+            if (dt.Rows.Count == 0) return result;
+
+            foreach (DataRow dr in dt.Rows)
+            {
+                var areaName = dr.Field<string>("AREA_NAME");
+                var areaDisplayName = GetAreaDisplayName(dr.Field<string>("AREA_NAME"));
+                var accessTime = FixEventDate(dr.Field<DateTime?>("EVENT_TIME"));
+                var cardNumber = GetCardNumber(dr);
+
+                var area = result.FirstOrDefault(x => x.AreaName == areaName);
+
+                if (area == null)
+                {
+                    area = new BadgeInArea { AreaName = areaName, AreaDisplayName = areaDisplayName, Occupants = new List<BadgeInAreaOccupant>() };
+                    result.Add(area);
+                }
+
+                var occupants = area.Occupants.ToList();
+
+                occupants.Add(new BadgeInAreaOccupant()
+                {
+                    ClientID = dr.Field<int>("BADGE_CLIENTID"),
+                    LastName = dr.Field<string>("LNAME"),
+                    FirstName = dr.Field<string>("FNAME"),
+                    AreaName = areaName,
+                    AccessTime = accessTime,
+                    CardNumber = cardNumber
+                });
+
+                area.Occupants = occupants;
+            }
+
+            return result;
+        }
+
         public static IList<Card> CreateCards(DataTable dt)
         {
             var result = new List<Card>();
@@ -100,7 +141,7 @@ namespace LNF.Impl.PhysicalAccess
                 DateTime badgeIssueDate = dr.Field<DateTime>("BADGE_ISSUE_DATE");
                 DateTime badgeExpireDate = dr.Field<DateTime>("BADGE_EXPIRE_DATE");
                 Status cardStatus = GetCardStatus(dr.Field<string>("STAT_COD"));
-                
+
                 result.Add(new Card()
                 {
                     ID = id,
@@ -209,10 +250,11 @@ namespace LNF.Impl.PhysicalAccess
 
             foreach (DataRow dr in dt.Rows)
             {
-                result.Add(new Area()
+                result.Add(new Area
                 {
                     ID = BytesToString(dr["ID"]),
-                    Name = dr.Field<string>("AREA_NAME")
+                    Name = dr.Field<string>("AREA_NAME"),
+                    DisplayName = GetAreaDisplayName(dr.Field<string>("AREA_NAME"))
                 });
             }
 
@@ -288,6 +330,17 @@ namespace LNF.Impl.PhysicalAccess
             }
         }
 
+        public static string GetAreaDisplayName(string areaName)
+        {
+            switch (areaName)
+            {
+                case "Wet Chemistry":
+                    return "ROBIN";
+                default:
+                    return areaName;
+            }
+        }
+
         public static DateTime? FixEventDate(DateTime? eventDate)
         {
             if (eventDate.HasValue && eventDate < DateTime.Parse("1990-01-01"))
@@ -321,12 +374,22 @@ namespace LNF.Impl.PhysicalAccess
             return hex.ToString().ToUpper();
         }
 
-        public static IEnumerable<byte> StringToBytes(string hex)
+        public static byte[] StringToBytes(string hex)
         {
-            int numberChars = hex.Length;
+            string h;
+
+            if (hex.ToLower().StartsWith("0x"))
+                h = hex.Substring(2);
+            else
+                h = hex;
+
+            int numberChars = h.Length;
+            
             byte[] bytes = new byte[numberChars / 2];
+            
             for (int i = 0; i < numberChars; i += 2)
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+                bytes[i / 2] = Convert.ToByte(h.Substring(i, 2), 16);
+
             return bytes;
         }
 
@@ -368,6 +431,14 @@ namespace LNF.Impl.PhysicalAccess
         public static object DBNullIf(object value, bool test)
         {
             if (test)
+                return DBNull.Value;
+            else
+                return value;
+        }
+
+        public static object DBNullIf<T>(T? value) where T : struct
+        {
+            if (!value.HasValue)
                 return DBNull.Value;
             else
                 return value;

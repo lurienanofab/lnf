@@ -7,13 +7,13 @@ namespace LNF.Impl.Mail.Criteria
     {
         public int SelectedCommunities { get; set; }
 
-        public override IEnumerable<MassEmailRecipient> GetRecipients()
+        protected override IEnumerable<MassEmailRecipient> GetRecipients()
         {
             var mgr = new GroupEmailManager(Session);
             return mgr.GetEmailListByCommunity(SelectedCommunities);
         }
 
-        public override string GetGroupName()
+        protected override string GetGroupName()
         {
             return string.Join(", ", SelectedCommunities);
         }
