@@ -1,17 +1,10 @@
 using LNF.DataAccess;
-using LNF.Mail;
 using System;
-using System.Collections.Generic;
 
-namespace LNF.Impl.Repository.Mail
+namespace LNF.Mail
 {
-    public class Message : IMessage, IDataItem
+    public class Message : IDataItem
     {
-        public Message()
-        {
-            Recipients = new List<Recipient>();
-        }
-
         public virtual int MessageID { get; set; }
         public virtual int ClientID { get; set; }
         public virtual string FromAddress { get; set; }
@@ -21,7 +14,6 @@ namespace LNF.Impl.Repository.Mail
         public virtual string Caller { get; set; }
         public virtual DateTime CreatedOn { get; set; }
         public virtual DateTime? SentOn { get; set; }
-        public virtual IList<Recipient> Recipients { get; set; }
 
         public virtual void AppendError(string err)
         {

@@ -1,10 +1,9 @@
 using LNF.DataAccess;
-using LNF.Mail;
 using System;
 
-namespace LNF.Impl.Repository.Mail
+namespace LNF.Mail
 {
-    public class Recipient : IRecipient, IDataItem
+    public class Recipient : IDataItem
     {
         public virtual int RecipientID { get; set; }
         public virtual int MessageID { get; set; }

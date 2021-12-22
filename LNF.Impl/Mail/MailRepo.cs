@@ -1,5 +1,4 @@
-﻿using LNF.Impl.Repository.Mail;
-using LNF.Mail;
+﻿using LNF.Mail;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -50,7 +49,7 @@ namespace LNF.Impl.Mail
             }
         }
 
-        public IEnumerable<IRecipient> SelectRecipients(int messageId)
+        public IEnumerable<Recipient> SelectRecipients(int messageId)
         {
             using (var cmd = GetCommand("SELECT * FROM Email.dbo.Recipient WHERE MessageID = @MessageID", CommandType.Text))
             using (var adap = new SqlDataAdapter(cmd))
@@ -59,7 +58,7 @@ namespace LNF.Impl.Mail
                 var dt = new DataTable();
                 adap.Fill(dt);
 
-                var result = new List<IRecipient>();
+                var result = new List<Recipient>();
 
                 foreach (DataRow dr in dt.Rows)
                 {
@@ -88,7 +87,7 @@ namespace LNF.Impl.Mail
             }
         }
 
-        public IMessage SelectMessage(int messageId)
+        public Message SelectMessage(int messageId)
         {
             using (var cmd = GetCommand("SELECT MessageID, ClientID, Caller, FromAddress, Subject, Body, Error, CreatedOn, SentOn FROM Email.dbo.Message WHERE @MessageID = MessageID", CommandType.Text))
             using (var adap = new SqlDataAdapter(cmd))
@@ -104,7 +103,7 @@ namespace LNF.Impl.Mail
             }
         }
 
-        public IEnumerable<IMessage> SelectMessages(DateTime sd, DateTime ed, int clientId)
+        public IEnumerable<Message> SelectMessages(DateTime sd, DateTime ed, int clientId)
         {
             using (var cmd = GetCommand("SELECT MessageID, ClientID, Caller, FromAddress, Subject, Body, Error, CreatedOn, SentOn FROM Email.dbo.Message WHERE CreatedOn >= @StartDate AND CreatedOn < @EndDate AND ISNULL(@ClientID, ClientID) = ClientID", CommandType.Text))
             using (var adap = new SqlDataAdapter(cmd))
@@ -171,7 +170,7 @@ namespace LNF.Impl.Mail
             }
         }
 
-        private IEnumerable<IMessage> CreateMessageItems(DataTable dt)
+        private IEnumerable<Message> CreateMessageItems(DataTable dt)
         {
             return dt.AsEnumerable().Select(x => new Message
             {
@@ -184,7 +183,7 @@ namespace LNF.Impl.Mail
                 Error = x.Field<string>("Error"),
                 CreatedOn = x.Field<DateTime>("CreatedOn"),
                 SentOn = x.Field<DateTime?>("SentOn")
-            });
+            }).ToList();
         }
 
         private SqlConnection GetConnection() => _conn;

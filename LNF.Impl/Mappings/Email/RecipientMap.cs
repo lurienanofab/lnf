@@ -1,5 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Impl.Repository.Mail;
+using LNF.Mail;
 
 namespace LNF.Impl.Mappings.Email
 {

@@ -219,6 +219,8 @@
     <Compile Include="Logging\LogMessage.cs" />
     <Compile Include="Logging\PassErrorItem.cs" />
     <Compile Include="Mail\MassEmail.cs" />
+    <Compile Include="Mail\Message.cs" />
+    <Compile Include="Mail\Recipient.cs" />
     <Compile Include="Mail\RecipientCriteria.cs" />
     <Compile Include="Ordering\ApproverItem.cs" />
     <Compile Include="Ordering\Enums.cs" />
@@ -450,9 +452,7 @@
     <Compile Include="Mail\IMailService.cs" />
     <Compile Include="Mail\IMassEmail.cs" />
     <Compile Include="Mail\IMassEmailRepository.cs" />
-    <Compile Include="Mail\IMessage.cs" />
     <Compile Include="Mail\InvalidEmailItem.cs" />
-    <Compile Include="Mail\IRecipient.cs" />
     <Compile Include="Mail\IRecipientCriteria.cs" />
     <Compile Include="Mail\MassEmailRecipient.cs" />
     <Compile Include="Mail\MassEmailRecipientArgs.cs" />

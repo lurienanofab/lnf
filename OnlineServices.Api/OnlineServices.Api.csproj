@@ -117,8 +117,6 @@
     <Compile Include="Logging\LoggingService.cs" />
     <Compile Include="Mail\AttachmentUtility.cs" />
     <Compile Include="Mail\MassEmailRepository.cs" />
-    <Compile Include="Mail\Message.cs" />
-    <Compile Include="Mail\Recipient.cs" />
     <Compile Include="Ordering\ApproverRepository.cs" />
     <Compile Include="Ordering\OrderingService.cs" />
     <Compile Include="Ordering\PurchaseOrderCategoryRepository.cs" />

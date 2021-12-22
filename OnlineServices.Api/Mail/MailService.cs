@@ -18,17 +18,17 @@ namespace OnlineServices.Api.Mail
             Attachment = new AttachmentUtility(rc);
         }
 
-        public IMessage GetMessage(int messageId)
+        public Message GetMessage(int messageId)
         {
             return Get<Message>("webapi/mail/message/{messageId}", UrlSegments(new { messageId }));
         }
 
-        public IEnumerable<IMessage> GetMessages(DateTime sd, DateTime ed, int clientId = 0)
+        public IEnumerable<Message> GetMessages(DateTime sd, DateTime ed, int clientId = 0)
         {
             return Get<List<Message>>("webapi/mail/message", QueryStrings(new { sd, ed, clientId }));
         }
 
-        public IEnumerable<IRecipient> GetRecipients(int messageId)
+        public IEnumerable<Recipient> GetRecipients(int messageId)
         {
             return Get<List<Recipient>>("webapi/mail/message/{messageId}/recipient", UrlSegments(new { messageId }));
         }

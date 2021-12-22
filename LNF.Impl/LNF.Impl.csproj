@@ -399,8 +399,6 @@
     <Compile Include="Repository\Inventory\LabelRoom.cs" />
     <Compile Include="Repository\Inventory\PrivateChemical.cs" />
     <Compile Include="Repository\Inventory\ResourceInventoryLocation.cs" />
-    <Compile Include="Repository\Mail\Message.cs" />
-    <Compile Include="Repository\Mail\Recipient.cs" />
     <Compile Include="Repository\Meter\FileImport.cs" />
     <Compile Include="Repository\Meter\MeterData.cs" />
     <Compile Include="Repository\Meter\MeterReport.cs" />
@@ -818,5 +816,6 @@
       <Name>LNF</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

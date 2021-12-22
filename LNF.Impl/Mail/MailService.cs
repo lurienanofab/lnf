@@ -21,17 +21,17 @@ namespace LNF.Impl.Mail
             Client = client;
         }
 
-        public IMessage GetMessage(int messageId)
+        public Message GetMessage(int messageId)
         {
             return MailRepo.SelectMessage(messageId);
         }
 
-        public IEnumerable<IMessage> GetMessages(DateTime sd, DateTime ed, int clientId)
+        public IEnumerable<Message> GetMessages(DateTime sd, DateTime ed, int clientId)
         {
             return MailRepo.SelectMessages(sd, ed, clientId);
         }
 
-        public IEnumerable<IRecipient> GetRecipients(int messageId)
+        public IEnumerable<Recipient> GetRecipients(int messageId)
         {
             return MailRepo.SelectRecipients(messageId);
         }

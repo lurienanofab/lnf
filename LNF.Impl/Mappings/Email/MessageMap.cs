@@ -1,5 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Impl.Repository.Mail;
+using LNF.Mail;
 
 namespace LNF.Impl.Mappings.Email
 {
@@ -17,7 +17,6 @@ namespace LNF.Impl.Mappings.Email
             Map(x => x.Caller);
             Map(x => x.CreatedOn);
             Map(x => x.SentOn);
-            HasMany(x => x.Recipients).KeyColumn("MessageID");
         }
     }
 }
