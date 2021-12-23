@@ -182,7 +182,8 @@ namespace LNF.Impl.Billing.Report
 
         public SendMonthlyUserUsageEmailsProcessResult SendFinancialManagerReport(FinancialManagerReportOptions options)
         {
-            return FinancialManagers.SendMonthlyUserUsageEmails(options);
+            var fm = new FinancialManagers(this);
+            return fm.SendMonthlyUserUsageEmails(options);
         }
 
         public IEnumerable<UserApportionmentReportEmail> GetUserApportionmentReportEmails(UserApportionmentReportOptions options)

@@ -6,22 +6,26 @@ using System.Linq;
 
 namespace LNF.Billing
 {
-    public static class FinancialManagers
+    public class FinancialManagers
     {
-        public static SendMonthlyUserUsageEmailsProcessResult SendMonthlyFinancialReport(FinancialManagerReportOptions options)
-        {
-            DateTime lastMonth = DateTime.Now.Date.AddMonths(-1); //last month of today
-            DateTime period = lastMonth.FirstOfMonth();
+        private readonly IReportRepository _report;
 
+        public FinancialManagers(IReportRepository report)
+        {
+            _report = report;
+        }
+
+        public SendMonthlyUserUsageEmailsProcessResult SendMonthlyFinancialReport(FinancialManagerReportOptions options)
+        {
             return SendMonthlyUserUsageEmails(options);
         }
 
-        public static IEnumerable<FinancialManagerReportEmail> GetMonthlyUserUsageEmails(FinancialManagerReportOptions options)
+        public IEnumerable<FinancialManagerReportEmail> GetMonthlyUserUsageEmails(FinancialManagerReportOptions options)
         {
-            return ServiceProvider.Current.Billing.Report.GetFinancialManagerReportEmails(options);
+            return _report.GetFinancialManagerReportEmails(options);
         }
 
-        public static SendMonthlyUserUsageEmailsProcessResult SendMonthlyUserUsageEmails(FinancialManagerReportOptions options)
+        public SendMonthlyUserUsageEmailsProcessResult SendMonthlyUserUsageEmails(FinancialManagerReportOptions options)
         {
             if (options == null)
                 throw new ArgumentNullException("options");
