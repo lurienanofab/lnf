@@ -19,10 +19,10 @@ namespace LNF.Impl.Billing
     //2010-03-23 Subsidy billing data process - run after the 3rd day of business every month
     public class BillingDataProcessStep4Subsidy : ReaderBase
     {
-        private DataTable _special = null;
+        private readonly DataTable _special = null;
         private DataTable _newfac = null;
 
-        private Step4Config _config;
+        private readonly Step4Config _config;
 
         public DateTime Period => _config.Period;
         public int ClientID => _config.ClientID;
@@ -70,7 +70,7 @@ namespace LNF.Impl.Billing
             }
             else
             {
-                ssd = default(DateTime);
+                ssd = default;
                 return false;
             }
         }
@@ -87,7 +87,7 @@ namespace LNF.Impl.Billing
             DataSet ds = GetNecessaryTables();
             DataTable dtRoom = ds.Tables[0];
             DataTable dtTool = ds.Tables[1];
-            DataTable dtTiers = ds.Tables[2];
+            //DataTable dtTiers = ds.Tables[2];
             DataTable dtOut = ds.Tables[3];
             DataTable dtMiscCharges = ds.Tables[4];
 
@@ -207,8 +207,8 @@ namespace LNF.Impl.Billing
 
         private void ApplyAccountSubsidy()
         {
-            DateTime sd = Period;
-            DateTime ed = Period.AddMonths(1);
+            //DateTime sd = Period;
+            //DateTime ed = Period.AddMonths(1);
 
             using (var cmd = new SqlCommand("SELECT * FROM Billing.dbo.v_CurrentAccountSubsidy ORDER BY AccountID", Connection) { CommandType = CommandType.Text })
             using (var adap = new SqlDataAdapter(cmd))
@@ -355,23 +355,17 @@ namespace LNF.Impl.Billing
         {
             //Get all the subsidy discount per person in UM
             //Get all RoomBilling and ToolBilling tables with UM
+
             DataSet ds = GetTablesForSubsidyDiscountDistribution();
             DataTable dtSubsidy = ds.Tables[0];
             DataTable dtRoomBilling = ds.Tables[1];
             DataTable dtToolBilling = ds.Tables[2];
             DataTable dtUser = ds.Tables[3];
             DataTable dtMiscBilling = ds.Tables[4];
-
-            //Get the sum of total cost
-            int cid = 0;
             DataRow[] subsidyRows;
             DataRow[] roomBillingRows;
             DataRow[] toolBillingRows;
             DataRow[] miscBillingRows;
-            decimal totalDiscount = 0;
-            decimal totalOriginalPayment = 0;
-            decimal subsidyFactor = 0;
-            //double discountFactor = 0;
 
             DataTable dtTieredSubsidyBilling;
 
@@ -385,7 +379,8 @@ namespace LNF.Impl.Billing
 
             foreach (DataRow dr in dtUser.Rows)
             {
-                cid = Convert.ToInt32(dr["ClientID"]);
+                //Get the sum of total cost
+                int cid = Convert.ToInt32(dr["ClientID"]);
 
                 string filter = $"ClientID = {cid}";
 
@@ -393,15 +388,15 @@ namespace LNF.Impl.Billing
 
                 if (subsidyRows.Length == 1)
                 {
-                    totalDiscount = Convert.ToDecimal(subsidyRows[0]["UserTotalSum"]) - Convert.ToDecimal(subsidyRows[0]["UserPaymentSum"]);
+                    decimal totalDiscount = Convert.ToDecimal(subsidyRows[0]["UserTotalSum"]) - Convert.ToDecimal(subsidyRows[0]["UserPaymentSum"]);
                     roomBillingRows = dtRoomBilling.Select(filter);
                     toolBillingRows = dtToolBilling.Select(filter);
                     miscBillingRows = dtMiscBilling.Select(filter);
 
-                    totalOriginalPayment = Convert.ToDecimal(subsidyRows[0]["UserTotalSum"]);
+                    decimal totalOriginalPayment = Convert.ToDecimal(subsidyRows[0]["UserTotalSum"]);
 
                     //subsidyFactor = TotalDiscount / TotalOriginalPayment;
-                    subsidyFactor = GetSubsidyDiscountPercentage(dtTieredSubsidyBilling, cid);
+                    decimal subsidyFactor = GetSubsidyDiscountPercentage(dtTieredSubsidyBilling, cid);
                     //discountFactor = 1 - subsidyFactor;
 
                     if (totalOriginalPayment != 0)
@@ -479,8 +474,17 @@ namespace LNF.Impl.Billing
             using (var update = new SqlCommand("dbo.MiscBillingCharge_Update_SubsidyDiscount", Connection) { CommandType = CommandType.StoredProcedure })
             using (var adap = new SqlDataAdapter { UpdateCommand = update })
             {
-                update.Parameters.Add("ExpID", SqlDbType.Int, 0, "ExpID");
-                update.Parameters.Add("SubsidyDiscount", SqlDbType.Money, 0, "SubsidyDiscount");
+                update.Parameters.Add(new SqlParameter("ExpID", SqlDbType.Int)
+                {
+                    SourceColumn = "ExpID"
+                });
+
+                update.Parameters.Add(new SqlParameter("SubsidyDiscount", SqlDbType.Decimal)
+                {
+                    SourceColumn = "SubsidyDiscount",
+                    Precision = 19,
+                    Scale = 4
+                });
 
                 var count = adap.Update(dtIn);
 
@@ -495,8 +499,17 @@ namespace LNF.Impl.Billing
             using (var update = new SqlCommand("dbo.RoomApportionmentInDaysMonthly_Update_SubsidyDiscount", Connection) { CommandType = CommandType.StoredProcedure })
             using (var adap = new SqlDataAdapter { UpdateCommand = update })
             {
-                update.Parameters.Add("AppID", SqlDbType.Int, 0, "AppID");
-                update.Parameters.Add("SubsidyDiscount", SqlDbType.Money, 0, "SubsidyDiscount");
+                update.Parameters.Add(new SqlParameter("AppID", SqlDbType.Int)
+                {
+                    SourceColumn = "AppID"
+                });
+
+                update.Parameters.Add(new SqlParameter("SubsidyDiscount", SqlDbType.Decimal)
+                {
+                    SourceColumn = "SubsidyDiscount",
+                    Precision = 19,
+                    Scale = 4
+                });
 
                 var count = adap.Update(dtIn);
 
@@ -511,8 +524,17 @@ namespace LNF.Impl.Billing
             using (var update = new SqlCommand("dbo.ToolBilling_Update_SubsidyDiscount", Connection) { CommandType = CommandType.StoredProcedure })
             using (var adap = new SqlDataAdapter { UpdateCommand = update })
             {
-                update.Parameters.Add("ToolBillingID", SqlDbType.Int, 0, "ToolBillingID");
-                update.Parameters.Add("SubsidyDiscount", SqlDbType.Money, 0, "SubsidyDiscount");
+                update.Parameters.Add(new SqlParameter("ToolBillingID", SqlDbType.Int)
+                {
+                    SourceColumn = "ToolBillingID"
+                });
+
+                update.Parameters.Add(new SqlParameter("SubsidyDiscount", SqlDbType.Decimal)
+                {
+                    SourceColumn = "SubsidyDiscount",
+                    Precision = 19,
+                    Scale = 4
+                });
 
                 var count = adap.Update(dtIn);
 
@@ -546,7 +568,7 @@ namespace LNF.Impl.Billing
             DataTable dtDetails = ds.Tables[1]; //Empty table
             DataTable dtTiers = ds.Tables[2];
 
-            DataTable dtOriginalSubsidyStartDate = GetFirstSubsidyDateTable();
+            //DataTable dtOriginalSubsidyStartDate = GetFirstSubsidyDateTable();
 
             SortedList<double, double> tierRegular = new SortedList<double, double>();
             SortedList<double, double> tierNewUser = new SortedList<double, double>();
@@ -558,11 +580,10 @@ namespace LNF.Impl.Billing
             double startSum;
             double endSum;
             double userTotalSum;
-            bool isNegative = false;
 
             foreach (DataRow dr in dtIn.Rows)
             {
-                isNegative = false;
+                bool isNegative = false;
                 userTotalSum = Convert.ToDouble(dr["UserTotalSum"]);
                 if (Convert.ToDouble(dr["UserTotalSum"]) < 0)
                 {
@@ -779,34 +800,6 @@ namespace LNF.Impl.Billing
             }
         }
 
-        private DataTable GetTieredSubsidyBillingDetailSchema()
-        {
-            using (var cmd = new SqlCommand("dbo.TieredSubsidyBillingDetail_Select", Connection) { CommandType = CommandType.StoredProcedure })
-            using (var adap = new SqlDataAdapter(cmd))
-            {
-                cmd.Parameters.AddWithValue("Action", "SelectSchema");
-
-                var dt = new DataTable();
-                adap.Fill(dt);
-
-                return dt;
-            }
-        }
-
-        private DataTable GetSubsidyTiers(DateTime period)
-        {
-            using (var cmd = new SqlCommand("dbo.TieredSubsidyTiers_Select", Connection) { CommandType = CommandType.StoredProcedure })
-            using (var adap = new SqlDataAdapter(cmd))
-            {
-                cmd.Parameters.AddWithValue("Period", period);
-
-                var dt = new DataTable();
-                adap.Fill(dt);
-
-                return dt;
-            }
-        }
-
         private void TransformTiersIntoSortedDictionary(DataTable dtTiers, SortedList<double, double> TierRegular, SortedList<double, double> TierNewUser, SortedList<double, double> TierNewFacultyUser)
         {
             IEnumerable<DataRow> query;
@@ -972,7 +965,7 @@ namespace LNF.Impl.Billing
 
         private bool GetIsNewFacultyUser(int clientId)
         {
-            if (IsSpecial(clientId, out DateTime ssd))
+            if (IsSpecial(clientId, out _))
             {
                 return true;
             }

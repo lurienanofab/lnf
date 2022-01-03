@@ -18,10 +18,10 @@ namespace LNF.Impl.Billing
 
         public DataCleanResult DataClean(DataCleanCommand command)
         {
-            if (command.StartDate == default(DateTime))
+            if (command.StartDate == default)
                 throw new Exception("Missing parameter: StartDate");
 
-            if (command.EndDate == default(DateTime))
+            if (command.EndDate == default)
                 throw new Exception("Missing parameter: EndDate");
 
             if (command.EndDate <= command.StartDate)
@@ -53,7 +53,7 @@ namespace LNF.Impl.Billing
 
         public DataResult Data(DataCommand command)
         {
-            if (command.Period == default(DateTime))
+            if (command.Period == default)
                 throw new Exception("Missing parameter: Period");
 
             if (command.Period.Day != 1)
@@ -82,7 +82,7 @@ namespace LNF.Impl.Billing
 
         public Step1Result Step1(Step1Command command)
         {
-            if (command.Period == default(DateTime))
+            if (command.Period == default)
                 throw new Exception("Missing parameter: Period");
 
             if (command.Period.Day != 1)
@@ -115,7 +115,7 @@ namespace LNF.Impl.Billing
 
         public PopulateSubsidyBillingResult Step4(Step4Command command)
         {
-            if (command.Period == default(DateTime))
+            if (command.Period == default)
                 throw new Exception("Missing parameter: Period");
 
             if (command.Period.Day != 1 || command.Period.Hour != 0 || command.Period.Minute != 0 || command.Period.Second != 0)
@@ -151,7 +151,7 @@ namespace LNF.Impl.Billing
         //Update all tables
         public UpdateResult Update(UpdateCommand command)
         {
-            if (command.Period == default(DateTime))
+            if (command.Period == default)
                 throw new Exception("Missing parameter: Period");
 
             if (command.Period.Day != 1)
@@ -218,7 +218,7 @@ namespace LNF.Impl.Billing
                              * WHERE BeginDateTime >= @eDate OR ActualBeginDateTime >= @eDate 
                             */
 
-                            if (lastUpdate == default(DateTime))
+                            if (lastUpdate == default)
                                 throw new Exception($"Cannot get lastUpdate from {procName}");
 
                             // sd is which ever is earlier: previousDay or lastUpdate
@@ -288,7 +288,7 @@ namespace LNF.Impl.Billing
 
         public FinalizeResult Finalize(FinalizeCommand command)
         {
-            if (command.Period == default(DateTime))
+            if (command.Period == default)
                 throw new Exception("Missing parameter: Period");
 
             if (command.Period.Day != 1)
@@ -323,7 +323,7 @@ namespace LNF.Impl.Billing
 
         public bool RemoteProcessingUpdate(RemoteProcessingUpdate command)
         {
-            if (command.Period == default(DateTime))
+            if (command.Period == default)
                 throw new Exception("Missing parameter: Period");
 
             if (command.Period.Day != 1)
@@ -344,13 +344,13 @@ namespace LNF.Impl.Billing
 
         public int DeleteData(BillingCategory billingCategory, DateTime period, int clientId = 0, int record = 0)
         {
-            if (period == default(DateTime))
+            if (period == default)
                 throw new Exception("Missing parameter: Period");
 
             if (period.Day != 1)
                 throw new Exception("Period must be the first day of the month.");
 
-            string recordParam = string.Empty;
+            string recordParam;
 
             switch (billingCategory)
             {
@@ -397,7 +397,7 @@ namespace LNF.Impl.Billing
 
                 foreach (var p in args.Periods)
                 {
-                    if (p == default(DateTime))
+                    if (p == default)
                         throw new Exception("Missing parameter: Period");
 
                     if (p.Day != 1)
@@ -497,7 +497,7 @@ namespace LNF.Impl.Billing
 
         public UpdateClientBillingResult UpdateClientBilling(UpdateClientBillingCommand command)
         {
-            if (command.Period == default(DateTime))
+            if (command.Period == default)
                 throw new Exception("Missing parameter: Period");
 
             if (command.Period.Day != 1)
