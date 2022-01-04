@@ -107,8 +107,10 @@ namespace LNF.Web.Mvc
                 .GetHtml(columnSet);
         }
 
-        public static IHtmlString PageMenuLink(this HtmlHelper helper, IProvider provider, string linkText, string actionName, string controllerName, string currentPage, ClientPrivilege requiredPriv = 0)
+        public static IHtmlString PageMenuLink<T>(this HtmlHelper<T> helper, string linkText, string actionName, string controllerName, ClientPrivilege requiredPriv = 0) where T : BaseModel
         {
+            IProvider provider = helper.ViewData.Model.Provider;
+            string currentPage = helper.ViewData.Model.CurrentPage;
             if (requiredPriv == 0 || helper.CurrentUser(provider).HasPriv(requiredPriv))
                 return helper.ActionLink(linkText, actionName, controllerName, null, new { @class = "nav-menu-item" + ((currentPage == controllerName) ? " nav-selected" : string.Empty) });
             else

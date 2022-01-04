@@ -5,7 +5,7 @@ namespace LNF
 {
     public class ProcessLog
     {
-        private IList<ProcessLog> _logs;
+        private readonly IList<ProcessLog> _logs;
 
         public DateTime Time { get; }
         public string Text { get; set; }

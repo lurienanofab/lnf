@@ -1,10 +1,14 @@
 ﻿using LNF.Data;
+using LNF.DataAccess;
 using LNF.Web.Mvc.UI;
 
 namespace LNF.Web.Mvc
 {
     public abstract class BaseModel
     {
+        public IProvider Provider { get; set; }
+        public ISession DataSession => Provider.DataAccess.Session;
+
         public string CurrentPage { get; set; }
 
         public string CurrentSubMenuItem { get; set; }

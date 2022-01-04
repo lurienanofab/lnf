@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace LNF.Impl.Repository.Data
 {
-    public class DataFeed : IDataItem
+    public class DataFeed : IDataItem, IDataFeed
     {
         public virtual int FeedID { get; set; }
         public virtual Guid FeedGUID { get; set; }

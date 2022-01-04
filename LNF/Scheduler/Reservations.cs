@@ -97,7 +97,7 @@ namespace LNF.Scheduler
             }
         }
 
-        public void End(IReservationItem rsv, DateTime actualEndDateTime, int? endedByClientId, int? modifiedByClientId)
+        public void End(IReservationItem rsv, DateTime actualEndDateTime, int? endedByClientId)
         {
             if (rsv == null)
                 throw new ArgumentNullException($"The argument rsv cannot be null.");
@@ -271,7 +271,7 @@ namespace LNF.Scheduler
                     else
                         throw new Exception($"Not eligible for auto-end: Reservation.AutoEnd = {rsv.ReservationAutoEnd}, Resource.AutoEnd = {rsv.ResourceAutoEnd}");
 
-                    End(rsv, actualEndDateTime, -1, -1);
+                    End(rsv, actualEndDateTime, -1);
                     Provider.Scheduler.Reservation.AddAutoEndLog(rsv.ReservationID, "autoend");
                     result.Data.Add($"Ended auto-end reservation {rsv.ReservationID} for resource {rsv.ResourceID}");
                 }
@@ -300,7 +300,7 @@ namespace LNF.Scheduler
 
             foreach (var rsv in items)
             {
-                End(rsv, Now, -1, -1);
+                End(rsv, Now, -1);
                 result.Data.Add($"Ended repair reservation {rsv.ReservationID}");
 
                 //Reset resource state

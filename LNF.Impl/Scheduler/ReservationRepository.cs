@@ -1,5 +1,4 @@
-﻿using LNF.Repository;
-using LNF.Billing.Process;
+﻿using LNF.Billing.Process;
 using LNF.CommonTools;
 using LNF.Data;
 using LNF.Impl.DataAccess;
@@ -28,6 +27,7 @@ namespace LNF.Impl.Scheduler
             Client = client;
             Process = process;
             Email = email;
+            Kiosk = kiosk;
         }
 
         public IReservation GetReservation(int reservationId) => Session.Get<ReservationInfo>(reservationId);
@@ -1424,8 +1424,6 @@ namespace LNF.Impl.Scheduler
 
             if (rr == null) return false;
 
-            var endTime = beginTime.Add(TimeSpan.FromMinutes(duration));
-
             rr.Pattern = Session.Get<RecurrencePattern>(patternId);
             rr.AutoEnd = autoEnd;
             rr.KeepAlive = keepAlive;
@@ -2076,16 +2074,6 @@ namespace LNF.Impl.Scheduler
             return result;
         }
 
-        private ReservationInvitee RequireReservationInvitee(int reservationId, int inviteeId)
-        {
-            var result = FindReservationInvitee(reservationId, inviteeId);
-
-            if (result == null)
-                throw new ItemNotFoundException("ReservationInvitee", $"ReservationID: {reservationId}, InviteeID: {inviteeId}");
-
-            return result;
-        }
-
         private ReservationInvitee FindReservationInvitee(int reservationId, int inviteeId)
         {
             var r = Session.Get<Reservation>(reservationId);
@@ -2512,13 +2500,6 @@ namespace LNF.Impl.Scheduler
                 InviteeLName = inv.Invitee.LName,
                 InviteePrivs = inv.Invitee.Privs
             };
-        }
-
-        private IReservationWithInvitees CreateReservationWithInviteesModel(Reservation rsv)
-        {
-            var result = CreateReservationModel<ReservationWithInvitees>(rsv);
-            result.Invitees = GetInvitees(rsv.ReservationID);
-            return result;
         }
 
         private IReservationWithInvitees CreateReservationWithInviteesModel(ReservationInfo rsv)

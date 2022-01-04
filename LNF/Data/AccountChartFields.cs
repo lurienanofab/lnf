@@ -8,8 +8,8 @@
             _acctNum = AccountNumber.Parse(_acct.AccountNumber);
         }
 
-        private IAccount _acct;
-        private IAccountNumber _acctNum;
+        private readonly IAccount _acct;
+        private readonly IAccountNumber _acctNum;
 
         public int AccountID { get { return _acct.AccountID; } }
         public string AccountName { get { return _acct.AccountName; } }
