@@ -1,4 +1,5 @@
 ﻿using LNF.Billing;
+using LNF.Data;
 using LNF.Impl.DataAccess;
 using LNF.Impl.Repository;
 using LNF.Impl.Repository.Billing;
@@ -16,7 +17,12 @@ namespace LNF.Impl.Billing
 {
     public class StoreDataRepository : BillingRepository, IStoreDataRepository
     {
-        public StoreDataRepository(ISessionManager mgr) : base(mgr) { }
+        protected IDryBoxRepository DryBox { get; }
+
+        public StoreDataRepository(ISessionManager mgr, IDryBoxRepository drybox) : base(mgr)
+        {
+            DryBox = drybox;
+        }
 
         public DataTable ReadStoreData(DateTime period, int clientId = 0, int itemId = 0)
         {
@@ -57,7 +63,7 @@ namespace LNF.Impl.Billing
 
             double daysInPeriod = (ed - sd).TotalDays;
 
-            var activeAssignments = ServiceProvider.Current.Data.DryBox.GetActiveDryBoxAssignments(sd, ed).ToList();
+            var activeAssignments = DryBox.GetActiveDryBoxAssignments(sd, ed).ToList();
 
             if (activeAssignments.Count > 0)
             {
