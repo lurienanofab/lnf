@@ -3,6 +3,7 @@ using LNF.Data;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using System.Runtime.Caching;
 using System.Web;
 
@@ -118,7 +119,8 @@ namespace OnlineServices.Api
                 SetContextItem("CurrentDryBoxAssignments", source);
             }
 
-            var result = new CurrentDryBoxAssignmentCollection(source);
+            var list = source.ToList();
+            var result = new CurrentDryBoxAssignmentCollection(list);
 
             return result;
         }

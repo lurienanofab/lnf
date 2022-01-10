@@ -88,7 +88,7 @@ namespace LNF.Data
                         acct.PoRemainingFunds = CommonTools.Utility.ConvertToNullableDouble(dr["PoRemainingFunds"]);
 
                     if (dr.Table.Columns.Contains("Active"))
-                        acct.AccountActive = (dr["Active"] == DBNull.Value) ? false : Convert.ToBoolean(dr["Active"]);
+                        acct.AccountActive = dr["Active"] != DBNull.Value && Convert.ToBoolean(dr["Active"]);
 
                     result.Add(acct);
                 }
@@ -108,8 +108,10 @@ namespace LNF.Data
         {
             string result = accountName;
 
-            if (!string.IsNullOrEmpty(shortCode.Trim()))
-                result = "[" + shortCode.Trim() + "] " + result;
+            string sc = string.IsNullOrEmpty(shortCode) ? string.Empty : shortCode.Trim();
+
+            if (!string.IsNullOrEmpty(sc))
+                result = "[" + sc + "] " + result;
 
             if (string.IsNullOrEmpty(result))
                 return string.Empty;
