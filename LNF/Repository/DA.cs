@@ -298,11 +298,11 @@ namespace LNF.Repository
             return adap;
         }
 
-        private void MapSchema(IUnitOfWorkAdapter adap, DataTable dt)
-        {
-            if (adap.MapTableSchema)
-                adap.FillSchema(dt, SchemaType.Source);
-        }
+        //private void MapSchema(IUnitOfWorkAdapter adap, DataTable dt)
+        //{
+        //    if (adap.MapTableSchema)
+        //        adap.FillSchema(dt, SchemaType.Source);
+        //}
 
         private void MapSchema(IUnitOfWorkAdapter adap, DataSet ds)
         {
@@ -333,7 +333,7 @@ namespace LNF.Repository
         private readonly ParameterDefinitionCollection _parameters = new ParameterDefinitionCollection();
         private readonly IDictionary<string, string> _lists = new Dictionary<string, string>();
 
-        public ParameterDefinition GetParameter(string name) => _parameters["name"];
+        public ParameterDefinition GetParameter(string name) => _parameters[name];
 
         public void SetCommandText(string value)
         {
@@ -637,7 +637,7 @@ namespace LNF.Repository
 
     public class ParameterDefinitionCollection : IEnumerable<KeyValuePair<string, ParameterDefinition>>
     {
-        private IDictionary<string, ParameterDefinition> _items = new Dictionary<string, ParameterDefinition>();
+        private readonly IDictionary<string, ParameterDefinition> _items = new Dictionary<string, ParameterDefinition>();
 
         public ParameterDefinition this[string key]
         {
@@ -737,7 +737,7 @@ namespace LNF.Repository
             TimeTaken = _sw.Elapsed;
         }
 
-        public T GetParamValue<T>(string name, T defval = default(T))
+        public T GetParamValue<T>(string name, T defval = default)
         {
             if (!_parameters.Contains(name))
                 return defval;
@@ -753,7 +753,7 @@ namespace LNF.Repository
 
     public class ExecuteFillDataTableResult : ExecuteResult
     {
-        private IUnitOfWorkAdapter _adap;
+        private readonly IUnitOfWorkAdapter _adap;
 
         public DataTable Result { get; private set; }
 

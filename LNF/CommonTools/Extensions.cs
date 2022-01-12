@@ -61,7 +61,7 @@ namespace LNF.CommonTools
             if (item != null)
                 return fn(item);
             else
-                return default(TProperty);
+                return default;
         }
 
         public static string ToString(this Nullable<DateTime> date, string format = null)
