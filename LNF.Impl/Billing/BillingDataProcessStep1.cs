@@ -65,6 +65,8 @@ namespace LNF.Impl.Billing
         {
             var result = new PopulateRoomBillingResult
             {
+                Period = Period,
+                ClientID = ClientID,
                 UseParentRooms = GlobalSettings.Current.UseParentRooms,
 
                 //Before saving to DB, we have to delete the old data in the same period
@@ -568,13 +570,8 @@ namespace LNF.Impl.Billing
         public int DeleteRoomBillingData()
         {
             string proc = (IsTemp) ? "dbo.RoomBillingTemp_Delete" : "dbo.RoomApportionmentInDaysMonthly_Delete";
-
-            using (var cmd = new SqlCommand(proc, Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = GetBillingDeleteCommand(proc))
             {
-                AddParameter(cmd, "Action", "DeleteCurrentRange", SqlDbType.NVarChar, 50);
-                AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
-                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID, SqlDbType.Int);
-                AddParameter(cmd, "Context", _config.Context, SqlDbType.NVarChar, 50);
                 var result = cmd.ExecuteNonQuery();
                 return result;
             }
@@ -672,13 +669,8 @@ namespace LNF.Impl.Billing
         private int DeleteToolBillingData()
         {
             string proc = (IsTemp) ? "ToolBillingTemp_Delete" : "ToolBilling_Delete";
-
-            using (var cmd = new SqlCommand(proc, Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = GetBillingDeleteCommand(proc))
             {
-                AddParameter(cmd, "Action", "DeleteCurrentRange", SqlDbType.NVarChar, 50);
-                AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
-                AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID, SqlDbType.Int);
-                AddParameter(cmd, "Context", _config.Context, SqlDbType.NVarChar, 50);
                 var result = cmd.ExecuteNonQuery();
                 return result;
             }
@@ -774,11 +766,8 @@ namespace LNF.Impl.Billing
         private int DeleteStoreBillingData()
         {
             string proc = IsTemp ? "dbo.StoreBillingTemp_Delete" : "dbo.StoreBilling_Delete";
-
-            using (var cmd = new SqlCommand(proc, Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = GetBillingDeleteCommand(proc))
             {
-                AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
-                AddParameter(cmd, "Context", _config.Context, SqlDbType.NVarChar, 50);
                 var result = cmd.ExecuteNonQuery();
                 return result;
             }
@@ -938,5 +927,16 @@ namespace LNF.Impl.Billing
             return bcp;
         }
         #endregion
+        
+        private SqlCommand GetBillingDeleteCommand(string proc)
+        {
+            // All *Billing_Delete and *BillingTemp_Delete stored procs use the same paramters
+            var cmd = new SqlCommand(proc, Connection) { CommandType = CommandType.StoredProcedure };
+            AddParameter(cmd, "Action", "DeleteCurrentRange", SqlDbType.NVarChar, 50);
+            AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
+            AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID, SqlDbType.Int);
+            AddParameter(cmd, "Context", _config.Context, SqlDbType.NVarChar, 500);
+            return cmd;
+        }
     }
 }
