@@ -1,11 +1,8 @@
 ﻿using LNF.Impl.DataAccess;
-using LNF.Impl.Repository.Data;
-using LNF.Util.Encryption;
 using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
 using System.Security.Principal;
 using System.Web;
 using System.Web.Security;
@@ -14,11 +11,9 @@ namespace LNF.Impl.Context
 {
     public class WebContext : ContextBase
     {
-        private IHttpContextFactory _factory;
+        private readonly IHttpContextFactory _factory;
 
         public virtual HttpContextBase ContextBase => _factory.CreateContext();
-
-        protected IEncryptionUtility Encryption { get; }
 
         public WebContext(ISessionManager mgr) : this(new WebContextFactory(), mgr) { }
 
@@ -154,30 +149,6 @@ namespace LNF.Impl.Context
         }
 
         public override string UserHostAddress => ContextBase.Request.UserHostAddress;
-
-        public virtual Client LogIn(string username, string password)
-        {
-            string pw;
-
-            string unipw = Configuration.Current.DataAccess.UniversalPassword;
-
-            if (!string.IsNullOrEmpty(unipw) && password.Equals(unipw))
-                pw = null;
-            else
-                pw = Encryption.EncryptText(password);
-
-            string ip = UserHostAddress;
-
-            string sql = "EXEC sselData.dbo.Client_Select @Action='LoginCheck', @UserName=:username, @Password=:pw, @IPAddress=:ip";
-            Client client = Session.CreateSQLQuery(sql)
-                .SetParameter("username", username)
-                .SetParameter("pw", pw)
-                .SetParameter("ip", ip)
-                .List<Client>()
-                .FirstOrDefault();
-
-            return client;
-        }
 
         public override void SignOut() => FormsAuthentication.RedirectToLoginPage();
 

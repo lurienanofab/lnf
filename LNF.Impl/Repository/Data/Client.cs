@@ -120,35 +120,5 @@ namespace LNF.Impl.Repository.Data
         {
             return this.HasPriv(ClientPrivilege.Staff);
         }
-
-        /// <summary>
-        /// Checks to see if the given password is correct.
-        /// </summary>
-        /// <param name="item">The client for which this action is performed.</param>
-        /// <param name="password">An unencrypted password.</param>
-        /// <returns>True if the password is correct, otherwise false.</returns>
-        public virtual bool CheckPassword(string password)
-        {
-            return ServiceProvider.Current.Data.Client.CheckPassword(ClientID, password);
-        }
-
-        /// <summary>
-        /// Sets the client password to the given value.
-        /// </summary>
-        /// <param name="item">The client for which this action is performed.</param>
-        /// <param name="password">An unencrypted password.</param>
-        /// <returns>The number of rows updated.</returns>
-        public virtual int SetPassword(string password)
-        {
-            return ServiceProvider.Current.Data.Client.SetPassword(ClientID, password);
-        }
-
-        /// <summary>
-        /// Sets the client password to the UserName.
-        /// </summary>
-        public virtual void ResetPassword()
-        {
-            SetPassword(UserName);
-        }
     }
 }

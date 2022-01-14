@@ -68,6 +68,11 @@ namespace OnlineServices.Api.Data
             return Get<List<ClientItem>>("webapi/data/client", QueryStrings(new { limit, skip }));
         }
 
+        public IEnumerable<IClient> GetAllClients()
+        {
+            return Get<List<ClientItem>>("webapi/data/client/all");
+        }
+
         public IEnumerable<IClient> GetActiveClients()
         {
             throw new NotImplementedException();

@@ -148,6 +148,7 @@
     <Compile Include="Billing\Process\PopulateToolBillingResult.cs" />
     <Compile Include="Billing\Reports\ServiceUnitBilling\ReportSettings.cs" />
     <Compile Include="Billing\Reports\ToolDetailResult.cs" />
+    <Compile Include="CommonTools\AuthUtility.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Control\AnalogPointState.cs" />
     <Compile Include="Control\BlockResponse.cs" />
@@ -751,7 +752,6 @@
     <Compile Include="Store\StoreOrders.cs" />
     <Compile Include="Util\AutoEnd\AutoEndProblem.cs" />
     <Compile Include="Util\AutoEnd\IAutoEndUtility.cs" />
-    <Compile Include="Util\Encryption\IEncryptionUtility.cs" />
     <Compile Include="Util\IProviderUtility.cs" />
     <Compile Include="Util\ProviderUtility.cs" />
     <Compile Include="Util\Serialization\ISerializationUtility.cs" />

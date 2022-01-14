@@ -551,7 +551,6 @@
     <Compile Include="Scheduler\ReservationRepository.cs" />
     <Compile Include="Scheduler\ResourceRepository.cs" />
     <Compile Include="Utility\Serialization\DynamicContractResolver.cs" />
-    <Compile Include="Utility\EncryptionUtility.cs" />
     <Compile Include="Hooks\PostLoginCheckerHook.cs" />
     <Compile Include="Hooks\UniversalPasswordHook.cs" />
     <Compile Include="Logging\ConsoleLoggingService.cs" />

@@ -1,4 +1,5 @@
-﻿using LNF.Data;
+﻿using LNF.CommonTools;
+using LNF.Data;
 using System;
 using System.Linq;
 using System.Security.Principal;
@@ -47,7 +48,8 @@ namespace LNF.Web.Mvc
                     string username = splitter[0];
                     string password = splitter[1];
 
-                    var c = Provider.Data.Client.Login(username, password);
+                    var auth = new AuthUtility(Provider.Data.Client);
+                    var c = auth.Login(username, password);
                     if (c != null && c.ClientActive)
                         httpContext.User = new GenericPrincipal(new GenericIdentity(c.UserName, "Basic"), null);
                 }

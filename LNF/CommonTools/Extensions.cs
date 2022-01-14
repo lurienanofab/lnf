@@ -1,4 +1,5 @@
 ﻿using LNF.CommonTools;
+using LNF.Data;
 using LNF.DataAccess;
 using System;
 using System.Collections.Generic;
@@ -64,7 +65,7 @@ namespace LNF.CommonTools
                 return default;
         }
 
-        public static string ToString(this Nullable<DateTime> date, string format = null)
+        public static string ToString(this DateTime? date, string format = null)
         {
             if (date.HasValue)
             {
@@ -103,7 +104,7 @@ namespace LNF.CommonTools
         ///<summary>
         /// Gets a value from a nullable object or returns DBNull.Value when the object is null.
         ///</summary>
-        public static object GetValueOrDBNull<T>(this Nullable<T> nullable) where T : struct
+        public static object GetValueOrDBNull<T>(this T? nullable) where T : struct
         {
             if (!nullable.HasValue) return DBNull.Value;
             else return nullable.Value;
@@ -194,5 +195,7 @@ namespace LNF.CommonTools
                 return XDocument.Load(nodeReader);
             }
         }
+
+        public static AuthUtility AuthUtility(this IClientRepository repo) => new AuthUtility(repo);
     }
 }

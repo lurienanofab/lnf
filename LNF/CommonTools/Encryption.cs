@@ -6,10 +6,18 @@ using System.Text;
 
 namespace LNF.CommonTools
 {
-    // This is the old encryption method keeping until all old passwords are changed.
-    public class Encryption
+
+    public static class Encryption
     {
-        private static string SecretKey
+        public static SHA256Encryption SHA256 { get; } = new SHA256Encryption();
+        [Obsolete] public static DESEncryption DES { get; } = new DESEncryption();
+        [Obsolete] public static MD5Encryption MD5 { get; } = new MD5Encryption();
+    }
+
+    public abstract class EncryptionBase
+    {
+        [Obsolete]
+        protected string SecretKey
         {
             get
             {
@@ -21,30 +29,49 @@ namespace LNF.CommonTools
                 return result;
             }
         }
+    }
 
-        // Encrypt the text
-        public string EncryptText(string strText)
-        {
-            return Encrypt(strText, SecretKey);
-        }
+    public class SHA256Encryption
+    {
+        internal SHA256Encryption() { }
 
-        // Decrypt the text 
-        public string DecryptText(string strText)
+        public string EncryptText(string text)
         {
-            return Decrypt(strText, SecretKey);
+            // Create a SHA256   
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                // ComputeHash - returns byte array  
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(text));
+
+                // Convert byte array to a string   
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    builder.Append(bytes[i].ToString("x2"));
+                }
+                return builder.ToString();
+            }
         }
+    }
+
+    [Obsolete]
+    public class DESEncryption : EncryptionBase
+    {
+        internal DESEncryption() { }
 
         // The function used to encrypt the text
-        private string Encrypt(string strText, string strEncrKey)
+        public string EncryptText(string text)
         {
-            byte[] byKey = Encoding.UTF8.GetBytes(strEncrKey.Substring(0, 8));
+            // This is the old encryption method keeping until all old passwords are changed.
+
+            byte[] byKey = Encoding.UTF8.GetBytes(SecretKey.Substring(0, 8));
 
             byte[] IV = { 0x56, 0x18, 0x9C, 0xFD, 0x38, 0xB5, 0xAA, 0x61 };
             DESCryptoServiceProvider des = new DESCryptoServiceProvider();
             MemoryStream ms = new MemoryStream();
             CryptoStream cs = new CryptoStream(ms, des.CreateEncryptor(byKey, IV), CryptoStreamMode.Write);
 
-            byte[] inputByteArray = Encoding.UTF8.GetBytes(strText);
+            byte[] inputByteArray = Encoding.UTF8.GetBytes(text);
             cs.Write(inputByteArray, 0, inputByteArray.Length);
             cs.FlushFinalBlock();
 
@@ -52,10 +79,10 @@ namespace LNF.CommonTools
         }
 
         //The function used to decrypt the text
-        private string Decrypt(string strText, string sDecrKey)
+        public string DecryptText(string text)
         {
-            byte[] byKey = Encoding.UTF8.GetBytes(sDecrKey.Substring(0, 8));
-            byte[] inputByteArray = Convert.FromBase64String(strText);
+            byte[] byKey = Encoding.UTF8.GetBytes(SecretKey.Substring(0, 8));
+            byte[] inputByteArray = Convert.FromBase64String(text);
 
             byte[] IV = { 0x56, 0x18, 0x9C, 0xFD, 0x38, 0xB5, 0xAA, 0x61 };
             DESCryptoServiceProvider des = new DESCryptoServiceProvider();
@@ -67,8 +94,14 @@ namespace LNF.CommonTools
 
             return Encoding.UTF8.GetString(ms.ToArray());
         }
+    }
 
-        public static string MD5(string input)
+    [Obsolete]
+    public class MD5Encryption : EncryptionBase
+    {
+        internal MD5Encryption() { }
+
+        public string Hash(string input)
         {
             MD5 md5 = System.Security.Cryptography.MD5.Create();
             byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(SecretKey + input));
@@ -81,21 +114,6 @@ namespace LNF.CommonTools
                     result += "0" + b.ToString("x");
                 else
                     result += b.ToString("x");
-            }
-
-            return result;
-        }
-
-        public static string SHA256(string input)
-        {
-            SHA256Managed sha256 = new SHA256Managed();
-            byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(SecretKey + input));
-
-            string result = string.Empty;
-
-            foreach (byte x in hash)
-            {
-                result += string.Format("{0:x2}", x);
             }
 
             return result;

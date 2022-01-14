@@ -1,5 +1,6 @@
 ﻿using LNF.Billing;
 using LNF.Cache;
+using LNF.CommonTools;
 using LNF.Data;
 using LNF.Impl.DataAccess;
 using LNF.Impl.Mail;
@@ -8,7 +9,6 @@ using LNF.Impl.Repository.Billing;
 using LNF.Impl.Repository.Data;
 using LNF.Impl.Repository.Scheduler;
 using LNF.PhysicalAccess;
-using LNF.Util.Encryption;
 using NHibernate;
 using System;
 using System.Collections.Generic;
@@ -20,15 +20,13 @@ namespace LNF.Impl.Data
 {
     public class ClientRepository : RepositoryBase, IClientRepository
     {
-        public IEncryptionUtility Encryption { get; }
         public IPhysicalAccessService PhysicalAccess { get; }
         public IBillingTypeRepository BillingType { get; }
         public IToolBillingRepository ToolBilling { get; }
         public ICostRepository Cost { get; set; }
 
-        public ClientRepository(ISessionManager mgr, IEncryptionUtility encryption, IPhysicalAccessService physicalAccess, IBillingTypeRepository billingType, IToolBillingRepository toolBilling, ICostRepository cost) : base(mgr)
+        public ClientRepository(ISessionManager mgr, IPhysicalAccessService physicalAccess, IBillingTypeRepository billingType, IToolBillingRepository toolBilling, ICostRepository cost) : base(mgr)
         {
-            Encryption = encryption;
             PhysicalAccess = physicalAccess;
             BillingType = billingType;
             ToolBilling = toolBilling;
@@ -153,26 +151,6 @@ namespace LNF.Impl.Data
         {
             //this function returns the same result as sselData.dbo.udf_ClientEmails()
             return Session.Query<ClientOrgInfo>().Where(x => x.ClientID == clientId && x.ClientOrgActive).Select(x => x.Email).Distinct().ToArray();
-        }
-
-        public bool CheckPassword(int clientId, string password)
-        {
-            if (password == Configuration.Current.DataAccess.UniversalPassword)
-                return true;
-
-            DataTable dt = Session.Command(CommandType.Text).Param("ClientID", clientId).FillDataTable("SELECT ClientID, Password, PasswordHash FROM sselData.dbo.Client WHERE ClientID = @ClientID");
-
-            if (dt.Rows.Count == 0)
-                throw new ItemNotFoundException("Client", "ClientID", clientId);
-
-            var pw = dt.Rows[0].Field<string>("Password");
-            var salt = dt.Rows[0].Field<string>("PasswordHash");
-
-            var encrypted = Encryption.EncryptText(password + salt);
-
-            var result = pw == encrypted;
-
-            return result;
         }
 
         public string CleanMiddleName(string raw)
@@ -326,7 +304,7 @@ namespace LNF.Impl.Data
         /// </summary>
         public IEnumerable<ClientListItem> GetClients()
         {
-            var result =  Session.Query<ClientInfo>()
+            var result = Session.Query<ClientInfo>()
                 .Select(x => new ClientListItem
                 {
                     ClientID = x.ClientID,
@@ -344,6 +322,11 @@ namespace LNF.Impl.Data
             var result = Session.Query<ClientInfo>().Skip(skip).Take(limit).OrderBy(x => x.DisplayName).ToList();
 
             return result;
+        }
+
+        public IEnumerable<IClient> GetAllClients()
+        {
+            return Session.Query<ClientInfo>().ToList();
         }
 
         public IEnumerable<IClient> GetClients(int[] ids)
@@ -423,25 +406,6 @@ namespace LNF.Impl.Data
             return result;
         }
 
-        public IClient Login(string username, string password)
-        {
-            if (string.IsNullOrEmpty(password))
-                return null;
-
-            var client = Session.FindClientInfo(username);
-
-            if (client == null)
-                throw new Exception("Invalid username.");
-
-            if (!string.IsNullOrEmpty(Configuration.Current.DataAccess.UniversalPassword) && password == Configuration.Current.DataAccess.UniversalPassword)
-                return client;
-
-            if (CheckPassword(client.ClientID, password))
-                return client;
-            else
-                throw new Exception("Invalid password.");
-        }
-
         public IChargeType MaxChargeType(int clientId)
         {
             var client = GetActiveClientOrgs(clientId)
@@ -449,25 +413,6 @@ namespace LNF.Impl.Data
                 .FirstOrDefault();
 
             var result = new ChargeTypeItem();
-
-            return result;
-        }
-
-        ///// <summary>
-        ///// Sets the user's password.
-        ///// </summary>
-        public int SetPassword(int clientId, string password)
-        {
-            var salt = Guid.NewGuid().ToString("n");
-            var pw = Encryption.EncryptText(password + salt);
-
-            var sql = "UPDATE sselData.dbo.Client SET Password = @Password, PasswordHash = @PasswordHash WHERE ClientID = @ClientID";
-
-            int result = Session.Command(CommandType.Text)
-                .Param("ClientID", clientId)
-                .Param("Password", pw)
-                .Param("PasswordHash", salt)
-                .ExecuteNonQuery(sql).Value;
 
             return result;
         }
@@ -484,7 +429,7 @@ namespace LNF.Impl.Data
             if (isNewClientEntry)
             {
                 //add an entry to the client table
-                client = NewClient(username, username, lname, fname, PrivUtility.CalculatePriv(privs), true);
+                client = NewClient(username, lname, fname, PrivUtility.CalculatePriv(privs), true);
                 clientId = client.ClientID;
             }
             else
@@ -495,8 +440,6 @@ namespace LNF.Impl.Data
 
                 //store Privs's
                 client.Privs = PrivUtility.CalculatePriv(privs);
-
-                SetPassword(client.ClientID, client.UserName);
             }
 
             client.MName = CleanMiddleName(mname);
@@ -1131,7 +1074,7 @@ namespace LNF.Impl.Data
             return Session.Query<MessengerRecipient>().Where(x => x.ClientID == clientId && x.Folder == folder && x.Acknowledged == null).ToList();
         }
 
-        private Client NewClient(string username, string password, string lname, string fname, ClientPrivilege privs, bool active)
+        private Client NewClient(string username, string lname, string fname, ClientPrivilege privs, bool active)
         {
             var result = new Client()
             {
@@ -1142,8 +1085,6 @@ namespace LNF.Impl.Data
             };
 
             Session.Save(result);
-
-            SetPassword(result.ClientID, password);
 
             if (active)
                 Session.Enable(result);
