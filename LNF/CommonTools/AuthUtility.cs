@@ -9,7 +9,7 @@ namespace LNF.CommonTools
     {
         private readonly IClientRepository repo;
         private DataTable dt;
-        int z = 1;
+
         public AuthUtility(IClientRepository repo)
         {
             this.repo = repo;
