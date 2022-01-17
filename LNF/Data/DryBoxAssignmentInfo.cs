@@ -13,13 +13,14 @@ namespace LNF.Data
         public virtual bool Active { get; set; }
         public virtual bool Visible { get; set; }
         public virtual bool Deleted { get; set; }
-        public virtual int ClientID { get; set; }        
+        public virtual int ClientID { get; set; }
         public virtual string UserName { get; set; }
         public virtual string LName { get; set; }
         public virtual string FName { get; set; }
         public virtual string DisplayName => Clients.GetDisplayName(LName, FName);
         public virtual string ShortCode { get; set; }
         public virtual string AccountName { get; set; }
+        public virtual int OrgID { get; set; }
         public virtual string OrgName { get; set; }
         public virtual string Email { get; set; }
         public virtual bool ClientActive { get; set; }

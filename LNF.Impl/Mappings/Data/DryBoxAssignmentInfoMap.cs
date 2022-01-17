@@ -21,6 +21,7 @@ namespace LNF.Impl.Mappings.Data
             Map(x => x.FName);
             Map(x => x.ShortCode);
             Map(x => x.AccountName);
+            Map(x => x.OrgID);
             Map(x => x.OrgName);
             Map(x => x.Email);
             Map(x => x.ApprovedDate);
