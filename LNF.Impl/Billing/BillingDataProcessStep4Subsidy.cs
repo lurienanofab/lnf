@@ -202,6 +202,8 @@ namespace LNF.Impl.Billing
             // [2015-10-20 jg] Added account subsidy feature per Sandrine. Some accounts get a fixed subsidy that overrides the tiered subsidy
             ApplyAccountSubsidy();
 
+            result.SetEndedAt();
+
             return result;
         }
 

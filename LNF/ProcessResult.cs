@@ -116,6 +116,10 @@ namespace LNF
         public void SetEndedAt()
         {
             // Must be called before LogText is accessed or else an exception is thrown.
+
+            // Make sure this method is only called once.
+            if (_endedAt.HasValue) throw new Exception("SetEndedAt has already been called.");
+            
             _endedAt = DateTime.Now;
         }
 

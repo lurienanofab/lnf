@@ -91,6 +91,8 @@ namespace LNF.Impl.Billing
                 UpdateEntries(ds.Tables[1]);
             }
 
+            result.SetEndedAt();
+
             return result;
         }
 
@@ -653,6 +655,8 @@ namespace LNF.Impl.Billing
             //Insert new rows
             result.RowsLoaded = InsertToolBillingData(source);
 
+            result.SetEndedAt();
+
             return result;
         }
 
@@ -706,6 +710,8 @@ namespace LNF.Impl.Billing
 
             //Save to ToolBilling Table
             result.RowsLoaded = SaveStoreBillingData(dt);
+
+            result.SetEndedAt();
 
             return result;
         }
