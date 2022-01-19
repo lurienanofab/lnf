@@ -4,7 +4,7 @@ namespace LNF.Data
 {
     public interface INewsRepository
     {
-        News GetNewsItem(int newsId);
+        News GetNews(int newsId);
         void Delete(int newsId, int currentUserClientId);
         int DeleteImage(int newsId, int currentUserClientId);
         IEnumerable<News> FindByStatus(string status);

@@ -12,7 +12,7 @@ namespace LNF.Impl.Data
     {
         public NewsRepository(ISessionManager mgr) : base(mgr) { }
 
-        public News GetNewsItem(int itemId)
+        public News GetNews(int itemId)
         {
             var result = Session.Get<News>(itemId);
             return result;
