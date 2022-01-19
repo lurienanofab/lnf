@@ -74,6 +74,8 @@ namespace LNF.Impl.Billing
                 if ((command.BillingCategory & BillingCategory.Store) > 0)
                     result.WriteStoreDataProcessResult = new WriteStoreDataProcess(new WriteStoreDataConfig { Connection = conn, Context = "ProcessRepository.Data", Period = command.Period, ClientID = command.ClientID, ItemID = command.Record }).Start();
 
+                result.SetEndedAt();
+
                 conn.Close();
 
                 return result;

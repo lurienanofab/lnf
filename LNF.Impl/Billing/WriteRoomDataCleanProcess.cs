@@ -126,7 +126,7 @@ namespace LNF.Impl.Billing
                                 int step = pbr ? 2 : 1;
                                 DataRow drClean0, drClean1, dr;
 
-                                for (int i = 0; i < dtClean.Rows.Count; i = i + step)
+                                for (int i = 0; i < dtClean.Rows.Count; i += step)
                                 {
                                     if (dtClean.Rows[i].RowState != DataRowState.Deleted)
                                     {
@@ -218,7 +218,6 @@ namespace LNF.Impl.Billing
         {
             int i = 0;
             DataRow dr;
-            DateTime evStart = StartDate; //if first record is out, this will start at beginning of period
             DateTime dateTime1, dateTime2;
             DateTime dtAP1, dtAPn;
 
@@ -280,7 +279,7 @@ namespace LNF.Impl.Billing
                                     dt.Rows.InsertAt(dr, i + 2); //i not incremented, will become normal case
                                 }
                                 else
-                                    i = i + 2;
+                                    i += 2;
                                 break;
                             case "Antipassback error - IN":
                                 dtAP1 = dt.Rows[i + 1].Field<DateTime>("evtDate");
@@ -473,28 +472,6 @@ namespace LNF.Impl.Billing
             dr["ClientID"] = clientId;
             dr["RoomID"] = roomId;
             return dr;
-        }
-
-        private void InsertPreviousInEvents(DataTable dt, DataTable dtRooms, DateTime sd, DateTime ed)
-        {
-            // need the min event for each client/room that is not 'Local Grant - IN'
-
-            var group = dt.AsEnumerable()
-                .Where(x => x.RowState == DataRowState.Unchanged && x.Field<DateTime>("EventDate") >= sd && x.Field<DateTime>("EventDate") < ed && x.Field<bool>("PassbackRoom"))
-                .GroupBy(x => new { ClientID = x.Field<int>("ClientID"), RoomName = x.Field<string>("RoomName") })
-                .Select(g => new
-                {
-                    g.Key.ClientID,
-                    g.Key.RoomName,
-                    MinEventDate = g.Min(x => x.Field<DateTime>("EventDate")),
-                    MinEventDesc = g.First(z =>
-                        z.Field<int>("ClientID") == g.Key.ClientID
-                        && z.Field<string>("RoomName") == g.Key.RoomName
-                        && z.Field<DateTime>("EventDate") == g.Min(m => m.Field<DateTime>("EventDate"))).Field<string>("EventDescription")
-                })
-                .ToList();
-
-            group.OrderBy(x => x.ClientID).ThenBy(x => x.RoomName).ThenBy(x => x.MinEventDate); ;
         }
     }
 }

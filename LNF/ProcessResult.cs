@@ -70,11 +70,9 @@ namespace LNF
         private readonly ProcessLog _log = new ProcessLog();
 
         public abstract string ProcessName { get; }
-        public DateTime Start { get; }
+        public DateTime StartedAt { get; }
+        public DateTime EndedAt => _endedAt ?? throw new Exception("SetEndedAt method must be called first.");
         public IList<string> Data { get; }
-        //public int RowsDeleted { get; set; }
-        //public int RowsExtracted { get; set; }
-        //public int RowsLoaded { get; set; }
 
         public ProcessLog GetLog()
         {
@@ -103,38 +101,29 @@ namespace LNF
             return result;
         }
 
-        private DateTime? _end = null;
+        private DateTime? _endedAt = null;
 
         public ProcessResult() : this(DateTime.Now, new List<string>()) { }
 
         private ProcessResult(DateTime startedAt, IList<string> data)
         {
-            Start = startedAt;
+            StartedAt = startedAt;
             Data = data;
         }
 
-        private DateTime GetEndTime()
-        {
-            return _end.GetValueOrDefault(DateTime.Now);
-        }
+        public TimeSpan GetTimeTaken() => EndedAt - StartedAt;
 
-        public TimeSpan GetTimeTaken()
-        {
-            // if End() was called use _end, otherwise use DateTime.Now (but do not update _end)
-            return GetEndTime() - Start;
-        }
-
-        public void End()
+        public void SetEndedAt()
         {
             // Can be used to set _end so that a fixed DateTime is always used to compute time taken.
             // If not called DateTime.Now will be used any time LogText is accessed.
-            if (!_end.HasValue) _end = DateTime.Now;
+            _endedAt = DateTime.Now;
         }
 
         private void StartLog()
         {
             var timeTaken = GetTimeTaken();
-            _log.Text = $"{ProcessName} process completed at {GetEndTime():yyyy-MM-dd HH:mm:ss} (time taken: {timeTaken.TotalSeconds:0.0000}).";
+            _log.Text = $"{ProcessName} process completed at {EndedAt:yyyy-MM-dd HH:mm:ss} (time taken: {timeTaken.TotalSeconds:0.0000}).";
         }
 
         protected void AppendLog(string text)

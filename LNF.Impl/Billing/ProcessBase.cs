@@ -35,7 +35,7 @@ namespace LNF.Impl.Billing
 
         protected abstract T CreateResult();
 
-        public virtual T Start()
+        public T Start()
         {
             _result = CreateResult();
 
@@ -50,6 +50,8 @@ namespace LNF.Impl.Billing
                 _result.RowsLoaded = Load(dtTransform);
             else
                 _result.RowsLoaded = 0;
+
+            _result.SetEndedAt();
 
             return _result;
         }
