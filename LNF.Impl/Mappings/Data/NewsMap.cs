@@ -1,5 +1,5 @@
 ﻿using FluentNHibernate.Mapping;
-using LNF.Impl.Repository.Data;
+using LNF.Data;
 using NHibernate.Type;
 
 namespace LNF.Impl.Mappings.Data
@@ -10,7 +10,7 @@ namespace LNF.Impl.Mappings.Data
         {
             Schema("sselData.dbo");
             Id(x => x.NewsID);
-            References(x => x.NewsCreatedByClient);
+            Map(x => x.NewsCreatedByClientID);
             Map(x => x.NewsUpdatedByClientID);
             Map(x => x.NewsImage).CustomType<BinaryBlobType>();
             Map(x => x.NewsImageFileName);

@@ -1,12 +1,12 @@
-using LNF.DataAccess;
+﻿using LNF.DataAccess;
 using System;
 
-namespace LNF.Impl.Repository.Data
+namespace LNF.Data
 {
     public class News : IDataItem
     {
         public virtual int NewsID { get; set; }
-        public virtual Client NewsCreatedByClient { get; set; }
+        public virtual int NewsCreatedByClientID { get; set; }
         public virtual int? NewsUpdatedByClientID { get; set; }
         public virtual byte[] NewsImage { get; set; }
         public virtual string NewsImageFileName { get; set; }

@@ -392,7 +392,6 @@
     <Compile Include="Data\IHolidayRepository.cs" />
     <Compile Include="Data\IMenu.cs" />
     <Compile Include="Data\IMenuRepository.cs" />
-    <Compile Include="Data\INews.cs" />
     <Compile Include="Data\INewsRepository.cs" />
     <Compile Include="Data\IOrg.cs" />
     <Compile Include="Data\IOrgRepository.cs" />
@@ -412,7 +411,7 @@
     <Compile Include="Data\IStaffDirectory.cs" />
     <Compile Include="Data\ITechnicalField.cs" />
     <Compile Include="Data\MenuItem.cs" />
-    <Compile Include="Data\NewsItem.cs" />
+    <Compile Include="Data\News.cs" />
     <Compile Include="Data\OrgItem.cs" />
     <Compile Include="Data\Orgs.cs" />
     <Compile Include="Data\PassbackRoomItem.cs" />

@@ -40,13 +40,6 @@ namespace LNF.Impl.DataAccess.ModelFactory
             };
         }
 
-        private INews MapNews(News source)
-        {
-            var result = MapFrom<NewsItem>(source);
-            result.NewsCreatedByClientID = source.NewsCreatedByClient.ClientID;
-            return result;
-        }
-
         public override void AddMaps()
         {
             Map<Account, IAccount>(MapAccount);
@@ -67,7 +60,6 @@ namespace LNF.Impl.DataAccess.ModelFactory
             Map<ClientRemoteInfo, ClientRemoteItem, IClientRemote>();
             Map<Priv, PrivItem, IPriv>();
             Map<Community, CommunityItem, ICommunity>();
-            Map<News, INews>(MapNews);
             Map<Holiday, HolidayItem, IHoliday>();
             Map<InvalidEmailList, InvalidEmailItem, IInvalidEmail>();
         }

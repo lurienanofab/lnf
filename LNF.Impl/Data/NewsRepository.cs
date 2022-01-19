@@ -12,6 +12,12 @@ namespace LNF.Impl.Data
     {
         public NewsRepository(ISessionManager mgr) : base(mgr) { }
 
+        public News GetNewsItem(int itemId)
+        {
+            var result = Session.Get<News>(itemId);
+            return result;
+        }
+
         public IEnumerable<NewsListItem> GetActive()
         {
             var now = DateTime.Now;
@@ -67,7 +73,7 @@ namespace LNF.Impl.Data
             Session.SaveOrUpdate(n);
         }
 
-        public IEnumerable<INews> FindByStatus(string status)
+        public IEnumerable<News> FindByStatus(string status)
         {
             var activeItems = Session.Query<News>().Where(x =>
                 (x.NewsPublishDate == null || x.NewsPublishDate.Value <= DateTime.Now) &&
@@ -80,12 +86,12 @@ namespace LNF.Impl.Data
             switch (status)
             {
                 case "current":
-                    return activeItems.CreateModels<INews>();
+                    return activeItems;
                 case "inactive":
                     var inactiveItems = Session.Query<News>().Where(x => !x.NewsDeleted).ToList();
                     return inactiveItems
                         .Where(x => !activeItems.Select(a => a.NewsID).Contains(x.NewsID))
-                        .CreateModels<INews>();
+                        .ToList();
                 default:
                     throw new ArgumentException("Argument status must be either \"current\" or \"inactive\".");
             }
@@ -142,12 +148,12 @@ namespace LNF.Impl.Data
                 return string.Empty;
         }
 
-        protected NewsItem CreateNewsItem(News x)
+        protected News CreateNewsItem(News x)
         {
-            return new NewsItem
+            return new News
             {
                 NewsID = x.NewsID,
-                NewsCreatedByClientID = x.NewsCreatedByClient.ClientID,
+                NewsCreatedByClientID = x.NewsCreatedByClientID,
                 NewsUpdatedByClientID = x.NewsUpdatedByClientID,
                 NewsImage = x.NewsImage,
                 NewsImageFileName = x.NewsImageFileName,
