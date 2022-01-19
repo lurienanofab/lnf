@@ -9,6 +9,11 @@ namespace OnlineServices.Api.Data
     {
         public NewsRepository(IRestClient rc) : base(rc) { }
 
+        public News GetNews(int newsId)
+        {
+            return Get<News>("webapi/data/{newsId}", UrlSegments(new { newsId }));
+        }
+
         public void Delete(int newsId, int currentUserClientId)
         {
             throw new NotImplementedException();
@@ -19,7 +24,7 @@ namespace OnlineServices.Api.Data
             throw new NotImplementedException();
         }
 
-        public IEnumerable<INews> FindByStatus(string status)
+        public IEnumerable<News> FindByStatus(string status)
         {
             throw new NotImplementedException();
         }
