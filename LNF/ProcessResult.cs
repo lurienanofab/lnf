@@ -115,8 +115,7 @@ namespace LNF
 
         public void SetEndedAt()
         {
-            // Can be used to set _end so that a fixed DateTime is always used to compute time taken.
-            // If not called DateTime.Now will be used any time LogText is accessed.
+            // Must be called before LogText is accessed or else an exception is thrown.
             _endedAt = DateTime.Now;
         }
 
