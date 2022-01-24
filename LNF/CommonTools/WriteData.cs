@@ -15,30 +15,37 @@ namespace LNF.CommonTools
 
         public UpdateTablesResult UpdateTables(BillingCategory categories, UpdateDataType types = UpdateDataType.DataClean | UpdateDataType.Data)
         {
-            DateTime now = DateTime.Now;
-            DateTime period = now.FirstOfMonth();
+            DateTime startedAt = DateTime.Now;
+            DateTime period = startedAt.FirstOfMonth();
+
+            //First, update tables
+            UpdateResult updateResult = Provider.Billing.Process.Update(new UpdateCommand
+            {
+                BillingTypes = categories,
+                UpdateTypes = types,
+                Period = period,
+                ClientID = 0
+            });
 
             var holidays = Utility.GetHolidays(period, period.AddMonths(1));
-
-            var result = new UpdateTablesResult
-            {
-                Now = now,
-                Period = period,
-                IsFirstBusinessDay = Utility.IsFirstBusinessDay(now, holidays),
-                //First, update tables
-                UpdateResult = Provider.Billing.Process.Update(new UpdateCommand
-                {
-                    BillingTypes = categories,
-                    UpdateTypes = types,
-                    Period = period,
-                    ClientID = 0
-                })
-            };
+            var isFirstBusinessDay = Utility.IsFirstBusinessDay(startedAt, holidays);
+            FinalizeResult finalizeResult;
 
             //the daily update DOES produce correct data
             //however, if a change was made since the update, it needs to be caught 
-            if (result.IsFirstBusinessDay)
-                result.FinalizeResult = Finalize(period.AddMonths(-1));
+            if (isFirstBusinessDay)
+                finalizeResult = Finalize(period.AddMonths(-1));
+            else
+                finalizeResult = null;
+
+            var result = new UpdateTablesResult(startedAt)
+            {
+                Now = startedAt,
+                Period = period,
+                IsFirstBusinessDay = isFirstBusinessDay,
+                FinalizeResult = finalizeResult,
+                UpdateResult = updateResult
+            };
 
             return result;
         }

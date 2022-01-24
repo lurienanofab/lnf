@@ -3,8 +3,31 @@ using System.Data.SqlClient;
 
 namespace LNF
 {
-    public static class ParamterExtentions
+    public static class SqlClientExtentions
     {
+        /// <summary>
+        /// Creates a SqlCommand object with the given connection, sql, and CommandType. Uses the connection's ConnectionTimeout property to set CommandTimeout
+        /// </summary>
+        public static SqlCommand CreateCommand(this SqlConnection conn, string sql, CommandType commandType = CommandType.StoredProcedure, bool useConnectionTimeout = true)
+        {
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = sql;
+            cmd.CommandType = commandType;
+            if (useConnectionTimeout)
+                cmd.CommandTimeout = conn.ConnectionTimeout;
+            return cmd;
+        }
+
+        /// <summary>
+        /// Creates a SqlCommand object with the given connection, transaction, sql, and CommandType. Uses the connection's ConnectionTimeout property to set CommandTimeout
+        /// </summary>
+        public static SqlCommand CreateCommand(this SqlConnection conn, SqlTransaction tx, string sql, CommandType commandType = CommandType.StoredProcedure, bool useConnectionTimeout = true)
+        {
+            var cmd = conn.CreateCommand(sql, commandType, useConnectionTimeout);
+            cmd.Transaction = tx;
+            return cmd;
+        }
+
         public static void AddWithValue(this SqlParameterCollection parameters, string parameterName, object value, SqlDbType dbType)
         {
             var p = new SqlParameter(parameterName, value) { SqlDbType = dbType };

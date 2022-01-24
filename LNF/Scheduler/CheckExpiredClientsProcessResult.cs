@@ -1,12 +1,19 @@
-﻿namespace LNF.Scheduler
+﻿using System;
+using System.Collections.Generic;
+
+namespace LNF.Scheduler
 {
     public class CheckExpiredClientsProcessResult : ProcessResult
     {
-        public int ExpiredClientsCount { get; set; }
-        public int ExpiredClientsEmailsSent { get; set; }
-        public int ExpiredEveryoneCount { get; set; }
-        public int ExpiredEveryoneEmailsSent { get; set; }
-        public int DeleteExpiredClientsCount { get; set; }
+        protected CheckExpiredClientsProcessResult() { }
+
+        public CheckExpiredClientsProcessResult(DateTime startedAt, IEnumerable<string> data) : base(startedAt, data) { }
+
+        public virtual int ExpiredClientsCount { get; set; }
+        public virtual int ExpiredClientsEmailsSent { get; set; }
+        public virtual int ExpiredEveryoneCount { get; set; }
+        public virtual int ExpiredEveryoneEmailsSent { get; set; }
+        public virtual int DeleteExpiredClientsCount { get; set; }
         public override string ProcessName => "CheckExpiredClients";
 
         protected override void WriteLog()

@@ -4,6 +4,8 @@ namespace LNF.Billing.Process
 {
     public class PopulateStoreBillingResult : DataProcessResult
     {
+        public PopulateStoreBillingResult(DateTime startedAt) : base(startedAt) { }
+
         public DateTime Period { get; set; }
         public bool IsTemp { get; set; }
         public override string ProcessName => "PopulateStoreBilling";

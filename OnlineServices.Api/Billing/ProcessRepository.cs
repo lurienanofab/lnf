@@ -8,7 +8,7 @@ namespace OnlineServices.Api.Billing
 {
     public class ProcessRepository : ApiClient, IProcessRepository
     {
-        internal ProcessRepository(IRestClient rc) : base(rc) { }
+        public ProcessRepository(IRestClient rc) : base(rc) { }
 
         public DataCleanResult DataClean(DataCleanCommand command)
         {

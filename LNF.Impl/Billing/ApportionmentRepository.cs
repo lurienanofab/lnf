@@ -47,10 +47,11 @@ namespace LNF.Impl.Billing
 
         public CheckPassbackViolationsProcessResult CheckPassbackViolations(DateTime sd, DateTime ed)
         {
-            var result = new CheckPassbackViolationsProcessResult();
-
+            var startedAt = DateTime.Now;
+            var data = new List<string>();
+            
             int[] clientIds = PhysicalAccess.GetPassbackViolations(sd, ed).ToArray();
-            result.TotalPassbackViolations = clientIds.Length;
+            var totalPassbackViolations = clientIds.Length;
 
             foreach (int id in clientIds)
             {
@@ -66,8 +67,13 @@ namespace LNF.Impl.Billing
                 if (recip.Trim().Length > 0)
                     SendEmail.SendSystemEmail("LNF.Billing.ApportionmentUtility.CheckPassbackViolations", subj, body, new[] { recip });
 
-                result.Data.Add($"Has passback violation: {recip}");
+                data.Add($"Has passback violation: {recip}");
             }
+
+            var result = new CheckPassbackViolationsProcessResult(startedAt, data)
+            {
+                TotalPassbackViolations = totalPassbackViolations
+            };
 
             return result;
         }

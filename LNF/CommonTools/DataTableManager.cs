@@ -22,6 +22,9 @@ namespace LNF.CommonTools
 
         private readonly WriteData _wd;
 
+        /// <summary>
+        /// Loads DataClean and Data tables with latest Tool, Room, and Store data. This does not load the Billing tables.
+        /// </summary>
         public UpdateTablesResult Update(BillingCategory types)
         {
             return _wd.UpdateTables(types);

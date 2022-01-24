@@ -4,14 +4,18 @@ namespace LNF.Billing.Process
 {
     public class FinalizeResult : ProcessResult
     {
-        public DateTime Period { get; set; }
-        public WriteToolDataResult WriteToolDataProcessResult { get; set; }
-        public WriteRoomDataResult WriteRoomDataProcessResult { get; set; }
-        public WriteStoreDataResult WriteStoreDataProcessResult { get; set; }
-        public PopulateToolBillingResult PopulateToolBillingProcessResult { get; set; }
-        public PopulateRoomBillingResult PopulateRoomBillingProcessResult { get; set; }
-        public PopulateStoreBillingResult PopulateStoreBillingProcessResult { get; set; }
-        public PopulateSubsidyBillingResult PopulateSubsidyBillingProcessResult { get; set; }
+        protected FinalizeResult() { }
+
+        public FinalizeResult(DateTime startedAt) : base(startedAt, null) { }
+
+        public virtual DateTime Period { get; set; }
+        public virtual WriteToolDataResult WriteToolDataProcessResult { get; set; }
+        public virtual WriteRoomDataResult WriteRoomDataProcessResult { get; set; }
+        public virtual WriteStoreDataResult WriteStoreDataProcessResult { get; set; }
+        public virtual PopulateToolBillingResult PopulateToolBillingProcessResult { get; set; }
+        public virtual PopulateRoomBillingResult PopulateRoomBillingProcessResult { get; set; }
+        public virtual PopulateStoreBillingResult PopulateStoreBillingProcessResult { get; set; }
+        public virtual PopulateSubsidyBillingResult PopulateSubsidyBillingProcessResult { get; set; }
         public override string ProcessName => "DataFinalize";
 
         protected override void WriteLog()

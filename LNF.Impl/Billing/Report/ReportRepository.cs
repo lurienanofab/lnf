@@ -13,7 +13,6 @@ using System.Configuration;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace LNF.Impl.Billing.Report
 {
@@ -227,13 +226,15 @@ namespace LNF.Impl.Billing.Report
 
         public SendMonthlyApportionmentEmailsProcessResult SendUserApportionmentReport(UserApportionmentReportOptions options)
         {
-            var result = new SendMonthlyApportionmentEmailsProcessResult();
+            var startedAt = DateTime.Now;
+            var data = new List<string>();
 
             //With noEmail set to true, nothing happens here. The appropriate users are selected and logged
             //but no email is actually sent. This is for testing/debugging purposes.
             var emails = GetUserApportionmentReportEmails(options);
 
-            result.ApportionmentClientCount = emails.Count();
+            var apportionmentClientCount = emails.Count();
+            var totalEmailsSent = 0;
 
             foreach (var e in emails)
             {
@@ -244,13 +245,19 @@ namespace LNF.Impl.Billing.Report
 
                     // Always increment result even if noEmail == true so we can at least return how many emails would be sent.
                     // Note this is not incremented unless an email was found for the user, even when there are recipients included.
-                    result.TotalEmailsSent += 1;
+                    totalEmailsSent += 1;
 
-                    result.Data.Add($"Needs apportionment: {string.Join(",", e.ToAddress)}");
+                    data.Add($"Needs apportionment: {string.Join(",", e.ToAddress)}");
                 }
                 else
-                    result.Data.Add($"Needs apportionment: no email found for {e.DisplayName}");
+                    data.Add($"Needs apportionment: no email found for {e.DisplayName}");
             }
+
+            var result = new SendMonthlyApportionmentEmailsProcessResult(startedAt, data)
+            {
+                ApportionmentClientCount = apportionmentClientCount,
+                TotalEmailsSent = totalEmailsSent
+            };
 
             return result;
         }

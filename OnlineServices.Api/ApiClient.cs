@@ -113,14 +113,14 @@ namespace OnlineServices.Api
             return Result(resp);
         }
 
-        protected T Get<T>(string path) where T : new()
+        protected T Get<T>(string path) //where T : new()
         {
             var req = CreateRestRequest(path, Method.GET);
             var resp = HttpClient.Execute<T>(req);
             return Result(resp);
         }
 
-        protected T Get<T>(string path, ParameterCollection parameters) where T : new()
+        protected T Get<T>(string path, ParameterCollection parameters) //where T : new()
         {
             var req = CreateRestRequest(path, Method.GET);
             ApplyParameters(req, parameters);
@@ -190,14 +190,14 @@ namespace OnlineServices.Api
             return Result(resp);
         }
 
-        protected T Post<T>(string path) where T : new()
+        protected T Post<T>(string path) //where T : new()
         {
             var req = CreateRestRequest(path, Method.POST);
             var resp = HttpClient.Execute<T>(req);
             return Result(resp);
         }
 
-        protected T Post<T>(string path, ParameterCollection parameters) where T : new()
+        protected T Post<T>(string path, ParameterCollection parameters) //where T : new()
         {
             var req = CreateRestRequest(path, Method.POST);
             ApplyParameters(req, parameters);
@@ -205,7 +205,7 @@ namespace OnlineServices.Api
             return Result(resp);
         }
 
-        protected T Post<T>(string path, object model) where T : new()
+        protected T Post<T>(string path, object model) //where T : new()
         {
             var req = CreateRestRequest(path, Method.POST);
             SetJsonContent(req, model);
@@ -227,7 +227,7 @@ namespace OnlineServices.Api
             return Result(resp);
         }
 
-        protected T Post<T>(string path, FileCollection files) where T : new()
+        protected T Post<T>(string path, FileCollection files) //where T : new()
         {
             var req = CreateRestRequest(path, Method.POST);
 
@@ -241,7 +241,7 @@ namespace OnlineServices.Api
             return Result(resp);
         }
 
-        protected T Post<T>(string path, object model, ParameterCollection parameters) where T : new()
+        protected T Post<T>(string path, object model, ParameterCollection parameters) //where T : new()
         {
             var req = CreateRestRequest(path, Method.POST);
             SetJsonContent(req, model);

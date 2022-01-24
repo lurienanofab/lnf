@@ -195,7 +195,7 @@ namespace LNF.Impl.Mail
             if (conn.State != ConnectionState.Open)
                 conn.Open();
 
-            var cmd = new SqlCommand(sql, conn, _tx) { CommandType = commandType };
+            var cmd = conn.CreateCommand(_tx, sql, commandType);
 
             return cmd;
         }

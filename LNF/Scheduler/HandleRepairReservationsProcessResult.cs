@@ -1,8 +1,15 @@
-﻿namespace LNF.Scheduler
+﻿using System;
+using System.Collections.Generic;
+
+namespace LNF.Scheduler
 {
     public class HandleRepairReservationsProcessResult : ProcessResult
     {
-        public int ReservationsCount { get; set; }
+        protected HandleRepairReservationsProcessResult() { }
+
+        public HandleRepairReservationsProcessResult(DateTime startedAt, IEnumerable<string> data) : base(startedAt, data) { }
+
+        public virtual int ReservationsCount { get; set; }
         public override string ProcessName => "HandleRepairReservations";
 
         protected override void WriteLog()

@@ -27,7 +27,7 @@ namespace LNF.Impl.Billing
 
         private int ExecuteAction(string proc, string action, DateTime period, int clientId)
         {
-            using (var cmd = new SqlCommand(proc, Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand(proc))
             {
                 cmd.Parameters.AddWithValue("Action", action);
                 cmd.Parameters.AddWithValue("Period", period);

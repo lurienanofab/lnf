@@ -113,11 +113,13 @@ namespace LNF.Scheduler
         public static CheckExpiringClientsProcessResult CheckExpiringClients(IEnumerable<IResourceClient> expiringClients, IEnumerable<IResourceClient> expiringEveryone, bool noEmail = false)
         {
             //send warning to users with authorizations about to expire
-            var result = new CheckExpiringClientsProcessResult()
-            {
-                ExpiringClientsCount = expiringClients.Count(),
-                ExpiringEveryoneCount = expiringEveryone.Count()
-            };
+
+            var startedAt = DateTime.Now;
+            var expiringClientsCount = expiringClients.Count();
+            var expiringEveryoneCount = expiringEveryone.Count();
+            var expiringClientsEmailsSent = 0;
+            var expiringEveryoneEmailsSent = 0;
+            var data = new List<string>();
 
             foreach (IResourceClient item in expiringClients)
             {
@@ -148,15 +150,15 @@ namespace LNF.Scheduler
                                 if (!noEmail)
                                     SendEmail.SendSystemEmail("LNF.Scheduler.ResourceClientUtility.CheckExpiringClients", subject, body, new[] { recipient });
 
-                                result.Data.Add($"Expiring authorization: {string.Join(",", recipient)}, Resource: {item.ResourceName} [{item.ResourceID}]");
-                                result.ExpiringClientsEmailsSent += 1;
+                                data.Add($"Expiring authorization: {string.Join(",", recipient)}, Resource: {item.ResourceName} [{item.ResourceID}]");
+                                expiringClientsEmailsSent += 1;
                             }
                             else
-                                result.Data.Add($"Expiring authorization: No recipient, Resource: {item.ResourceName} [{item.ResourceID}]");
+                                data.Add($"Expiring authorization: No recipient, Resource: {item.ResourceName} [{item.ResourceID}]");
                         }
                         catch (Exception ex)
                         {
-                            result.Data.Add($"Expiring authorization ERROR: {recipient}, Resource: {item.ResourceName} [{item.ResourceID}], Message: {ex.Message}");
+                            data.Add($"Expiring authorization ERROR: {recipient}, Resource: {item.ResourceName} [{item.ResourceID}], Message: {ex.Message}");
                         }
                     }
                 }
@@ -196,19 +198,27 @@ namespace LNF.Scheduler
                                 if (!noEmail)
                                     SendEmail.SendSystemEmail("LNF.Scheduler.ResourceClientUtility.CheckExpiringClients", subject, body, recipient);
 
-                                result.Data.Add($"Expiring Everyone authorization: {string.Join(",", recipient)}, Resource: {item.ResourceName} [{item.ResourceID}]");
-                                result.ExpiringEveryoneEmailsSent += 1;
+                                data.Add($"Expiring Everyone authorization: {string.Join(",", recipient)}, Resource: {item.ResourceName} [{item.ResourceID}]");
+                                expiringEveryoneEmailsSent += 1;
                             }
                             else
-                                result.Data.Add($"Expiring Everyone authorization: No recipient, Resource: {item.ResourceName} [{item.ResourceID}]");
+                                data.Add($"Expiring Everyone authorization: No recipient, Resource: {item.ResourceName} [{item.ResourceID}]");
                         }
                         catch (Exception ex)
                         {
-                            result.Data.Add($"Expiring Everyone authorization ERROR: {string.Join(",", recipient)}, Resource: {item.ResourceName} [{item.ResourceID}], Message: {ex.Message}");
+                            data.Add($"Expiring Everyone authorization ERROR: {string.Join(",", recipient)}, Resource: {item.ResourceName} [{item.ResourceID}], Message: {ex.Message}");
                         }
                     }
                 }
             }
+
+            var result = new CheckExpiringClientsProcessResult(startedAt, data)
+            {
+                ExpiringClientsCount = expiringClientsCount,
+                ExpiringEveryoneCount = expiringEveryoneCount,
+                ExpiringClientsEmailsSent = expiringClientsEmailsSent,
+                ExpiringEveryoneEmailsSent = expiringEveryoneEmailsSent
+            };
 
             return result;
         }
@@ -219,11 +229,12 @@ namespace LNF.Scheduler
         public static CheckExpiredClientsProcessResult CheckExpiredClients(IEnumerable<IResourceClient> expiredClients, IEnumerable<IResourceClient> expiredEveryone, bool noEmail = false)
         {
             //send notice to users with authorizations that have expired
-            var result = new CheckExpiredClientsProcessResult()
-            {
-                ExpiredClientsCount = expiredClients.Count(),
-                ExpiredEveryoneCount = expiredEveryone.Count()
-            };
+            var startedAt = DateTime.Now;
+            var expiredClientsCount = expiredClients.Count();
+            var expiredEveryoneCount = expiredEveryone.Count();
+            var expiredClientsEmailsSent = 0;
+            var expiredEveryoneEmailsSent = 0;
+            var data = new List<string>();
 
             foreach (IResourceClient item in expiredClients)
             {
@@ -244,15 +255,15 @@ namespace LNF.Scheduler
                             if (!noEmail)
                                 SendEmail.SendSystemEmail("LNF.Scheduler.ResourceClientUtility.CheckExpiredClients", subject, body, new[] { recipient });
 
-                            result.Data.Add($"Expired authorization: {recipient}, Resource: {item.ResourceName} [{item.ResourceID}]");
-                            result.ExpiredClientsEmailsSent += 1;
+                            data.Add($"Expired authorization: {recipient}, Resource: {item.ResourceName} [{item.ResourceID}]");
+                            expiredClientsEmailsSent += 1;
                         }
                         else
-                            result.Data.Add($"Expired authorization: No recipient, Resource: {item.ResourceName} [{item.ResourceID}]");
+                            data.Add($"Expired authorization: No recipient, Resource: {item.ResourceName} [{item.ResourceID}]");
                     }
                     catch (Exception ex)
                     {
-                        result.Data.Add($"Expired authorization ERROR: {recipient}, Resource: {item.ResourceName} [{item.ResourceID}], Message: {ex.Message}");
+                        data.Add($"Expired authorization ERROR: {recipient}, Resource: {item.ResourceName} [{item.ResourceID}], Message: {ex.Message}");
                     }
                 }
             }
@@ -281,21 +292,30 @@ namespace LNF.Scheduler
                             if (!noEmail)
                                 SendEmail.SendSystemEmail("LNF.Scheduler.ResourceClientUtility.CheckExpiredClients", subject, body, recipient);
 
-                            result.Data.Add($"Expired Everyone authorization: {string.Join(",", recipient)}, Resource: {item.ResourceName} [{item.ResourceID}]");
-                            result.ExpiredEveryoneEmailsSent += 1;
+                            data.Add($"Expired Everyone authorization: {string.Join(",", recipient)}, Resource: {item.ResourceName} [{item.ResourceID}]");
+                            expiredEveryoneEmailsSent += 1;
                         }
                         else
-                            result.Data.Add($"Expired Everyone authorization: No recipient, Resource: {item.ResourceName} [{item.ResourceID}]");
+                            data.Add($"Expired Everyone authorization: No recipient, Resource: {item.ResourceName} [{item.ResourceID}]");
                     }
                     catch (Exception ex)
                     {
-                        result.Data.Add($"Expired Everyone authorization ERROR: {string.Join(",", recipient)}, Resource: {item.ResourceName} [{item.ResourceID}], Message: {ex.Message}");
+                        data.Add($"Expired Everyone authorization ERROR: {string.Join(",", recipient)}, Resource: {item.ResourceName} [{item.ResourceID}], Message: {ex.Message}");
                     }
                 }
             }
 
             //Delete Clients
-            result.DeleteExpiredClientsCount = DeleteExpiredClients();
+            var deleteExpiredClientsCount = DeleteExpiredClients();
+
+            var result = new CheckExpiredClientsProcessResult(startedAt, data)
+            {
+                ExpiredClientsCount = expiredClientsCount,
+                ExpiredEveryoneCount = expiredEveryoneCount,
+                ExpiredClientsEmailsSent = expiredClientsEmailsSent,
+                ExpiredEveryoneEmailsSent = expiredEveryoneEmailsSent,
+                DeleteExpiredClientsCount = deleteExpiredClientsCount
+            };
 
             return result;
         }

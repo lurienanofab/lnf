@@ -4,11 +4,15 @@ namespace LNF.Billing.Process
 {
     public class UpdateTablesResult : ProcessResult
     {
-        public DateTime Now { get; set; }
-        public DateTime Period { get; set; }
-        public bool IsFirstBusinessDay { get; set; }
-        public UpdateResult UpdateResult { get; set; }
-        public FinalizeResult FinalizeResult { get; set; }
+        protected UpdateTablesResult() { }
+
+        public UpdateTablesResult(DateTime startedAt) : base(startedAt, null) { }
+
+        public virtual DateTime Now { get; set; }
+        public virtual DateTime Period { get; set; }
+        public virtual bool IsFirstBusinessDay { get; set; }
+        public virtual UpdateResult UpdateResult { get; set; }
+        public virtual FinalizeResult FinalizeResult { get; set; }
         public override string ProcessName => "Update";
 
         protected override void WriteLog()

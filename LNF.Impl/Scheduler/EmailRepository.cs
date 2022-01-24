@@ -25,7 +25,9 @@ namespace LNF.Impl.Scheduler
         //Email users who want to be notified of open reservation slots
         public EmailOnOpenReservationsProcessResult EmailOnOpenReservations(int reservationId, DateTime startDate, DateTime endDate)
         {
-            var result = new EmailOnOpenReservationsProcessResult();
+            var startedAt = DateTime.Now;
+            var data = new List<string>();
+            var totalEmailsSent = 0;
 
             var rsv = Require<ReservationInfo>(reservationId);
 
@@ -50,15 +52,20 @@ namespace LNF.Impl.Scheduler
                     try
                     {
                         SendEmail.SendSystemEmail("LNF.Scheduler.EmailUtility.EmailOnOpenReservations", subject, body, recipient);
-                        result.TotalEmailsSent += 1;
-                        result.Data.Add($"Open reservation slot: Email sent to {recipient}, Resource: {rsv.ResourceName}, BeginDateTime: {startDate}, EndDateTime: {endDate}");
+                        totalEmailsSent += 1;
+                        data.Add($"Open reservation slot: Email sent to {recipient}, Resource: {rsv.ResourceName}, BeginDateTime: {startDate}, EndDateTime: {endDate}");
                     }
                     catch (Exception ex)
                     {
-                        result.Data.Add($"Open reservation slot: ERROR sending email to {recipient}, Resource: {rsv.ResourceName}, BeginDateTime: {startDate}, EndDateTime: {endDate}, Message: {ex.Message}");
+                        data.Add($"Open reservation slot: ERROR sending email to {recipient}, Resource: {rsv.ResourceName}, BeginDateTime: {startDate}, EndDateTime: {endDate}, Message: {ex.Message}");
                     }
                 }
             }
+
+            var result = new EmailOnOpenReservationsProcessResult(startedAt)
+            {
+                TotalEmailsSent = totalEmailsSent
+            };
 
             return result;
         }
@@ -429,7 +436,7 @@ namespace LNF.Impl.Scheduler
             var note = ConfigurationManager.AppSettings["ForgiveChargeNote"];
 
             subject = $"{SendEmail.CompanyName} - Reservation Charges Forgiven";
-            body = $"This is an automatically generated email to let you know that {forgiveAmount}% of the charges on run number {rsv.ReservationID} have been forgiven by one of the tool engineers. {note}<br /><br />Reservation Detail:<ul><li>Tool: {rsv.ResourceName}</li><li>Chargeable Time: from {rsv.ChargeBeginDateTime.ToString(Reservation.DateFormat)} to {rsv.ChargeEndDateTime.ToString(Reservation.DateFormat)}</li><li>Total Chargeable Minutes: {ts.TotalMinutes.ToString("0.##")}</li></ul>";
+            body = $"This is an automatically generated email to let you know that {forgiveAmount}% of the charges on run number {rsv.ReservationID} have been forgiven by one of the tool engineers. {note}<br /><br />Reservation Detail:<ul><li>Tool: {rsv.ResourceName}</li><li>Chargeable Time: from {rsv.ChargeBeginDateTime.ToString(Reservation.DateFormat)} to {rsv.ChargeEndDateTime.ToString(Reservation.DateFormat)}</li><li>Total Chargeable Minutes: {ts.TotalMinutes:0.##}</li></ul>";
 
             SendEmail.Send(clientId, "LNF.Scheduler.EmailUtility.EmailOnForgiveCharge", subject, body, fromAddr, toAddr);
         }

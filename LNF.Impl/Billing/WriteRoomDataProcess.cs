@@ -96,6 +96,9 @@ namespace LNF.Impl.Billing
         }
 
         private readonly WriteRoomDataConfig _config;
+        private int _distinctClientRows;
+        private int _badEntryRowsDeleted;
+        private int _rowsAdjusted;
 
         public int RoomID => _config.RoomID;
 
@@ -103,14 +106,21 @@ namespace LNF.Impl.Billing
 
         public override string ProcessName => "RoomData";
 
-        protected override WriteRoomDataResult CreateResult()
+        protected override WriteRoomDataResult CreateResult(DateTime startedAt)
         {
-            return new WriteRoomDataResult
+            return new WriteRoomDataResult(startedAt)
             {
                 Period = Period,
                 ClientID = ClientID,
                 RoomID = RoomID
             };
+        }
+
+        protected override void FinalizeResult(WriteRoomDataResult result)
+        {
+            result.DistinctClientRows = _distinctClientRows;
+            result.BadEntryRowsDeleted = _badEntryRowsDeleted;
+            result.RowsAdjusted = _rowsAdjusted;
         }
 
         public WriteRoomDataProcess(WriteRoomDataConfig cfg) : base(cfg)
@@ -120,7 +130,7 @@ namespace LNF.Impl.Billing
 
         public override int DeleteExisting()
         {
-            using (var cmd = new SqlCommand("dbo.RoomData_Delete", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.RoomData_Delete"))
             {
                 AddParameter(cmd, "Action", "PreClean", SqlDbType.NVarChar, 50);
                 AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
@@ -148,7 +158,7 @@ namespace LNF.Impl.Billing
             DataTable dtClient = _ds.Tables["Client"];
             DataTable dtRoom = _ds.Tables["Room"];
 
-            _result.DistinctClientRows = dtClient.Rows.Count;
+            _distinctClientRows = dtClient.Rows.Count;
 
             var aggRoomDataClean = dtAggRoomDataClean.AsEnumerable();
             var toolData = GetToolDataAggByDay().AsEnumerable();
@@ -270,8 +280,8 @@ namespace LNF.Impl.Billing
 
         public override int Load(DataTable dtTransform)
         {
-            using (var insert = new SqlCommand("dbo.RoomData_Insert", Connection) { CommandType = CommandType.StoredProcedure })
-            using (var delete = new SqlCommand("dbo.RoomData_Delete", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var insert = Connection.CreateCommand("dbo.RoomData_Insert"))
+            using (var delete = Connection.CreateCommand("dbo.RoomData_Delete"))
             using (var adap = new SqlDataAdapter { InsertCommand = insert, DeleteCommand = delete })
             {
                 AddParameter(insert, "Period", SqlDbType.DateTime, 0, "Period");
@@ -292,11 +302,11 @@ namespace LNF.Impl.Billing
                 AddParameter(delete, "RoomDataID", SqlDbType.Int, 0, "RoomDataID");
                 AddParameter(delete, "Context", _config.Context, SqlDbType.NVarChar, 50);
 
-                _result.BadEntryRowsDeleted = dtTransform.AsEnumerable().Count(x => x.RowState == DataRowState.Deleted);
+                _badEntryRowsDeleted = dtTransform.AsEnumerable().Count(x => x.RowState == DataRowState.Deleted);
 
                 var result = adap.Update(dtTransform);
 
-                _result.RowsAdjusted = RoomDataAdjust();
+                _rowsAdjusted = RoomDataAdjust();
 
                 return result;
             }
@@ -353,7 +363,6 @@ namespace LNF.Impl.Billing
             for (int i = 0; i < rowCount; i++)
             {
                 DataRow drRoomDataClean = dtRoomData.Rows[i];
-                int rid = drRoomDataClean.Field<int>("RoomID");
                 bool passbackRoom = drRoomDataClean.Field<bool>("PassbackRoom");
                 DateTime entryDate = drRoomDataClean.Field<DateTime>("EntryDT");
                 drRoomDataClean.SetField("eDay", entryDate.Day);
@@ -367,7 +376,6 @@ namespace LNF.Impl.Billing
                     if (entryDate.Day != exitDate.Day)
                     {
                         //entry date and exit date are different, we have to create a new data row
-                        duration = exitDate.Subtract(entryDate).TotalHours;
                         DateTime newDate = new DateTime(exitDate.Year, exitDate.Month, exitDate.Day);
 
                         // [2021-01-27 jg] We now will put the entire Entry amount (1) on the day the entry occurred and zero on the day the exit occurred.
@@ -451,7 +459,7 @@ namespace LNF.Impl.Billing
 
         private DataTable GetRoomDataPreLock()
         {
-            using (var cmd = new SqlCommand("dbo.RoomData_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.RoomData_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "PreLock");
@@ -468,7 +476,7 @@ namespace LNF.Impl.Billing
 
         private DataTable GetToolDataAggByDay()
         {
-            using (var cmd = new SqlCommand("dbo.ToolData_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.ToolData_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "AggByDayTool");
@@ -484,7 +492,7 @@ namespace LNF.Impl.Billing
 
         private int RoomDataAdjust()
         {
-            using (var cmd = new SqlCommand("dbo.RoomData_Adjust", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.RoomData_Adjust"))
             {
                 cmd.Parameters.AddWithValue("Period", Period);
                 var result = cmd.ExecuteNonQuery();
@@ -497,7 +505,7 @@ namespace LNF.Impl.Billing
             DateTime sd = Period;
             DateTime ed = Period.AddMonths(1);
 
-            using (var cmd = new SqlCommand("dbo.ClientAccount_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.ClientAccount_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "ForRoomData");
@@ -528,7 +536,7 @@ namespace LNF.Impl.Billing
 
         private DataTable GetToolUsageData()
         {
-            using (var cmd = new SqlCommand("dbo.ToolData_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.ToolData_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "GetToolUsageDataForGrower");

@@ -63,35 +63,43 @@ namespace LNF.Impl.Billing
         ///</summary>
         public PopulateRoomBillingResult PopulateRoomBilling()
         {
-            var result = new PopulateRoomBillingResult
-            {
-                Period = Period,
-                ClientID = ClientID,
-                UseParentRooms = GlobalSettings.Current.UseParentRooms,
+            var startedAt = DateTime.Now;
+            var useParentRooms = GlobalSettings.Current.UseParentRooms;
 
-                //Before saving to DB, we have to delete the old data in the same period
-                //This must be done first because PopulateRoomBilling is now a two step process
-                RowsDeleted = DeleteRoomBillingData()
-            };
+            //Before saving to DB, we have to delete the old data in the same period
+            //This must be done first because PopulateRoomBilling is now a two step process
+            var rowsDeleted = DeleteRoomBillingData();
 
-            DataSet ds;
-            DataTable dt;
+            DataSet ds = GetRoomData();
+            DataTable dt = LoadRoomBilling(ds);
 
-            ds = GetRoomData();
-            dt = LoadRoomBilling(ds);
-            result.RowsExtracted = dt.Rows.Count;
-            result.RowsLoaded = SaveRoomBillingData(dt);
+            var rowsExtracted = dt.Rows.Count;
+            var rowsLoaded = SaveRoomBillingData(dt);
 
-            if (result.UseParentRooms)
+            var rowsExtractedForParentRooms = 0;
+            var rowsLoadedForParentRooms = 0;
+
+            if (useParentRooms)
             {
                 ds = GetRoomData(FOR_PARENT_ROOMS);
                 dt = LoadRoomBilling(ds);
-                result.RowsExtractedForParentRooms = dt.Rows.Count;
-                result.RowsLoadedForParentRooms = SaveRoomBillingData(dt);
+                rowsExtractedForParentRooms = dt.Rows.Count;
+                rowsLoadedForParentRooms = SaveRoomBillingData(dt);
                 UpdateEntries(ds.Tables[1]);
             }
 
-            result.SetEndedAt();
+            var result = new PopulateRoomBillingResult(startedAt)
+            {
+                Period = Period,
+                IsTemp = IsTemp,
+                ClientID = ClientID,
+                UseParentRooms = useParentRooms,
+                RowsDeleted = rowsDeleted,
+                RowsExtracted = rowsExtracted,
+                RowsLoaded = rowsLoaded,
+                RowsExtractedForParentRooms = rowsExtractedForParentRooms,
+                RowsLoadedForParentRooms = rowsLoadedForParentRooms
+            };
 
             return result;
         }
@@ -101,7 +109,7 @@ namespace LNF.Impl.Billing
             // This is the same code that is called when apportionment is saved (step1).
             // Call it here to set intial values.
             var repo = new LNF.Billing.Apportionment.Repository(Connection);
-            foreach(DataRow dr in dt.Rows)
+            foreach (DataRow dr in dt.Rows)
             {
                 var roomId = dr.Field<int>("RoomID");
                 repo.UpdateChildRoomEntryApportionment(Period, ClientID, roomId);
@@ -556,7 +564,7 @@ namespace LNF.Impl.Billing
         {
             //Don't pass clientId here, always return everything even if we are only running this for one client.
             //This is better than modifying the stored procedure.
-            using (var cmd = new SqlCommand("dbo.RoomApportionmentInDaysMonthly_Populate", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.RoomApportionmentInDaysMonthly_Populate"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Period", Period);
@@ -590,7 +598,7 @@ namespace LNF.Impl.Billing
 
                 var proc = (IsTemp) ? "dbo.RoomBillingTemp_Insert" : "dbo.RoomApportionmentInDaysMonthly_Insert";
 
-                using (var insert = new SqlCommand(proc, Connection) { CommandType = CommandType.StoredProcedure })
+                using (var insert = Connection.CreateCommand(proc))
                 using (var adap = new SqlDataAdapter { InsertCommand = insert })
                 {
                     insert.Parameters.Add("Period", SqlDbType.DateTime, 0, "Period");
@@ -635,27 +643,30 @@ namespace LNF.Impl.Billing
         #region ToolBilling
         public PopulateToolBillingResult PopulateToolBilling()
         {
-            var result = new PopulateToolBillingResult
-            {
-                Period = Period,
-                ClientID = ClientID,
-                IsTemp = IsTemp
-            };
+            var startedAt = DateTime.Now;
+
+            //Delete appropriate data
+            var rowsDeleted = DeleteToolBillingData();
 
             IToolBilling[] source = GetToolData(0);
 
-            result.RowsExtracted = source.Length;
+            var rowsExtracted = source.Length;
 
             foreach (var tb in source)
                 ToolBillingUtility.CalculateToolBillingCharges(tb);
 
-            //Delete appropriate data
-            result.RowsDeleted = DeleteToolBillingData();
-
             //Insert new rows
-            result.RowsLoaded = InsertToolBillingData(source);
+            var rowsLoaded = InsertToolBillingData(source);
 
-            result.SetEndedAt();
+            var result = new PopulateToolBillingResult(startedAt)
+            {
+                Period = Period,
+                ClientID = ClientID,
+                IsTemp = IsTemp,
+                RowsExtracted = rowsExtracted,
+                RowsDeleted = rowsDeleted,
+                RowsLoaded = rowsLoaded
+            };
 
             return result;
         }
@@ -695,23 +706,25 @@ namespace LNF.Impl.Billing
         #region StoreBilling
         public PopulateStoreBillingResult PopulateStoreBilling()
         {
-            var result = new PopulateStoreBillingResult
-            {
-                Period = Period,
-                IsTemp = IsTemp
-            };
-
-            var dt = GetStoreData();
-
-            result.RowsExtracted = dt.Rows.Count;
+            var startedAt = DateTime.Now;
 
             //Delete appropriate data
-            result.RowsDeleted = DeleteStoreBillingData();
+            var rowsDeleted = DeleteStoreBillingData();
+
+            var dt = GetStoreData();
+            var rowsExtracted = dt.Rows.Count;
 
             //Save to ToolBilling Table
-            result.RowsLoaded = SaveStoreBillingData(dt);
+            var rowsLoaded = SaveStoreBillingData(dt);
 
-            result.SetEndedAt();
+            var result = new PopulateStoreBillingResult(startedAt)
+            {
+                Period = Period,
+                IsTemp = IsTemp,
+                RowsExtracted = rowsExtracted,
+                RowsDeleted = rowsDeleted,
+                RowsLoaded = rowsLoaded
+            };
 
             return result;
         }
@@ -756,7 +769,7 @@ namespace LNF.Impl.Billing
 
         private DataSet GetNecessaryDataTablesForStoreUsage()
         {
-            using (var cmd = new SqlCommand("dbo.StoreData_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.StoreData_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "ForStoreBillingGeneration");
@@ -785,7 +798,7 @@ namespace LNF.Impl.Billing
 
             string proc = IsTemp ? "dbo.StoreBillingTemp_Insert" : "dbo.StoreBilling_Insert";
 
-            using (var insert = new SqlCommand(proc, Connection) { CommandType = CommandType.StoredProcedure })
+            using (var insert = Connection.CreateCommand(proc))
             using (var adap = new SqlDataAdapter { InsertCommand = insert })
             {
                 insert.Parameters.Add("Period", SqlDbType.DateTime, 0, "Period");
@@ -933,11 +946,11 @@ namespace LNF.Impl.Billing
             return bcp;
         }
         #endregion
-        
+
         private SqlCommand GetBillingDeleteCommand(string proc)
         {
             // All *Billing_Delete and *BillingTemp_Delete stored procs use the same paramters
-            var cmd = new SqlCommand(proc, Connection) { CommandType = CommandType.StoredProcedure };
+            var cmd = Connection.CreateCommand(proc);
             AddParameter(cmd, "Action", "DeleteCurrentRange", SqlDbType.NVarChar, 50);
             AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
             AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID, SqlDbType.Int);

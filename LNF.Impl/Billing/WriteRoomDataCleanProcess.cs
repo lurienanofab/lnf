@@ -2,7 +2,6 @@
 using LNF.CommonTools;
 using System;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 
 namespace LNF.Impl.Billing
@@ -36,9 +35,9 @@ namespace LNF.Impl.Billing
 
         public override string ProcessName => "RoomDataClean";
 
-        protected override WriteRoomDataCleanResult CreateResult()
+        protected override WriteRoomDataCleanResult CreateResult(DateTime startedAt)
         {
-            return new WriteRoomDataCleanResult
+            return new WriteRoomDataCleanResult(startedAt)
             {
                 StartDate = StartDate,
                 EndDate = EndDate,
@@ -57,7 +56,7 @@ namespace LNF.Impl.Billing
         public override int DeleteExisting()
         {
             //Delete the data because there are many chances that might need to re-generate the Clean table again and again
-            using (var cmd = new SqlCommand("dbo.RoomDataClean_Delete", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.RoomDataClean_Delete"))
             {
                 AddParameter(cmd, "sDate", StartDate, SqlDbType.DateTime);
                 AddParameter(cmd, "eDate", EndDate, SqlDbType.DateTime);

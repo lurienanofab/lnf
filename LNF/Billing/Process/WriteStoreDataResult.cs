@@ -4,6 +4,8 @@ namespace LNF.Billing.Process
 {
     public class WriteStoreDataResult : DataProcessResult
     {
+        public WriteStoreDataResult(DateTime startedAt) : base(startedAt) { }
+
         public DateTime Period { get; set; }
         public int ClientID { get; set; }
         public int ItemID { get; set; }

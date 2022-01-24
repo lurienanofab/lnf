@@ -34,7 +34,7 @@ namespace LNF.Impl.PhysicalAccess
         public DataTable FillDataTable(string sql, IDictionary<string, object> parameters = null, CommandType type = CommandType.Text)
         {
             using (var conn = new SqlConnection(_connstr))
-            using (var cmd = new SqlCommand(sql, conn) { CommandType = type })
+            using (var cmd = conn.CreateCommand(sql, type))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 ApplyParameters(cmd, parameters);
@@ -47,7 +47,7 @@ namespace LNF.Impl.PhysicalAccess
         public object ExecuteScalar(string sql, Dictionary<string, object> parameters = null, CommandType type = CommandType.Text)
         {
             using (var conn = new SqlConnection(_connstr))
-            using (var cmd = new SqlCommand(sql, conn) { CommandType = type })
+            using (var cmd = conn.CreateCommand(sql, type))
             {
                 conn.Open();
                 ApplyParameters(cmd, parameters);
@@ -60,7 +60,7 @@ namespace LNF.Impl.PhysicalAccess
         public int ExecuteNonQuery(string sql, Dictionary<string, object> parameters = null, CommandType type = CommandType.Text)
         {
             using (var conn = new SqlConnection(_connstr))
-            using (var cmd = new SqlCommand(sql, conn) { CommandType = type })
+            using (var cmd = conn.CreateCommand(sql, type))
             {
                 conn.Open();
                 ApplyParameters(cmd, parameters);

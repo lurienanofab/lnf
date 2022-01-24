@@ -16,7 +16,7 @@ namespace LNF.Impl.Billing
 
         public DataTable ReadStoreDataRaw(DateTime sd, DateTime ed, int clientId = 0)
         {
-            using (var cmd = new SqlCommand("dbo.sselMAS_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.sselMAS_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "StoreDataRaw");
@@ -37,7 +37,7 @@ namespace LNF.Impl.Billing
         //However, in the SP, we need to pass in a 0 for all items.
         public DataTable ReadStoreDataClean(DateTime sd, DateTime ed, int clientId = 0, int itemId = 0, StoreDataCleanOption option = StoreDataCleanOption.AllItems)
         {
-            using (var cmd = new SqlCommand("dbo.StoreDataClean_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.StoreDataClean_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "ByClient");
@@ -56,7 +56,7 @@ namespace LNF.Impl.Billing
 
         public DataTable ReadStoreData(DateTime period, int clientId = 0, int itemId = 0)
         {
-            using (var cmd = new SqlCommand("dbo.StoreData_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.StoreData_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "AggByPeriod");

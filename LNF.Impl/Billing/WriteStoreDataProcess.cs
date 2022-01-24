@@ -31,9 +31,9 @@ namespace LNF.Impl.Billing
 
         public override string ProcessName => "StoreData";
 
-        protected override WriteStoreDataResult CreateResult()
+        protected override WriteStoreDataResult CreateResult(DateTime startedAt)
         {
-            return new WriteStoreDataResult
+            return new WriteStoreDataResult(startedAt)
             {
                 Period = Period,
                 ClientID = ClientID,
@@ -44,7 +44,7 @@ namespace LNF.Impl.Billing
         public override int DeleteExisting()
         {
             //get rid of any non-user entered entries
-            using (var cmd = new SqlCommand("dbo.StoreData_Delete", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.StoreData_Delete"))
             {
                 AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
                 AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID, SqlDbType.Int);

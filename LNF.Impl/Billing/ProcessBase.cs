@@ -33,25 +33,36 @@ namespace LNF.Impl.Billing
             _config = cfg;
         }
 
-        protected abstract T CreateResult();
+        protected abstract T CreateResult(DateTime startedAt);
+
+        /// <summary>
+        /// Does nothing unless overridden. This is a chance to set any additional properties.
+        /// </summary>
+        protected virtual void FinalizeResult(T result) { }
 
         public T Start()
         {
-            _result = CreateResult();
+            var startedAt = DateTime.Now;
 
-            _result.RowsDeleted = DeleteExisting();
+            var rowsDeleted = DeleteExisting();
 
             var dtExtract = Extract();
-            _result.RowsExtracted = dtExtract.Rows.Count;
+            var rowsExtracted = dtExtract.Rows.Count;
 
             var dtTransform = Transform(dtExtract);
 
+            int rowsLoaded;
             if (dtTransform.Rows.Count > 0)
-                _result.RowsLoaded = Load(dtTransform);
+                rowsLoaded = Load(dtTransform);
             else
-                _result.RowsLoaded = 0;
+                rowsLoaded = 0;
 
-            _result.SetEndedAt();
+            _result = CreateResult(startedAt);
+            _result.RowsDeleted = rowsDeleted;
+            _result.RowsExtracted = rowsExtracted;
+            _result.RowsLoaded = rowsLoaded;
+
+            FinalizeResult(_result);
 
             return _result;
         }

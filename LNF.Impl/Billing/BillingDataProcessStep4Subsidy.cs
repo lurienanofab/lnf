@@ -31,7 +31,7 @@ namespace LNF.Impl.Billing
         {
             _config = cfg;
 
-            using (var cmd = new SqlCommand("SELECT * FROM Billing.dbo.SpecialSubsidy", _config.Connection) { CommandType = CommandType.Text })
+            using (var cmd = _config.Connection.CreateCommand("SELECT * FROM Billing.dbo.SpecialSubsidy", CommandType.Text))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 _special = new DataTable();
@@ -43,7 +43,7 @@ namespace LNF.Impl.Billing
         {
             if (_newfac == null)
             {
-                using (var cmd = new SqlCommand("dbo.ClientManager_Select", Connection) { CommandType = CommandType.StoredProcedure })
+                using (var cmd = Connection.CreateCommand("dbo.ClientManager_Select"))
                 using (var adap = new SqlDataAdapter(cmd))
                 {
                     cmd.Parameters.AddWithValue("Action", "GetNewFaculty");
@@ -77,17 +77,11 @@ namespace LNF.Impl.Billing
 
         public PopulateSubsidyBillingResult PopulateSubsidyBilling()
         {
-            var result = new PopulateSubsidyBillingResult
-            {
-                Period = Period,
-                ClientID = ClientID,
-                Command = "subsidy"
-            };
+            var startedAt = DateTime.Now;
 
             DataSet ds = GetNecessaryTables();
             DataTable dtRoom = ds.Tables[0];
             DataTable dtTool = ds.Tables[1];
-            //DataTable dtTiers = ds.Tables[2];
             DataTable dtOut = ds.Tables[3];
             DataTable dtMiscCharges = ds.Tables[4];
 
@@ -181,17 +175,17 @@ namespace LNF.Impl.Billing
                 }
             }
 
-            result.RowsExtracted = dtOut.Rows.Count;
+            var rowsExtracted = dtOut.Rows.Count;
 
             // At this point, the TiredSubsidyBilling table should have all the records but some fields are missing.  
             // So we loop through the newly constructed table and fill out the missing fields
             PopulateFieldsFromHistory(dtOut);
 
             // Clean up the data before saving
-            result.RowsDeleted = DeleteTieredSubsidyBilling();
+            var rowsDeleted = DeleteTieredSubsidyBilling();
 
             // Save everything back to the main table
-            result.RowsLoaded = SaveNewTieredSubsidyBilling(dtOut);
+            var rowsLoaded = SaveNewTieredSubsidyBilling(dtOut);
 
             // Calculate the real subsidy amount and populate the details, UserPaymentSum is set in this method.
             CalculateSubsidyFee();
@@ -202,7 +196,15 @@ namespace LNF.Impl.Billing
             // [2015-10-20 jg] Added account subsidy feature per Sandrine. Some accounts get a fixed subsidy that overrides the tiered subsidy
             ApplyAccountSubsidy();
 
-            result.SetEndedAt();
+            var result = new PopulateSubsidyBillingResult(startedAt)
+            {
+                Period = Period,
+                ClientID = ClientID,
+                Command = "subsidy",
+                RowsExtracted = rowsExtracted,
+                RowsDeleted = rowsDeleted,
+                RowsLoaded = rowsLoaded
+            };
 
             return result;
         }
@@ -212,7 +214,7 @@ namespace LNF.Impl.Billing
             //DateTime sd = Period;
             //DateTime ed = Period.AddMonths(1);
 
-            using (var cmd = new SqlCommand("SELECT * FROM Billing.dbo.v_CurrentAccountSubsidy ORDER BY AccountID", Connection) { CommandType = CommandType.Text })
+            using (var cmd = Connection.CreateCommand("SELECT * FROM Billing.dbo.v_CurrentAccountSubsidy ORDER BY AccountID", CommandType.Text))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 var dt = new DataTable();
@@ -244,7 +246,7 @@ namespace LNF.Impl.Billing
         {
             var dtTool = new DataTable();
 
-            using (var cmd = new SqlCommand("SELECT * FROM dbo.ToolBilling WHERE Period = @Period AND AccountID = @AccountID", Connection) { CommandType = CommandType.Text })
+            using (var cmd = Connection.CreateCommand("SELECT * FROM dbo.ToolBilling WHERE Period = @Period AND AccountID = @AccountID", CommandType.Text))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Period", period);
@@ -257,7 +259,7 @@ namespace LNF.Impl.Billing
                 tb["SubsidyDiscount"] = GetToolBillingTotalCharge(tb) * userPaymentPercentage;
             }
 
-            using (var update = new SqlCommand("UPDATE dbo.ToolBilling SET SubsidyDiscount = @SubsidyDiscount WHERE ToolBillingID = @ToolBillingID", Connection) { CommandType = CommandType.Text })
+            using (var update = Connection.CreateCommand("UPDATE dbo.ToolBilling SET SubsidyDiscount = @SubsidyDiscount WHERE ToolBillingID = @ToolBillingID", CommandType.Text))
             using (var adap = new SqlDataAdapter() { UpdateCommand = update })
             {
                 update.Parameters.Add("ToolBillingID", SqlDbType.Int, 0, "ToolBillingID");
@@ -270,7 +272,7 @@ namespace LNF.Impl.Billing
         {
             var dtRoom = new DataTable();
 
-            using (var cmd = new SqlCommand("SELECT * FROM dbo.RoomApportionmentInDaysMonthly WHERE Period = @Period AND AccountID = @AccountID", Connection) { CommandType = CommandType.Text })
+            using (var cmd = Connection.CreateCommand("SELECT * FROM dbo.RoomApportionmentInDaysMonthly WHERE Period = @Period AND AccountID = @AccountID", CommandType.Text))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Period", period);
@@ -283,7 +285,7 @@ namespace LNF.Impl.Billing
                 rb["SubsidyDiscount"] = GetRoomBillingTotalCharge(rb) * userPaymentPercentage;
             }
 
-            using (var update = new SqlCommand("UPDATE dbo.RoomApportionmentInDaysMonthly SET SubsidyDiscount = @SubsidyDiscount WHERE AppID = @AppID", Connection) { CommandType = CommandType.Text })
+            using (var update = Connection.CreateCommand("UPDATE dbo.RoomApportionmentInDaysMonthly SET SubsidyDiscount = @SubsidyDiscount WHERE AppID = @AppID", CommandType.Text))
             using (var adap = new SqlDataAdapter() { UpdateCommand = update })
             {
                 update.Parameters.Add("AppID", SqlDbType.Int, 0, "AppID");
@@ -296,7 +298,7 @@ namespace LNF.Impl.Billing
         {
             var dtMisc = new DataTable();
 
-            using (var cmd = new SqlCommand("SELECT * FROM dbo.MiscBillingCharge WHERE Period = @Period AND AccountID = @AccountID AND SUBType IN ('Tool', 'Room')", Connection) { CommandType = CommandType.Text })
+            using (var cmd = Connection.CreateCommand("SELECT * FROM dbo.MiscBillingCharge WHERE Period = @Period AND AccountID = @AccountID AND SUBType IN ('Tool', 'Room')", CommandType.Text))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Period", period);
@@ -309,7 +311,7 @@ namespace LNF.Impl.Billing
                 rb["SubsidyDiscount"] = GetMiscBillingTotalCharge(rb) * userPaymentPercentage;
             }
 
-            using (var update = new SqlCommand("UPDATE dbo.MiscBillingCharge SET SubsidyDiscount = @SubsidyDiscount WHERE ExpID = @ExpID", Connection) { CommandType = CommandType.Text })
+            using (var update = Connection.CreateCommand("UPDATE dbo.MiscBillingCharge SET SubsidyDiscount = @SubsidyDiscount WHERE ExpID = @ExpID", CommandType.Text))
             using (var adap = new SqlDataAdapter() { UpdateCommand = update })
             {
                 update.Parameters.Add("ExpID", SqlDbType.Int, 0, "ExpID");
@@ -342,7 +344,7 @@ namespace LNF.Impl.Billing
                 //get the subsidy details, there should be only one row
                 //the row will contain the UserPaymentPercentage for whatever tier they are in based on their accumlated amount (and zero UserTotalSum)
                 //any single charge can be multiplied by this % because if the sum of all charges equal zero then the sum of all discounts will also equal zero
-                using (var cmd = new SqlCommand("SELECT ISNULL(UserPaymentPercentage, 0) FROM dbo.TieredSubsidyBillingDetail WHERE TierBillingID = @TierBillingID", Connection) { CommandType = CommandType.Text })
+                using (var cmd = Connection.CreateCommand("SELECT ISNULL(UserPaymentPercentage, 0) FROM dbo.TieredSubsidyBillingDetail WHERE TierBillingID = @TierBillingID", CommandType.Text))
                 {
                     cmd.Parameters.AddWithValue("TierBillingID", tierBillingId);
                     var userPaymentPercentage = Convert.ToDecimal(cmd.ExecuteScalar());
@@ -371,7 +373,7 @@ namespace LNF.Impl.Billing
 
             DataTable dtTieredSubsidyBilling;
 
-            using (var cmd = new SqlCommand("SELECT * FROM dbo.TieredSubsidyBilling WHERE Period = @Period", Connection) { CommandType = CommandType.Text })
+            using (var cmd = Connection.CreateCommand("SELECT * FROM dbo.TieredSubsidyBilling WHERE Period = @Period", CommandType.Text))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Period", Period);
@@ -464,7 +466,7 @@ namespace LNF.Impl.Billing
 
         private void CleanUpAfterSubsidy()
         {
-            using (var cmd = new SqlCommand("dbo.RoomApportionmentInDaysMonthly_Update", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.RoomApportionmentInDaysMonthly_Update"))
             {
                 cmd.Parameters.AddWithValue("Action", "CleanUpAfterSubsidy");
                 cmd.ExecuteNonQuery();
@@ -473,7 +475,7 @@ namespace LNF.Impl.Billing
 
         private void SaveSubsidyDiscountRoomToolMisc(DataTable dtIn)
         {
-            using (var update = new SqlCommand("dbo.MiscBillingCharge_Update_SubsidyDiscount", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var update = Connection.CreateCommand("dbo.MiscBillingCharge_Update_SubsidyDiscount"))
             using (var adap = new SqlDataAdapter { UpdateCommand = update })
             {
                 update.Parameters.Add(new SqlParameter("ExpID", SqlDbType.Int)
@@ -498,7 +500,7 @@ namespace LNF.Impl.Billing
 
         private void SaveSubsidyDiscountRoom(DataTable dtIn)
         {
-            using (var update = new SqlCommand("dbo.RoomApportionmentInDaysMonthly_Update_SubsidyDiscount", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var update = Connection.CreateCommand("dbo.RoomApportionmentInDaysMonthly_Update_SubsidyDiscount"))
             using (var adap = new SqlDataAdapter { UpdateCommand = update })
             {
                 update.Parameters.Add(new SqlParameter("AppID", SqlDbType.Int)
@@ -523,7 +525,7 @@ namespace LNF.Impl.Billing
 
         private void SaveSubsidyDiscountTool(DataTable dtIn)
         {
-            using (var update = new SqlCommand("dbo.ToolBilling_Update_SubsidyDiscount", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var update = Connection.CreateCommand("dbo.ToolBilling_Update_SubsidyDiscount"))
             using (var adap = new SqlDataAdapter { UpdateCommand = update })
             {
                 update.Parameters.Add(new SqlParameter("ToolBillingID", SqlDbType.Int)
@@ -548,7 +550,7 @@ namespace LNF.Impl.Billing
 
         private DataSet GetTablesForSubsidyDiscountDistribution()
         {
-            using (var cmd = new SqlCommand("dbo.TieredSubsidyBilling_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.TieredSubsidyBilling_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "ForSubsidyDiscountDistribution");
@@ -726,7 +728,7 @@ namespace LNF.Impl.Billing
             }
 
             // Update the data using dateset's batch update feature.
-            using (var update = new SqlCommand("dbo.TieredSubsidyBilling_Update", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var update = Connection.CreateCommand("dbo.TieredSubsidyBilling_Update"))
             using (var adap = new SqlDataAdapter { UpdateCommand = update })
             {
                 update.Parameters.Add("TierBillingID", SqlDbType.Int, 0, "TierBillingID");
@@ -741,7 +743,7 @@ namespace LNF.Impl.Billing
 
         private DataSet GetNecessaryTablesForUpdatingUserPayment()
         {
-            using (var cmd = new SqlCommand("dbo.TieredSubsidyBilling_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.TieredSubsidyBilling_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "ForUpdatingUserPaymentSum");
@@ -757,7 +759,7 @@ namespace LNF.Impl.Billing
 
         private void DeleteTieredSubsidyBillingDetail()
         {
-            using (var cmd = new SqlCommand("dbo.TieredSubsidyBillingDetail_Delete", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.TieredSubsidyBillingDetail_Delete"))
             {
                 AddParameter(cmd, "Action", "DeleteCurrentRange", SqlDbType.NVarChar, 50);
                 AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
@@ -769,7 +771,7 @@ namespace LNF.Impl.Billing
 
         private void SaveNewTieredSubsidyBillingDetail(DataTable dtIn)
         {
-            using (var insert = new SqlCommand("dbo.TieredSubsidyBillingDetail_Insert", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var insert = Connection.CreateCommand("dbo.TieredSubsidyBillingDetail_Insert"))
             using (var adap = new SqlDataAdapter { InsertCommand = insert })
             {
                 insert.Parameters.Add("Period", SqlDbType.DateTime, 0, "Period");
@@ -788,7 +790,7 @@ namespace LNF.Impl.Billing
 
         private DataSet GetTieredSubsidyBillingRelatedTables()
         {
-            using (var cmd = new SqlCommand("dbo.TieredSubsidyBilling_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.TieredSubsidyBilling_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "SelectAllByPeriod");
@@ -836,7 +838,7 @@ namespace LNF.Impl.Billing
 
         private int DeleteTieredSubsidyBilling()
         {
-            using (var cmd = new SqlCommand("dbo.TieredSubsidyBilling_Delete", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.TieredSubsidyBilling_Delete"))
             {
                 AddParameter(cmd, "Action", "DeleteCurrentRange", SqlDbType.NVarChar, 50);
                 AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
@@ -849,7 +851,7 @@ namespace LNF.Impl.Billing
 
         private int SaveNewTieredSubsidyBilling(DataTable dtIn)
         {
-            using (var insert = new SqlCommand("dbo.TieredSubsidyBilling_Insert", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var insert = Connection.CreateCommand("dbo.TieredSubsidyBilling_Insert"))
             using (var adap = new SqlDataAdapter { InsertCommand = insert })
             {
                 insert.Parameters.Add("Period", SqlDbType.DateTime, 0, "Period");
@@ -1021,7 +1023,7 @@ namespace LNF.Impl.Billing
 
         private DataTable GetFirstSubsidyDateTable()
         {
-            using (var cmd = new SqlCommand("dbo.ClientOrg_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.ClientOrg_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "GetAllActiveStartDate");
@@ -1036,7 +1038,7 @@ namespace LNF.Impl.Billing
 
         private DataTable GetLastUsedDateFromTieredSubsidyBilling()
         {
-            using (var cmd = new SqlCommand("dbo.TieredSubsidyBilling_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.TieredSubsidyBilling_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "GetLastUsedStartingDate");
@@ -1063,7 +1065,7 @@ namespace LNF.Impl.Billing
 
         private DataSet GetNecessaryTables()
         {
-            using (var cmd = new SqlCommand("dbo.TieredSubsidyBilling_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.TieredSubsidyBilling_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "PopulateTieredSubsidyBilling");

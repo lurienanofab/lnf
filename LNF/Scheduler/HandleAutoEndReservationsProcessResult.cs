@@ -1,8 +1,15 @@
-﻿namespace LNF.Scheduler
+﻿using System;
+using System.Collections.Generic;
+
+namespace LNF.Scheduler
 {
     public class HandleAutoEndReservationsProcessResult : ProcessResult
     {
-        public int ReservationsCount { get; set; }
+        protected HandleAutoEndReservationsProcessResult() { }
+
+        public HandleAutoEndReservationsProcessResult(DateTime startedAt, IEnumerable<string> data) : base(startedAt, data) { }
+
+        public virtual int ReservationsCount { get; set; }
         public override string ProcessName => "HandleAutoEndReservations";
 
         protected override void WriteLog()

@@ -72,15 +72,16 @@ namespace LNF.CommonTools
 
         public void ImportRoomData()
         {
-            using (var cmd = new SqlCommand("Billing.dbo.ImportRoomData", _conn) { CommandType = CommandType.StoredProcedure, CommandTimeout = 300 })
+            using (var cmd = _conn.CreateCommand("Billing.dbo.ImportRoomData", useConnectionTimeout: false))
             {
+                cmd.CommandTimeout = 300;
                 cmd.ExecuteNonQuery();
             }
         }
 
         public void SelectRoomDataImportItems()
         {
-            using (var cmd = new SqlCommand(string.Empty, _conn))
+            using (var cmd = _conn.CreateCommand(string.Empty, CommandType.Text))
             {
                 cmd.CommandText = "SELECT rdi.* FROM Billing.dbo.RoomDataImport rdi WHERE rdi.ClientID = ISNULL(@ClientID, rdi.ClientID) AND (rdi.RoomName = ISNULL(@RoomName, rdi.RoomName) OR rdi.RoomName = @AltRoomName) AND rdi.EventDate >= @sd AND rdi.EventDate < @ed ORDER BY rdi.EventDate";
                 cmd.Parameters.AddWithValue("sd", StartDate);
@@ -360,7 +361,7 @@ namespace LNF.CommonTools
         {
             string eventDesc = "Local Grant - IN";
 
-            using (var cmd = new SqlCommand("SELECT TOP (1) rdi.EventDate FROM Billing.dbo.RoomDataImport rdi WHERE rdi.ClientID = @ClientID AND rdi.RoomName = @RoomName AND rdi.EventDate < @sd AND EventDescription = @EventDescription ORDER BY rdi.EventDate DESC", _conn))
+            using (var cmd = _conn.CreateCommand("SELECT TOP (1) rdi.EventDate FROM Billing.dbo.RoomDataImport rdi WHERE rdi.ClientID = @ClientID AND rdi.RoomName = @RoomName AND rdi.EventDate < @sd AND EventDescription = @EventDescription ORDER BY rdi.EventDate DESC", CommandType.Text))
             {
                 cmd.Parameters.AddWithValue("ClientID", item.ClientID);
                 cmd.Parameters.AddWithValue("RoomName", item.RoomName);
@@ -393,7 +394,7 @@ namespace LNF.CommonTools
         {
             string eventDesc = "Local Grant - OUT";
 
-            using (var cmd = new SqlCommand("SELECT TOP (1) rdi.EventDate FROM Billing.dbo.RoomDataImport rdi WHERE rdi.ClientID = @ClientID AND rdi.RoomName = @RoomName AND rdi.EventDate > @ed AND EventDescription = @EventDescription ORDER BY rdi.EventDate ASC", _conn))
+            using (var cmd = _conn.CreateCommand("SELECT TOP (1) rdi.EventDate FROM Billing.dbo.RoomDataImport rdi WHERE rdi.ClientID = @ClientID AND rdi.RoomName = @RoomName AND rdi.EventDate > @ed AND EventDescription = @EventDescription ORDER BY rdi.EventDate ASC", CommandType.Text))
             {
                 cmd.Parameters.AddWithValue("ClientID", item.ClientID);
                 cmd.Parameters.AddWithValue("RoomName", item.RoomName);
@@ -424,7 +425,7 @@ namespace LNF.CommonTools
 
         private IEnumerable<RoomDataImportCost> GetCosts()
         {
-            using (var cmd = new SqlCommand("dbo.Cost_Select", _conn) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = _conn.CreateCommand("dbo.Cost_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("TableNameOrDescript", "RoomCost");
@@ -454,7 +455,7 @@ namespace LNF.CommonTools
 
         private IEnumerable<RoomDataImportRoom> GetRooms()
         {
-            using (var cmd = new SqlCommand("SELECT * FROM dbo.Room WHERE RoomID = ISNULL(@RoomID, RoomID) AND Active = 1", _conn))
+            using (var cmd = _conn.CreateCommand("SELECT * FROM dbo.Room WHERE RoomID = ISNULL(@RoomID, RoomID) AND Active = 1", CommandType.Text))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("TableNameOrDescript", "RoomCost");

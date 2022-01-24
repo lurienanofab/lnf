@@ -39,7 +39,7 @@ namespace LNF.Scheduler
             ReservationState state = ReservationStateUtility.Create(Now).GetReservationState(args);
 
             if (state != ReservationState.StartOnly && state != ReservationState.StartOrDelete)
-            { 
+            {
                 if (!args.IsInLab)
                     throw new Exception($"Reservation #{item.ReservationID} is not startable at this time. You must be inside the lab to start reservations.");
                 else if (!args.IsAuthorized)
@@ -253,12 +253,12 @@ namespace LNF.Scheduler
         {
             //End auto-end reservations, and turn off interlocks
 
-            var result = new HandleAutoEndReservationsProcessResult()
-            {
-                ReservationsCount = items.Count()
-            };
+            var startedAt = DateTime.Now;
+            var reservationsCount = items.Count();
 
             DateTime actualEndDateTime;
+
+            var data = new List<string>();
 
             foreach (var rsv in items)
             {
@@ -273,16 +273,21 @@ namespace LNF.Scheduler
 
                     End(rsv, actualEndDateTime, -1);
                     Provider.Scheduler.Reservation.AddAutoEndLog(rsv.ReservationID, "autoend");
-                    result.Data.Add($"Ended auto-end reservation {rsv.ReservationID} for resource {rsv.ResourceID}");
+                    data.Add($"Ended auto-end reservation {rsv.ReservationID} for resource {rsv.ResourceID}");
                 }
                 catch (Exception ex)
                 {
                     var errmsg = $"***ERROR*** Failed to auto-end reservation {rsv.ReservationID} for resource {rsv.ResourceID}: {ex.Message}";
                     //errmsg += $"{Environment.NewLine}----------{Environment.NewLine}{ex.StackTrace}";
 
-                    result.Data.Add(errmsg);
+                    data.Add(errmsg);
                 }
             }
+
+            var result = new HandleAutoEndReservationsProcessResult(startedAt, data)
+            {
+                ReservationsCount = reservationsCount
+            };
 
             return result;
         }
@@ -293,21 +298,26 @@ namespace LNF.Scheduler
         public HandleRepairReservationsProcessResult HandleRepairReservations(IEnumerable<IReservationItem> items)
         {
             //End past repair reservations
-            var result = new HandleRepairReservationsProcessResult()
-            {
-                ReservationsCount = items.Count()
-            };
+
+            var startedAt = DateTime.Now;
+            var data = new List<string>();
+            var itemCount = items.Count();
 
             foreach (var rsv in items)
             {
                 End(rsv, Now, -1);
-                result.Data.Add($"Ended repair reservation {rsv.ReservationID}");
+                data.Add($"Ended repair reservation {rsv.ReservationID}");
 
                 //Reset resource state
                 Resources.UpdateState(rsv.ResourceID, ResourceState.Online, string.Empty);
                 Provider.Scheduler.Reservation.AddAutoEndLog(rsv.ReservationID, "repair");
-                result.Data.Add($"Set ResourceID {rsv.ResourceID} online");
+                data.Add($"Set ResourceID {rsv.ResourceID} online");
             }
+
+            var result = new HandleRepairReservationsProcessResult(startedAt, data)
+            {
+                ReservationsCount = itemCount
+            };
 
             return result;
         }
@@ -318,10 +328,10 @@ namespace LNF.Scheduler
         public HandleUnstartedReservationsProcessResult HandleUnstartedReservations(IEnumerable<IReservationItem> items)
         {
             //End unstarted reservations
-            var result = new HandleUnstartedReservationsProcessResult()
-            {
-                ReservationsCount = items.Count()
-            };
+
+            var startedAt = DateTime.Now;
+            var data = new List<string>();
+            var itemCount = items.Count();
 
             foreach (var rsv in items)
             {
@@ -363,7 +373,7 @@ namespace LNF.Scheduler
                 {
                     Provider.Scheduler.Reservation.EndPastUnstarted(rsv.ReservationID, newEndDateTime, -1);
                     Provider.Scheduler.Reservation.AddAutoEndLog(rsv.ReservationID, "unstarted");
-                    result.Data.Add($"Unstarted reservation {rsv.ReservationID} was ended, KeepAlive = {rsv.KeepAlive}, Reservation.AutoEnd = {rsv.ReservationAutoEnd}, Resource.AutoEnd = {rsv.ResourceAutoEnd}, ed = '{ed}'");
+                    data.Add($"Unstarted reservation {rsv.ReservationID} was ended, KeepAlive = {rsv.KeepAlive}, Reservation.AutoEnd = {rsv.ReservationAutoEnd}, Resource.AutoEnd = {rsv.ResourceAutoEnd}, ed = '{ed}'");
 
                     DateTime? nextBeginDateTime = OpenResSlot(rsv.ResourceID, TimeSpan.FromMinutes(rsv.ReservFence), TimeSpan.FromMinutes(rsv.MinReservTime), oldEndDateTime);
 
@@ -381,8 +391,13 @@ namespace LNF.Scheduler
                     }
                 }
                 else
-                    result.Data.Add($"Unstarted reservation {rsv.ReservationID} was not ended, KeepAlive = {rsv.KeepAlive}, Reservation.AutoEnd = {rsv.ReservationAutoEnd}, Resource.AutoEnd = {rsv.ResourceAutoEnd}, ed = '{ed}'");
+                    data.Add($"Unstarted reservation {rsv.ReservationID} was not ended, KeepAlive = {rsv.KeepAlive}, Reservation.AutoEnd = {rsv.ReservationAutoEnd}, Resource.AutoEnd = {rsv.ResourceAutoEnd}, ed = '{ed}'");
             }
+
+            var result = new HandleUnstartedReservationsProcessResult(startedAt, data)
+            {
+                ReservationsCount = itemCount
+            };
 
             return result;
         }

@@ -4,9 +4,13 @@ namespace LNF.Billing.Process
 {
     public class WriteToolDataCleanResult : DataProcessResult
     {
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public int ClientID { get; set; }
+        protected WriteToolDataCleanResult() { }
+
+        public WriteToolDataCleanResult(DateTime startedAt) : base(startedAt) { }
+
+        public virtual DateTime StartDate { get; set; }
+        public virtual DateTime EndDate { get; set; }
+        public virtual int ClientID { get; set; }
         public override string ProcessName => "WriteToolDataClean";
 
         protected override void WriteLog()

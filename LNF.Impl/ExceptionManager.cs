@@ -71,7 +71,7 @@ namespace LNF.Impl
 
         public void LogException(SqlConnection conn)
         {
-            using (var cmd = new SqlCommand("dbo.ExceptionDump_Insert", conn) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = conn.CreateCommand("dbo.ExceptionDump_Insert"))
             {
                 cmd.Parameters.AddWithValue("TimeStamp", TimeStamp);
                 cmd.Parameters.AddWithValue("ExpName", ExpName);
@@ -88,7 +88,7 @@ namespace LNF.Impl
 
         public void Purge(SqlConnection conn)
         {
-            using (var cmd = new SqlCommand("dbo.ExceptionDump_Delete", conn) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = conn.CreateCommand("dbo.ExceptionDump_Delete"))
             {
                 cmd.ExecuteNonQuery();
             }

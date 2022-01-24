@@ -1,12 +1,18 @@
-﻿namespace LNF.Billing.Process
+﻿using System;
+
+namespace LNF.Billing.Process
 {
     public class DataCleanResult : ProcessResult
     {
+        protected DataCleanResult() { }
+
+        public DataCleanResult(DateTime startedAt) : base(startedAt, null) { }
+
         public override string ProcessName => "BillingProcessDataCleanResult";
 
-        public WriteToolDataCleanResult WriteToolDataCleanProcessResult { get; set; }
-        public WriteRoomDataCleanResult WriteRoomDataCleanProcessResult { get; set; }
-        public WriteStoreDataCleanResult WriteStoreDataCleanProcessResult { get; set; }
+        public virtual WriteToolDataCleanResult WriteToolDataCleanProcessResult { get; set; }
+        public virtual WriteRoomDataCleanResult WriteRoomDataCleanProcessResult { get; set; }
+        public virtual WriteStoreDataCleanResult WriteStoreDataCleanProcessResult { get; set; }
 
         protected override void WriteLog()
         {

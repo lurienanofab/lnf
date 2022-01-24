@@ -44,7 +44,7 @@ namespace LNF.Impl.Control.Wago
             DataTable dt = new DataTable();
 
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["cnSselData"].ConnectionString))
-            using (var cmd = new SqlCommand("SELECT * FROM sselControl.dbo.v_ToolStatus WHERE IsActive = 1 ORDER BY BuildingName, LabDisplayName, ProcessTechName, ResourceName", conn))
+            using (var cmd = conn.CreateCommand("SELECT * FROM sselControl.dbo.v_ToolStatus WHERE IsActive = 1 ORDER BY BuildingName, LabDisplayName, ProcessTechName, ResourceName", CommandType.Text))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 adap.Fill(dt);

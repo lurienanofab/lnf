@@ -1,8 +1,15 @@
-﻿namespace LNF.Billing
+﻿using System;
+using System.Collections.Generic;
+
+namespace LNF.Billing
 {
     public class CheckPassbackViolationsProcessResult : ProcessResult
     {
-        public int TotalPassbackViolations { get; set; }
+        protected CheckPassbackViolationsProcessResult() { }
+
+        public CheckPassbackViolationsProcessResult(DateTime startedAt, IEnumerable<string> data) : base(startedAt, data) { }
+
+        public virtual int TotalPassbackViolations { get; set; }
         public override string ProcessName => "CheckPassbackViolations";
 
         protected override void WriteLog()

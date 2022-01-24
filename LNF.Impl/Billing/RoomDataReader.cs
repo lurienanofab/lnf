@@ -56,7 +56,7 @@ namespace LNF.Impl.Billing
             foreach (int id in clients)
                 dtClients.Rows.Add(id);
 
-            using (var cmd = new SqlCommand("SELECT * FROM sselData.dbo.v_ChargeRoom", Connection) { CommandType = CommandType.Text })
+            using (var cmd = Connection.CreateCommand("SELECT * FROM sselData.dbo.v_ChargeRoom", CommandType.Text))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 var dt = new DataTable();
@@ -71,7 +71,7 @@ namespace LNF.Impl.Billing
 
         public DataSet ReadRoomDataClean(DateTime sd, DateTime ed, int clientId = 0, int roomId = 0)
         {
-            using (var cmd = new SqlCommand("dbo.RoomDataClean_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.RoomDataClean_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "ByDateRange");
@@ -98,7 +98,7 @@ namespace LNF.Impl.Billing
 
         public DataTable ReadRoomData(DateTime period, int clientId = 0, int roomId = 0)
         {
-            using (var cmd = new SqlCommand("dbo.RoomData_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.RoomData_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "AggByMonthRoom");
@@ -117,7 +117,7 @@ namespace LNF.Impl.Billing
 
         public DataSet ReadRoomDataForUpdate(DateTime period, int clientId = 0, int roomId = 0)
         {
-            using (var cmd = new SqlCommand("dbo.RoomDataClean_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.RoomDataClean_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "TargetDate");

@@ -526,7 +526,7 @@ namespace LNF.Impl.Billing
 
         private DateTime GetPeriod(SqlConnection conn, int reservationId)
         {
-            using (var cmd = new SqlCommand("SELECT Period FROM dbo.ToolData WHERE ReservationID = @ReservationID", conn) { CommandType = CommandType.Text })
+            using (var cmd = conn.CreateCommand("SELECT Period FROM dbo.ToolData WHERE ReservationID = @ReservationID", CommandType.Text))
             {
                 cmd.Parameters.AddWithValue("ReservationID", reservationId);
                 var obj = cmd.ExecuteScalar();

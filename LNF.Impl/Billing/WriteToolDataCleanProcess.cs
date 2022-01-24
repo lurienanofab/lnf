@@ -28,9 +28,9 @@ namespace LNF.Impl.Billing
 
         public override string ProcessName => "ToolDataClean";
 
-        protected override WriteToolDataCleanResult CreateResult()
+        protected override WriteToolDataCleanResult CreateResult(DateTime startedAt)
         {
-            return new WriteToolDataCleanResult
+            return new WriteToolDataCleanResult(startedAt)
             {
                 StartDate = StartDate,
                 EndDate = EndDate,
@@ -40,7 +40,7 @@ namespace LNF.Impl.Billing
 
         public override int DeleteExisting()
         {
-            using (var cmd = new SqlCommand("dbo.ToolDataClean_Delete", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.ToolDataClean_Delete"))
             {
                 AddParameter(cmd, "sDate", StartDate, SqlDbType.DateTime);
                 AddParameter(cmd, "eDate", EndDate, SqlDbType.DateTime);

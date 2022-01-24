@@ -4,10 +4,14 @@ namespace LNF.Billing.Process
 {
     public class WriteStoreDataCleanResult : DataProcessResult
     {
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public int ClientID { get; set; }
-        public int DryBoxRows { get; set; }
+        protected WriteStoreDataCleanResult() { }
+
+        public WriteStoreDataCleanResult(DateTime startedAt) : base(startedAt) { }
+
+        public virtual DateTime StartDate { get; set; }
+        public virtual DateTime EndDate { get; set; }
+        public virtual int ClientID { get; set; }
+        public virtual int DryBoxRows { get; set; }
         public override string ProcessName => "WriteStoreDataClean";
 
         protected override void WriteLog()

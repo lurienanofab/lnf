@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LNF
 {
@@ -38,12 +39,20 @@ namespace LNF
 
     public class BillingProcessResult : DataProcessResult
     {
-        public override string ProcessName { get; }
+        protected BillingProcessResult() { }
 
-        public BillingProcessResult(string processName)
+        public BillingProcessResult(string processName, DateTime startedAt, IEnumerable<ProcessResult> results = null) : base(startedAt)
         {
             ProcessName = processName;
+
+            if (results != null)
+            {
+                foreach (var res in results)
+                    AddResult(res);
+            }
         }
+
+        public override string ProcessName { get; }
 
         public void AddResult<T>(T result) where T : ProcessResult
         {
@@ -53,9 +62,13 @@ namespace LNF
 
     public abstract class DataProcessResult : ProcessResult
     {
-        public int RowsDeleted { get; set; }
-        public int RowsExtracted { get; set; }
-        public int RowsLoaded { get; set; }
+        protected DataProcessResult() { }
+
+        public DataProcessResult(DateTime startedAt) : base(startedAt, null) { }
+
+        public virtual int RowsDeleted { get; set; }
+        public virtual int RowsExtracted { get; set; }
+        public virtual int RowsLoaded { get; set; }
 
         protected override void WriteLog()
         {
@@ -68,18 +81,36 @@ namespace LNF
     public abstract class ProcessResult
     {
         private readonly ProcessLog _log = new ProcessLog();
+        private IList<string> _data;
+
+        protected ProcessResult() { }
+
+        public ProcessResult(DateTime startedAt, IEnumerable<string> data)
+        {
+            StartedAt = startedAt;
+            EndedAt = DateTime.Now;
+            Data = data;
+        }
 
         public abstract string ProcessName { get; }
-        public DateTime StartedAt { get; }
-        public DateTime EndedAt => _endedAt ?? throw new Exception("SetEndedAt method must be called first.");
-        public IList<string> Data { get; }
+        public virtual DateTime StartedAt { get; protected set; }
+        public virtual DateTime EndedAt { get; protected set; }
 
-        public ProcessLog GetLog()
+        public virtual IEnumerable<string> Data
         {
-            StartLog();
-            WriteLog();
-            WriteLogData();
-            return _log;
+            get
+            {
+                if (_data == null)
+                    _data = new List<string>();
+                return _data;
+            }
+            protected set
+            {
+                if (value == null)
+                    _data = new List<string>();
+                else
+                    _data = value.ToList();
+            }
         }
 
         public string LogText
@@ -87,8 +118,17 @@ namespace LNF
             get
             {
                 var log = GetLog();
-                return GetLogTextRecursive(log, string.Empty);
+                var logText = GetLogTextRecursive(log, string.Empty);
+                return logText;
             }
+        }
+
+        public ProcessLog GetLog()
+        {
+            StartLog();
+            WriteLog();
+            WriteLogData();
+            return _log;
         }
 
         private string GetLogTextRecursive(ProcessLog log, string indent)
@@ -101,27 +141,7 @@ namespace LNF
             return result;
         }
 
-        private DateTime? _endedAt = null;
-
-        public ProcessResult() : this(DateTime.Now, new List<string>()) { }
-
-        private ProcessResult(DateTime startedAt, IList<string> data)
-        {
-            StartedAt = startedAt;
-            Data = data;
-        }
-
         public TimeSpan GetTimeTaken() => EndedAt - StartedAt;
-
-        public void SetEndedAt()
-        {
-            // Must be called before LogText is accessed or else an exception is thrown.
-
-            // Make sure this method is only called once.
-            if (_endedAt.HasValue) throw new Exception("SetEndedAt has already been called.");
-            
-            _endedAt = DateTime.Now;
-        }
 
         private void StartLog()
         {
@@ -147,9 +167,9 @@ namespace LNF
 
         private void WriteLogData()
         {
-            for (var i = 0; i < Data.Count; ++i)
+            for (var i = 0; i < _data.Count; ++i)
             {
-                _log.Text += $"{Environment.NewLine}[D{i}] {Data[i]}";
+                _log.Text += $"{Environment.NewLine}[D{i}] {_data[i]}";
             }
         }
     }

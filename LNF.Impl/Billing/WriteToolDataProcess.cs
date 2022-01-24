@@ -35,6 +35,7 @@ namespace LNF.Impl.Billing
 
         private DataSet _ds = null;
         private DataTable _activities = null;
+        private int _rowsAdjusted;
 
         public WriteToolDataProcess(WriteToolDataConfig cfg) : base(cfg)
         {
@@ -43,9 +44,9 @@ namespace LNF.Impl.Billing
 
         public override string ProcessName => "ToolData";
 
-        protected override WriteToolDataResult CreateResult()
+        protected override WriteToolDataResult CreateResult(DateTime startedAt)
         {
-            return new WriteToolDataResult
+            return new WriteToolDataResult(startedAt)
             {
                 Period = Period,
                 ClientID = ClientID,
@@ -53,9 +54,14 @@ namespace LNF.Impl.Billing
             };
         }
 
+        protected override void FinalizeResult(WriteToolDataResult result)
+        {
+            result.RowsAdjusted = _rowsAdjusted;
+        }
+
         public override int DeleteExisting()
         {
-            using (var cmd = new SqlCommand("dbo.ToolData_Delete", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.ToolData_Delete"))
             {
                 AddParameter(cmd, "Period", Period, SqlDbType.DateTime);
                 AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID, SqlDbType.Int);
@@ -94,7 +100,7 @@ namespace LNF.Impl.Billing
 
         public override int Load(DataTable dtTransform)
         {
-            using (var cmd = new SqlCommand("dbo.ToolData_Insert", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.ToolData_Insert"))
             using (var adap = new SqlDataAdapter { InsertCommand = cmd })
             {
                 cmd.Parameters.Add("Period", SqlDbType.DateTime, 0, "Period");
@@ -120,19 +126,10 @@ namespace LNF.Impl.Billing
 
                 int result = adap.Update(dtTransform);
 
-                _result.RowsAdjusted = ToolDataAdjust();
+                _rowsAdjusted = ToolDataAdjust();
 
                 return result;
             }
-
-            //var dba = SQLDBAccess.Create("cnSselData");
-            //dba.InsertCommand.CommandType = CommandType.StoredProcedure;
-            //dba.InsertCommand.CommandText = "";
-            //dba.Update(dtTransform);
-
-            //int result = base.Load(dtTransform);
-            //_result.RowsAdjusted = ToolDataAdjust();
-            //return result;
         }
 
         private DataTable DailyToolDataOld(DataTable dtToolDataClean)
@@ -149,9 +146,6 @@ namespace LNF.Impl.Billing
                 dtToolDataClean.Columns.Add("ChargeBeginDateTime", typeof(DateTime));
                 dtToolDataClean.Columns.Add("ChargeEndDateTime", typeof(DateTime));
                 dtToolDataClean.Columns.Add("IsCancelledBeforeAllowedTime", typeof(bool));
-
-                DataTable dtClient = _ds.Tables["Client"];
-                DataTable dtResource = _ds.Tables["Resource"];
 
                 //handled started separately from unstarted
                 int toolDataCleanRowCount = dtToolDataClean.Rows.Count;
@@ -361,7 +355,7 @@ namespace LNF.Impl.Billing
             dtToolDataClean.Columns.Add("ChargeDuration", typeof(double));
 
             //handled started separately from unstarted
-            double schedDuration, actDuration, chargeDuration;
+            double schedDuration, chargeDuration;
             DateTime beginDateTime, endDateTime, actualBeginDateTime, actualEndDateTime, chargeBeginDateTime, chargeEndDateTime;
             int toolDataCleanRowCount = dtToolDataClean.Rows.Count;
 
@@ -378,12 +372,8 @@ namespace LNF.Impl.Billing
                     //only chargeable activities get written to Tooldata
                     if (IsChargeable(dr))
                     {
-                        int reservationId = dr.Field<int>("ReservationID");
-                        int resourceId = dr.Field<int>("ResourceID");
-
                         //this means reservation was started
                         schedDuration = dr.Field<double>("SchedDuration");
-                        actDuration = dr.Field<double>("ActDuration");
                         beginDateTime = dr.Field<DateTime>("BeginDateTime");
                         endDateTime = beginDateTime.AddMinutes(schedDuration); //to prevent auto end's modified end time, which is wrong
                         actualBeginDateTime = dr.Field<DateTime>("ActualBeginDateTime");
@@ -500,7 +490,7 @@ namespace LNF.Impl.Billing
                                 {
                                     DataRow drPrevious = null;
                                     double maxResTimeAfterTwoHoursLimit = 0.0;
-                                    double currentResTime = 0.0;
+                                    double currentResTime;
                                     bool flagtemp = false;
                                     DateTime beginTimeTemp, endTimeTemp;
 
@@ -675,7 +665,7 @@ namespace LNF.Impl.Billing
 		        ORDER BY ListOrder 
                 */
 
-                using (var cmd = new SqlCommand("SELECT ActivityID, ActivityName, Chargeable FROM sselScheduler.dbo.Activity ORDER BY ListOrder", Connection) { CommandType = CommandType.Text })
+                using (var cmd = Connection.CreateCommand("SELECT ActivityID, ActivityName, Chargeable FROM sselScheduler.dbo.Activity ORDER BY ListOrder", CommandType.Text))
                 using (var adap = new SqlDataAdapter(cmd))
                 {
                     var dt = new DataTable();
@@ -690,7 +680,7 @@ namespace LNF.Impl.Billing
 
         private DataTable GetReservationHistory()
         {
-            using (var cmd = new SqlCommand("sselScheduler.dbo.procReservationHistorySelect", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("sselScheduler.dbo.procReservationHistorySelect"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "ForToolDataGeneration");
@@ -704,7 +694,7 @@ namespace LNF.Impl.Billing
         private int ToolDataAdjust()
         {
             //adjust ToolData to add the days and months data
-            using (var cmd = new SqlCommand("dbo.ToolData_Adjust", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.ToolData_Adjust"))
             {
                 cmd.Parameters.AddWithValue("Period", Period);
                 AddParameterIf(cmd, "ClientID", ClientID > 0, ClientID);

@@ -17,7 +17,7 @@ namespace LNF.Impl.Billing
         {
             // all this does is call sselScheduler.dbo.SSEL_DataRead passing the same arguments so if you're trying to figure
             // out what this stored proc does go directly to sselScheduler.dbo.SSEL_DataRead
-            using (var cmd = new SqlCommand("dbo.sselScheduler_Select", _conn) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = _conn.CreateCommand("dbo.sselScheduler_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "ToolDataRaw");
@@ -36,7 +36,7 @@ namespace LNF.Impl.Billing
 
         public DataSet ReadToolDataClean(DateTime sd, DateTime ed, int clientId = 0, int resourceId = 0)
         {
-            using (var cmd = new SqlCommand("Billing.dbo.ToolDataClean_Select", _conn) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = _conn.CreateCommand("Billing.dbo.ToolDataClean_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "ByDateRange");
@@ -67,7 +67,7 @@ namespace LNF.Impl.Billing
 
         public DataTable ReadToolData(DateTime period, int clientId = 0, int reservationId = 0)
         {
-            using (var cmd = new SqlCommand("Billing.dbo.ToolData_Select", _conn) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = _conn.CreateCommand("Billing.dbo.ToolData_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.CommandTimeout = 300;
@@ -89,7 +89,7 @@ namespace LNF.Impl.Billing
 
         public DataTable ReadToolUtilization(string sumCol, bool includeForgiven, DateTime sd, DateTime ed)
         {
-            using (var cmd = new SqlCommand("dbo.ToolDataClean_Select", _conn) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = _conn.CreateCommand("dbo.ToolDataClean_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "Utilization");

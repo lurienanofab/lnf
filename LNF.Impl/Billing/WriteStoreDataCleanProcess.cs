@@ -21,24 +21,29 @@ namespace LNF.Impl.Billing
     public class WriteStoreDataCleanProcess : ProcessBase<WriteStoreDataCleanResult>
     {
         public static readonly int DryBoxCategoryID = 33;
-
-        public DateTime StartDate { get; }
+public DateTime StartDate { get; }
         public DateTime EndDate { get; }
 
         private DataSet _ds;
         private Dictionary<int, DataRow> _map;
         private EnumerableRowCollection<DataRow> _prices;
+        private int _dryBoxRows;
 
         public override string ProcessName => "StoreDataClean";
 
-        protected override WriteStoreDataCleanResult CreateResult()
+        protected override WriteStoreDataCleanResult CreateResult(DateTime startedAt)
         {
-            return new WriteStoreDataCleanResult
+            return new WriteStoreDataCleanResult(startedAt)
             {
                 StartDate = StartDate,
                 EndDate = EndDate,
                 ClientID = ClientID
             };
+        }
+
+        protected override void FinalizeResult(WriteStoreDataCleanResult result)
+        {
+            result.DryBoxRows = _dryBoxRows;
         }
 
         public WriteStoreDataCleanProcess(WriteStoreDataCleanConfig cfg) : base(cfg)
@@ -49,7 +54,7 @@ namespace LNF.Impl.Billing
 
         public override int DeleteExisting()
         {
-            using (var cmd = new SqlCommand("dbo.StoreDataClean_Delete", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.StoreDataClean_Delete"))
             {
                 AddParameter(cmd, "sDate", StartDate, SqlDbType.DateTime);
                 AddParameter(cmd, "eDate", EndDate, SqlDbType.DateTime);
@@ -161,7 +166,7 @@ namespace LNF.Impl.Billing
                 }
             }
 
-            _result.DryBoxRows = dryboxRows;
+            _dryBoxRows = dryboxRows;
         }
 
         private int GetItemID(int chargeTypeId)

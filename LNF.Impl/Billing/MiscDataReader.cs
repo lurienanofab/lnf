@@ -10,7 +10,7 @@ namespace LNF.Impl.Billing
 
         public DataTable ReadMiscData(DateTime period)
         {
-            using (var cmd = new SqlCommand("dbo.MiscBillingCharge_Select", Connection) { CommandType = CommandType.StoredProcedure })
+            using (var cmd = Connection.CreateCommand("dbo.MiscBillingCharge_Select"))
             using (var adap = new SqlDataAdapter(cmd))
             {
                 cmd.Parameters.AddWithValue("Action", "GetAllByPeriod");

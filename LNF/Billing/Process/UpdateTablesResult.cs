@@ -5,17 +5,21 @@ namespace LNF.Billing.Process
 {
     public class UpdateResult : ProcessResult
     {
-        public BillingCategory BillingTypes { get; set; }
-        public UpdateDataType UpdateTypes { get; set; }
-        public DateTime Period { get; set; }
-        public int ClientID { get; set; }
-        public WriteToolDataCleanResult WriteToolDataCleanProcessResult { get; set; }
-        public WriteRoomDataCleanResult WriteRoomDataCleanProcessResult { get; set; }
-        public WriteStoreDataCleanResult WriteStoreDataCleanProcessResult { get; set; }
-        public WriteToolDataResult WriteToolDataProcessResult { get; set; }
-        public WriteRoomDataResult WriteRoomDataProcessResult { get; set; }
-        public WriteStoreDataResult WriteStoreDataProcessResult { get; set; }
-        public string Error { get; set; }
+        protected UpdateResult() { }
+
+        public UpdateResult(DateTime startedAt) : base(startedAt, null) { }
+
+        public virtual BillingCategory BillingTypes { get; set; }
+        public virtual UpdateDataType UpdateTypes { get; set; }
+        public virtual DateTime Period { get; set; }
+        public virtual int ClientID { get; set; }
+        public virtual WriteToolDataCleanResult WriteToolDataCleanProcessResult { get; set; }
+        public virtual WriteRoomDataCleanResult WriteRoomDataCleanProcessResult { get; set; }
+        public virtual WriteStoreDataCleanResult WriteStoreDataCleanProcessResult { get; set; }
+        public virtual WriteToolDataResult WriteToolDataProcessResult { get; set; }
+        public virtual WriteRoomDataResult WriteRoomDataProcessResult { get; set; }
+        public virtual WriteStoreDataResult WriteStoreDataProcessResult { get; set; }
+        public virtual string Error { get; set; }
         public override string ProcessName => "UpdateTables";
 
         protected override void WriteLog()

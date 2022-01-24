@@ -4,6 +4,8 @@ namespace LNF.Billing.Process
 {
     public class PopulateToolBillingResult : DataProcessResult
     {
+        public PopulateToolBillingResult(DateTime startedAt) : base(startedAt) { }
+
         public DateTime Period { get; set; }
         public int ClientID { get; set; }
         public bool IsTemp { get; set; }
