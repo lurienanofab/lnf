@@ -455,7 +455,10 @@ namespace LNF.Impl.Billing
 
                 var result = new List<string>
                 {
-                    $"Started at {startTime:yyyy-MM-dd HH:mm:ss}"
+                    $"Started UpdateBilling at {startTime:yyyy-MM-dd HH:mm:ss}",
+                    $"Period: {string.Join(", ", args.Periods.Select(x => x.ToString("yyyy-MM-dd")))}",
+                    $"ClientID: {args.ClientID}",
+                    $"BillingCategory: {args.BillingCategory}"
                 };
 
                 Stopwatch sw;
