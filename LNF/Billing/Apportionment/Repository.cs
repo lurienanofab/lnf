@@ -159,7 +159,7 @@ namespace LNF.Billing.Apportionment
             if (rows.Length > 0)
                 return CreateObjects<ApportionmentRoom>(rows);
             else
-                return null;
+                return new List<ApportionmentRoom>();
         }
 
         private DataTable GetAllApportionmentDefaults()
