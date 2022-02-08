@@ -816,4 +816,7 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>G:\dev\batch\copy_lnf_libs.bat</PostBuildEvent>
+  </PropertyGroup>
 </Project>

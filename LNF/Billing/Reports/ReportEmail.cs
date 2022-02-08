@@ -37,4 +37,6 @@ namespace LNF.Billing.Reports
     {
         public int ManagerOrgID { get; set; }
     }
+
+    public class CardExpirationReportEmail : ReportEmail { }
 }

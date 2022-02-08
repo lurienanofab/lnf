@@ -132,7 +132,7 @@ namespace LNF.Reporting.Individual
                 AddToColumn(dr, "ActivatedUnused", activatedUnused);
                 AddToColumn(dr, "UnstartedUnused", unstartedUnused);
 
-                AddToColumn(dr, "LineCost", Provider.Billing.BillingType.GetLineCost(item));
+                AddToColumn(dr, "LineCost", Provider.Billing.Tool.GetLineCost(new ToolLineCostParameters(item)));
             }
 
             dt.DefaultView.Sort = "RoomName ASC, ResourceName ASC";
@@ -176,13 +176,10 @@ namespace LNF.Reporting.Individual
             foreach (DataRow dr in dtAggByTool.Rows)
             {
                 decimal chargeDuration = dr.Field<decimal>("TotalChargeDuration");
-                decimal transferredDuration = dr.Field<decimal>("TotalForgivenDuration");
                 decimal overtimeDuration = dr.Field<decimal>("TotalOverTime");
 
                 //decimal forgivenDuration = dr.Field<decimal>("TotalForgivenDuration");
                 
-                
-
                 decimal totalDuration = chargeDuration + (1.5M * overtimeDuration);
 
                 var ndr = dt.NewRow();

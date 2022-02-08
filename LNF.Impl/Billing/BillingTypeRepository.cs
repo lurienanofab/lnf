@@ -91,11 +91,6 @@ namespace LNF.Impl.Billing
         }
 
         /// <summary>
-        /// The final billed amount based on BillingType and Tool.
-        /// </summary>
-        public decimal GetLineCost(IToolBilling item) => ToolBillingUtility.GetLineCost(item);
-
-        /// <summary>
         /// The final billed amount based on BillingType and Room.
         /// </summary>
         public decimal GetLineCost(IRoomBilling item) => RoomBillingUtility.GetLineCost(item);

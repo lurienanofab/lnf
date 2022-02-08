@@ -386,7 +386,9 @@ namespace LNF.Impl.Billing
 
                         chargeBeginDateTime = begDate;
                         chargeEndDateTime = finDate;
+
                         chargeDuration = (chargeEndDateTime - chargeBeginDateTime).TotalMinutes;
+
                         dr["ChargeBeginDateTime"] = begDate;
                         dr["ChargeEndDateTime"] = finDate;
                         dr["ChargeDuration"] = chargeDuration;

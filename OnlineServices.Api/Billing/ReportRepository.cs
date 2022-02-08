@@ -69,5 +69,15 @@ namespace OnlineServices.Api.Billing
         {
             return Post<List<UserApportionmentReportEmail>>("webapi/billing/report/user-apportionment/view", options);
         }
+
+        public SendMonthlyCardExpirationEmailsProcessResult SendCardExpirationReport()
+        {
+            return Post<SendMonthlyCardExpirationEmailsProcessResult>("webapi/billing/report/card-expiration");
+        }
+
+        public IEnumerable<CardExpirationReportEmail> GetCardExpirationReportEmails()
+        {
+            return Post<List<CardExpirationReportEmail>>("webapi/billing/report/card-expiration/view");
+        }
     }
 }

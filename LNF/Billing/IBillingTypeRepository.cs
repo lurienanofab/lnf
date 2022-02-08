@@ -14,7 +14,6 @@ namespace LNF.Billing
         void CalculateRoomLineCost(DataTable dt);
         void CalculateToolLineCost(DataTable dt);
         decimal GetLineCost(IRoomBilling item);
-        decimal GetLineCost(IToolBilling item);
         IEnumerable<IToolBilling> SelectToolBillingData(int clientId, DateTime period, bool temp);
         void UpdateBilling(int clientId, DateTime period, DateTime now);
         IEnumerable<IClientOrgBillingTypeLog> GetClientOrgBillingTypeLogs(int clientOrgId, DateTime? disableDate);

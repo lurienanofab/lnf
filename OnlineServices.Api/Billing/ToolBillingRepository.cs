@@ -26,6 +26,11 @@ namespace OnlineServices.Api.Billing
             throw new NotImplementedException();
         }
 
+        public decimal GetLineCost(ToolLineCostParameters parameters)
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<IToolBilling> CreateToolBilling(DateTime period, int clientId = 0)
         {
             return Get<List<ToolBillingItem>>("webapi/billing/tool/create", QueryStrings(new { period, clientId }));

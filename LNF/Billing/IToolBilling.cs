@@ -43,6 +43,9 @@ namespace LNF.Billing
         decimal UncancelledPenaltyPercentage { get; set; }
         decimal UsageFee { get; set; }
         decimal UsageFee20110401 { get; set; }
+        /// <summary>
+        /// Calculated in LNF.Impl.Billing.ToolBillingUtility.CalculateUsageFeeCharged
+        /// </summary>
         decimal UsageFeeCharged { get; set; }
         decimal UsageFeeFiftyPercent { get; set; }
         decimal UsageFeeOld { get; set; }

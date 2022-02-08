@@ -268,6 +268,8 @@ namespace LNF.Impl.Billing
 
         public decimal RatePeriodCharge(IToolBilling item, decimal duration) => ToolBillingUtility.RatePeriodCharge(item, duration);
 
+        public decimal GetLineCost(ToolLineCostParameters parameters) => ToolBillingUtility.GetLineCost(parameters);
+
         #endregion
 
         #region ToolDataRaw

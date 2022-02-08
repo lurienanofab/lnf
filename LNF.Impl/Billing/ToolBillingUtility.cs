@@ -65,9 +65,11 @@ namespace LNF.Impl.Billing
                 //first start with AddVal
                 amount += item.Uses * item.PerUseRate;
 
-                //next add any charges based on AcctPer and MulVal
-                //item.ResourceRate is the MulVal (i.e. per period charge) and item.RatePeriod is AcctPer
-                decimal rpc = RatePeriodCharge(item, item.ChargeDuration - item.OverTime - item.TransferredDuration);
+                // next add any charges based on AcctPer and MulVal
+                // item.ResourceRate is the MulVal (i.e. per period charge) and item.RatePeriod is AcctPer
+                // uses is already baked in to ChargeDuration, OverTime, and TrnasferredDuration
+                var baseDuration = item.ChargeDuration - item.OverTime - item.TransferredDuration;
+                decimal rpc = RatePeriodCharge(item, baseDuration);
                 amount += rpc;
 
                 item.UsageFeeCharged = amount * item.ChargeMultiplier * (1 - (item.IsCancelledBeforeAllowedTime ? 1 : 0));
@@ -78,7 +80,7 @@ namespace LNF.Impl.Billing
         {
             decimal result = 0;
 
-            foreach(var kvp in BookingFeePercentages)
+            foreach (var kvp in BookingFeePercentages)
             {
                 if (period >= kvp.Key)
                     result = kvp.Value;
@@ -154,15 +156,17 @@ namespace LNF.Impl.Billing
             }
         }
 
-        public static decimal RatePeriodCharge(IToolBilling item, decimal duration)
+        public static decimal RatePeriodCharge(IToolBilling item, decimal duration) => RatePeriodCharge(item.Period, item.RatePeriod, item.ResourceRate, duration);
+
+        public static decimal RatePeriodCharge(DateTime period, string ratePeriod, decimal resourceRate, decimal duration)
         {
+            if (duration == 0) return 0;
+
             double factor;
-            double dur = Convert.ToDouble(duration);
-            double rate = Convert.ToDouble(item.ResourceRate);
+            var dur = Convert.ToDouble(duration);
+            var rate = Convert.ToDouble(resourceRate);
 
-            if (dur == 0) return 0;
-
-            switch (item.RatePeriod)
+            switch (ratePeriod)
             {
                 case "Hourly":
                     factor = 1D / 60D;
@@ -173,7 +177,7 @@ namespace LNF.Impl.Billing
                 //are these the same?
                 case "Monthly":
                 case "Per Month":
-                    factor = 1D / 60D / 24D / CommonTools.Utility.NumberOfDaysInMonth(item.Period);
+                    factor = 1D / 60D / 24D / CommonTools.Utility.NumberOfDaysInMonth(period);
                     break;
                 case "Per Use":
                     factor = 1D / dur;
@@ -189,7 +193,7 @@ namespace LNF.Impl.Billing
             // [2018-08-01 jg] During the July 2018 audit we discovered a problem with this calcuation. The original
             //      method (#1) produced slightly inaccurate results due to rounding. See below for details.
 
-            var method = item.Period < DateTime.Parse("2018-07-01") ? 1 : 2;
+            var method = period < DateTime.Parse("2018-07-01") ? 1 : 2;
             double amount;
             decimal result;
 
@@ -287,11 +291,20 @@ namespace LNF.Impl.Billing
             {
                 var item = CreateToolBillingFromDataRow(dr, false);
                 dr.SetField("Room", Rooms.GetRoomDisplayName(item.RoomID));
+
+                // |
+                // | this is the line of code that sets the the final amount billed for tool usage used in SUB and JU reports sent to UofM FinOps
+                // ▼
                 dr.SetField("LineCost", GetLineCost(item));
             }
         }
 
-        public static decimal GetLineCost(IToolBilling item)
+        public static decimal GetLineCost(IToolBilling item) => GetLineCost(new ToolLineCostParameters(item));
+
+        /// <summary>
+        /// This method computes the total amount charged for tool usage. This is used in all billing reports sent to UofM FinOps
+        /// </summary>
+        public static decimal GetLineCost(ToolLineCostParameters p)
         {
             // [2015-11-13 jg] this is identical to the logic originally in:
             //      1) sselFinOps.AppCode.BLL.FormulaBL.ApplyToolFormula (for External Invoice)
@@ -302,26 +315,26 @@ namespace LNF.Impl.Billing
             //      because each value used by the formula should correctly reflect the rules
             //      in place during the given period (or at least that is the goal).
 
-            decimal result = 0;
+            decimal result;
 
             //if rates are 0 everything must be 0 (this was at the end, but why not do it at the beginning?)
-            if (item.ResourceRate + item.PerUseRate == 0)
-                result = 0;
+            if (p.ResourceRate + p.PerUseRate == 0)
+                return 0;
 
             int cleanRoomId = 6;
             int maskMakerId = 56000;
 
-            if (BillingTypes.IsMonthlyUserBillingType(item.BillingTypeID)) //not used at this point but maybe in the future
+            if (BillingTypes.IsMonthlyUserBillingType(p.BillingTypeID)) //not used at this point but maybe in the future
             {
                 // Monthly User, charge mask maker for everyone
-                if (item.RoomID == cleanRoomId) //Clean Room
+                if (p.RoomID == cleanRoomId) //Clean Room
                 {
-                    if (item.ResourceID == maskMakerId) //Mask Maker
+                    if (p.ResourceID == maskMakerId) //Mask Maker
                     {
-                        if (item.IsStarted)
-                            result = item.UsageFeeCharged + item.OverTimePenaltyFee + (item.ResourceRate == 0 ? 0 : item.ReservationFee2);
+                        if (p.IsStarted)
+                            result = p.UsageFeeCharged + p.OverTimePenaltyFee + (p.ResourceRate == 0 ? 0 : p.ReservationFee2);
                         else
-                            result = item.UncancelledPenaltyFee + item.ReservationFee2;
+                            result = p.UncancelledPenaltyFee + p.ReservationFee2;
                     }
                     else
                     {
@@ -331,44 +344,44 @@ namespace LNF.Impl.Billing
                 else
                 {
                     //non clean room tools are always charged for usage fee
-                    if (item.IsStarted)
-                        result = item.UsageFeeCharged + item.OverTimePenaltyFee + (item.ResourceRate == 0 ? 0 : item.ReservationFee2);
+                    if (p.IsStarted)
+                        result = p.UsageFeeCharged + p.OverTimePenaltyFee + (p.ResourceRate == 0 ? 0 : p.ReservationFee2);
                     else
-                        result = item.UncancelledPenaltyFee + item.ReservationFee2;
+                        result = p.UncancelledPenaltyFee + p.ReservationFee2;
                 }
             }
-            else if (item.BillingTypeID == BillingTypes.Other)
+            else if (p.BillingTypeID == BillingTypes.Other)
             {
                 //based on sselIndReports.AppCode.BLL.ToolBillingBL.GetToolBillingDataByClientID20110701 the Other billing type is not set to zero any longer
-                result = item.GetTotalCharge();
+                result = ToolBillingItem.GetTotalCharge(p.UsageFeeCharged, p.OverTimePenaltyFee, p.BookingFee, p.UncancelledPenaltyFee, p.ReservationFee2);
             }
             else
             {
                 //Per Use types
-                if (item.Period >= new DateTime(2010, 7, 1))
+                if (p.Period >= new DateTime(2010, 7, 1))
                 {
                     //2011-05 New tool billing started on 2011-04
-                    if (item.Period >= new DateTime(2011, 4, 1))
+                    if (p.Period >= new DateTime(2011, 4, 1))
                     {
-                        if (!item.IsCancelledBeforeAllowedTime)
-                            result = item.UsageFeeCharged + item.OverTimePenaltyFee + item.BookingFee; //should be the same as GetTotalCharge()
+                        if (!p.IsCancelledBeforeAllowedTime)
+                            result = p.UsageFeeCharged + p.OverTimePenaltyFee + p.BookingFee; //should be the same as GetTotalCharge()
                         else
-                            result = item.BookingFee; //Cancelled before two hours - should be the same as GetTotalCharge()
+                            result = p.BookingFee; //Cancelled before two hours - should be the same as GetTotalCharge()
                     }
                     else
                     {
-                        if (item.IsStarted)
-                            result = item.UsageFeeCharged + item.OverTimePenaltyFee + (item.ResourceRate == 0 ? 0 : item.ReservationFee2); //should be the same as GetTotalCharge()
+                        if (p.IsStarted)
+                            result = p.UsageFeeCharged + p.OverTimePenaltyFee + (p.ResourceRate == 0 ? 0 : p.ReservationFee2); //should be the same as GetTotalCharge()
                         else
-                            result = item.UncancelledPenaltyFee; //should be the same as GetTotalCharge()
+                            result = p.UncancelledPenaltyFee; //should be the same as GetTotalCharge()
                     }
                 }
                 else
                 {
-                    if (item.IsStarted)
-                        result = item.UsageFeeCharged + item.OverTimePenaltyFee + (item.ResourceRate == 0 ? 0 : item.ReservationFee2); //should be the same as GetTotalCharge()
+                    if (p.IsStarted)
+                        result = p.UsageFeeCharged + p.OverTimePenaltyFee + (p.ResourceRate == 0 ? 0 : p.ReservationFee2); //should be the same as GetTotalCharge()
                     else
-                        result = item.UncancelledPenaltyFee + item.ReservationFee2; //should be the same as GetTotalCharge()
+                        result = p.UncancelledPenaltyFee + p.ReservationFee2; //should be the same as GetTotalCharge()
                 }
             }
 

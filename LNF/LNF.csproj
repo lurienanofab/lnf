@@ -131,6 +131,8 @@
     <Compile Include="Billing\IToolDataClean.cs" />
     <Compile Include="Billing\IToolDataRaw.cs" />
     <Compile Include="Billing\IToolDataRepository.cs" />
+    <Compile Include="Billing\Reports\SendMonthlyCardExpirationEmailsProcessResult.cs" />
+    <Compile Include="Billing\ToolLineCostParameters.cs" />
     <Compile Include="Billing\MiscBillingChargeCreateArgs.cs" />
     <Compile Include="Billing\MiscBillingChargeUpdateArgs.cs" />
     <Compile Include="Billing\OrgRechargeItem.cs" />
@@ -148,6 +150,7 @@
     <Compile Include="Billing\Process\PopulateToolBillingResult.cs" />
     <Compile Include="Billing\Reports\ServiceUnitBilling\ReportSettings.cs" />
     <Compile Include="Billing\Reports\ToolDetailResult.cs" />
+    <Compile Include="Billing\UserUsageAudit.cs" />
     <Compile Include="CommonTools\AuthUtility.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Control\AnalogPointState.cs" />
@@ -259,7 +262,6 @@
     <Compile Include="PhysicalAccess\FindNextOutRequest.cs" />
     <Compile Include="PhysicalAccess\FindPreviousInRequest.cs" />
     <Compile Include="PhysicalAccess\IPhysicalAccessService.cs" />
-    <Compile Include="PhysicalAccess\RoomAccessExpirationCheck.cs" />
     <Compile Include="PhysicalAccess\UpdateClientRequest.cs" />
     <Compile Include="ProcessResult.cs" />
     <Compile Include="Billing\Process\RemoteProcessingUpdate.cs" />

@@ -21,5 +21,8 @@ namespace LNF.Billing.Reports
         /// Sends clients alerts at the beginning of the month including 1) anti-passback errors in the data, and 2) need to apportion.
         /// </summary>
         SendMonthlyApportionmentEmailsProcessResult SendUserApportionmentReport(UserApportionmentReportOptions options);
+
+        IEnumerable<CardExpirationReportEmail> GetCardExpirationReportEmails();
+        SendMonthlyCardExpirationEmailsProcessResult SendCardExpirationReport();
     }
 }

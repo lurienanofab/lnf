@@ -48,17 +48,14 @@ namespace LNF.Billing
         public decimal UsageFeeFiftyPercent { get; set; }
         public bool IsTemp { get; set; }
 
-        public decimal GetTotalCharge()
-        {
-            // We can include everything now because the value in each column is correct.
-            // For example: after 2015-10-01 UncancelledPenaltyFee and ReservationFee2 will be zero
-            // and before 2011-04-01 BookingFee will be zero. And UsageFeeCharged is whatever value
-            // was calculated based on the rules in place at the time. By making the data correct
-            // based on the current rules we don't have to check the period and apply different
-            // logic in many different places. In other words this formula will work for any
-            // period - much easier to manage.
-            return UsageFeeCharged + OverTimePenaltyFee + BookingFee + UncancelledPenaltyFee + ReservationFee2;
-        }
+        // We can include everything now because the value in each column is correct.
+        // For example: after 2015-10-01 UncancelledPenaltyFee and ReservationFee2 will be zero
+        // and before 2011-04-01 BookingFee will be zero. And UsageFeeCharged is whatever value
+        // was calculated based on the rules in place at the time. By making the data correct
+        // based on the current rules we don't have to check the period and apply different
+        // logic in many different places. In other words this formula will work for any
+        // period - much easier to manage.
+        public decimal GetTotalCharge() => GetTotalCharge(UsageFeeCharged, OverTimePenaltyFee, BookingFee, UncancelledPenaltyFee, ReservationFee2);
 
         public TimeSpan ActivatedUsed()
         {
@@ -77,6 +74,11 @@ namespace LNF.Billing
         {
             decimal unstartedUnused = (!IsStarted && !IsCancelledBeforeAllowedTime) ? ChargeDuration : 0;
             return TimeSpan.FromMinutes((double)unstartedUnused);
+        }
+
+        public static decimal GetTotalCharge(decimal usageFeeCharged, decimal overTimePenaltyFee, decimal bookingFee, decimal uncancelledPenaltyFee, decimal reservationFee2)
+        {
+            return usageFeeCharged + overTimePenaltyFee + bookingFee + uncancelledPenaltyFee + reservationFee2;
         }
     }
 }

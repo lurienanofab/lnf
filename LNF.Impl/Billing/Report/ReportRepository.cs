@@ -3,10 +3,12 @@ using LNF.Billing;
 using LNF.Billing.Reports;
 using LNF.Billing.Reports.ServiceUnitBilling;
 using LNF.CommonTools;
+using LNF.Data;
 using LNF.Impl.DataAccess;
 using LNF.Impl.Repository;
 using LNF.Impl.Repository.Billing;
 using LNF.Impl.Repository.Data;
+using LNF.Scheduler;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -18,13 +20,17 @@ namespace LNF.Impl.Billing.Report
 {
     public class ReportRepository : RepositoryBase, IReportRepository
     {
+        protected IToolBillingRepository ToolBilling { get; }
         protected IBillingTypeRepository BillingType { get; }
         protected IApportionmentRepository Apportionment { get; }
+        protected IFeedRepository Feed { get; set; }
 
-        public ReportRepository(ISessionManager mgr, IBillingTypeRepository billingType, IApportionmentRepository apportionment) : base(mgr)
+        public ReportRepository(ISessionManager mgr, IToolBillingRepository toolBilling, IBillingTypeRepository billingType, IApportionmentRepository apportionment, IFeedRepository feed) : base(mgr)
         {
+            ToolBilling = toolBilling;
             BillingType = billingType;
             Apportionment = apportionment;
+            Feed = feed;
         }
 
         public IEnumerable<IBillingSummary> GetBillingSummary(DateTime sd, DateTime ed, bool includeRemote = false, int clientId = 0)
@@ -43,8 +49,8 @@ namespace LNF.Impl.Billing.Report
             {
                 decimal total = 0;
 
-                total += toolUsage.Where(u => u.ChargeTypeID == x.ChargeTypeID && (u.BillingTypeID != BillingTypes.Remote || includeRemote)).Sum(s => BillingType.GetLineCost(s.CreateModel<IToolBilling>()));
-                total += roomUsage.Where(u => u.ChargeTypeID == x.ChargeTypeID && (u.BillingTypeID != BillingTypes.Remote || includeRemote)).Sum(s => BillingType.GetLineCost(s.CreateModel<IToolBilling>()));
+                total += toolUsage.Where(u => u.ChargeTypeID == x.ChargeTypeID && (u.BillingTypeID != BillingTypes.Remote || includeRemote)).Sum(s => ToolBilling.GetLineCost(new ToolLineCostParameters(s)));
+                total += roomUsage.Where(u => u.ChargeTypeID == x.ChargeTypeID && (u.BillingTypeID != BillingTypes.Remote || includeRemote)).Sum(s => BillingType.GetLineCost(s));
                 total += storeUsage.Where(u => u.ChargeTypeID == x.ChargeTypeID).Sum(s => s.GetLineCost());
                 total += miscUsage.Where(u => accounts.First(a => a.AccountID == u.AccountID).ChargeTypeID == x.ChargeTypeID).Sum(s => s.GetLineCost());
 
@@ -241,7 +247,7 @@ namespace LNF.Impl.Billing.Report
                 if (e.ToAddress.Length > 0)
                 {
                     if (!options.NoEmail)
-                        SendEmail.Send(0, "LNF.Billing.ApportionmentUtility.SendMonthlyApportionmentEmails", e.Subject, e.Body, e.FromAddress, e.ToAddress, e.CcAddress, e.BccAddress, e.IsHtml);
+                        SendEmail.Send(0, "LNF.Impl.Billing.Report.ReportRepository.SendUserApportionmentReport", e.Subject, e.Body, e.FromAddress, e.ToAddress, e.CcAddress, e.BccAddress, e.IsHtml);
 
                     // Always increment result even if noEmail == true so we can at least return how many emails would be sent.
                     // Note this is not incremented unless an email was found for the user, even when there are recipients included.
@@ -260,6 +266,107 @@ namespace LNF.Impl.Billing.Report
             };
 
             return result;
+        }
+
+        public IEnumerable<CardExpirationReportEmail> GetCardExpirationReportEmails()
+        {
+            var dataFeed = Feed.GetDataFeedResult("expiring-cards");
+            var expiringCards = dataFeed.Data.Items(new ExpiringCardConverter());
+
+            var tpl = GetTemplate("card-expiration-email.handlebars");
+
+            var result = new List<CardExpirationReportEmail>();
+
+            foreach (var item in expiringCards)
+            {
+                string[] toAddr;
+                if (!string.IsNullOrEmpty(item.Email) && !item.Email.StartsWith("none") && !item.Email.StartsWith("nobody"))
+                    toAddr = new[] { item.Email };
+                else
+                    toAddr = new string[0];
+
+                var lname = item.LName;
+                var fname = item.FName;
+                var expireDate = GetMinDateTime(item.CardExpireDate, item.BadgeExpireDate).ToString("M/d/yyyy");
+
+                var fromAddr = GetCardExpirationEmailFromAddress();
+                var ccAddr = GetCardExpirationEmailRecipients();
+                var subj = GetCardExpirationEmailSubject();
+                var body = tpl(new { lname, fname, expireDate });
+
+                result.Add(new CardExpirationReportEmail
+                {
+                    ClientID = item.ClientID,
+                    DisplayName = Clients.GetDisplayName(item.LName, item.FName),
+                    FromAddress = fromAddr,
+                    ToAddress = toAddr,
+                    CcAddress = ccAddr,
+                    BccAddress = new string[0],
+                    Subject = subj,
+                    Body = body,
+                    IsHtml = true
+                });
+            }
+
+            return result;
+        }
+
+        public SendMonthlyCardExpirationEmailsProcessResult SendCardExpirationReport()
+        {
+            var startedAt = DateTime.Now;
+            var data = new List<string>();
+
+            var emails = GetCardExpirationReportEmails();
+
+            var cardExpirationClientCount = emails.Count();
+            var totalEmailsSent = 0;
+
+            foreach (var e in emails)
+            {
+                if (e.ToAddress.Length > 0)
+                {
+                    SendEmail.Send(0, "LNF.Impl.Billing.Report.ReportRepository.SendCardExpirationReport", e.Subject, e.Body, e.FromAddress, e.ToAddress, e.CcAddress, e.BccAddress, e.IsHtml);
+
+                    totalEmailsSent += 1;
+
+                    data.Add($"Card expiring: {string.Join(",", e.ToAddress)}");
+                }
+                else
+                    data.Add($"Card expiring: no email found for {e.DisplayName}");
+            }
+
+            var result = new SendMonthlyCardExpirationEmailsProcessResult(startedAt, data)
+            {
+                CardExpirationClientCount = cardExpirationClientCount,
+                TotalEmailsSent = totalEmailsSent
+            };
+
+            return result;
+        }
+
+        private string[] GetCardExpirationEmailRecipients()
+        {
+            var setting = Utility.GetRequiredAppSetting("ExpiringCardsEmailRecipients");
+            if (string.IsNullOrEmpty(setting)) return new string[0];
+            return setting.Split(',');
+        }
+
+        private string GetCardExpirationEmailFromAddress()
+        {
+            return Utility.GetRequiredAppSetting("ExpiringCardsEmailFromAddress");
+        }
+
+        private string GetCardExpirationEmailSubject()
+        {
+            return Utility.GetRequiredAppSetting("ExpiringCardsEmailSubject");
+        }
+
+        private DateTime GetMinDateTime(DateTime d1, DateTime d2)
+        {
+            if (d1 < d2)
+                return d1;
+            else
+                return d2;
         }
 
         private string[] GetApportionmentReminderRecipients()

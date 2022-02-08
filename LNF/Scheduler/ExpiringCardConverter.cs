@@ -19,7 +19,8 @@ namespace LNF.Scheduler
                 LabUser = System.Convert.ToBoolean(item["LabUser"]),
                 LName = item["LName"],
                 PhysicalAccess = System.Convert.ToBoolean(item["PhysicalAccess"]),
-                Staff = System.Convert.ToBoolean(item["Staff"])
+                Staff = System.Convert.ToBoolean(item["Staff"]),
+                ClientID = System.Convert.ToInt32(item["ClientID"])
             };
         }
     }

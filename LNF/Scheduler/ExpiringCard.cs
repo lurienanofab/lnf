@@ -14,5 +14,6 @@ namespace LNF.Scheduler
         public string CardStatus { get; set; }
         public DateTime CardExpireDate { get; set; }
         public DateTime BadgeExpireDate { get; set; }
+        public int ClientID { get; set; }
     }
 }

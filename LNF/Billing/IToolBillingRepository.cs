@@ -34,5 +34,6 @@ namespace LNF.Billing
         int UpdateChargeMultiplierByReservationToolData(IToolBillingReservation rsv);
         int UpdateChargeMultiplierByReservationToolDataClean(IToolBillingReservation rsv);
         IEnumerable<IToolBillingReservation> SelectReservations(DateTime sd, DateTime ed, int resourceId);
+        decimal GetLineCost(ToolLineCostParameters parameters);
     }
 }
