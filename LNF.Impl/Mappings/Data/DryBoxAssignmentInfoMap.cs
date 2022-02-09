@@ -23,6 +23,7 @@ namespace LNF.Impl.Mappings.Data
             Map(x => x.AccountName);
             Map(x => x.OrgID);
             Map(x => x.OrgName);
+            Map(x => x.ClientOrgID);
             Map(x => x.Email);
             Map(x => x.ApprovedDate);
             Map(x => x.ClientAccountID);

@@ -22,6 +22,7 @@ namespace LNF.Data
         public virtual string AccountName { get; set; }
         public virtual int OrgID { get; set; }
         public virtual string OrgName { get; set; }
+        public virtual int ClientOrgID { get; set; }
         public virtual string Email { get; set; }
         public virtual bool ClientActive { get; set; }
         public virtual bool ClientOrgActive { get; set; }
