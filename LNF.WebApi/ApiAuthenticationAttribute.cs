@@ -35,7 +35,7 @@ namespace LNF.WebApi
 
                 return handler.Authenticate(actionContext);
             }
-             
+
             handler = new ApiKeyAuthHandler();
 
             if (handler.Authenticate(actionContext))
@@ -127,6 +127,9 @@ namespace LNF.WebApi
     {
         public override bool Authenticate(HttpActionContext actionContext)
         {
+            if (IsAuthenticated(actionContext))
+                return true;
+
             if (actionContext.Request.Headers.Authorization == null)
                 return false;
 
@@ -161,6 +164,14 @@ namespace LNF.WebApi
         {
             FormsAuthenticationTicket ticket = FormsAuthentication.Decrypt(token);
             return ticket;
+        }
+
+        private bool IsAuthenticated(HttpActionContext actionContext)
+        {
+            if (actionContext != null && actionContext.RequestContext != null && actionContext.RequestContext.Principal != null && actionContext.RequestContext.Principal.Identity != null)
+                return actionContext.RequestContext.Principal.Identity.IsAuthenticated;
+            else
+                return false;
         }
     }
 
