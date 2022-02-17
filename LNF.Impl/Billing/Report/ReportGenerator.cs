@@ -146,7 +146,7 @@ namespace LNF.Impl.Billing.Report
                     break;
             }
 
-            string result = string.Empty;
+            string result;
 
             DataRow[] drManagers = ManagersData.Select(string.Format("AccountID = {0}", dr["AccountID"]));
 
