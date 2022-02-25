@@ -38,15 +38,15 @@ namespace LNF.Impl.Billing
 
         internal static decimal GetLineCost(IRoomBilling item)
         {
+            int cleanRoomId = 6;
+            int organicsBayId = 6;
+
             // [2015-11-13 jg] this is identical to the logic originally in:
             //      1) sselFinOps.AppCode.BLL.FormulaBL.ApplyRoomFormula (for External Invoice)
             //      2) sselIndReports.AppCode.Bll.RoomBillingBL.GetRoomBillingDataByClientID (for User Usage Summary)
             //      3) LNF.WebApi.Billing.Models.ReportUtility.ApplyRoomFormula (for SUB reports)
 
-            decimal result = 0;
-
-            int cleanRoomId = 6;
-            int organicsBayId = 6;
+            decimal result;
 
             //1. Find out all Monthly type users and apply to Clean room
             if (BillingTypes.IsMonthlyUserBillingType(item.BillingTypeID))
