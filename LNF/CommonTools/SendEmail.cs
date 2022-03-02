@@ -11,6 +11,9 @@ namespace LNF.CommonTools
     {
         public static void Send(int clientId, string caller, string subject, string body, string from, IEnumerable<string> to = null, IEnumerable<string> cc = null, IEnumerable<string> bcc = null, bool isHtml = true)
         {
+            if (ServiceProvider.Current == null)
+                return;
+
             ServiceProvider.Current.Mail.SendMessage(new SendMessageArgs
             {
                 ClientID = clientId,

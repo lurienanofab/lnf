@@ -722,7 +722,8 @@ namespace LNF.Impl.Billing
 
             foreach (DataRow dr in dtTierBilling.Rows)
             {
-                DataRow[] rows = dtTierBillingDetailGroupByTierBillingID.Select($"TierBillingID = {dr["TierBillingID"]}");
+                var tierBillingId = Convert.ToInt32(dr["TierBillingID"]);
+                DataRow[] rows = dtTierBillingDetailGroupByTierBillingID.Select($"TierBillingID = {tierBillingId}");
                 double userPaymentSum = rows[0].Field<double>("UserPaymentSum");
                 dr.SetField("UserPaymentSum", userPaymentSum);
             }
