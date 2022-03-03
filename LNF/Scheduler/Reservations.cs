@@ -404,24 +404,31 @@ namespace LNF.Scheduler
 
         public DateTime? OpenResSlot(int resourceId, TimeSpan reservFence, TimeSpan minReservTime, DateTime sd)
         {
-            var query = Provider.Scheduler.Reservation.SelectByResource(resourceId, Now, Now.Add(reservFence), false).OrderBy(x => x.BeginDateTime).ToList();
-
-            for (int j = 1; j < query.Count - 1; j++)
+            try
             {
-                // If there are other open reservation slots, then don't email reserver
-                var curBeginDateTime = query[j].BeginDateTime;
-                var lastEndDateTime = query[j - 1].EndDateTime;
-                if (curBeginDateTime.Subtract(lastEndDateTime) >= minReservTime)
+                var query = Provider.Scheduler.Reservation.SelectByResource(resourceId, Now, Now.Add(reservFence), false).OrderBy(x => x.BeginDateTime).ToList();
+
+                for (int j = 1; j < query.Count - 1; j++)
+                {
+                    // If there are other open reservation slots, then don't email reserver
+                    var curBeginDateTime = query[j].BeginDateTime;
+                    var lastEndDateTime = query[j - 1].EndDateTime;
+                    if (curBeginDateTime.Subtract(lastEndDateTime) >= minReservTime)
+                        return null;
+                }
+
+                var followingReservations = query.Where(x => x.BeginDateTime >= sd).OrderBy(x => x.BeginDateTime);
+
+                if (followingReservations.Count() == 0)
+                    // There are no other reservations behind it
                     return null;
+                else
+                    return followingReservations.First().BeginDateTime;
             }
-
-            var followingReservations = query.Where(x => x.BeginDateTime >= sd).OrderBy(x => x.BeginDateTime);
-
-            if (followingReservations.Count() == 0)
-                // There are no other reservations behind it
-                return null;
-            else
-                return followingReservations.First().BeginDateTime;
+            catch (Exception ex)
+            {
+                throw new Exception($"Error in LNF.Scheduler.Reservations.OpenResSlot: resourceId: {resourceId}, reservFence: {reservFence}, minReservTime: {minReservTime}, sd: {sd:yyyy-MM-ss HH:mm:ss}", ex);
+            }
         }
 
         public static IEnumerable<IReservationItem> GetConflictingReservations(IEnumerable<IReservationItem> items, DateTime sd, DateTime ed)
