@@ -59,6 +59,8 @@ namespace LNF.Reporting.Individual
             {
                 DataRow dr = dt.Select(string.Format("ClientID = {0} AND ResourceID = {1} AND AccountID = {2}", item.ClientID, item.ResourceID, item.AccountID)).FirstOrDefault();
 
+                IResource res = resources.First(x => x.ResourceID == item.ResourceID);
+
                 if (dr == null)
                 {
                     IAccount acct = accounts.FirstOrDefault(x => x.AccountID == item.AccountID);
@@ -75,8 +77,6 @@ namespace LNF.Reporting.Individual
                         acctName = acct.AccountName;
                         shortCode = acct.ShortCode.Trim();
                     }
-
-                    IResource res = resources.First(x => x.ResourceID == item.ResourceID);
 
                     dr = dt.NewRow();
                     dr.SetField("ClientID", item.ClientID);
@@ -132,7 +132,7 @@ namespace LNF.Reporting.Individual
                 AddToColumn(dr, "ActivatedUnused", activatedUnused);
                 AddToColumn(dr, "UnstartedUnused", unstartedUnused);
 
-                AddToColumn(dr, "LineCost", Provider.Billing.Tool.GetLineCost(new ToolLineCostParameters(item)));
+                AddToColumn(dr, "LineCost", Provider.Billing.Tool.GetLineCost(new ToolLineCostParameters(item, res.ResourceName)));
             }
 
             dt.DefaultView.Sort = "RoomName ASC, ResourceName ASC";

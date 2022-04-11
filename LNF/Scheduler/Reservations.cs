@@ -333,6 +333,9 @@ namespace LNF.Scheduler
             var data = new List<string>();
             var itemCount = items.Count();
 
+            // get all future reservation once to avoid doing a lot of queries in the loop
+            var futureReservations = Provider.Scheduler.Reservation.SelectFutureReservations();
+
             foreach (var rsv in items)
             {
                 DateTime oldEndDateTime = rsv.EndDateTime;
@@ -375,7 +378,7 @@ namespace LNF.Scheduler
                     Provider.Scheduler.Reservation.AddAutoEndLog(rsv.ReservationID, "unstarted");
                     data.Add($"Unstarted reservation {rsv.ReservationID} was ended, KeepAlive = {rsv.KeepAlive}, Reservation.AutoEnd = {rsv.ReservationAutoEnd}, Resource.AutoEnd = {rsv.ResourceAutoEnd}, ed = '{ed}'");
 
-                    DateTime? nextBeginDateTime = OpenResSlot(rsv.ResourceID, TimeSpan.FromMinutes(rsv.ReservFence), TimeSpan.FromMinutes(rsv.MinReservTime), oldEndDateTime);
+                    DateTime? nextBeginDateTime = futureReservations.OpenResSlot(rsv.ResourceID, oldEndDateTime);
 
                     //Check if reservation slot becomes big enough
                     if (nextBeginDateTime.HasValue)
@@ -406,28 +409,31 @@ namespace LNF.Scheduler
         {
             try
             {
-                var query = Provider.Scheduler.Reservation.SelectByResource(resourceId, Now, Now.Add(reservFence), false).OrderBy(x => x.BeginDateTime).ToList();
-
-                for (int j = 1; j < query.Count - 1; j++)
+                var query = Provider.Scheduler.Reservation.SelectByResource(resourceId, Now, Now.Add(reservFence), false).OrderBy(x => x.BeginDateTime).Select(x => new FutureReservation
                 {
-                    // If there are other open reservation slots, then don't email reserver
-                    var curBeginDateTime = query[j].BeginDateTime;
-                    var lastEndDateTime = query[j - 1].EndDateTime;
-                    if (curBeginDateTime.Subtract(lastEndDateTime) >= minReservTime)
-                        return null;
-                }
+                    ReservationID = x.ReservationID,
+                    ResourceID = x.ResourceID,
+                    ResourceName = x.ResourceName,
+                    ReservFence = x.ReservFence,
+                    MinReservTime = x.MinReservTime,
+                    ClientID = x.ClientID,
+                    LName = x.LName,
+                    FName = x.FName,
+                    ActivityID = x.ActivityID,
+                    ActivityName = x.ActivityName,
+                    BeginDateTime = x.BeginDateTime,
+                    EndDateTime = x.EndDateTime,
+                    ActualBeginDateTime = x.ActualBeginDateTime,
+                    ActualEndDateTime = x.ActualEndDateTime,
+                    IsStarted = x.IsStarted,
+                    IsActive = x.IsActive,
+                }).ToList();
 
-                var followingReservations = query.Where(x => x.BeginDateTime >= sd).OrderBy(x => x.BeginDateTime);
-
-                if (followingReservations.Count() == 0)
-                    // There are no other reservations behind it
-                    return null;
-                else
-                    return followingReservations.First().BeginDateTime;
+                return query.OpenResSlot(resourceId, sd);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error in LNF.Scheduler.Reservations.OpenResSlot: resourceId: {resourceId}, reservFence: {reservFence}, minReservTime: {minReservTime}, sd: {sd:yyyy-MM-ss HH:mm:ss}", ex);
+                throw new Exception($"Error in LNF.Scheduler.Reservations.OpenResSlot: resourceId: {resourceId}, reservFence: {reservFence}, minReservTime: {minReservTime}, sd: {sd:yyyy-MM-dd HH:mm:ss}", ex);
             }
         }
 

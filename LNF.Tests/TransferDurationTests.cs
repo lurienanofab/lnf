@@ -20,7 +20,7 @@ namespace LNF.Tests
             // step 1: get ReservationDateRangeItems
             var costs = Provider.Data.Cost.FindToolCosts(resourceId, dateRange.EndDate);
             var toolBillingReservations = Provider.Billing.Tool.SelectReservations(dateRange.StartDate, dateRange.EndDate, resourceId);
-            var reservations = ReservationDateRangeItem.GetReservationDateRangeItems(toolBillingReservations, costs, dateRange);
+            var reservations = ReservationDateRangeItem.GetReservationDateRangeItems(toolBillingReservations, costs);
 
             // step 2: get ReservationDurations
             var range = new ReservationDateRange(reservations);
@@ -93,7 +93,7 @@ namespace LNF.Tests
         {
             var costs = Provider.Data.Cost.FindToolCosts(resourceId, range.EndDate);
             var reservations = Provider.Billing.Tool.SelectReservations(range.StartDate, range.EndDate, resourceId);
-            var reservationDateRangeItems = ReservationDateRangeItem.GetReservationDateRangeItems(reservations, costs, range);
+            var reservationDateRangeItems = ReservationDateRangeItem.GetReservationDateRangeItems(reservations, costs);
             return reservationDateRangeItems;
         }
     }

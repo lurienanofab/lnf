@@ -17,7 +17,8 @@ namespace LNF.Web
 
         public WebApp()
         {
-            _context = ContainerContextFactory.Current.NewWebRequestContext();
+            ContainerContextFactory.Current.NewWebRequestContext();
+            _context = ContainerContextFactory.Current.GetContext();
         }
 
         public IContainerContext Context => _context;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using LNF.CommonTools;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
@@ -10,16 +11,18 @@ namespace LNF.Impl.DataAccess
     {
         private static readonly List<string> _log = new List<string>();
 
+        public static bool Enabled => Utility.GetAppSetting("SessionLogEnabled") == "true";
+
         public static void AddLogMessage(string text, params object[] args)
         {
-            _log.Add(string.Format(text, args));
+            if (Enabled)
+                _log.Add(string.Format(text, args));
         }
 
         public static IEnumerable<string> GetLogMessages()
         {
             return _log.AsEnumerable();
         }
-
 
         private static string GetSecurePath()
         {
@@ -30,22 +33,25 @@ namespace LNF.Impl.DataAccess
         {
             try
             {
-                var secure = GetSecurePath();
-                var logs = Path.Combine(secure, "logs", name);
-                if (!Directory.Exists(logs)) Directory.CreateDirectory(logs);
-
-                using (var fs = File.OpenWrite(Path.Combine(logs, "SessionManager.log")))
-                using (var writer = new StreamWriter(fs))
+                if (Enabled)
                 {
-                    foreach (string line in GetLogMessages())
+                    var secure = GetSecurePath();
+                    var logs = Path.Combine(secure, "logs", name);
+                    if (!Directory.Exists(logs)) Directory.CreateDirectory(logs);
+
+                    using (var fs = File.OpenWrite(Path.Combine(logs, "SessionManager.log")))
+                    using (var writer = new StreamWriter(fs))
                     {
-                        if (debug)
-                            Debug.WriteLine(line);
+                        foreach (string line in GetLogMessages())
+                        {
+                            if (debug)
+                                Debug.WriteLine(line);
 
-                        writer.WriteLine(line);
+                            writer.WriteLine(line);
+                        }
+
+                        writer.Close();
                     }
-
-                    writer.Close();
                 }
             }
             catch { }

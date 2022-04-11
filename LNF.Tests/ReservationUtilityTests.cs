@@ -17,7 +17,8 @@ namespace LNF.Tests
         [TestInitialize]
         public void Setup()
         {
-            _context = ContainerContextFactory.Current.NewThreadScopedContext();
+            ContainerContextFactory.Current.NewThreadScopedContext();
+            _context = ContainerContextFactory.Current.GetContext();
 
             var cfg = new ThreadStaticContainerConfiguration(_context);
             cfg.RegisterAllTypes();

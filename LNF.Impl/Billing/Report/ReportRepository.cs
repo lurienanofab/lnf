@@ -8,6 +8,7 @@ using LNF.Impl.DataAccess;
 using LNF.Impl.Repository;
 using LNF.Impl.Repository.Billing;
 using LNF.Impl.Repository.Data;
+using LNF.Impl.Repository.Scheduler;
 using LNF.Scheduler;
 using System;
 using System.Collections.Generic;
@@ -45,11 +46,13 @@ namespace LNF.Impl.Billing.Report
 
             var accounts = Session.Query<AccountInfo>().ToList();
 
+            var resources = Session.Query<ResourceInfo>().ToList();
+
             var result = chargeTypes.Select(x =>
             {
                 decimal total = 0;
 
-                total += toolUsage.Where(u => u.ChargeTypeID == x.ChargeTypeID && (u.BillingTypeID != BillingTypes.Remote || includeRemote)).Sum(s => ToolBilling.GetLineCost(new ToolLineCostParameters(s)));
+                total += toolUsage.Where(u => u.ChargeTypeID == x.ChargeTypeID && (u.BillingTypeID != BillingTypes.Remote || includeRemote)).Sum(s => ToolBilling.GetLineCost(new ToolLineCostParameters(s, GetResourceName(s, resources))));
                 total += roomUsage.Where(u => u.ChargeTypeID == x.ChargeTypeID && (u.BillingTypeID != BillingTypes.Remote || includeRemote)).Sum(s => BillingType.GetLineCost(s));
                 total += storeUsage.Where(u => u.ChargeTypeID == x.ChargeTypeID).Sum(s => s.GetLineCost());
                 total += miscUsage.Where(u => accounts.First(a => a.AccountID == u.AccountID).ChargeTypeID == x.ChargeTypeID).Sum(s => s.GetLineCost());
@@ -70,6 +73,14 @@ namespace LNF.Impl.Billing.Report
             }).ToArray();
 
             return result;
+        }
+
+        private static string GetResourceName(IToolBilling tb, IEnumerable<ResourceInfo> resources)
+        {
+            var res = resources.FirstOrDefault(x => x.ResourceID == tb.ResourceID);
+            if (res == null)
+                throw new Exception($"Cannot find record with ResourceID: {tb.ResourceID}");
+            return res.ResourceName;
         }
 
         public IEnumerable<IRegularException> GetRegularExceptions(DateTime period, int clientId = 0)

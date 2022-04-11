@@ -708,6 +708,17 @@ namespace LNF.Impl.Scheduler
             return result;
         }
 
+        public IEnumerable<FutureReservation> SelectFutureReservations()
+        {
+            var dt = DataCommand()
+                .Param("Action", "SelectFutureReservations")
+                .FillDataTable("sselScheduler.dbo.procReservationSelect");
+
+            var result = CreateFutureReservations(dt);
+
+            return result;
+        }
+
         public IEnumerable<IReservation> SelectEndableReservations(int resourceId)
         {
             // procReservationSelect @Action = 'SelectEndableReserv'
@@ -2665,6 +2676,36 @@ namespace LNF.Impl.Scheduler
                 ModifiedByClientID = rh.ModifiedByClientID,
                 ModifiedDateTime = rh.ModifiedDateTime
             };
+        }
+
+        private IEnumerable<FutureReservation> CreateFutureReservations(DataTable dt)
+        {
+            var result = new List<FutureReservation>();
+
+            foreach (DataRow dr in dt.Rows)
+            {
+                result.Add(new FutureReservation
+                {
+                    ReservationID = dr.Field<int>("ReservationID"),
+                    ResourceID = dr.Field<int>("ResourceID"),
+                    ResourceName = dr.Field<string>("ResourceName"),
+                    ReservFence = dr.Field<int>("ReservFence"),
+                    MinReservTime = dr.Field<int>("MinReservTime"),
+                    ClientID = dr.Field<int>("ClientID"),
+                    LName = dr.Field<string>("LName"),
+                    FName = dr.Field<string>("FName"),
+                    ActivityID = dr.Field<int>("ActivityID"),
+                    ActivityName = dr.Field<string>("ActivityName"),
+                    BeginDateTime = dr.Field<DateTime>("BeginDateTime"),
+                    EndDateTime = dr.Field<DateTime>("EndDateTime"),
+                    ActualBeginDateTime = dr.Field<DateTime?>("ActualBeginDateTime"),
+                    ActualEndDateTime = dr.Field<DateTime?>("ActualEndDateTime"),
+                    IsStarted = dr.Field<bool>("IsStarted"),
+                    IsActive = dr.Field<bool>("IsActive"),
+                });
+            }
+
+            return result;
         }
     }
 }

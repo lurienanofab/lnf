@@ -14,8 +14,9 @@ namespace LNF.Tests
             DateTime ed = DateTime.Parse("2020-02-01");
             int resourceId = 123456;
 
-            var mgr = new ToolBillingRepository(SessionManager);
-            mgr.SelectReservations(sd, ed, resourceId);
+            var costRepo = new LNF.Impl.Data.CostRepository(SessionManager);
+            var toolBillingRepo = new ToolBillingRepository(costRepo, SessionManager);
+            toolBillingRepo.SelectReservations(sd, ed, resourceId);
         }
     }
 }

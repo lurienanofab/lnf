@@ -13,7 +13,7 @@ namespace LNF.Data
         DryBoxAssignmentInfo CancelRequest(int dryBoxAssignmentId);
         DryBoxAssignmentInfo RequestRemove(int dryBoxAssignmentId);
         DryBoxAssignmentInfo Reject(int dryBoxAssignmentId);
-        DryBoxAssignmentInfo Approve(int dryBoxAssignmentId, int modifiedByClientId);
+        DryBoxAssignmentInfo Approve(int dryBoxAssignmentId, DryBoxAssignmentUpdate update);
         DryBoxAssignmentInfo UpdateDryBoxAssignment(int dryBoxAssignmentId, DryBoxAssignmentUpdate update);
         bool? IsAccountActive(int dryBoxId);
         bool Remove(int dryBoxAssignmentId, int modifiedByClientId);

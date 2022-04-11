@@ -185,7 +185,7 @@ namespace LNF.Impl.DataAccess
                 NHibernate.ISession session = _sessionFactory.OpenSession();
                 CurrentSessionContext.Bind(session);
 
-                if (!IsProduction())
+                if (!IsProduction() && SessionLog.Enabled)
                 {
                     Debug.WriteLine($"Started new session!");
                 }

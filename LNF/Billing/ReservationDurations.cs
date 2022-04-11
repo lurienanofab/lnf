@@ -25,7 +25,7 @@ namespace LNF.Billing
         public ReservationDurations(IEnumerable<IReservation> reservations, IEnumerable<ICost> costs, DateTime sd, DateTime ed)
         {
             var dateRange = DateRange.ExpandRange(reservations, sd, ed);
-            var items = ReservationDateRangeItem.GetReservationDateRangeItems(reservations, costs, dateRange);
+            var items = ReservationDateRangeItem.GetReservationDateRangeItems(reservations, costs);
             var range = new ReservationDateRange(items, dateRange);
             CreateItems(range);
         }

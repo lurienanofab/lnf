@@ -8,8 +8,10 @@ using System.Linq;
 
 namespace LNF.Impl
 {
-    public static class ModelFactoryExtensions
+    public static class Extensions
     {
+        /***** ModelFactory Extensions ***********************************************************/
+
         public static NHibernate.ISession Session => ModelFactoryProvider.Current.Factory.Session;
 
         public static T CreateModel<T>(this IDataItem item)

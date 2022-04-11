@@ -1,6 +1,7 @@
 ﻿using LNF.Billing;
 using LNF.Billing.Process;
 using LNF.CommonTools;
+using LNF.Data;
 using LNF.Impl.DataAccess;
 using LNF.Impl.Repository;
 using LNF.Impl.Repository.Billing;
@@ -15,7 +16,12 @@ namespace LNF.Impl.Billing
 {
     public class ProcessRepository : BillingRepository, IProcessRepository
     {
-        public ProcessRepository(ISessionManager mgr) : base(mgr) { }
+        public ICostRepository Cost { get; }
+
+        public ProcessRepository(ISessionManager mgr, ICostRepository cost) : base(mgr)
+        {
+            Cost = cost;
+        }
 
         public DataCleanResult DataClean(DataCleanCommand command)
         {
@@ -82,7 +88,7 @@ namespace LNF.Impl.Billing
                 WriteStoreDataResult writeStoreDataProcessResult = null;
 
                 if ((command.BillingCategory & BillingCategory.Tool) > 0)
-                    writeToolDataProcessResult = new WriteToolDataProcess(new WriteToolDataConfig { Connection = conn, Context = "ProcessRepository.Data", Period = command.Period, ClientID = command.ClientID, ResourceID = command.Record }).Start();
+                    writeToolDataProcessResult = new WriteToolDataProcess(WriteToolDataConfig.Create(conn, "ProcessRepository.Data", command.Period, command.ClientID, command.Record, Cost.GetToolCosts(command.Period, command.Record))).Start();
 
                 if ((command.BillingCategory & BillingCategory.Room) > 0)
                     writeRoomDataProcessResult = new WriteRoomDataProcess(new WriteRoomDataConfig { Connection = conn, Context = "ProcessRepository.Data", Period = command.Period, ClientID = command.ClientID, RoomID = command.Record }).Start();
@@ -293,7 +299,7 @@ namespace LNF.Impl.Billing
                                     writeToolDataCleanProcessResult = new WriteToolDataCleanProcess(new WriteToolDataCleanConfig { Connection = conn, Context = "ProcessRepository.Update", StartDate = sd, EndDate = ed, ClientID = command.ClientID }).Start();
                                     break;
                                 case "WriteToolData":
-                                    writeToolDataProcessResult = new WriteToolDataProcess(new WriteToolDataConfig { Connection = conn, Context = "ProcessRepository.Update", Period = sd, ClientID = command.ClientID, ResourceID = 0 }).Start();
+                                    writeToolDataProcessResult = new WriteToolDataProcess(WriteToolDataConfig.Create(conn, "ProcessRepository.Update", sd, command.ClientID, 0, Cost.GetToolCosts(sd, 0))).Start();
                                     break;
                                 case "WriteRoomDataClean":
                                     writeRoomDataCleanProcessResult = new WriteRoomDataCleanProcess(new WriteRoomDataCleanConfig { Connection = conn, Context = "ProcessRepository.Update", StartDate = sd, EndDate = ed, ClientID = command.ClientID }).Start();
@@ -361,7 +367,7 @@ namespace LNF.Impl.Billing
                 var step1 = new BillingDataProcessStep1(new Step1Config { Connection = conn, Context = "ProcessRepository.Finalize", Period = command.Period, Now = startedAt, ClientID = 0, IsTemp = false });
                 var step4 = new BillingDataProcessStep4Subsidy(new Step4Config { Connection = conn, Context = "ProcessRepository.Finalize", Period = command.Period, ClientID = 0 });
 
-                var writeToolDataProcessResult = new WriteToolDataProcess(new WriteToolDataConfig { Connection = conn, Context = "ProcessRepository.Finalize", Period = command.Period, ClientID = 0, ResourceID = 0 }).Start();
+                var writeToolDataProcessResult = new WriteToolDataProcess(WriteToolDataConfig.Create(conn, "ProcessRepository.Finalize", command.Period, 0, 0, Cost.GetToolCosts(command.Period, 0))).Start();
                 var writeRoomDataProcessResult = new WriteRoomDataProcess(new WriteRoomDataConfig { Connection = conn, Context = "ProcessRepository.Finalize", Period = command.Period, ClientID = 0, RoomID = 0 }).Start();
                 var writeStoreDataProcessResult = new WriteStoreDataProcess(new WriteStoreDataConfig { Connection = conn, Context = "ProcessRepository.Finalize", Period = command.Period, ClientID = 0, ItemID = 0 }).Start();
                 var populateToolBillingProcessResult = step1.PopulateToolBilling();
@@ -488,7 +494,7 @@ namespace LNF.Impl.Billing
                     if (args.BillingCategory.HasFlag(BillingCategory.Tool))
                     {
                         var toolDataClean = new WriteToolDataCleanProcess(new WriteToolDataCleanConfig { Connection = conn, Context = "ProcessRepository.UpdateBilling", StartDate = sd, EndDate = ed, ClientID = args.ClientID });
-                        var toolData = new WriteToolDataProcess(new WriteToolDataConfig { Connection = conn, Context = "ProcessRepository.UpdateBilling", Period = p, ClientID = args.ClientID, ResourceID = 0 });
+                        var toolData = new WriteToolDataProcess(WriteToolDataConfig.Create(conn, "ProcessRepository.UpdateBilling", p, args.ClientID, 0, Cost.GetToolCosts(p, 0)));
 
                         sw.Restart();
                         toolDataClean.Start();
@@ -582,7 +588,7 @@ namespace LNF.Impl.Billing
                 DateTime ed = command.Period.AddMonths(1);
 
                 var toolDataClean = new WriteToolDataCleanProcess(new WriteToolDataCleanConfig { Connection = conn, Context = "ProcessRepository.UpdateClientBilling", StartDate = sd, EndDate = ed, ClientID = command.ClientID });
-                var toolData = new WriteToolDataProcess(new WriteToolDataConfig { Connection = conn, Context = "ProcessRepository.UpdateClientBilling", Period = sd, ClientID = command.ClientID, ResourceID = 0 });
+                var toolData = new WriteToolDataProcess(WriteToolDataConfig.Create(conn, "ProcessRepository.UpdateClientBilling", sd, command.ClientID, 0, Cost.GetToolCosts(sd, 0)));
 
                 var roomDataClean = new WriteRoomDataCleanProcess(new WriteRoomDataCleanConfig { Connection = conn, Context = "ProcessRepository.UpdateClientBilling", StartDate = sd, EndDate = ed, ClientID = command.ClientID });
                 var roomData = new WriteRoomDataProcess(new WriteRoomDataConfig { Connection = conn, Context = "ProcessRepository.UpdateClientBilling", Period = sd, ClientID = command.ClientID, RoomID = 0 });

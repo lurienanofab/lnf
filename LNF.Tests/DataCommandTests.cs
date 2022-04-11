@@ -14,7 +14,8 @@ namespace LNF.Tests
         public void DoesItWork()
         {
 
-            var ctx = ContainerContextFactory.Current.NewThreadScopedContext();
+            ContainerContextFactory.Current.NewThreadScopedContext();
+            var ctx = ContainerContextFactory.Current.GetContext();
             var cfg = new ThreadStaticContainerConfiguration(ctx);
             cfg.RegisterAllTypes();
 

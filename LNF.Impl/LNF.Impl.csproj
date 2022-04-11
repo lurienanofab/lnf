@@ -140,6 +140,7 @@
     <Compile Include="Billing\BillingRepository.cs" />
     <Compile Include="Billing\ExternalInvoiceManager.cs" />
     <Compile Include="Billing\ExternalInvoiceRepository.cs" />
+    <Compile Include="Billing\ToolDataTransformer.cs" />
     <Compile Include="Billing\MiscDataRepository.cs" />
     <Compile Include="Billing\OrgRechargeRepository.cs" />
     <Compile Include="Billing\ProcessBase.cs" />
@@ -151,9 +152,11 @@
     <Compile Include="Billing\StoreDataReader.cs" />
     <Compile Include="Billing\StoreDataRepository.cs" />
     <Compile Include="Billing\ToolBillingUtility.cs" />
+    <Compile Include="Billing\ToolDataTransformer20110401.cs" />
     <Compile Include="Billing\ToolDataReader.cs" />
     <Compile Include="Billing\RoomDataRepository.cs" />
     <Compile Include="Billing\ToolDataRepository.cs" />
+    <Compile Include="Billing\ToolDataTransformerOld.cs" />
     <Compile Include="Billing\WriteRoomDataCleanProcess.cs" />
     <Compile Include="Billing\WriteRoomDataProcess.cs" />
     <Compile Include="Billing\WriteStoreDataCleanProcess.cs" />
@@ -169,6 +172,7 @@
     <Compile Include="DependencyInjection\ContainerConfiguration.cs" />
     <Compile Include="DependencyInjection\ContainerConfigurationExtensions.cs" />
     <Compile Include="DependencyInjection\ContainerContextFactory.cs" />
+    <Compile Include="DependencyInjection\DI.cs" />
     <Compile Include="DependencyInjection\InjectPropertySelectionBehavior.cs" />
     <Compile Include="DependencyInjection\SimpleInjectorContainerContext.cs" />
     <Compile Include="DependencyInjection\ThreadStaticContainerConfiguration.cs" />
@@ -525,7 +529,7 @@
     <Compile Include="Mail\MailUtility.cs" />
     <Compile Include="Mail\MailRepo.cs" />
     <Compile Include="Mail\MassEmailRepository.cs" />
-    <Compile Include="ModelFactoryExtensions.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="Ordering\PurchaseOrderRepository.cs" />
     <Compile Include="Reporting\ManagerUsageChargeRepository.cs" />
     <Compile Include="Mappings\Billing\MiscBillingChargeMap.cs" />

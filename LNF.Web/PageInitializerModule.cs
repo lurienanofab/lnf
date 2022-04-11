@@ -34,7 +34,7 @@ namespace LNF.Web
         protected virtual void InitializeHandler(IHttpHandler handler)
         {
             var handlerType = handler is Page ? handler.GetType().BaseType : handler.GetType();
-            var container = ContainerContextFactory.Current.GetContainer();
+            var container = ContainerContextFactory.Current.GetContext().Container;
             container.GetRegistration(handlerType, true).Registration.InitializeInstance(handler);
         }
 

@@ -46,7 +46,8 @@ namespace LNF.Impl.Testing
 
             ContextBase = CreateHttpContext();
 
-            var context = ContainerContextFactory.Current.NewThreadScopedContext();
+            ContainerContextFactory.Current.NewThreadScopedContext();
+            var context = ContainerContextFactory.Current.GetContext();
             ContainerConfiguration = new ThreadStaticContainerConfiguration(context);
             ContainerConfiguration.RegisterAllTypes();
 

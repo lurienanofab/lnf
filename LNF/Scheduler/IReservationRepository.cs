@@ -40,6 +40,7 @@ namespace LNF.Scheduler
         IEnumerable<IReservationItem> SelectByLabLocation(int labLocationId, DateTime sd, DateTime ed, bool includeDeleted);
         IEnumerable<IReservationItem> SelectByResource(int resourceId, DateTime sd, DateTime ed, bool includeDeleted);
         IEnumerable<IReservationItem> SelectByGroup(int groupId);
+        IEnumerable<FutureReservation> SelectFutureReservations();
         IEnumerable<IReservation> SelectEndableReservations(int resourceId);
         IEnumerable<IReservation> SelectExisting(int resourceId);
         IEnumerable<IReservation> SelectHistory(int clientId, DateTime sd, DateTime ed);

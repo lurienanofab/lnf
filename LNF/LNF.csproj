@@ -567,6 +567,8 @@
     <Compile Include="Scheduler\Enums.cs" />
     <Compile Include="Scheduler\ExpiringCard.cs" />
     <Compile Include="Scheduler\ExpiringCardConverter.cs" />
+    <Compile Include="Scheduler\Extensions.cs" />
+    <Compile Include="Scheduler\FutureReservation.cs" />
     <Compile Include="Scheduler\HandleAutoEndReservationsProcessResult.cs" />
     <Compile Include="Scheduler\HandleRepairReservationsProcessResult.cs" />
     <Compile Include="Scheduler\HandleUnstartedReservationsProcessResult.cs" />

@@ -122,7 +122,7 @@ namespace LNF.Data
 
         public IEnumerable<DryBoxAssignmentInfo> Available(bool includeInactiveDryBoxes = false) => All(includeInactiveDryBoxes).Where(x => x.DryBoxAssignmentID == 0).OrderBy(x => x.DryBoxName).ToList();
 
-        public IEnumerable<DryBoxAssignmentInfo> Pending(bool includeInactiveDryBoxes = false) => All(includeInactiveDryBoxes).Where(x => x.PendingApproval).OrderBy(x => x.DryBoxName).ToList();
+        public IEnumerable<DryBoxAssignmentInfo> Pending(bool includeInactiveDryBoxes = false) => All(includeInactiveDryBoxes).Where(x => x.PendingApproval || x.PendingRemoval).OrderBy(x => x.DryBoxName).ToList();
 
         public IEnumerable<DryBoxAssignmentInfo> All(bool includeInactiveDryBoxes)
         {

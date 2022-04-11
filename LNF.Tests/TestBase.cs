@@ -24,7 +24,8 @@ namespace LNF.Tests
         [TestInitialize]
         public void TestInitialize()
         {
-            _context = ContainerContextFactory.Current.NewThreadScopedContext();
+            ContainerContextFactory.Current.NewThreadScopedContext();
+            _context = ContainerContextFactory.Current.GetContext();
 
             var cfg = new ThreadStaticContainerConfiguration(_context);
             cfg.RegisterAllTypes();
@@ -85,10 +86,7 @@ namespace LNF.Tests
             }
         }
 
-        protected SqlConnection NewConnection()
-        {
-            return new SqlConnection(ConfigurationManager.ConnectionStrings["cnSselData"].ConnectionString);
-        }
+        protected SqlConnection NewConnection() => Provider.DataAccess.NewConnection();
 
         public IUnitOfWork StartUnitOfWork() => Provider.DataAccess.StartUnitOfWork();
     }

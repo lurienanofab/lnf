@@ -71,13 +71,13 @@ namespace LNF.Impl.Data
             return CreateDryBoxAssignmentInfo(dba, Require<DryBox>(dba.DryBoxID), Require<ClientAccount>(dba.ClientAccountID));
         }
 
-        public DryBoxAssignmentInfo Approve(int dryBoxAssignmentId, int modifiedByClientId)
+        public DryBoxAssignmentInfo Approve(int dryBoxAssignmentId, DryBoxAssignmentUpdate update)
         {
             var dba = Require<DryBoxAssignment>(dryBoxAssignmentId);
-            var modifiedBy = Require<Client>(modifiedByClientId);
+            var modifiedBy = Require<Client>(update.ModifiedByClientID);
 
             var db = Require<DryBox>(dba.DryBoxID);
-            var ca = Require<ClientAccount>(dba.ClientAccountID);
+            var ca = Require<ClientAccount>(update.ClientAccountID);
 
             ApproveDryBoxAssignment(dba, ca, modifiedBy);
 

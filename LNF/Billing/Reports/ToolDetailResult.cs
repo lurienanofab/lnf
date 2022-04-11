@@ -28,26 +28,32 @@ namespace LNF.Billing.Reports
 
             result.Items = dtTool.Select(string.Empty, "RoomName ASC, ResourceName ASC").Select(CreateToolDetailItem).ToList();
 
+            SetLabels(dtTool, result.LabelTool, result.LabelRoomSum, result.LabelResFee);
+
+            return result;
+        }
+
+        public static void SetLabels(DataTable dtTool, BillingReportLabel labelTool, BillingReportLabel labelRoomSum, BillingReportLabel labelResFee)
+        {
             decimal subTotalActivated = 0;
 
-            result.LabelRoomSum.Text = string.Empty;
-            result.LabelResFee.Text = string.Empty;
+            labelRoomSum.Text = string.Empty;
+            labelResFee.Text = string.Empty;
+
             if (dtTool.Rows.Count > 0)
             {
                 subTotalActivated = Convert.ToDecimal(dtTool.Compute("SUM(LineCost)", string.Empty));
-                result.LabelResFee.Text = string.Format("| Sub Total: {0:$#,##0.00}", subTotalActivated);
-                result.LabelResFee.Visible = true;
-                UpdateRoomSums(dtTool, result.LabelRoomSum);
+                labelResFee.Text = string.Format("| Sub Total: {0:$#,##0.00}", subTotalActivated);
+                labelResFee.Visible = true;
+                UpdateRoomSums(dtTool, labelRoomSum);
             }
 
             if (subTotalActivated == 0)
-                result.LabelTool.Text = "No tool usage fees in this period";
+                labelTool.Text = "No tool usage fees in this period";
             else
-                result.LabelTool.Text = string.Format("Total tool usage fees: {0:$#,##0.00}", subTotalActivated);
+                labelTool.Text = string.Format("Total tool usage fees: {0:$#,##0.00}", subTotalActivated);
 
-            result.LabelTool.Visible = true;
-
-            return result;
+            labelTool.Visible = true;
         }
 
         private static void UpdateRoomSums(DataTable dt, BillingReportLabel lbl)

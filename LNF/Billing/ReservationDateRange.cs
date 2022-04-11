@@ -10,7 +10,7 @@ namespace LNF.Billing
 {
     public class ReservationDateRange : IEnumerable<ReservationDateRangeItem>
     {
-        private int[] _buffer;
+        private readonly int[] _buffer;
         private Dictionary<int, BufferSegment> _lookup;
         private readonly List<ReservationDateRangeItem> _reservations = new List<ReservationDateRangeItem>();
 
@@ -245,7 +245,7 @@ namespace LNF.Billing
             return $"[{ReservationID}:{ResourceID}] {ChargeBeginDateTime:yyyy-MM-dd HH:mm:ss} - {ChargeEndDateTime:yyyy-MM-dd HH:mm:ss}";
         }
 
-        public static IEnumerable<ReservationDateRangeItem> GetReservationDateRangeItems(IEnumerable<IToolBillingReservation> reservations, IEnumerable<ICost> costs, DateRange range)
+        public static IEnumerable<ReservationDateRangeItem> GetReservationDateRangeItems(IEnumerable<IToolBillingReservation> reservations, IEnumerable<ICost> costs)
         {
             var result = reservations.Select(r => Create(
                 r.ReservationID,
@@ -277,7 +277,7 @@ namespace LNF.Billing
             return result;
         }
 
-        public static IEnumerable<ReservationDateRangeItem> GetReservationDateRangeItems(IEnumerable<IReservationItem> reservations, IEnumerable<ICost> costs, DateRange range)
+        public static IEnumerable<ReservationDateRangeItem> GetReservationDateRangeItems(IEnumerable<IReservationItem> reservations, IEnumerable<ICost> costs)
         {
             //var costs = ServiceProvider.Current.Data.Cost.FindToolCosts(ResourceID, range.EndDate);
             //var reservations = ServiceProvider.Current.Billing.Tool.SelectReservations(range.StartDate, range.EndDate, ResourceID);

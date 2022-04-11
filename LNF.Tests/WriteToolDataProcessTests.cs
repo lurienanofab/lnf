@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Linq;
+using LNF.Data;
 using LNF.Impl.Billing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -19,19 +20,13 @@ namespace LNF.Tests
 
             using (var conn = NewConnection())
             {
-                WriteToolDataProcess proc = new WriteToolDataProcess(new WriteToolDataConfig
-                {
-                    Connection = conn,
-                    Context = "LNF.Tests.WriteToolDataProcessTests.CanComputeCorrectTransferDuration",
-                    Period = period,
-                    ClientID = clientId,
-                    ResourceID = resourceId
-                });
+                var costs = Provider.Data.Cost.GetToolCosts(period, resourceId);
+                WriteToolDataProcess proc = new WriteToolDataProcess(WriteToolDataConfig.Create(conn, "LNF.Tests.WriteToolDataProcessTests.CanComputeCorrectTransferDuration", period, clientId, resourceId, costs));
 
                 var dtToolDataClean = proc.Extract();
-                var durations = proc.GetReservationDurations(dtToolDataClean);
-                proc.ProcessCleanData(dtToolDataClean);
-                proc.CalculateTransferTime(dtToolDataClean, durations);
+                var transformer = proc.GetTransformer();
+                transformer.ProcessCleanData(dtToolDataClean);
+                transformer.CalculateTransferTime(dtToolDataClean);
 
                 var rows = dtToolDataClean.Select($"ReservationID = {reservationId}");
 

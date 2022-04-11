@@ -17,7 +17,7 @@ namespace LNF.Web
             Assembly[] assemblies = BuildManager.GetReferencedAssemblies().Cast<Assembly>().ToArray();
 
             var webapp = new WebApp();
-            
+
             webapp.Context.EnablePropertyInjection();
             webapp.GetConfiguration().RegisterAllTypes();
 

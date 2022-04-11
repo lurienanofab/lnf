@@ -18,7 +18,8 @@ namespace LNF.Tests
         [TestMethod]
         public void CanGetClient()
         {
-            _context = ContainerContextFactory.Current.NewThreadScopedContext();
+            ContainerContextFactory.Current.NewThreadScopedContext();
+            _context = ContainerContextFactory.Current.GetContext();
 
             var cfg = new ThreadStaticContainerConfiguration(_context);
             cfg.RegisterAllTypes();
@@ -67,7 +68,8 @@ namespace LNF.Tests
         [TestMethod]
         public void CanSelectToolBilling()
         {
-            _context = ContainerContextFactory.Current.NewThreadScopedContext();
+            ContainerContextFactory.Current.NewThreadScopedContext();
+            _context = ContainerContextFactory.Current.GetContext();
 
             var cfg = new ThreadStaticContainerConfiguration(_context);
             cfg.RegisterAllTypes();

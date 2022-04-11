@@ -1,6 +1,7 @@
 ﻿using LNF.DataAccess;
 using NHibernate.Context;
-using System.Data.Common;
+using System;
+using System.Configuration;
 using System.Data.SqlClient;
 
 namespace LNF.Impl.DataAccess
@@ -16,9 +17,14 @@ namespace LNF.Impl.DataAccess
 
         public ISession Session { get; }
 
-        public virtual DbConnection CreateConnection(string connstr)
+        public virtual SqlConnection NewConnection()
         {
-            return new SqlConnection(connstr);
+            if (ConfigurationManager.ConnectionStrings["cnSselData"] == null)
+                throw new Exception("Missing connectionString: cnSselData");
+
+            var result = new SqlConnection(ConfigurationManager.ConnectionStrings["cnSselData"].ConnectionString);
+
+            return result;
         }
 
         public bool ShowSql => SessionManager<T>.Current.ShowSql;

@@ -18,7 +18,8 @@ namespace LNF
             if (Current == null)
             {
                 Current = provider;
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] ServiceProvider setup complete.{Environment.NewLine}{stack}");
+                if (CommonTools.Utility.GetAppSetting("SessionLogEnabled") == "true")
+                    System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] ServiceProvider setup complete.{Environment.NewLine}{stack}");
                 CacheManager.Setup(new DefaultCache(provider));
             }
             else

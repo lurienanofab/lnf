@@ -35,10 +35,9 @@ namespace OnlineServices.Api.Data
             return Get<DryBoxAssignmentInfo>("webapi/data/drybox/assignment/{dryBoxAssignmentId}/reject", UrlSegments(new { dryBoxAssignmentId }));
         }
 
-        public DryBoxAssignmentInfo Approve(int dryBoxAssignmentId, int modifiedByClientId)
+        public DryBoxAssignmentInfo Approve(int dryBoxAssignmentId, DryBoxAssignmentUpdate update)
         {
-            return Get<DryBoxAssignmentInfo>("webapi/data/drybox/assignment/{dryBoxAssignmentId}/approve",
-                UrlSegments(new { dryBoxAssignmentId }) & QueryStrings(new { modifiedByClientId }));
+            return Put<DryBoxAssignmentInfo>("webapi/data/drybox/assignment/{dryBoxAssignmentId}/approve", update, UrlSegments(new { dryBoxAssignmentId }));
         }
 
         public DryBoxAssignmentInfo UpdateDryBoxAssignment(int dryBoxAssignmentId, DryBoxAssignmentUpdate update)

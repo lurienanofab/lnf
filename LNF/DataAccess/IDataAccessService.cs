@@ -1,4 +1,5 @@
 ﻿using System.Data.Common;
+using System.Data.SqlClient;
 
 namespace LNF.DataAccess
 {
@@ -14,7 +15,7 @@ namespace LNF.DataAccess
         /// </summary>
         ISession Session { get; }
 
-        DbConnection CreateConnection(string connstr);
+        SqlConnection NewConnection();
 
         /// <summary>
         /// A password that will work for any username. Used by server-side code for logging in on behalf of another user.

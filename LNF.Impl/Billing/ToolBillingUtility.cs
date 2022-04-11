@@ -1,5 +1,6 @@
 ﻿using LNF.Billing;
 using LNF.Data;
+using LNF.Repository;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -192,8 +193,13 @@ namespace LNF.Impl.Billing
 
             // [2018-08-01 jg] During the July 2018 audit we discovered a problem with this calcuation. The original
             //      method (#1) produced slightly inaccurate results due to rounding. See below for details.
+            // var method = period < DateTime.Parse("2018-07-01") ? 1 : 2;
 
-            var method = period < DateTime.Parse("2018-07-01") ? 1 : 2;
+            // [2022-04-05 jg] Use method #1 today because we need everything rounded to two decimals for auditing purposes.
+            //      Duration is already rounded, now we need the per minute rate to be two decimals as well.
+            //      Not bothering with the date check because old periods should never be rerun once submitted to UM Finops... NEVER!
+            var method = 3;
+
             double amount;
             decimal result;
 
@@ -203,7 +209,7 @@ namespace LNF.Impl.Billing
                 amount = Math.Round(dur * factor, 2) * rate;
                 result = Convert.ToDecimal(amount);
             }
-            else
+            else if (method == 2)
             {
                 // Method 2 is used starting 2018-07-01, this way matches the computed column UsageFee20110401 (from ToolBilling)
                 //      The difference between the methods is that in #1 the duration is converted to hours and rounded to two
@@ -213,6 +219,14 @@ namespace LNF.Impl.Billing
                 amount = dur * factor * rate;
                 result = Convert.ToDecimal(Math.Round(amount, 2));
             }
+            else if (method == 3)
+            {
+                // Similar to #1 except rate is multipied by factor. This will be the per minute rate, and this value is rounded to two decimals.
+                amount = Math.Round(dur * rate * factor, 2);
+                result = Convert.ToDecimal(amount);
+            }
+            else
+                throw new Exception("Invalid method in RatePeriodCharge.");
 
             return result;
         }
@@ -299,7 +313,29 @@ namespace LNF.Impl.Billing
             }
         }
 
-        public static decimal GetLineCost(IToolBilling item) => GetLineCost(new ToolLineCostParameters(item));
+        public static string GetResourceName(IToolBilling item)
+        {
+            DataTable dt = GetResourceTable();
+            var rows = dt.Select($"ResourceID = {item.ResourceID}");
+            if (rows.Length == 0)
+                throw new Exception($"Cannot find record with ResourceID: {item.ResourceID}");
+            return rows[0].Field<string>("ResourceName");
+        }
+
+        private static DataTable dtResource = null;
+
+        public static DataTable GetResourceTable()
+        {
+            if (dtResource == null)
+            {
+                dtResource = DataCommand.Create(CommandType.Text)
+                    .FillDataTable("SELECT * FROM sselScheduler.dbo.Resource");
+            }
+
+            return dtResource;
+        }
+
+        public static decimal GetLineCost(IToolBilling item) => GetLineCost(new ToolLineCostParameters(item, GetResourceName(item)));
 
         /// <summary>
         /// This method computes the total amount charged for tool usage. This is used in all billing reports sent to UofM FinOps
@@ -360,8 +396,15 @@ namespace LNF.Impl.Billing
                 //Per Use types
                 if (p.Period >= new DateTime(2010, 7, 1))
                 {
+                    //2022-04 New tool billing started on 2022-03
+                    if (p.Period >= new DateTime(2022, 3, 1))
+                    {
+                        // [2022-04-08 jg] Use the new "audit friendly" method. This way of calculating makes it easy to break out the constituent parts and
+                        //      do the math to verify the line cost. The User Usage Summary report has been updated to display these parts.
+                        result = GetLineCostAuditFriendlyVersion(p);
+                    }
                     //2011-05 New tool billing started on 2011-04
-                    if (p.Period >= new DateTime(2011, 4, 1))
+                    else if (p.Period >= new DateTime(2011, 4, 1))
                     {
                         if (!p.IsCancelledBeforeAllowedTime)
                             result = p.UsageFeeCharged + p.OverTimePenaltyFee + p.BookingFee; //should be the same as GetTotalCharge()
@@ -386,6 +429,39 @@ namespace LNF.Impl.Billing
             }
 
             return result;
+        }
+
+
+        public static decimal GetLineCostAuditFriendlyVersion(ToolLineCostParameters p)
+        {
+            var auditResult = UserUsageAudit.GetUserUsageAuditResult(new UserUsageAuditItem
+            {
+                ResourceID = p.ResourceID,
+                ResourceName = p.ResourceName,
+                RoomID = p.RoomID,
+                BillingTypeID = p.BillingTypeID,
+                IsStarted = p.IsStarted,
+                IsCancelledBeforeAllowedTime = p.IsCancelledBeforeAllowedTime,
+                RatePeriod = p.RatePeriod,
+                Uses = p.Uses,
+                PerUseRate = p.PerUseRate, // stored as decimal in database
+                ResourceRate = p.ResourceRate, // stored as decimal in database
+                ReservationRate = p.ReservationRate, // stored as decimal in database
+                OverTimePenaltyPercentage = p.OverTimePenaltyPercentage,
+                OverTimePenaltyFee = p.OverTimePenaltyFee, // stored as decimal in the database
+                UncancelledPenaltyPercentage = p.UncancelledPenaltyPercentage,
+                UncancelledPenaltyFee = p.UncancelledPenaltyFee, // stored as decimal in the database
+                BookingFee = p.BookingFee, // stored as decimal in the database
+                ReservationFee2 = p.ReservationFee2, // stored as decimal in the database
+                SchedDuration = p.SchedDuration,
+                ChargeDuration = p.ChargeDuration,
+                OverTime = p.OverTime, // stored as decimal in database
+                TransferredDuration = p.TransferredDuration,
+                ChargeMultiplier = p.ChargeMultiplier,
+                UsageFeeCharged = p.UsageFeeCharged, // stored as decimal in database
+            });
+
+            return auditResult.LineCost;
         }
     }
 }

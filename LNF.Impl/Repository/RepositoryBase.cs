@@ -34,7 +34,7 @@ namespace LNF.Impl.Repository
     {
         protected static MemoryCache Cache { get; } = new MemoryCache("RepositoryCache");
 
-        private ISessionManager _mgr;
+        private readonly ISessionManager _mgr;
         public NHibernate.ISession Session => _mgr.Session;
 
         public RepositoryBase(ISessionManager mgr)

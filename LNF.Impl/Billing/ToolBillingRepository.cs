@@ -18,7 +18,12 @@ namespace LNF.Impl.Billing
 {
     public class ToolBillingRepository : BillingRepository, IToolBillingRepository
     {
-        public ToolBillingRepository(ISessionManager mgr) : base(mgr) { }
+        public ICostRepository Cost { get; }
+
+        public ToolBillingRepository(ICostRepository cost, ISessionManager mgr) : base(mgr)
+        {
+            Cost = cost;
+        }
 
         public IEnumerable<IToolBilling> CreateToolBilling(DateTime period, int clientId = 0)
         {
@@ -57,7 +62,7 @@ namespace LNF.Impl.Billing
             {
                 conn.Open();
 
-                var proc = new WriteToolDataProcess(new WriteToolDataConfig { Connection = conn, Context = "ToolBillingRepository.CreateToolData", Period = period, ClientID = clientId, ResourceID = resourceId });
+                var proc = new WriteToolDataProcess(WriteToolDataConfig.Create(conn, "ToolBillingRepository.CreateToolData", period, clientId, resourceId, Cost.GetToolCosts(period, resourceId)));
                 var dtExtract = proc.Extract();
                 var dtTransform = proc.Transform(dtExtract);
 

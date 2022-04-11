@@ -13,7 +13,8 @@ namespace LNF.Cache
             if (Current == null)
             {
                 Current = cache;
-                System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] CacheManager setup complete.{Environment.NewLine}{stack}");
+                if (CommonTools.Utility.GetAppSetting("SessionLogEnabled") == "true")
+                    System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] CacheManager setup complete.{Environment.NewLine}{stack}");
             }
             else
             {

@@ -1,4 +1,5 @@
-﻿using SimpleInjector;
+﻿using LNF.DependencyInjection;
+using SimpleInjector;
 using SimpleInjector.Integration.Web;
 using SimpleInjector.Lifestyles;
 using System;
@@ -17,66 +18,75 @@ namespace LNF.Impl.DependencyInjection
         public string Lifestyle => _lifestyle;
 
         private string _lifestyle;
-        private Container _container;
+        private SimpleInjectorContainerContext _context;
         
         private ContainerContextFactory() { }
 
-        public Container GetContainer()
+        public bool ContextExists()
         {
-            if (_container == null)
-                throw new Exception("Container is null. One of the methods (NewWebRequestContext, NewAsyncScopedContext, NewThreadScopedContext) must be called first.");
-
-            return _container;
+            return _context != null;
         }
 
-        public SimpleInjectorContainerContext NewThreadScopedContext()
+        public SimpleInjectorContainerContext GetContext()
         {
-            if (_container != null)
-                throw new Exception($"Container already exists. Lifestyle = {_lifestyle}");
+            if (!ContextExists())
+                throw new Exception("One of the methods (NewWebRequestContext, NewAsyncScopedContext, NewThreadScopedContext) must be called first.");
+
+            return _context;
+        }
+
+        public void NewThreadScopedContext()
+        {
+            Container container;
+
+            if (ContextExists())
+                throw new Exception($"Context already exists. Lifestyle = {_lifestyle}");
             else
             {
                 _lifestyle = "ThreadScoped";
-
-                _container = new Container();
-
-                _container.Options.DefaultScopedLifestyle = new ThreadScopedLifestyle();
+                container = new Container();
+                container.Options.DefaultScopedLifestyle = new ThreadScopedLifestyle();
             }
 
-            return new SimpleInjectorContainerContext(_container);
+            _context = new SimpleInjectorContainerContext(container);
         }
 
-        public SimpleInjectorContainerContext NewWebRequestContext()
+        public void NewWebRequestContext()
         {
-            if (_container != null)
+            Container container;
+
+            if (ContextExists())
                 throw new Exception($"Container already exists. Lifestyle = {_lifestyle}");
             else
             {
                 _lifestyle = "WebRequest";
-                _container = new Container();
+                container = new Container();
 
                 // Needed for SimpleInjector v5
                 // See https://simpleinjector.readthedocs.io/en/latest/resolving-unregistered-concrete-types-Is-disallowed-by-default.html
-                _container.Options.ResolveUnregisteredConcreteTypes = true;
+                container.Options.ResolveUnregisteredConcreteTypes = true;
 
-                _container.Options.DefaultScopedLifestyle = new WebRequestLifestyle();
+                container.Options.DefaultScopedLifestyle = new WebRequestLifestyle();
             }
 
-            return new SimpleInjectorContainerContext(_container);
+            _context = new SimpleInjectorContainerContext(container);
         }
 
-        public SimpleInjectorContainerContext NewAsyncScopedContext()
+        public void NewAsyncScopedContext()
         {
-            if (_container != null)
+            Container container;
+
+            if (ContextExists())
                 throw new Exception($"Container already exists. Lifestyle = {_lifestyle}");
             else
             {
                 _lifestyle = "AsyncScoped";
-                _container = new Container();
+                container = new Container();
 
-                _container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
+                container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
             }
 
-            return new SimpleInjectorContainerContext(_container);
+            _context = new SimpleInjectorContainerContext(container);
         }
     }
 }
