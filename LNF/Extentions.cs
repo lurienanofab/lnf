@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Data.SqlClient;
 
 namespace LNF
@@ -10,11 +11,16 @@ namespace LNF
         /// </summary>
         public static SqlCommand CreateCommand(this SqlConnection conn, string sql, CommandType commandType = CommandType.StoredProcedure, bool useConnectionTimeout = true)
         {
+            // [2022-04-11 jg] Any SqlCommand objects created with this method will use the following value for the minimum timeout value in seconds. This prevents accidently
+            //      setting the timeout ridiculously low by not setting the ConnectionTimeout in the web.config ConnectionString. So ConnectionTimeout can be used to extend
+            //      the command timeout beyond 60 seconds but never makes it less.
+            var minTimeoutSeconds = 60;
+
             var cmd = conn.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = commandType;
             if (useConnectionTimeout)
-                cmd.CommandTimeout = conn.ConnectionTimeout;
+                cmd.CommandTimeout = Math.Max(conn.ConnectionTimeout, minTimeoutSeconds); // enforce the minimum
             return cmd;
         }
 
