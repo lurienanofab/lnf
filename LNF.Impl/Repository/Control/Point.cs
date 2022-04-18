@@ -1,4 +1,3 @@
-using LNF.Control;
 using LNF.DataAccess;
 
 namespace LNF.Impl.Repository.Control

@@ -163,6 +163,7 @@
     <Compile Include="Billing\WriteStoreDataProcess.cs" />
     <Compile Include="Billing\WriteToolDataCleanProcess.cs" />
     <Compile Include="Billing\WriteToolDataProcess.cs" />
+    <Compile Include="Control\Extensions.cs" />
     <Compile Include="DataAccess\ModelFactory\IModelFactory.cs" />
     <Compile Include="Data\ClientEqualityComparer.cs" />
     <Compile Include="Data\Extensions.cs" />
